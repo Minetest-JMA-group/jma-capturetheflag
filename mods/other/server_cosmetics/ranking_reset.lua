@@ -1,0 +1,16 @@
+local queue_transfers = false
+
+ctf_rankings.register_on_rank_reset(function(pname, rank)
+	if rank and rank.place then
+		if rank.place <= 100 then
+			server_cosmetics.add_transfers(pname, {"server_cosmetics:headwear:sunglasses:black"})
+			queue_transfers = true
+		end
+	end
+end)
+
+minetest.register_on_shutdown(function()
+	if queue_transfers then
+		server_cosmetics.save_transfer_queue()
+	end
+end)
