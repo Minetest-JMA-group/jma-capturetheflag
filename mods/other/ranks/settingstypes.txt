@@ -1,0 +1,7 @@
+#    If this is enabled, chat send by a player with a rank including a defined
+#    prefix is prefixed with the rank prefix.
+ranks.prefix_chat (Prefix Chat) bool true
+
+#    If this is enabled, player with a rank that has a prefix will have this
+#    prefix shown in their nametags.
+ranks.prefix_nametag (Prefix Nametag) bool true
