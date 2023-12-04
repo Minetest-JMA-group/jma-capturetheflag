@@ -15,3 +15,6 @@
 	path = mods/apis/mhud
 	url = https://github.com/LoneWolfHT/mhud.git
 	branch = main
+[submodule "mods/extras"]
+	path = mods/extras
+	url = https://github.com/Nanowolf4/jma-extras
