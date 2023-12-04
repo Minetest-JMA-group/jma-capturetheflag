@@ -1,6 +1,6 @@
 [submodule "mods/ctf/ctf_map/maps"]
 	path = mods/ctf/ctf_map/maps
-	url = https://github.com/MT-CTF/maps.git
+	url = https://github.com/Nanowolf4/jmactf-maps.git
 [submodule "mods/other/lib_chatcmdbuilder"]
 	path = mods/other/lib_chatcmdbuilder
 	url = https://github.com/rubenwardy/ChatCmdBuilder.git
