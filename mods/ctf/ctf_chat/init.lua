@@ -1,4 +1,5 @@
 ctf_chat = {}
+local colorize = minetest.colorize
 
 minetest.override_chatcommand("msg", {
 	func = function(name, param)
@@ -11,9 +12,9 @@ minetest.override_chatcommand("msg", {
 		end
 
 		-- Run the message through filter if it exists
-		if filter and not filter.check_message(name, message) then
+		if filter and not filter.check_message(message) then
 			filter.on_violation(name, message)
-			return false
+			return false, "Watch your language!"
 		end
 
 		-- Message color
@@ -22,9 +23,9 @@ minetest.override_chatcommand("msg", {
 		local tcolor = pteam and ctf_teams.team[pteam].color or "#FFF"
 
 		-- Colorize the recepient-side message and send it to the recepient
-		local str =  minetest.colorize(color, "PM from ")
-		str = str .. minetest.colorize(tcolor, name)
-		str = str .. minetest.colorize(color, ": " .. message)
+		local str =  colorize(color, "PM from ")
+		str = str .. colorize(tcolor, name)
+		str = str .. colorize(color, ": " .. message)
 		minetest.chat_send_player(sendto, str)
 
 		-- Make the sender-side message
@@ -37,25 +38,19 @@ minetest.override_chatcommand("msg", {
 	end
 })
 
----@return boolean
--- Return true to cancel the normal chat message
 function ctf_chat.send_me(name, param)
-
 end
 
 minetest.override_chatcommand("me", {
 	func = function(name, param)
 		minetest.log("action", string.format("[CHAT] ME from %s: %s", name, param))
 
-		if ctf_chat.send_me(name, param) then
-			return
-		end
+		ctf_chat.send_me(name, param)
 
 		local pteam = ctf_teams.get(name)
-
 		if pteam then
 			local tcolor = ctf_teams.team[pteam].color
-			name = minetest.colorize(tcolor, "* " .. name)
+			name = colorize(tcolor, "* " .. name)
 		else
 			name = "* ".. name
 		end
@@ -80,7 +75,7 @@ minetest.register_chatcommand("t", {
 			local tcolor = ctf_teams.team[tname].color
 			for username in pairs(ctf_teams.online_players[tname].players) do
 				minetest.chat_send_player(username,
-						minetest.colorize(tcolor, "<" .. name .. "> ** " .. param .. " **"))
+						colorize(tcolor, "<" .. name .. "> ** " .. param .. " **"))
 			end
 		else
 			minetest.chat_send_player(name,
@@ -89,32 +84,31 @@ minetest.register_chatcommand("t", {
 	end
 })
 
-minetest.register_on_mods_loaded(function()
-	local old_handlers = minetest.registered_on_chat_messages
-	minetest.registered_on_chat_messages = {
-	function(name, message)
-		local chat = message:sub(1,1) ~= "/"
+-- Formatting chat messages
+function minetest.format_chat_message(name, message)
+	local pteam_color = "white"
+	local pteam = ctf_teams.get(name)
+	if pteam then
+		pteam_color = ctf_teams.team[pteam].color
+	end
 
-		if chat and not minetest.check_player_privs(name, {shout = true}) then
-			minetest.chat_send_player(name, "-!- You don't have permission to speak.")
-			return true
-		end
+	local msg = string.format("<%s>: %s", colorize(pteam_color, name), message)
 
-		for _, handler in ipairs(old_handlers) do
-			if handler(name, message) then
-				return true
-			end
-		end
+	local rank = ranks.get_player_prefix(name)
 
-		if chat then
-			local pteam = ctf_teams.get(name)
-			if pteam then
-				minetest.chat_send_all(minetest.colorize(ctf_teams.team[pteam].color, "<" .. name .. "> ") .. message)
-			else
-				minetest.chat_send_all("<" .. name .. "> " .. message)
-			end
-		end
+	local pro = false
+	local current_mode = ctf_modebase:get_current_mode()
+	if current_mode and current_mode.player_is_pro and current_mode.player_is_pro(name) == true then
+		pro = true
+	end
 
-		return true
-	end}
-end)
+	local pro_prefix = "[PRO]"
+	if rank and pro then
+		msg = string.format("%s %s %s", colorize(pteam_color, pro_prefix), colorize(rank.color, rank.prefix), msg)
+	elseif pro and not rank then
+		msg = string.format("%s %s", colorize(pteam_color, pro_prefix), msg)
+	elseif not pro and rank then
+		msg = string.format("%s %s", colorize(rank.color, rank.prefix), msg)
+	end
+	return msg
+end

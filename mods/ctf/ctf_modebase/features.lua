@@ -72,6 +72,24 @@ local function update_playertags()
 	end
 end
 
+local function is_pro(player, rank)
+	local pro_chest = player and player:get_meta():get_int("ctf_rankings:pro_chest:"..
+			(ctf_modebase.current_mode or "")) == 1
+
+	-- Remember to update /make_pro in ranking_commands.lua if you change anything here
+	if pro_chest or rank then
+		if
+			pro_chest
+			or
+			(rank.score or 0) >= 8000 and
+			(rank.kills or 0) / (rank.deaths or 1) >= 1.4 and
+			(rank.flag_captures or 0) >= 5
+		then
+			return true
+		end
+	end
+end
+
 
 ctf_settings.register("teammate_nametag_style", {
 	type = "list",
@@ -690,11 +708,15 @@ return {
 	on_respawnplayer = function(player)
 		tp_player_near_flag(player)
 	end,
+	player_is_pro = function(pname)
+		local rank = rankings:get(pname)
+		if is_pro(minetest.get_player_by_name(pname), rank) then
+			return true
+		end
+	end,
 	get_chest_access = function(pname)
 		local rank = rankings:get(pname)
-		local player = minetest.get_player_by_name(pname)
-		local pro_chest = player and player:get_meta():get_int("ctf_rankings:pro_chest:"..
-				(ctf_modebase.current_mode or "")) == 1
+
 		local deny_pro = "You need to have more than 1.4 kills per death, "..
 		                 "5 captures, and at least 8,000 score to access the pro section."
 		if rank then
@@ -706,24 +728,14 @@ return {
 					   .. " captures, " .. score_needed ..
 					   " score, and your kills per death is " ..
 					   current_kd .. "."
-		end
 
-		-- Remember to update /make_pro in ranking_commands.lua if you change anything here
-		if pro_chest or rank then
-			if
-				pro_chest
-				or
-				(rank.score or 0) >= 8000 and
-				(rank.kills or 0) / (rank.deaths or 1) >= 1.4 and
-				(rank.flag_captures or 0) >= 5
-			then
+			if is_pro(minetest.get_player_by_name(pname), rank) then
 				return true, true
-			end
-
-			if (rank.score or 0) >= 10 then
+			elseif (rank.score or 0) >= 10 then
 				return true, deny_pro
 			end
 		end
+
 
 		return "You need at least 10 score to access this chest", deny_pro
 	end,

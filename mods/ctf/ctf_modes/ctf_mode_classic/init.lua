@@ -70,6 +70,7 @@ ctf_modebase.register_mode("classic", {
 	on_flag_capture = features.on_flag_capture,
 	on_flag_rightclick = function() end,
 	get_chest_access = features.get_chest_access,
+	player_is_pro = features.player_is_pro,
 	can_punchplayer = features.can_punchplayer,
 	on_punchplayer = features.on_punchplayer,
 	on_healplayer = features.on_healplayer,

@@ -135,6 +135,7 @@ ctf_modebase.register_mode("classes", {
 		classes.show_class_formspec(clicker)
 	end,
 	get_chest_access = features.get_chest_access,
+	player_is_pro = features.player_is_pro,
 	on_punchplayer = features.on_punchplayer,
 	can_punchplayer = features.can_punchplayer,
 	on_healplayer = features.on_healplayer,
