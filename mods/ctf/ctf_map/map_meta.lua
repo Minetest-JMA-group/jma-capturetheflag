@@ -222,6 +222,9 @@ function ctf_map.load_map_meta(idx, dirname)
 
 		map.skybox = dirname
 		map.skybox_forced = true
+	elseif map.skybox ~= "none" and table.indexof(ctf_map.skyboxes, map.skybox) == -1 then
+		minetest.log("warning", "Unable to load skybox \"" .. map.skybox .. "\". Back to \"none\"")
+		map.skybox = "none"
 	end
 
 	return map

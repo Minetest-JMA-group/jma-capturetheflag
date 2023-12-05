@@ -71,7 +71,8 @@ function ctf_player.set_stab_slash_anim(anim_type, player, extra_time)
 	player_set_animation(player, anim_type, 60)
 end
 
-function player_api.globalstep()
+local timer = 0
+function player_api.globalstep(dtime)
 	for _, player in ipairs(minetest.get_connected_players()) do
 		local name = player:get_player_name()
 		local player_data = get_animation(player) or {}
@@ -90,12 +91,14 @@ function player_api.globalstep()
 			if player:get_hp() == 0 then
 				player_set_animation(player, "lay")
 			elseif not stab_slash_timer[name] or stab_slash_timer[name].state == "cooldown" then
+				local r_hand = false
 				if controls.up or controls.down or controls.left or controls.right then
 					if controls.LMB or controls.RMB then
 						local wielded = player:get_wielded_item()
 
 						if not wielded or not wielded:get_definition().disable_mine_anim then
 							player_set_animation(player, "walk_mine", animation_speed_mod)
+							r_hand = true
 						else
 							player_set_animation(player, "walk", animation_speed_mod)
 						end
@@ -107,13 +110,27 @@ function player_api.globalstep()
 
 					if not wielded or not wielded:get_definition().disable_mine_anim then
 						player_set_animation(player, "mine", animation_speed_mod)
+						r_hand = true
 					else
 						player_set_animation(player, "stand", animation_speed_mod)
 					end
 				else
 					player_set_animation(player, "stand", animation_speed_mod)
 				end
+
+				if timer > 0.15 then
+					local v_deg = math.deg(player:get_look_vertical())
+					player:set_bone_position("Head", {x = 0, y = 6.1, z = 0}, {x = -v_deg, y = 0, z = 0})
+
+					if r_hand then
+						player:set_bone_position("Arm_Right_Rot", vector.new(-2.1, 5.2, 0), vector.new(180, -v_deg , -90))
+					else
+						player:set_bone_position("Arm_Right_Rot", vector.new(-2.1, 5.2, 0), vector.new(180, 0, -90))
+					end
+					timer = 0
+				end
 			end
 		end
 	end
+	timer = timer + dtime
 end
