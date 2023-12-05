@@ -78,7 +78,9 @@ local function remove_wielditem(player)
 	end
 end
 
-minetest.register_on_joinplayer(add_wielditem)
+minetest.register_on_joinplayer(function(player)
+	minetest.after(1.5, add_wielditem, player)
+end)
 minetest.register_on_leaveplayer(remove_wielditem)
 
 
