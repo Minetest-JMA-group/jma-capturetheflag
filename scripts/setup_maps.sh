@@ -1,15 +1,24 @@
 #!/bin/bash
 set -e
 
-# Go back if we're inside the scripts folder
-if [ -f setup_maps.sh ]; then
-    cd ..
+# Check if the working directory argument is provided
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <working_directory>"
+    exit 1
+fi
+
+working_directory="$1"
+
+# Check if ./mods directory exists in the working directory
+if [ ! -d "${working_directory}/mods" ]; then
+    echo "Error: The ${working_directory}/mods directory does not exist."
+    exit 1
 fi
 
 # Check and remove broken symlinks in the current directory
-find ./mods/ctf/ctf_map/textures/ -type l ! -exec test -e {} \; -exec rm {} +
+find "${working_directory}/mods/ctf/ctf_map/textures/" -type l ! -exec test -e {} \; -exec rm {} +
 
-cd mods/ctf/ctf_map/maps/
+cd "${working_directory}/mods/ctf/ctf_map/maps/"
 
 # Create symlinks for textures from map sub-dirs to ctf_map_core/textures
 for f in *; do
