@@ -17,4 +17,4 @@
 	branch = main
 [submodule "mods/extras"]
 	path = mods/extras
-	url = https://github.com/Nanowolf4/jma-extras
+	url = https://github.com/Nanowolf4/jma-extras.git
