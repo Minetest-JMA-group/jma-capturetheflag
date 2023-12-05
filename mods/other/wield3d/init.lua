@@ -13,16 +13,22 @@ minetest.register_item("wield3d:hand", {
 })
 
 minetest.register_entity("wield3d:entity", {
-	visual = "wielditem",
-	wield_item = "wield3d:hand",
-	visual_size = location[4],
-	physical = false,
-	makes_footstep_sound = false,
-	backface_culling = false,
-	static_save = false,
-	pointable = false,
-	glow = 7,
-	on_punch = function() return true end,
+	initial_properties = {
+		visual = "wielditem",
+		wield_item = "wield3d:hand",
+		visual_size = location[4],
+		physical = false,
+		makes_footstep_sound = false,
+		backface_culling = false,
+		static_save = false,
+		pointable = false,
+		glow = 7,
+	},
+	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir, damage)
+		puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
+		minetest.log("warning", puncher:get_player_name() ..  " is trying to damage non-pointable entity \"wield3d:entity\".")
+		return true
+	end
 })
 
 local function update_entity(player)

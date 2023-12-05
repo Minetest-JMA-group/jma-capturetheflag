@@ -145,16 +145,22 @@ function playertag.get_all()
 end
 
 minetest.register_entity("playertag:tag", {
-	visual = "sprite",
-	visual_size = {x=2.16, y=0.18, z=2.16}, --{x=1.44, y=0.12, z=1.44},
-	textures = {"blank.png"},
-	collisionbox = { 0, -0.2, 0, 0, -0.2, 0 },
-	physical = false,
-	makes_footstep_sound = false,
-	backface_culling = false,
-	static_save = false,
-	pointable = false,
-	on_punch = function() return true end,
+	initial_properties = {
+		visual = "sprite",
+		visual_size = {x=2.16, y=0.18, z=2.16}, --{x=1.44, y=0.12, z=1.44},
+		textures = {"blank.png"},
+		collisionbox = { 0, -0.2, 0, 0, -0.2, 0 },
+		physical = false,
+		makes_footstep_sound = false,
+		backface_culling = false,
+		static_save = false,
+		pointable = false,
+	},
+	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir, damage)
+		puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
+		minetest.log("warning", puncher:get_player_name() ..  " is trying to damage non-pointable entity \"playertag:tag\".")
+		return true
+	end
 })
 
 minetest.register_on_joinplayer(function(player)
