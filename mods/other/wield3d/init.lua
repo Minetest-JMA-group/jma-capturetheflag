@@ -79,7 +79,12 @@ local function remove_wielditem(player)
 end
 
 minetest.register_on_joinplayer(function(player)
-	minetest.after(1.5, add_wielditem, player)
+	local pname = player:get_player_name()
+	minetest.after(1.5, function()
+		if minetest.get_player_by_name(pname) then --checking if the player is still online
+			add_wielditem(player)
+		end
+	end)
 end)
 minetest.register_on_leaveplayer(remove_wielditem)
 
