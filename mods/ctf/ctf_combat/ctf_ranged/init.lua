@@ -81,6 +81,12 @@ local function process_ray(ray, user, look_dir, def)
 				full_punch_interval = 1,
 				damage_groups = {ranged = 1, [def.type] = 1, fleshy = def.damage}
 			}, look_dir)
+
+			minetest.sound_play("ctf_ranged_hit", {
+				to_player = user:get_player_name(),
+				pitch = 1.2,
+				gain = 0.9,
+			}, true)
 		end
 	end
 end
