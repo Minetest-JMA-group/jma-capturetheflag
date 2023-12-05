@@ -256,7 +256,7 @@ local function player_vote(name, vote)
 
 	if not votes then
 		if not ctf_modebase.match_started then
-			if #minetest.get_connected_players() > 0 and not already_voted then
+			if #minetest.get_connected_players() > 1 and not already_voted then
 				ctf_modebase.skip_vote.start_vote()
 				do_vote()
 				already_voted = true
