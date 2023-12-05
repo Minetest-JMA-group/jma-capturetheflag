@@ -119,4 +119,3 @@ minetest.register_chatcommand("ctf_start", {
 		return true, "Build time ended"
 	end,
 })
-
