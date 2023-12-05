@@ -79,6 +79,14 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 
 	if real_damage then
 		player:set_hp(player:get_hp() - real_damage, {type="punch"})
+
+		minetest.sound_play("ctf_modebase_punched", {
+			pos = player:get_pos(),
+			exclude_player = player:get_player_name(),
+			pitch = 1.2,
+			gain = 1.3,
+			max_hear_distance = 6,
+		}, true)
 	end
 
 	if error then
