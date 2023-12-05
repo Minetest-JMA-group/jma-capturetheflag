@@ -160,40 +160,45 @@ function ctf_map.load_map_meta(idx, dirname)
 			game_modes     = minetest.deserialize(meta:get("game_modes")),
 			enable_shadows = tonumber(meta:get("enable_shadows") or "0.26"),
 		}
-		if tonumber(meta:get("map_version")) > 2 and not ctf_core.settings.low_ram_mode then
-			local f, err = io.open(ctf_map.maps_dir .. dirname .. "/barriers.data", "rb")
 
-			if (ctf_core.settings.server_mode ~= "mapedit" and assert(f, err)) or f then
-				local barriers = f:read("*all")
+		-- NOTE --
+		-- This code causes an error:
+		-- A fatal error occurred: LUA PANIC: unprotected error in call to Lua API (not enough memory)
 
-				f:close()
+		-- if tonumber(meta:get("map_version")) > 2 and not ctf_core.settings.low_ram_mode then
+		-- 	local f, err = io.open(ctf_map.maps_dir .. dirname .. "/barriers.data", "rb")
 
-				assert(barriers and barriers ~= "")
+		-- 	if (ctf_core.settings.server_mode ~= "mapedit" and assert(f, err)) or f then
+		-- 		local barriers = f:read("*all")
 
-				barriers = minetest.deserialize(minetest.decompress(barriers, "deflate"))
+		-- 		f:close()
 
-				if barriers then
-					for _, barrier_area in pairs(barriers) do
-						barrier_area.pos1 = vector.add(barrier_area.pos1, offset)
-						barrier_area.pos2 = vector.add(barrier_area.pos2, offset)
+		-- 		assert(barriers and barriers ~= "")
 
-						for i = 1, barrier_area.max do
-							if not barrier_area.reps[i] then
-								barrier_area.reps[i] = minetest.CONTENT_IGNORE
-							else
-								barrier_area.reps[i] = minetest.get_content_id(barrier_area.reps[i])
-							end
-						end
-					end
+		-- 		barriers = minetest.deserialize(minetest.decompress(barriers, "deflate"))
 
-					map.barriers = barriers
-				else
-					minetest.log("error", "Map "..dirname.." has a corrupted barriers file. Re-save map to fix")
-				end
-			else
-				minetest.log("error", "Map "..dirname.." is missing its barriers file. Re-save map to fix")
-			end
-		end
+		-- 		if barriers then
+		-- 			for _, barrier_area in pairs(barriers) do
+		-- 				barrier_area.pos1 = vector.add(barrier_area.pos1, offset)
+		-- 				barrier_area.pos2 = vector.add(barrier_area.pos2, offset)
+
+		-- 				for i = 1, barrier_area.max do
+		-- 					if not barrier_area.reps[i] then
+		-- 						barrier_area.reps[i] = minetest.CONTENT_IGNORE
+		-- 					else
+		-- 						barrier_area.reps[i] = minetest.get_content_id(barrier_area.reps[i])
+		-- 					end
+		-- 				end
+		-- 			end
+
+		-- 			map.barriers = barriers
+		-- 		else
+		-- 			minetest.log("error", "Map "..dirname.." has a corrupted barriers file. Re-save map to fix")
+		-- 		end
+		-- 	else
+		-- 		minetest.log("error", "Map "..dirname.." is missing its barriers file. Re-save map to fix")
+		-- 	end
+		-- end
 
 		for id, def in pairs(map.chests) do
 			map.chests[id].pos1 = vector.add(offset, def.pos1)
