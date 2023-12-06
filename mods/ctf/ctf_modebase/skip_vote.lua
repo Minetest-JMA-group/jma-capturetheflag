@@ -235,10 +235,6 @@ minetest.register_chatcommand("vote_skip", {
 
 local function player_vote(name, vote)
 	local function do_vote()
-		if not votes then
-			return
-		end
-
 		if not votes[name] then
 			voters_count = voters_count - 1
 		end
@@ -256,14 +252,15 @@ local function player_vote(name, vote)
 
 	if not votes then
 		if not ctf_modebase.match_started then
-			if #minetest.get_connected_players() > 1 and not already_voted then
+			if #minetest.get_connected_players() > 0 and not already_voted then
 				ctf_modebase.skip_vote.start_vote()
-				do_vote()
-				already_voted = true
-				return true
-			else
-				return false, "Sorry, you can't vote right now"
+				if votes then
+					do_vote()
+					already_voted = true
+					return true
+				end
 			end
+			return false, "Sorry, you can't vote right now"
 		else
 			return false, "You can't vote during the match"
 		end
