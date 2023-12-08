@@ -1,0 +1,11 @@
+# textdomain: simple_skins
+
+Select Player Skin:=Sélectionner l'apparence du joueur:
+Name: =Nom:
+Author: =Auteur:
+Admin command to set player skin=Commande admin pour définir l'apparence du joueur
+'s skin set to=, apparence définie pour
+Set player skin=Définir l'apparence du joueur
+Close=Fermer
+Skins=Skins
+[MOD] Simple Skins loaded=[MOD] Simple Skins chargé

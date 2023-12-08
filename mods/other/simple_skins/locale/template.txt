@@ -1,0 +1,11 @@
+# textdomain: simple_skins
+
+Select Player Skin:=
+Name: =
+Author: =
+Admin command to set player skin=
+'s skin set to=
+Set player skin=
+Close=
+Skins=
+[MOD] Simple Skins loaded=
