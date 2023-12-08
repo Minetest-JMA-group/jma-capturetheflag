@@ -1,2 +1,2 @@
-name = "Military",
-author = "Maintainer_",
+name = "Ashley",
+author = "loupicate",
