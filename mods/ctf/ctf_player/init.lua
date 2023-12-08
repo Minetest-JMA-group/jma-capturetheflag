@@ -1,6 +1,6 @@
 local stab_slash_time = 20/60 - 0.2
 local stab_slash_cooldown_after = 0.2
-
+local player_anim_data = {}
 ctf_player = {
 	animation_time = {
 		-- Animation Frames / Animation Framerate + Cooldown Time - 0.1
@@ -8,37 +8,36 @@ ctf_player = {
 	},
 }
 
--- Override player_api model
+player_api.register_model("character.b3d", {
+	animation_speed = 30,
+	textures = {"character.png"},
+	animations = {
+		-- Standard animations.
+		stand     = {x = 0,   y = 79},
+		lay       = {x = 162, y = 166, eye_height = 0.3,
+			collisionbox = {-0.6, 0.0, -0.6, 0.6, 0.3, 0.6}},
+		walk      = {x = 168, y = 187},
+		mine      = {x = 189, y = 198},
+		walk_mine = {x = 200, y = 219},
+		sit       = {x = 81,  y = 160, eye_height = 0.8,
+			collisionbox = {-0.3, 0.0, -0.3, 0.3, 1.0, 0.3}},
+		stab      = {x = 221, y = 241, frame_loop = false},
+		slash     = {x = 242, y = 262, frame_loop = false},
+	},
+	collisionbox = {-0.3, 0.0, -0.3, 0.3, 1.7, 0.3},
+	stepheight = 0.6,
+	eye_height = 1.47,
+})
 
-if not minetest.global_exists("armor_fly_swim") then
-	player_api.register_model("ctf_character.b3d", {
-		animation_speed = 30,
-		--textures={"character.png", "flagtexture",},
-		textures = {"character.png", "blank.png"  ,},
-		animations = {
-			-- Standard animations.
-			stand     = {x = 0,   y = 79},
-			lay       = {x = 162, y = 166, eye_height = 0.3,
-				collisionbox = {-0.6, 0.0, -0.6, 0.6, 0.3, 0.6}},
-			walk      = {x = 168, y = 187},
-			mine      = {x = 189, y = 198},
-			walk_mine = {x = 200, y = 219},
-			sit       = {x = 81,  y = 160, eye_height = 0.8,
-				collisionbox = {-0.3, 0.0, -0.3, 0.3, 1.0, 0.3}},
-			stab      = {x = 221, y = 241, frame_loop = false},
-			slash     = {x = 242, y = 262, frame_loop = false},
-		},
-		collisionbox = {-0.3, 0.0, -0.3, 0.3, 1.7, 0.3},
-		stepheight = 0.6,
-		eye_height = 1.47,
-	})
+minetest.register_on_joinplayer(function(player)
+	player_api.set_model(player, "character.b3d")
+	player:set_local_animation(nil, nil, nil, nil, 0)
+	player_anim_data[player:get_player_name()] = {timer = 0, r_hand_sleep = 0}
+end)
 
-	minetest.register_on_joinplayer(function(player)
-		player_api.set_model(player, "ctf_character.b3d")
-		player:set_local_animation(nil, nil, nil, nil, 0)
-	end)
-end
-
+minetest.register_on_leaveplayer(function(player)
+	player_anim_data[player:get_player_name()] = nil
+end)
 
 -- Override player_api globalstep
 
@@ -74,6 +73,7 @@ function ctf_player.set_stab_slash_anim(anim_type, player, extra_time)
 	player_set_animation(player, anim_type, 60)
 end
 
+
 function player_api.globalstep(dtime)
 	for _, player in ipairs(minetest.get_connected_players()) do
 		local name = player:get_player_name()
@@ -93,12 +93,14 @@ function player_api.globalstep(dtime)
 			if player:get_hp() == 0 then
 				player_set_animation(player, "lay")
 			elseif not stab_slash_timer[name] or stab_slash_timer[name].state == "cooldown" then
+				local r_hand = false
 				if controls.up or controls.down or controls.left or controls.right then
 					if controls.LMB or controls.RMB then
 						local wielded = player:get_wielded_item()
 
 						if not wielded or not wielded:get_definition().disable_mine_anim then
 							player_set_animation(player, "walk_mine", animation_speed_mod)
+							r_hand = true
 						else
 							player_set_animation(player, "walk", animation_speed_mod)
 						end
@@ -110,11 +112,37 @@ function player_api.globalstep(dtime)
 
 					if not wielded or not wielded:get_definition().disable_mine_anim then
 						player_set_animation(player, "mine", animation_speed_mod)
+						r_hand = true
 					else
 						player_set_animation(player, "stand", animation_speed_mod)
 					end
 				else
 					player_set_animation(player, "stand", animation_speed_mod)
+				end
+
+				local anim_data = player_anim_data[name]
+				local timer = anim_data.timer
+				local v_deg = math.deg(player:get_look_vertical())
+
+				if v_deg > 90 then
+					v_deg = 90
+				elseif v_deg < -90 then
+					v_deg = -90
+				end
+
+				if timer > 0.15 then
+					player:set_bone_position("Head", {x = 0, y = 6.1, z = 0}, {x = -v_deg, y = 0, z = 0})
+					timer = 0
+				end
+				timer = timer + dtime
+				anim_data.timer = timer
+
+				if r_hand then
+					player:set_bone_position("Arm_Right_Rot", vector.new(-2.1, 5.2, 0), vector.new(180, -v_deg , -90))
+					anim_data.r_hand_sleep = false
+				elseif not anim_data.r_hand_sleep then
+					player:set_bone_position("Arm_Right_Rot", vector.new(-2.1, 5.2, 0), vector.new(180, 0, -90))
+					anim_data.r_hand_sleep = true
 				end
 			end
 		end
