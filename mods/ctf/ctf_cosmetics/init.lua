@@ -26,7 +26,8 @@ function ctf_cosmetics.get_colored_skin(player, color)
 	end
 
 	return string.format(
-		"character.png^(%s^[multiply:%s)^(%s^[multiply:%s)%s",
+		"%s^(%s^[multiply:%s)^(%s^[multiply:%s)%s",
+		skins.get_skin(player:get_player_name()),
 		ctf_cosmetics.get_clothing_texture(player, "shirt"), color,
 		ctf_cosmetics.get_clothing_texture(player, "pants"), color,
 		table.concat(extras)

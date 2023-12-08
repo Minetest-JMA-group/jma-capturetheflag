@@ -199,6 +199,10 @@ local function read_image_size(filename)
 end
 
 
+function skins.get_skin(name)
+	return skins.skins[name] and (skins.skins[name] .. ".png") or "character.png"
+end
+
 -- update player skin
 skins.update_player_skin = function(player)
 
@@ -209,7 +213,9 @@ skins.update_player_skin = function(player)
 	local name = player:get_player_name()
 
 	if minetest.get_modpath("player_api") then
-		--player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
+		player_api.set_textures(player, {skins.get_skin(name)})
+	else
+		default.player_set_textures(player, {skins.get_skin(name)})
 	end
 end
 
@@ -235,9 +241,6 @@ skins.event_CHG = function(event, player)
 	else
 		player:set_attribute("simple_skins:skin", skins.skins[name])
 	end
-
-	local text = minetest.colorize("#0000FF", "Your skin will be changed after death.")
-	minetest.chat_send_player(name, text)
 end
 
 
@@ -316,5 +319,3 @@ minetest.register_chatcommand("setskin", {
 
 
 print ("[MOD] Simple Skins loaded")
-
-

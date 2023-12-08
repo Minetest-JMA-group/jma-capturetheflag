@@ -77,8 +77,8 @@ end
 function armor_fly_swim.node_above_solid(pos)
 
 	local node_check = minetest.get_node({x=pos.x,y=pos.y+1,z=pos.z})
-	local rtn = false 
-	
+	local rtn = false
+
 	if minetest.registered_nodes[node_check.name] then
 
 		local nc_draw = minetest.registered_nodes[node_check.name].drawtype
@@ -90,7 +90,7 @@ function armor_fly_swim.node_above_solid(pos)
 			rtn = true
 		end
 	end
-	
+
 	return rtn
 end
 
@@ -108,10 +108,10 @@ local result ={}
 	end
 
 	local n_draw
-	
+
 	for k,node in pairs(nodes) do
 		local n_draw
-		
+
 		if minetest.registered_nodes[node.name] then
 			n_draw = minetest.registered_nodes[node.name].drawtype
 		else
@@ -119,7 +119,7 @@ local result ={}
 		end
 		table.insert(result, n_draw)
 	end
-	return result 
+	return result
 end
 
 
@@ -137,7 +137,7 @@ local i = 1
 	if type == "s" then
 		compare = draw_tl
 	end
-	
+
 	while (i <= num) do
 			local n_draw = nodes[i]
 
