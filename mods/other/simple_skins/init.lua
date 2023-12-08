@@ -39,7 +39,7 @@ skins = {
 	transparant_list = false,
 	id = 1,
 	file = minetest.get_worldpath() .. "/simple_skins.mt",
-	preview = minetest.settings:get_bool("simple_skins_preview"),
+	preview = true,
 	translate = S,
 	skin_limit = tonumber(minetest.settings:get("simple_skins_limit")) or 300
 }
@@ -229,9 +229,13 @@ skins.event_CHG = function(event, player)
 		return -- Do not update wrong skin number
 	end
 
-	skins.skins[name] = skins.list[index]
-
-	skins.update_player_skin(player)
+	if not ctf_modebase.match_started then
+		skins.skins[name] = skins.list[index]
+		player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
+	else
+		minetest.chat_send_player(name, "The skin can be changed during build time only")
+		return
+	end
 
 	if is_50 then
 
