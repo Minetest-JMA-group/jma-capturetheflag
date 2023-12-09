@@ -32,7 +32,7 @@ player_api.register_model("character.b3d", {
 minetest.register_on_joinplayer(function(player)
 	player_api.set_model(player, "character.b3d")
 	player:set_local_animation(nil, nil, nil, nil, 0)
-	player_anim_data[player:get_player_name()] = {timer = 0, r_hand_sleep = 0}
+	player_anim_data[player:get_player_name()] = {timer = 0, r_hand_sleep = false}
 end)
 
 minetest.register_on_leaveplayer(function(player)
@@ -138,10 +138,10 @@ function player_api.globalstep(dtime)
 				anim_data.timer = timer
 
 				if r_hand then
-					player:set_bone_position("Arm_Right_Rot", vector.new(-2.1, 5.2, 0), vector.new(180, -v_deg , -90))
+					player:set_bone_position("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = -v_deg, z = -90})
 					anim_data.r_hand_sleep = false
 				elseif not anim_data.r_hand_sleep then
-					player:set_bone_position("Arm_Right_Rot", vector.new(-2.1, 5.2, 0), vector.new(180, 0, -90))
+					player:set_bone_position("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = 0, z = -90})
 					anim_data.r_hand_sleep = true
 				end
 			end
