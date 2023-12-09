@@ -11,7 +11,7 @@ random_messages.messages = {} --This table contains all messages.
 
 
 --Time between two subsequent messages.
-local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval") or 120) 
+local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval") or 120)
 
 
 function random_messages.check_params(name,func,params)
@@ -66,7 +66,7 @@ function random_messages.read_messages()
 		"Stuck? Use /kill to return to base",
 		"Strengthen your defense: build walls, set obstacles, and traps to secure your base.",
 		"Want to skip a match? Use /yes to vote during build time",
-		"How to access the Pro chest. Requirements: Score 8000, k/d 1.4 and 5 captured flags.",
+		"Want to get a new skin? Send it to us at https://discord.gg/KuUXcBuG5M",
 		-- connection, fps, minetest issues
 		"Make sure to use the latest version of Minetest (currently 5.7) for an optimal gaming experience.\nUsing outdated versions may lead to compatibility issues and lack of new features.",
 		"If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
