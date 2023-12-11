@@ -28,7 +28,7 @@ end
 
 local timers   = {}
 local cooldown = {}
-minetest.register_chatcommand("report", {
+minetest.register_chatcommand("ctfreport", {
 	params = S("<msg>"),
 	description = S("Report misconduct or bugs"),
 	func = function(name, param)
