@@ -8,16 +8,48 @@ ranks.register("admin", {
 ranks.register("moderator", {
 	prefix = "[Moderator]",
 	colour = {a = 255, r = 60, g = 60, b = 200},
+	grant_missing = true,
+	privs = {
+		pmute = true,
+		fly = true,
+		fast = true,
+		vanish = true,
+		kick = true,
+		moderator = true,
+		ban = true,
+	},
 })
 
 ranks.register("guardian", {
 	prefix = "[Guardian]",
 	colour = {a = 255, r = 120, g = 130, b = 150},
+	grant_missing = true,
+	privs = {
+		moderator = true,
+		kick = true,
+		pmute = true,
+	},
 })
 
 ranks.register("Developer", {
 	prefix = "[Developer]",
 	colour = {a = 255, r = 190, g = 0, b = 200},
+	grant_missing = true,
+	privs = {
+		dev = true,
+	}
+})
+
+ranks.register("DevGuardian", {
+	prefix = "[Dev&Guardian]",
+	colour = {a = 255, r = 100, g = 130, b = 230},
+	grant_missing = true,
+	privs = {
+		moderator = true,
+		kick = true,
+		pmute = true,
+		dev = true,
+	},
 })
 
 ranks.register("youtube", {
