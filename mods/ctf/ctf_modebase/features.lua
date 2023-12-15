@@ -181,7 +181,7 @@ local function tp_player_near_flag(player)
 
 	local pos = vector.offset(ctf_map.current_map.teams[tname].flag_pos,
 		math.random(-1, 1),
-		0.5,
+		-0.5,
 		math.random(-1, 1)
 	)
 	local rotation_y = vector.dir_to_rotation(
