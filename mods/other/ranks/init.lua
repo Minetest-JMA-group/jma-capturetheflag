@@ -149,13 +149,6 @@ minetest.register_on_joinplayer(function(player)
 		end
 	end
 
-
-	if name == "FoxLoveFire" then
-		ranks.remove_rank(name)
-		player:set_attribute("ranks:rank", nil)
-		player:set_attribute("ranks:rank-old", nil)
-		minetest.log("action", "Rank of FoxLoveFire has been removed")
-	end
 end)
 
 -- [chatcommand] /rank
