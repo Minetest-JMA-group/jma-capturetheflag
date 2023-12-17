@@ -93,19 +93,6 @@ function ranks.remove_rank(name)
 	local rank = ranks.get_rank(name)
 	if rank ~= nil then
 		storage:set_string(name, nil)
-
-		local player = minetest.get_player_by_name(name)
-		if player then
-			-- Update nametag TODO: FIXME
-			-- player:set_nametag_attributes({
-			-- 	text = name,
-			-- 	color = "#ffffff",
-			-- })
-			-- Update privileges
-			local basic_privs =
-				minetest.string_to_privs(minetest.settings:get("basic_privs") or "interact,shout")
-			minetest.set_player_privs(name, basic_privs)
-		end
 	end
 end
 
@@ -160,6 +147,14 @@ minetest.register_on_joinplayer(function(player)
 		if ranks.default then
 			ranks.set_rank(name, ranks.default)
 		end
+	end
+
+
+	if name == "FoxLoveFire" then
+		ranks.remove_rank(name)
+		player:set_attribute("ranks:rank", nil)
+		player:set_attribute("ranks:rank-old", nil)
+		minetest.log("action", "Rank of FoxLoveFire has been removed")
 	end
 end)
 
