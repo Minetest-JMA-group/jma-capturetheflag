@@ -72,7 +72,7 @@ function random_messages.read_messages()
 		"If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
 		"Having a stable internet connection is crucial as it minimizes lag, ensuring smoother multiplayer interactions",
 		--translator usage tips
-		"Overcoming a language barrier? Use a translator in the chat by adding %<language code> after your message, e.g, %en or %ен.",
+		"Overcoming a language barrier? Use a translator in the chat by adding %<language code> after your message, e.g, %en or %ен",
 		"Set your preferred language for in-game translator using /lang <lang code> . For example, use /lang en",
 		"Use /b to translate the last message to your preferred language",
 		"Want to send a nice welcoming message with the 8 score gift? Use /wb <mode:technical modename> <playername>",
