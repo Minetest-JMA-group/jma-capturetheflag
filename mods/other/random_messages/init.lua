@@ -76,7 +76,7 @@ function random_messages.read_messages()
 		"Set your preferred language for in-game translator using /lang <lang code> . For example, use /lang en",
 		"Use /b to translate the last message to your preferred language",
 		"Want to send a nice welcoming message with the 8 score gift? Use /wb <mode:technical modename> <playername>",
-		"To report a player sending inappropriate private messages to you, use /report playername PM
+		"To report a player sending inappropriate private messages to you, use /report playername PM",
 	}
 end
 
