@@ -7,7 +7,7 @@ local S = minetest.get_translator("tnt")
 
 
 -- Default to enabled when in singleplayer
-local enable_tnt = minetest.settings:get_bool("enable_tnt")
+local enable_tnt = true
 if enable_tnt == nil then
 	enable_tnt = minetest.is_singleplayer()
 end
