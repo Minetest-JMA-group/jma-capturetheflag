@@ -1,7 +1,7 @@
 local function add_score(player, score)
 	local receiver_name = player:get_player_name()
 	local mode = ctf_modebase:get_current_mode()
-	if mode then
+	if type(mode) == "table" then
 		local old_receiver_ranks = mode.rankings:get(receiver_name)
 		local old_receiver_score = old_receiver_ranks.score or 0
 		mode.rankings:set(receiver_name, {score = old_receiver_score + score})
