@@ -18,7 +18,6 @@ local function boom(obj)
             tnt.boom(pos, {radius = math.random(2, 10)})
         end
     end)
-    return nil, true
 end
 
 random_gifts.list = {
@@ -36,12 +35,12 @@ random_gifts.list = {
 
 	--grenades
 	{itemname = "throwable_snow:snowball", chance = 40, amount = 50},
-	{itemname = "grenades:frag_sticky", chance = 5, amount = 5, oneshot = true},
+	{itemname = "grenades:frag_sticky", chance = 7, amount = 5, oneshot = true},
 	{itemname = "grenades:frag", chance = 10, amount = 10, oneshot = true},
 
 	--diamond tools
-	{itemname = "ctf_melee:sword_diamond", chance = 5, amount = 1},
-	{itemname = "default:axe_diamond", chance = 5, amount = 1},
+	{itemname = "ctf_melee:sword_diamond", chance = 6, amount = 1},
+	{itemname = "default:axe_diamond", chance = 6, amount = 1},
 	{itemname = "default:shovel_diamond", chance = 7, amount = 1},
 	{itemname = "default:pick_diamond", chance = 7, amount = 1},
 
@@ -58,8 +57,8 @@ random_gifts.list = {
 	{itemname = "default:pick_steel", chance = 17, amount = 1},
 
 	-- buckets
-	{itemname = "bucket:bucket_lava", chance = 10, amount = 1},
-	{itemname = "bucket:bucket_water", chance = 12, amount = 1},
+	{itemname = "bucket:bucket_lava", chance = 15, amount = 1},
+	{itemname = "bucket:bucket_water", chance = 15, amount = 1},
 
 	--other
 	{itemname = "ctf_healing:medkit", chance = 27, amount = 1},
@@ -67,7 +66,7 @@ random_gifts.list = {
 
 	--functions
 	--things
-	{chance = 7, image = "random_gifts_santa_hat2023.png",
+	{chance = 15, image = "random_gifts_santa_hat2023.png",
 	func = function(player)
 		player:get_meta():set_int("server_cosmetics:entity:santa_hat:2023", 1)
 		minetest.chat_send_player(player:get_player_name(), "You got Santa hat! Congratulations!")
@@ -90,11 +89,11 @@ random_gifts.list = {
 	func = function(player)
 		add_score(player, 200)
 	end},
-	{chance = 99, image = "random_gifts_troll.png", oneshot = true,
+	{chance = 40, image = "random_gifts_troll.png", oneshot = true,
 	func = function(_, obj)
         boom(obj)
 	end},
-    {chance = 60, image = "random_gifts_troll.png", oneshot = true,
+    {chance = 40, image = "random_gifts_troll.png", oneshot = true,
 	func = function(player)
         player:add_velocity(vector.new(0, 35, 0)) --launch to the sky!
 	end},

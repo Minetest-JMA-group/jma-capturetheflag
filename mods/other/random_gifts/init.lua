@@ -253,7 +253,7 @@ minetest.register_entity("random_gifts:gift", {
 		self.parachute = par
 
 		self.selected_gifts = {}
-		for _ = 1, math.random(1, 4) do
+		for _ = 2, 4 do
 			local selected = choose_item_with_chance(list)
 			if selected then
 				table.insert(self.selected_gifts, selected)
