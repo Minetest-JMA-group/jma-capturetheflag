@@ -83,7 +83,6 @@ local function show_formspec(player)
 		end
 	end
 
-	sfse.open_formspec(player_name, fs_name, formspec)
 	minetest.show_formspec(player:get_player_name(), fs_name, formspec)
 end
 
