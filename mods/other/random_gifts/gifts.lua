@@ -63,10 +63,11 @@ random_gifts.list = {
 	--other
 	{itemname = "ctf_healing:medkit", chance = 27, amount = 1},
 	{itemname = "ctf_mode_nade_fight:grenade_tool_3", chance = 2, amount = 1, oneshot = true},
+	{itemname = "tnt:tnt", chance = 25, amount = 1, oneshot = true},
 
 	--functions
 	--things
-	{chance = 10, image = "random_gifts_santa_hat2023.png",
+	{chance = 3, image = "random_gifts_santa_hat2023.png",
 	func = function(player)
 		player:get_meta():set_int("server_cosmetics:entity:santa_hat:2023", 1)
 		minetest.chat_send_player(player:get_player_name(), "You got Santa hat! Congratulations!")
@@ -96,9 +97,5 @@ random_gifts.list = {
     {chance = 40, image = "random_gifts_troll.png", oneshot = true,
 	func = function(player)
         player:add_velocity(vector.new(0, 35, 0)) --launch to the sky!
-	end},
-	{chance = 35, image = "tnt_side.png", oneshot = true,
-	func = function(_, obj)
-        boom(obj)
 	end},
 }
