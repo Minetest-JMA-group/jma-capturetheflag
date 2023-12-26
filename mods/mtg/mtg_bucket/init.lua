@@ -209,21 +209,23 @@ bucket.register_liquid(
 	true
 )
 
-bucket.register_liquid(
-	"default:lava_source",
-	"default:lava_flowing",
-	"bucket:bucket_lava",
-	"bucket_lava.png",
-	S("Lava Bucket"),
-	{tool = 1}
-)
+-- NOTE: Only ctf_changes lava can be obtain by player
 
-minetest.register_craft({
-	type = "fuel",
-	recipe = "bucket:bucket_lava",
-	burntime = 60,
-	replacements = {{"bucket:bucket_lava", "bucket:bucket_empty"}},
-})
+-- bucket.register_liquid(
+-- 	"default:lava_source",
+-- 	"default:lava_flowing",
+-- 	"bucket:bucket_lava",
+-- 	"bucket_lava.png",
+-- 	S("Lava Bucket"),
+-- 	{tool = 1}
+-- )
+
+-- minetest.register_craft({
+-- 	type = "fuel",
+-- 	recipe = "bucket:bucket_lava",
+-- 	burntime = 60,
+-- 	replacements = {{"bucket:bucket_lava", "bucket:bucket_empty"}},
+-- })
 
 -- Register buckets as dungeon loot
 if minetest.global_exists("dungeon_loot") then

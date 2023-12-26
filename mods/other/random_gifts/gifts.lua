@@ -54,13 +54,11 @@ random_gifts.list = {
 
 	--steel
 	{itemname = "ctf_melee:sword_steel", chance = 15, amount = 1},
-	{itemname = "default:axe_steel", chance = 17, amount = 1},
-	{itemname = "default:shovel_steel", chance = 17, amount = 1},
-	{itemname = "default:pick_steel", chance = 17, amount = 1},
 
 	-- buckets
-	{itemname = "bucket:bucket_lava", chance = 15, amount = 1},
+	{itemname = "ctf_changes:bucket_lava", chance = 15, amount = 1},
 	{itemname = "bucket:bucket_water", chance = 15, amount = 1},
+	{itemname = "bucket:bucket_empty", chance = 15, amount = 1},
 
 	--other
 	{itemname = "ctf_healing:medkit", chance = 27, amount = 1},
@@ -68,7 +66,7 @@ random_gifts.list = {
 
 	--functions
 	--things
-	{chance = 15, image = "random_gifts_santa_hat2023.png",
+	{chance = 10, image = "random_gifts_santa_hat2023.png",
 	func = function(player)
 		player:get_meta():set_int("server_cosmetics:entity:santa_hat:2023", 1)
 		minetest.chat_send_player(player:get_player_name(), "You got Santa hat! Congratulations!")

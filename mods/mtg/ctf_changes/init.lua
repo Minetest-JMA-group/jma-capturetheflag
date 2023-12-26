@@ -162,3 +162,5 @@ minetest.register_on_mods_loaded(function()
 		})
 	end
 end)
+
+dofile(minetest.get_modpath("ctf_changes") .. "/ctf_lava.lua")
