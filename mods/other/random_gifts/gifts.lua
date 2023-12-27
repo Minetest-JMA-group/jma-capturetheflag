@@ -31,8 +31,6 @@ random_gifts.list = {
 	{itemname = "ctf_ranged:ammo", chance = 32, amount = 5},
 	{itemname = "ctf_ranged:sniper_magnum_loaded", chance = 7, amount = 1, oneshot = true},
 	{itemname = "ctf_ranged:shotgun_loaded", chance = 8, amount = 1, oneshot = true},
-	{itemname = "ctf_mode_classes:ranged_rifle_loaded", chance = 7, amount = 1, oneshot = true},
-	{itemname = "ctf_ranged:sniper_loaded", chance = 8, amount = 1, oneshot = true},
 
 	--grenades
 	{itemname = "throwable_snow:snowball", chance = 40, amount = 50},
