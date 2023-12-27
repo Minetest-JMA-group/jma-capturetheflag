@@ -68,7 +68,7 @@ function random_messages.read_messages()
 		"Want to skip a match? Use /yes to vote during build time",
 		"Want to get a new skin? Send it to us at https://discord.gg/KuUXcBuG5M",
 		-- connection, fps, minetest issues
-		"Make sure to use the latest version of Minetest (currently 5.7) for an optimal gaming experience.\nUsing outdated versions may lead to compatibility issues and lack of new features.",
+		"Make sure to use the latest version of Minetest (currently 5.8) for an optimal gaming experience.\nUsing outdated versions may lead to compatibility issues and lack of new features.",
 		"If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
 		"Having a stable internet connection is crucial as it minimizes lag, ensuring smoother multiplayer interactions",
 		--translator usage tips
