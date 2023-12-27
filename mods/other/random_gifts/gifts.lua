@@ -15,11 +15,6 @@ local function boom(obj)
     local pos = obj:get_pos()
     obj:remove()
     minetest.add_node(pos, {name = "tnt:tnt_burning"})
-    minetest.after(0.5, function()
-        if random_gifts.entity_exists(obj) then
-            tnt.boom(pos, {radius = math.random(2, 10)})
-        end
-    end)
 end
 
 random_gifts.list = {
@@ -29,11 +24,15 @@ random_gifts.list = {
 	{itemname = "default:diamond", chance = 5, amount = 2},
 	{itemname = "default:torch", chance = 42, amount = 50},
 	{itemname = "ctf_map:damage_cobble", chance = 25, amount = 30},
+	{itemname = "xpanes:bar_flat", chance = 40, amount = 30},
+	{itemname = "default:obsidian", chance = 10, amount = 25},
 
 	--ranged
 	{itemname = "ctf_ranged:ammo", chance = 32, amount = 5},
-	{itemname = "ctf_ranged:sniper_magnum_loaded", chance = 8, amount = 1, oneshot = true},
+	{itemname = "ctf_ranged:sniper_magnum_loaded", chance = 7, amount = 1, oneshot = true},
 	{itemname = "ctf_ranged:shotgun_loaded", chance = 8, amount = 1, oneshot = true},
+	{itemname = "ctf_mode_classes:ranged_rifle_loaded", chance = 7, amount = 1, oneshot = true},
+	{itemname = "ctf_ranged:sniper_loaded", chance = 8, amount = 1, oneshot = true},
 
 	--grenades
 	{itemname = "throwable_snow:snowball", chance = 40, amount = 50},
@@ -95,8 +94,18 @@ random_gifts.list = {
 	func = function(_, obj)
         boom(obj)
 	end},
-    {chance = 40, image = "random_gifts_troll.png", oneshot = true,
+    {chance = 30, image = "random_gifts_troll.png", oneshot = true,
 	func = function(player)
         player:add_velocity(vector.new(0, 35, 0)) --launch to the sky!
+	end},
+	{chance = 38, image = "random_gifts_troll.png", oneshot = true,
+	func = function(_, obj)
+        local pos = obj:get_pos()
+		if pos then
+			local pos = vector.offset(pos, 0, 1, 0)
+			if not minetest.is_protected(pos, "") and  minetest.get_node(pos).name == "air"  then
+				minetest.add_node(pos, {name = "ctf_changes:lava_source"})
+			end
+		end
 	end},
 }

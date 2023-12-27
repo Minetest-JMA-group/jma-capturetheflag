@@ -210,7 +210,6 @@ minetest.register_entity("random_gifts:gift", {
 		collisionbox = {-0.45, -0.45, -0.45, 0.45, 0.45, 0.45},
 	},
 
-	on_punch = function() return true end,
 	timer = 0,
 	timeout = 200,
 
@@ -284,15 +283,15 @@ minetest.register_entity("random_gifts:gift", {
 		end
 	end,
 
-	on_punch = function(self, puncher)
-        if puncher and puncher:is_player() then
-            local punch_direction = vector.direction(puncher:get_pos(), self.object:get_pos())
-            local repel_force = 5
+	-- on_punch = function(self, puncher)
+    --     if puncher and puncher:is_player() then
+    --         local punch_direction = vector.direction(puncher:get_pos(), self.object:get_pos())
+    --         local repel_force = 5
 
-            self.object:add_velocity(vector.multiply(vector.offset(punch_direction, 0, 0.5, 0), repel_force))
-        end
-        return true
-    end,
+    --         self.object:add_velocity(vector.multiply(vector.offset(punch_direction, 0, 0.5, 0), repel_force))
+    --     end
+    --     return true
+    -- end,
 })
 
 minetest.register_entity("random_gifts:parachute", {
