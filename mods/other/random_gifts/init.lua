@@ -6,7 +6,7 @@
 random_gifts = {}
 local open_boxes = {}
 
-local gravity = 5
+local gravity = 7.5
 local mass = 0.5
 local amplitude = 1
 local frequency = 3
@@ -283,6 +283,16 @@ minetest.register_entity("random_gifts:gift", {
 			return
 		end
 	end,
+
+	on_punch = function(self, puncher)
+        if puncher and puncher:is_player() then
+            local punch_direction = vector.direction(puncher:get_pos(), self.object:get_pos())
+            local repel_force = 5
+
+            self.object:add_velocity(vector.multiply(vector.offset(punch_direction, 0, 0.5, 0), repel_force))
+        end
+        return true
+    end,
 })
 
 minetest.register_entity("random_gifts:parachute", {
