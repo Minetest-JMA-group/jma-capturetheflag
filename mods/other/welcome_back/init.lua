@@ -1,5 +1,5 @@
 -- SPDX-License-Identifier: LGPL-2.1-only
--- Copyright (c) 2023 Marko Petrovic
+-- Copyright (c) 2023 Marko Petrović
 
 local msg_price = 8
 local msg_num_limit = 5
