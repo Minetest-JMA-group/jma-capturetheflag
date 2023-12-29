@@ -1,7 +1,6 @@
 -- SPDX-License-Identifier: LGPL-2.1-only
 -- Copyright (c) 2023 Marko Petrović
 
-minetest.register_privilege("namelock")
 local storage = minetest.get_mod_storage()
 local db = minetest.deserialize(storage:get_string("database")) or {}
 
@@ -96,7 +95,7 @@ minetest.register_chatcommand("wordunban", {
 minetest.register_chatcommand("namelock", {
 	description = "Lock a name so that no other player with a similar name may log in",
 	params = "<playername>",
-	privs = { namelock=true },
+	privs = { ban=true },
 	func = function(name, params)
 		db.namelock = db.namelock or {}
 		if params:match("[%p%s]") ~= nil then
@@ -125,7 +124,7 @@ minetest.register_chatcommand("namelock", {
 minetest.register_chatcommand("nameunlock", {
 	description = "Unlock a name so that other players can use it as part of their username",
 	params = "<playername>",
-	privs = { namelock=true },
+	privs = { ban=true },
 	func = function(name, params)
 		db.namelock = db.namelock or {}
 		local index = findElement(db.namelock, params)
@@ -142,18 +141,3 @@ minetest.register_chatcommand("nameunlock", {
 })
 
 minetest.register_on_prejoinplayer(parse_players)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
