@@ -18,8 +18,9 @@ local function save_db()
 end
 
 local function findElement(data, string)
+	string = string:lower()
 	for i, word in ipairs(data) do
-		if word == string then
+		if word:lower() == string then
 			return i
 		end
 	end
@@ -27,6 +28,8 @@ local function findElement(data, string)
 end
 
 local function patternExists(pattern, text)
+	pattern = pattern:lower()
+	text = text:lower()
 	local startPos, endPos = text:find(pattern)
 	return startPos ~= nil
 end
@@ -34,14 +37,19 @@ end
 local function parse_players(name)
 	db.namelock = db.namelock or {}
 	local whitelisted = findElement(db.namelock, name)
+	local msg = "Your username is not allowed. Please, change it and relogin."
+
+	if filter and not filter.check_message(name) then
+		return msg
+	end
 	for _, word in ipairs(db) do
 		if patternExists(word, name) then
-			return "Your username is not allowed. Please, change it and relogin."
+			return msg
 		end
 	end
 	for _, word in ipairs(db.namelock) do
 		if patternExists(word, name) and not whitelisted then
-			return "Your username is not allowed. Please, change it and relogin."
+			return msg
 		end
 	end
 end
