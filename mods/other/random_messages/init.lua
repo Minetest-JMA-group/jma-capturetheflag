@@ -63,7 +63,7 @@ function random_messages.read_messages()
 		"Join us on Discord: https://ctf.jma-sig.de",
 		"Use /news to see the server news and the Rules.",
 		"Please avoid or refrain from introducing any other potentially offensive or inappropriate topics.",
-		"Stuck? Use /kill to return to base",
+		"Stuck? Use /killme to return to base",
 		"Strengthen your defense: build walls, set obstacles, and traps to secure your base.",
 		"Want to skip a match? Use /yes to vote during build time",
 		"Want to get a new skin? Send it to us at https://discord.gg/KuUXcBuG5M",
