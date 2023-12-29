@@ -36,6 +36,7 @@ function random_messages.read_messages()
 		"Want to submit your own map? Visit https://discord.gg/KuUXcBuG5M to get involved.",
 		"Using limited resources to build structures that don't strengthen your base's defenses is discouraged.",
 		"To report misbehaving players to moderators, please use /report <name> <action> or send the report on Discord: ctf.jma-sig.de",
+		"If you're muted, to check why the moderator has muted you, use /mutereason",
 		"Swearing, trolling, and being rude will not be tolerated, and strict action will be taken.",
 		"Trapping teammates on purpose is strictly against the rules, and you will be kicked immediately.",
 		"Help your team claim victory by storing extra weapons in the team chest, and never taking more than you need.",
