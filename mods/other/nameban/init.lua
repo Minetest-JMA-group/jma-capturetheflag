@@ -69,7 +69,7 @@ minetest.register_chatcommand("wordban", {
 			end
 		end
 		if xban then
-			xban.report_to_discord("nameban: ***"..name.."*** has banned the word: "..params) 
+			xban.report_to_discord("nameban: ***"..name.."*** has banned the word: "..params)
 		end
 		return true, "Word "..params.." has been blacklisted."
 	end,
@@ -87,7 +87,7 @@ minetest.register_chatcommand("wordunban", {
 		table.remove(db, index)
 		save_db()
 		if xban then
-			xban.report_to_discord("nameban: ***"..name.."*** has UNbanned the word "..params) 
+			xban.report_to_discord("nameban: ***"..name.."*** has UNbanned the word "..params)
 		end
 		return true, "Word "..params.." has been removed from the blacklist."
 	end,
@@ -116,7 +116,7 @@ minetest.register_chatcommand("namelock", {
 			end
 		end
 		if xban then
-			xban.report_to_discord("nameban: ***"..name.."*** has locked the playername "..params) 
+			xban.report_to_discord("nameban: ***"..name.."*** has locked the playername "..params)
 		end
 		return true, "Name "..params.." has been locked."
 	end,
@@ -135,7 +135,7 @@ minetest.register_chatcommand("nameunlock", {
 		table.remove(db.namelock, index)
 		save_db()
 		if xban then
-			xban.report_to_discord("nameban: ***"..name.."*** has UNlocked the playername "..params) 
+			xban.report_to_discord("nameban: ***"..name.."*** has UNlocked the playername "..params)
 		end
 		return true, "Name "..params.." has been unlocked."
 	end,
