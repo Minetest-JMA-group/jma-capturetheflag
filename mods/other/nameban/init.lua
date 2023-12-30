@@ -30,8 +30,10 @@ end
 local function patternExists(pattern, text)
 	pattern = pattern:lower()
 	text = text:lower()
-	if pattern == algorithms.lcs(pattern, text) then
-		return true
+	for word in text:gmatch("[^%s-_]+") do
+		if pattern == algorithms.lcs(pattern, word) then
+			return true
+		end
 	end
 	return false
 end
