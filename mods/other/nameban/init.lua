@@ -30,8 +30,10 @@ end
 local function patternExists(pattern, text)
 	pattern = pattern:lower()
 	text = text:lower()
-	local startPos, endPos = text:find(pattern)
-	return startPos ~= nil
+	if pattern == algorithms.lcs(pattern, text) then
+		return true
+	end
+	return false
 end
 
 local function parse_players(name)
