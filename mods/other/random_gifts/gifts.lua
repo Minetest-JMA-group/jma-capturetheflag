@@ -60,7 +60,7 @@ random_gifts.list = {
 	--other
 	{itemname = "ctf_healing:medkit", chance = 27, amount = 1},
 	{itemname = "ctf_mode_nade_fight:grenade_tool_3", chance = 2, amount = 1, oneshot = true},
-	{itemname = "tnt:tnt", chance = 15, amount = 1, oneshot = true},
+	{itemname = "tnt:tnt", chance = 20, amount = 10, oneshot = true},
 	{itemname = "fire:flint_and_steel", chance = 17, amount = 1, oneshot = true},
 
 	--functions
