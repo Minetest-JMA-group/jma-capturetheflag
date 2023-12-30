@@ -47,7 +47,7 @@ algorithms.lcs = function(string1, string2)
 	local len1 = utf8_simple.len(string1)
 	local len2 = utf8_simple.len(string2)
 
-	matrix = algorithms.createMatrix(len1+1, len2+1)
+	local matrix = algorithms.createMatrix(len1+1, len2+1)
 	for i = 2, len1 + 1 do
 		for j = 2, len2 + 1 do
 			if utf8_simple.sub(string1,i-1,i-1) == utf8_simple.sub(string2,j-1,j-1) then
