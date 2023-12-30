@@ -38,17 +38,21 @@ local function parse_players(name)
 	db.namelock = db.namelock or {}
 	local whitelisted = findElement(db.namelock, name)
 	local msg = "Your username is not allowed. Please, change it and relogin."
+	local logmsg = "[nameban] User "..name.." has been denied access to the server."
 
 	if filter and not filter.check_message(name) then
+		ACTION(logmsg)
 		return msg
 	end
 	for _, word in ipairs(db) do
 		if patternExists(word, name) then
+			ACTION(logmsg)
 			return msg
 		end
 	end
 	for _, word in ipairs(db.namelock) do
 		if patternExists(word, name) and not whitelisted then
+			ACTION(logmsg)
 			return msg
 		end
 	end
