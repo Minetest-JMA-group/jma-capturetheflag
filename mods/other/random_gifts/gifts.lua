@@ -29,7 +29,7 @@ random_gifts.list = {
 
 	--ranged
 	{itemname = "ctf_ranged:ammo", chance = 32, amount = 5},
-	{itemname = "ctf_ranged:sniper_magnum_loaded", chance = 7, amount = 1, oneshot = true},
+	{itemname = "ctf_ranged:sniper_magnum_loaded", chance = 4, amount = 1, oneshot = true},
 	{itemname = "ctf_ranged:shotgun_loaded", chance = 8, amount = 1, oneshot = true},
 
 	--grenades
