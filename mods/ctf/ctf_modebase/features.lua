@@ -179,11 +179,14 @@ local function tp_player_near_flag(player)
 	local tname = ctf_teams.get(player)
 	if not tname then return end
 
-	local pos = vector.offset(ctf_map.current_map.teams[tname].flag_pos,
-		math.random(-1, 1),
-		-0.5,
-		math.random(-1, 1)
-	)
+	local random_off = {x = 0, y = -0.5, z = 0}
+    repeat
+		random_off.x = math.random(-1, 1)
+		random_off.z = math.random(-1, 1)
+    until random_off.x ~= 0 or random_off.z ~= 0
+
+	local pos = vector.add(ctf_map.current_map.teams[tname].flag_pos, random_off)
+
 	local rotation_y = vector.dir_to_rotation(
 		vector.direction(pos, ctf_map.current_map.teams[tname].look_pos or ctf_map.current_map.flag_center)
 	).y
