@@ -3,6 +3,22 @@
 
 algorithms = {}
 
+-- Count all capital letters in ASCII string
+algorithms.countCaps = function(string)
+	if type(string) ~= "string" then
+		return 0
+	end
+	local count = 0
+	for i = 1, #string do
+		local charCode = string.byte(string, i)
+		if charCode >= 65 and charCode <= 90 then
+			count = count + 1
+		end
+	end
+	return count
+end
+
+-- Create a matrix of integers with dimensions n x m
 algorithms.createMatrix = function(n, m)
 	if type(n) ~= "number" or type(m) ~= "number" then
 		return nil
@@ -47,7 +63,7 @@ algorithms.lcs = function(string1, string2)
 	local len1 = utf8_simple.len(string1)
 	local len2 = utf8_simple.len(string2)
 
-	local matrix = algorithms.createMatrix(len1+1, len2+1)
+	matrix = algorithms.createMatrix(len1+1, len2+1)
 	for i = 2, len1 + 1 do
 		for j = 2, len2 + 1 do
 			if utf8_simple.sub(string1,i-1,i-1) == utf8_simple.sub(string2,j-1,j-1) then
