@@ -3,6 +3,9 @@
 
 local storage = minetest.get_mod_storage()
 local db = minetest.deserialize(storage:get_string("database")) or {}
+local mode = storage:get_int("mode") or 1
+local filter_on = storage:get_int("filter") or 1
+local capsThreshold = storage:get_float("capsThreshold") or 0.5
 
 local function make_logger(level)
 	return function(text, ...)
@@ -42,18 +45,24 @@ local function parse_players(name)
 	db.namelock = db.namelock or {}
 	local whitelisted = findElement(db.namelock, name)
 	local msg = "Your username is not allowed. Please, change it and relogin."
-	local logmsg = "[nameban] User "..name.." has been denied access to the server."
+	local logmsg = "[nameban] User "..name.." has been denied access to the server. [ENFORCING]"
+	if mode == 0 then
+		msg = nil
+		logmsg = "[nameban] User "..name.." would have been denied access to the server. [PERMISSIVE]"
+	end
 
-	if algorithms.countCaps(name)/(#name) > 0.5 then
-		if filter and not filter.check_message(name) then
-			ACTION(logmsg)
-			return msg
-		end
-	else
-		for word in name:gmatch("%u%l*") do
-			if filter and not filter.check_message(word) then
+	if filter_on == 1 then
+		if algorithms.countCaps(name)/(#name) > capsThreshold then
+			if filter and not filter.check_message(name) then
 				ACTION(logmsg)
 				return msg
+			end
+		else
+			for word in name:gmatch("[A-Z]?[^A-Z]+") do
+				if filter and not filter.check_message(word) then
+					ACTION(logmsg)
+					return msg
+				end
 			end
 		end
 	end
@@ -67,6 +76,16 @@ local function parse_players(name)
 		if patternExists(word, name) and not whitelisted then
 			ACTION(logmsg)
 			return msg
+		end
+	end
+end
+
+local function check_online_players()
+	for _, player in ipairs(minetest.get_connected_players()) do
+		local playername = player:get_player_name()
+		local msg = parse_players(playername)
+		if msg then
+			minetest.kick_player(playername, msg)
 		end
 	end
 end
@@ -85,13 +104,7 @@ minetest.register_chatcommand("wordban", {
 		table.insert(db, params)
 		save_db()
 
-		for _, player in ipairs(minetest.get_connected_players()) do
-			local playername = player:get_player_name()
-			local msg = parse_players(playername)
-			if msg then
-				minetest.kick_player(playername, msg)
-			end
-		end
+		check_online_players()
 		if xban then
 			xban.report_to_discord("nameban: ***"..name.."*** has banned the word: "..params)
 		end
@@ -132,13 +145,7 @@ minetest.register_chatcommand("namelock", {
 		table.insert(db.namelock, params)
 		save_db()
 
-		for _, player in ipairs(minetest.get_connected_players()) do
-			local playername = player:get_player_name()
-			local msg = parse_players(playername)
-			if msg then
-				minetest.kick_player(playername, msg)
-			end
-		end
+		check_online_players()
 		if xban then
 			xban.report_to_discord("nameban: ***"..name.."*** has locked the playername "..params)
 		end
@@ -163,6 +170,64 @@ minetest.register_chatcommand("nameunlock", {
 		end
 		return true, "Name "..params.." has been unlocked."
 	end,
+})
+
+minetest.register_chatcommand("nameban_mode", {
+	description = "Set nameban mode of operation",
+	params = "<permissive/enforcing/filter/no_filter>",
+	privs = { dev=true },
+	func = function(name, params)
+		if params == "permissive" then
+			if mode == 0 then
+				return false, "Mode is already permissive"
+			end
+			mode = 0
+			storage:set_int("mode", 0)
+			return true, "Nameban mode set to permissive"
+		end
+		if params == "enforcing" then
+			if mode == 1 then
+				return false, "Mode is already enforcing"
+			end
+			mode = 1
+			storage:set_int("mode", 1)
+			check_online_players()
+			return true, "Nameban mode set to enforcing"
+		end
+		if params == "filter" then
+			if filter_on == 1 then
+				return false, "Filter is already enabled"
+			end
+			filter_on = 1
+			storage:set_int("filter", 1)
+			check_online_players()
+			return true, "Filter is enabled"
+		end
+		if params == "no_filter" then
+			if filter_on == 0 then
+				return false, "Filter is already disabled"
+			end
+			filter_on = 0
+			storage:set_int("filter", 0)
+			return true, "Filter is disabled"
+		end
+		return false, "Error: Your parameter doesn't match any operation.\nParameters: <permissive/enforcing/filter/no_filter>"
+	end,
+})
+
+minetest.register_chatcommand("nameban_caps", {
+	description = "Set the ratio of capsNum/nameLen for treating the whole name as a single word",
+	params = "<ratioNumber>",
+	privs = { dev=true },
+	func = function(name, params)
+		params = tonumber(params)
+		if not params or params < 0 or params > 1 then
+			return false, "You have to enter a number between 0 and 1"
+		end
+		capsThreshold = params
+		storage:set_float("capsThreshold", params)
+		return true, "capsThreshold set to "..tostring(params)
+	end
 })
 
 minetest.register_on_prejoinplayer(parse_players)
