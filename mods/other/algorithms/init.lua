@@ -9,8 +9,8 @@ algorithms.nGram = function(string, window_size)
 		return {}
 	end
 	window_size = math.floor(window_size) - 1
-	if window_size <= 0 then
-		return {}
+	if window_size <= #string then
+		return {string}
 	end
 	local ret = {}
 	for i = 1, #string - window_size do
