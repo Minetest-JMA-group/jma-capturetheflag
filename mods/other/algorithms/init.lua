@@ -3,6 +3,22 @@
 
 algorithms = {}
 
+-- Separate the string into n-grams
+algorithms.nGram = function(string, window_size)
+	if type(string) ~= "string" or type(window_size) ~= "number" then
+		return {}
+	end
+	window_size = math.floor(window_size) - 1
+	if window_size <= 0 then
+		return {}
+	end
+	local ret = {}
+	for i = 1, #string - window_size do
+		table.insert(ret, utf8_simple.sub(string, i, i+window_size))
+	end
+	return ret
+end
+
 -- Count all capital letters in ASCII string
 algorithms.countCaps = function(string)
 	if type(string) ~= "string" then
@@ -57,7 +73,7 @@ end
 
 -- Longest Common Substring
 algorithms.lcs = function(string1, string2)
-	if not string1 or not string2 or type(string1) ~= "string" or type(string2) ~= "string" then
+	if type(string1) ~= "string" or type(string2) ~= "string" then
 		return nil
 	end
 	local len1 = utf8_simple.len(string1)
