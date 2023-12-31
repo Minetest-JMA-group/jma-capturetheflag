@@ -207,7 +207,7 @@ minetest.register_chatcommand("nameban_mode", {
 	end,
 })
 
-minetest.register_chatcommand("nameban_thresh", {
+minetest.register_chatcommand("nameban_lcs", {
 	description = "Set minimal pattern length for LCS to be employed",
 	params = "<pattern length>",
 	privs = { dev=true },
