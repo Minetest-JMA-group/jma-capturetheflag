@@ -77,7 +77,7 @@ ctf_api.register_on_new_match(function()
 
 			local snow_place_blacklist = {
 				"ctf_map:", "default:snow", "doors:", "ctf_teams:", "default:fence",
-				"stairs:", "walls:", "default:mese_post", "xpanes:",
+				"stairs:", "walls:", "default:mese_post", "xpanes:", "ctf_modebase:",
 			}
 			local SNOW_ID = minetest.get_content_id("default:snow")
 			local ICE_ID = minetest.get_content_id("winterize:ice")
