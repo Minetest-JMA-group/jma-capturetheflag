@@ -44,9 +44,18 @@ local function parse_players(name)
 	local msg = "Your username is not allowed. Please, change it and relogin."
 	local logmsg = "[nameban] User "..name.." has been denied access to the server."
 
-	if filter and not filter.check_message(name) then
-		ACTION(logmsg)
-		return msg
+	if algorithms.countCaps(name)/(#name) > 0.5 then
+		if filter and not filter.check_message(name) then
+			ACTION(logmsg)
+			return msg
+		end
+	else
+		for word in name:gmatch("%u%l*") do
+			if filter and not filter.check_message(word) then
+				ACTION(logmsg)
+				return msg
+			end
+		end
 	end
 	for _, word in ipairs(db) do
 		if patternExists(word, name) then
