@@ -35,7 +35,7 @@ local function patternExists(pattern, text)
 	if #pattern > #text then
 		return false
 	end
-	if #text <= LCSthreshold then
+	if #pattern <= LCSthreshold then
 		return text:find(pattern) ~= nil
 	end
 	if pattern == algorithms.lcs(pattern, text) then
@@ -54,8 +54,8 @@ local function parse_players(name)
 		logmsg = "User "..name.." would have been denied access to the server. [PERMISSIVE]"
 	end
 
-	if filter_on == 1 and filter and not filter.check_message(word) then
-		ACTION(logmsg)
+	if filter_on == 1 and filter and not filter.check_message(name) then
+		ACTION(logmsg.." [filter-detected]")
 		return msg
 	end
 	for _, word in ipairs(db) do
@@ -208,8 +208,8 @@ minetest.register_chatcommand("nameban_mode", {
 })
 
 minetest.register_chatcommand("nameban_thresh", {
-	description = "Set minimal name length for LCS to be employed",
-	params = "<name length>",
+	description = "Set minimal pattern length for LCS to be employed",
+	params = "<pattern length>",
 	privs = { dev=true },
 	func = function(name, params)
 		local number = tonumber(params) or 4
