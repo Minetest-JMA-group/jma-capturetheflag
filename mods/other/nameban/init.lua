@@ -5,7 +5,7 @@ local storage = minetest.get_mod_storage()
 local db = minetest.deserialize(storage:get_string("database")) or {}
 local mode = storage:get_int("mode") or 1
 local filter_on = storage:get_int("filter") or 1
-local capsThreshold = storage:get_float("capsThreshold") or 0.5
+local LCSthreshold = storage:get_int("LCSthreshold") or 4
 
 local function make_logger(level)
 	return function(text, ...)
@@ -29,14 +29,17 @@ local function findElement(data, string)
 	end
 	return nil
 end
-
 local function patternExists(pattern, text)
 	pattern = pattern:lower()
 	text = text:lower()
-	for word in text:gmatch("[^%s-_]+") do
-		if pattern == algorithms.lcs(pattern, word) then
-			return true
-		end
+	if #pattern > #text then
+		return false
+	end
+	if #text <= LCSthreshold then
+		return text:find(pattern) ~= nil
+	end
+	if pattern == algorithms.lcs(pattern, text) then
+		return true
 	end
 	return false
 end
@@ -51,20 +54,9 @@ local function parse_players(name)
 		logmsg = "User "..name.." would have been denied access to the server. [PERMISSIVE]"
 	end
 
-	if filter_on == 1 then
-		if algorithms.countCaps(name)/(#name) > capsThreshold then
-			if filter and not filter.check_message(name) then
-				ACTION(logmsg)
-				return msg
-			end
-		else
-			for word in name:gmatch("[A-Z]?[^A-Z]+") do
-				if filter and not filter.check_message(word) then
-					ACTION(logmsg)
-					return msg
-				end
-			end
-		end
+	if filter_on == 1 and filter and not filter.check_message(word) then
+		ACTION(logmsg)
+		return msg
 	end
 	for _, word in ipairs(db) do
 		if patternExists(word, name) then
@@ -73,7 +65,7 @@ local function parse_players(name)
 		end
 	end
 	for _, word in ipairs(db.namelock) do
-		if patternExists(word, name) and not whitelisted then
+		if not whitelisted and patternExists(word, name) then
 			ACTION(logmsg)
 			return msg
 		end
@@ -215,19 +207,20 @@ minetest.register_chatcommand("nameban_mode", {
 	end,
 })
 
-minetest.register_chatcommand("nameban_caps", {
-	description = "Set the ratio of capsNum/nameLen for treating the whole name as a single word",
-	params = "<ratioNumber>",
+minetest.register_chatcommand("nameban_thresh", {
+	description = "Set minimal name length for LCS to be employed",
+	params = "<name length>",
 	privs = { dev=true },
 	func = function(name, params)
-		params = tonumber(params)
-		if not params or params < 0 or params > 1 then
-			return false, "You have to enter a number between 0 and 1"
+		local number = tonumber(params) or 4
+		number = math.floor(number)
+		if number < 0 then
+			return false, "You have to enter a valid non-negative integer"
 		end
-		capsThreshold = params
-		storage:set_float("capsThreshold", params)
-		return true, "capsThreshold set to "..tostring(params)
-	end
+		LCSthreshold = number
+		storage:set_int("LCSthreshold", number)
+		return true, "LCSthreshold set to "..tostring(number)
+	end,
 })
 
 minetest.register_on_prejoinplayer(parse_players)
