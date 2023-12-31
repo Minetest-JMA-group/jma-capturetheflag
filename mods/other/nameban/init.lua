@@ -219,7 +219,7 @@ minetest.register_chatcommand("nameban_lcs", {
 		end
 		LCSthreshold = number
 		storage:set_int("LCSthreshold", number)
-		return true, "LCSthreshold set to "..tostring(number)
+		return true, "Nameban LCSthreshold set to "..tostring(number)
 	end,
 })
 
