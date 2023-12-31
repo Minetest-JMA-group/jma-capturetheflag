@@ -184,7 +184,7 @@ local function tp_player_near_flag(player)
 		random_off.x = math.random(-1, 1)
 		random_off.z = math.random(-1, 1)
     until random_off.x ~= 0 or random_off.z ~= 0
-	print(dump(random_off))
+
 	local pos = vector.add(ctf_map.current_map.teams[tname].flag_pos, random_off)
 
 	local rotation_y = vector.dir_to_rotation(
