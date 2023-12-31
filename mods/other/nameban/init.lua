@@ -45,10 +45,10 @@ local function parse_players(name)
 	db.namelock = db.namelock or {}
 	local whitelisted = findElement(db.namelock, name)
 	local msg = "Your username is not allowed. Please, change it and relogin."
-	local logmsg = "[nameban] User "..name.." has been denied access to the server. [ENFORCING]"
+	local logmsg = "User "..name.." has been denied access to the server. [ENFORCING]"
 	if mode == 0 then
 		msg = nil
-		logmsg = "[nameban] User "..name.." would have been denied access to the server. [PERMISSIVE]"
+		logmsg = "User "..name.." would have been denied access to the server. [PERMISSIVE]"
 	end
 
 	if filter_on == 1 then
