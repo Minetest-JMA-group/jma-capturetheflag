@@ -85,7 +85,6 @@ minetest.register_chatcommand("t", {
 })
 
 -- Formatting chat messages
-local oldFunction = minetest.format_chat_message or function(name, message) return message end
 function minetest.format_chat_message(name, message)
 	local pteam_color = "white"
 	local pteam = ctf_teams.get(name)
@@ -111,5 +110,6 @@ function minetest.format_chat_message(name, message)
 	elseif not pro and rank then
 		msg = string.format("%s %s", colorize(rank.color, rank.prefix), msg)
 	end
-	return oldFunction(name, msg)
+
+	return msg
 end
