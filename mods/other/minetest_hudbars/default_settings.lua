@@ -47,5 +47,5 @@ hb.settings.autohide_breath = hb.load_setting("hudbars_autohide_breath", "bool",
 -- 	end
 -- else
 hb.settings.sorting = { ["health"] = 0, ["sprint"] = 1, ["breath"] = 2 }
-hb.settings.sorting_reverse = { [0] = "health", [1] = "breath" }
+hb.settings.sorting_reverse =  { ["health"] = 2, ["sprint"] = 1, ["breath"] = 0 }
 -- end
