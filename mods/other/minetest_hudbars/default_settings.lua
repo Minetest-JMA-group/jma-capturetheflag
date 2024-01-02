@@ -34,17 +34,18 @@ hb.settings.forceload_default_hudbars = hb.load_setting("hudbars_forceload_defau
 -- Misc. settings
 hb.settings.alignment_pattern = hb.load_setting("hudbars_alignment_pattern", "string", "zigzag",
 	{"zigzag", "stack_up", "stack_down"})
+
 hb.settings.autohide_breath = hb.load_setting("hudbars_autohide_breath", "bool", true)
 
-local sorting = minetest.settings:get("hudbars_sorting")
-if sorting ~= nil then
-	hb.settings.sorting = {}
-	hb.settings.sorting_reverse = {}
-	for k,v in string.gmatch(sorting, "(%w+)=(%w+)") do
-		hb.settings.sorting[k] = tonumber(v)
-		hb.settings.sorting_reverse[tonumber(v)] = k
-	end
-else
-	hb.settings.sorting = { ["health"] = 0, ["breath"] = 1 }
-	hb.settings.sorting_reverse = { [0] = "health", [1] = "breath" }
-end
+-- local sorting = minetest.settings:get("hudbars_sorting")
+-- if sorting ~= nil then
+-- 	hb.settings.sorting = {}
+-- 	hb.settings.sorting_reverse = {}
+-- 	for k,v in string.gmatch(sorting, "(%w+)=(%w+)") do
+-- 		hb.settings.sorting[k] = tonumber(v)
+-- 		hb.settings.sorting_reverse[tonumber(v)] = k
+-- 	end
+-- else
+hb.settings.sorting = { ["health"] = 0, ["sprint"] = 1, ["breath"] = 2 }
+hb.settings.sorting_reverse = { [0] = "health", [1] = "breath" }
+-- end
