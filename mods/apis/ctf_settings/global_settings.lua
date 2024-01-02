@@ -7,9 +7,9 @@ ctf_settings.register("ctf_kill_list:tp_size", {
 })
 
 ctf_settings.register("use_hudbars", {
-	label = "Use hudbars instead of icon hud",
+	label = "Use modern hudbars instead of icon hud",
 	type = "bool",
-	default = "false",
+	default = "true",
 	description = "Use a bar with a label instead of icons for quantites like\n" ..
 		"health, stamina, and breath.\n" ..
 		"Disconnect and reconnect to see effects.",
