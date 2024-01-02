@@ -39,7 +39,7 @@ local function setSprinting(player, sprinting)
 end
 
 local function updateHud(player, info)
-	if use_hudbars(player) then
+	if info.hudbars == true then
 		if info.stamina > STAMINA_MAX then
 			hb.change_hudbar(player, "sprint", STAMINA_MAX)
 		else
@@ -97,6 +97,7 @@ minetest.register_on_joinplayer(function(player)
 	}
 
 	if use_hudbars(player) then
+		info.hudbars = true
 		hb.init_hudbar(player, "sprint")
 	else
 		info.hud = player:hud_add({
