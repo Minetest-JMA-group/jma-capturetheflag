@@ -233,6 +233,9 @@ minetest.register_entity("random_gifts:gift", {
 			end
 		end
 
+		local vel = self.object:get_velocity()
+		if not vel then return end
+
 		self.time_falling = (self.time_falling or 0) + dtime
 		local sideways_speed = amplitude * math.sin(frequency * self.time_falling)
 		local acceleration = {
@@ -241,7 +244,6 @@ minetest.register_entity("random_gifts:gift", {
 			z = sideways_speed,
 		}
 
-		local vel = self.object:get_velocity()
 		self.object:set_velocity(vector.add(vector.multiply(vel, dtime), acceleration))
 	end,
 
