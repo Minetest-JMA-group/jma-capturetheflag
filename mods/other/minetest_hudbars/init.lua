@@ -417,7 +417,7 @@ function hb.hide_hudbar(player, identifier)
 	if not player_exists(player) then return false end
 	local name = player:get_player_name()
 	local hudtable = hb.get_hudtable(identifier)
-	if hudtable == nil then return false end
+	if hudtable == nil or not hudtable.hudstate[name] then return false end
 	if hudtable.hudstate[name].hidden == true then return true end
 	if hb.settings.bar_type == "progress_bar" then
 		if hudtable.hudids[name].icon ~= nil then
@@ -436,7 +436,7 @@ function hb.unhide_hudbar(player, identifier)
 	if not player_exists(player) then return false end
 	local name = player:get_player_name()
 	local hudtable = hb.get_hudtable(identifier)
-	if hudtable == nil then return false end
+	if hudtable == nil or not hudtable.hudstate[name] then return false end
 	if hudtable.hudstate[name].hidden == false then return true end
 	local value = hudtable.hudstate[name].value
 	local max = hudtable.hudstate[name].max
