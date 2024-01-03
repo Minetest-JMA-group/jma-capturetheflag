@@ -12,6 +12,8 @@ ctf_settings.register("use_hudbars", {
 	default = "false",
 	description = "Use a bar with a label instead of icons for quantites like\n" ..
 		"health, stamina, and breath.\n" ..
-		"Disconnect and reconnect to see effects.",
-	on_change = function(player, new_value) --[[ nothing ]] end,
+		"Reconnect to see effects.",
+	on_change = function(player, new_value)
+		minetest.chat_send_player(player:get_player_name(), "Please reconnect to apply setting: \"Use modern hudbars instead of icon hud\"")
+	end,
 })
