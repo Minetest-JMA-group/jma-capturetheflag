@@ -7,7 +7,7 @@ This folder contains libraries and ELF files that require modification using `pa
 ### 1. Setting DT_RPATH for Libraries:
 Use the following command to set the DT_RPATH for a library (makes the library use shared object files from that folder instead of from system-defined path):  
 `patchelf --force-rpath libraryName`  
-`patch --set-rpath /home/jmactf/server5.8/games/jma-capturetheflag/mods/libs libraryName`
+`patchelf --set-rpath /home/jmactf/server5.8/games/jma-capturetheflag/libs libraryName`
 
 ### 2. Modifying libc.so.6
 In addition to setting DT_RPATH, libc requires to set the interpreter to the linker, matching the library version, which is also provided in this folder.  
