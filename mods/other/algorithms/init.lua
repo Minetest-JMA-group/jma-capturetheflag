@@ -33,6 +33,8 @@ algorithms.nGram = function(string, window_size)
 end
 
 algorithms.countCaps = mylibrary.countCaps or function(string) return 0 end
+algorithms.lower = mylibrary.lower or function(string) return string end
+algorithms.upper = mylibrary.upper or function(string) return string end
 
 -- Create a matrix of integers with dimensions n x m
 algorithms.createMatrix = function(n, m)
