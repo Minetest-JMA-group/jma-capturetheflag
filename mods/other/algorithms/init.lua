@@ -2,6 +2,18 @@
 -- Copyright (c) 2023 Marko Petrović
 
 algorithms = {}
+local MP = minetest.get_modpath(minetest.get_current_modname())
+local ie = minetest.request_insecure_environment()
+local libinit, err = ie.package.loadlib(MP.."/mylibrary.so", "luaopen_mylibrary")
+local mylibrary
+
+if not libinit and err then
+	minetest.log("[algorithms]: Failed to load shared object file")
+	minetest.log("[algorithms]: "..err)
+	mylibrary = {}
+else
+	mylibrary = libinit()
+end
 
 -- Separate the string into n-grams
 algorithms.nGram = function(string, window_size)
@@ -9,30 +21,18 @@ algorithms.nGram = function(string, window_size)
 		return {}
 	end
 	window_size = math.floor(window_size) - 1
-	if window_size <= #string then
+	local string_len = utf8_simple.len(string)
+	if window_size <= string_len then
 		return {string}
 	end
 	local ret = {}
-	for i = 1, #string - window_size do
+	for i = 1, string_len - window_size do
 		table.insert(ret, utf8_simple.sub(string, i, i+window_size))
 	end
 	return ret
 end
 
--- Count all capital letters in ASCII string
-algorithms.countCaps = function(string)
-	if type(string) ~= "string" then
-		return 0
-	end
-	local count = 0
-	for i = 1, #string do
-		local charCode = string.byte(string, i)
-		if charCode >= 65 and charCode <= 90 then
-			count = count + 1
-		end
-	end
-	return count
-end
+algorithms.countCaps = mylibrary.countCaps or function(string) return 0 end
 
 -- Create a matrix of integers with dimensions n x m
 algorithms.createMatrix = function(n, m)
