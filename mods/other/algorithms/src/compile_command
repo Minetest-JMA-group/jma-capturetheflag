@@ -1,0 +1,1 @@
+g++ lua.cpp -o mylibrary.so -fPIC -llua5.3 -lQt5Core -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtCore -shared -I/usr/include/lua5.3/
