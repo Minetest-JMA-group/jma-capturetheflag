@@ -67,6 +67,10 @@ ctf_modebase.register_mode("classes", {
 
 		["tnt:tnt"] = {rarity = 0.2, max_stacks = 5},
 
+		["ctf_changes:bucket_lava"] = {rarity = 0.2, max_stacks = 1},
+		["bucket:bucket_water"] = {rarity = 0.2, max_stacks = 1},
+		["bucket:bucket_empty"] = {rarity = 0.2, max_stacks = 1},
+
 	},
 	crafts = {
 		"ctf_ranged:ammo", "default:axe_mese", "default:axe_diamond", "default:shovel_mese", "default:shovel_diamond",
