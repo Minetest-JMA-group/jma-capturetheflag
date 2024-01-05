@@ -55,7 +55,7 @@ function random_messages.read_messages()
 		"To check someone's team, use /team player <player_name>.",
 		"To check all team members, use /team.",
 		"You can capture multiple enemy flags at once!",
-		"Consider joining our Discord server at https://discord.gg/KuUXcBuG5M",
+		"Consider joining our Discord server at https://discord.gg/SSd9XcCqZk",
 		"You can press sneak while jumping to jump up two blocks.",
 		"Use /donate <playername> <score> to reward a teammate for their work.",
 		"A medic and knight working together can wreak havoc on the enemy team(s).",
@@ -66,7 +66,7 @@ function random_messages.read_messages()
 		"Stuck? Use /killme to return to base",
 		"Strengthen your defense: build walls, set obstacles, and traps to secure your base.",
 		"Want to skip a match? Use /yes to vote during build time",
-		"Want to get a new skin? Send it to us at https://discord.gg/KuUXcBuG5M",
+		"Want to get a new skin? Send it to us at https://discord.gg/SSd9XcCqZk",
 		-- connection, fps, minetest issues
 		"Make sure to use the latest version of Minetest (currently 5.8) for an optimal gaming experience.\nUsing outdated versions may lead to compatibility issues and lack of new features.",
 		"If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
