@@ -1,5 +1,6 @@
 --- @type false | string
-local restart_on_next_match = false
+ctf_modebase.restart_on_next_match = false -- used by server_restart mod to restart after a match
+
 
 ctf_modebase.map_on_next_match = nil
 ctf_modebase.mode_on_next_match = nil
@@ -55,25 +56,10 @@ function ctf_modebase.start_match_after_vote()
 end
 
 local function start_new_match()
-	local path = minetest.get_worldpath() .. "/queue_restart.txt"
-	if ctf_core.file_exists(path) then
-		os.remove(path)
-		restart_on_next_match = ""
-	end
-
 	ctf_modebase.in_game = false
 	ctf_modebase.on_match_end()
 
-	if restart_on_next_match then
-		minetest.chat_send_all(minetest.colorize("red",
-			"[NOTICE] Server restarting in 5 seconds"..restart_on_next_match.."..."
-		))
-
-		minetest.request_shutdown(
-			"Restarting server at imperator request.\n\nTip: Count to 15 before clicking reconnect",
-			true, 5
-		)
-
+	if ctf_modebase.restart_on_next_match then
 		return
 	end
 
@@ -163,36 +149,4 @@ minetest.register_chatcommand("ctf_skip", {
 
 		return true, "Skipping match..."
 	end,
-})
-
-minetest.register_chatcommand("queue_restart", {
-	description = "Queue server restart",
-	privs = {server = true},
-	func = function(name, param)
-		if not param or param == "" then param = false end
-
-		restart_on_next_match = param and (" ("..param..")") or ""
-
-		minetest.log("action", string.format("[ctf_admin] %s queued a restart. Reason: %s", name, restart_on_next_match))
-		minetest.chat_send_all(minetest.colorize("red",
-			"[NOTICE] Server will restart after this match is over. " .. restart_on_next_match
-		))
-		return true, "Restart is queued."
-	end
-})
-
-minetest.register_chatcommand("unqueue_restart", {
-	description = "Unqueue server restart",
-	privs = {server = true},
-	func = function(name, param)
-		if not param then param = "" end
-
-		restart_on_next_match = false
-		minetest.log("action", string.format("[ctf_admin] %s un-queued a restart", name))
-
-		minetest.chat_send_all(minetest.colorize("red",
-			"[NOTICE] Restart cancelled. Server will NOT restart after this match. " .. param
-		))
-		return true, "Restart is cancelled."
-	end
 })
