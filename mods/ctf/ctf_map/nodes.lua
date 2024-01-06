@@ -14,7 +14,7 @@ minetest.register_node("ctf_map:ignore", {
 	buildable_to = false,
 	air_equivalent = true,
 
-	groups = {immortal = 1, disable_suffocation = 1},
+	groups = {immortal = 1, disable_suffocation = 1, barrier = 1, ignore = 1},
 })
 
 minetest.register_node("ctf_map:ind_glass", {
@@ -28,7 +28,7 @@ minetest.register_node("ctf_map:ind_glass", {
 	walkable = true,
 	buildable_to = false,
 	pointable = ctf_core.settings.server_mode == "mapedit",
-	groups = {immortal = 1},
+	groups = {immortal = 1, barrier = 1},
 	sounds = default.node_sound_glass_defaults()
 })
 
@@ -45,7 +45,7 @@ minetest.register_node("ctf_map:ind_glass_red", {
 	use_texture_alpha = false,
 	alpha = 0,
 	pointable = ctf_core.settings.server_mode == "mapedit",
-	groups = {immortal = 1},
+	groups = {immortal = 1, barrier = 1},
 	sounds = default.node_sound_glass_defaults()
 })
 ctf_map.barrier_nodes[minetest.get_content_id("ctf_map:ind_glass_red")] = minetest.CONTENT_AIR
@@ -63,14 +63,14 @@ minetest.register_node("ctf_map:ind_water", {
 	use_texture_alpha = false,
 	alpha = 0,
 	pointable = ctf_core.settings.server_mode == "mapedit",
-	groups = {immortal = 1},
+	groups = {immortal = 1, barrier = 1},
 	sounds = default.node_sound_glass_defaults()
 })
 ctf_map.barrier_nodes[minetest.get_content_id("ctf_map:ind_water")] = minetest.get_content_id("default:water_source")
 
 minetest.register_node("ctf_map:ind_lava", {
 	description = "Indestructible Lava Barrier Glass",
-	groups = {immortal = 1},
+	groups = {immortal = 1, barrier = 1},
 	tiles = {"ctf_map_ind_lava.png"},
 	is_ground_content = false
 })
@@ -78,7 +78,7 @@ ctf_map.barrier_nodes[minetest.get_content_id("ctf_map:ind_lava")] = minetest.ge
 
 minetest.register_node("ctf_map:ind_stone_red", {
 	description = "Indestructible Red Barrier Stone",
-	groups = {immortal = 1},
+	groups = {immortal = 1, barrier = 1},
 	tiles = {"ctf_map_stone_red.png"},
 	is_ground_content = false
 })

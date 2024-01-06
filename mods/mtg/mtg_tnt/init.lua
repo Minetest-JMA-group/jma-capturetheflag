@@ -101,6 +101,8 @@ local function destroy(drops, npos, cid, c_air, c_fire,
 
 	if not def then
 		return c_air
+	elseif minetest.get_item_group(def.name, "barrier") == 1 then
+		return cid
 	elseif not ignore_indestructible and minetest.get_item_group(def.name, "immortal") == 1 then
 		return cid
 	elseif not ignore_on_blast and def.on_blast then
