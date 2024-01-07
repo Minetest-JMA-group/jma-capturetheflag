@@ -16,7 +16,7 @@ ctf_modebase.register_mode("chaos", {
 	blacklisted_nodes = {"default:apple"},
 	team_chest_items = {
 		"default:cobble 80", "default:wood 80", "ctf_map:damage_cobble 20", "ctf_map:reinforced_cobble 20",
-		"default:torch 30", "ctf_teams:door_steel 2", "default:obsidian 35", "bucket:bucket_water"
+		"default:torch 30", "ctf_teams:door_steel 2", "default:obsidian 35", "bucket:bucket_water 1"
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,
@@ -74,7 +74,11 @@ ctf_modebase.register_mode("chaos", {
 		return features.on_punchplayer(player, hitter, damage, unneeded, tool_capabilities, ...)
 	end,
 	on_healplayer = features.on_healplayer,
-	calculate_knockback = function()
-		return 0
+	calculate_knockback = function(player, hitter, time_from_last_punch, tool_capabilities, dir, distance, damage)
+		if features.can_punchplayer(player, hitter) then
+			return 2 * (tool_capabilities.damage_groups.knockback or 1)
+		else
+			return 0
+		end
 	end,
 })
