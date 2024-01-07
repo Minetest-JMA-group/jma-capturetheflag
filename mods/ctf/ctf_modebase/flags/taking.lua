@@ -48,7 +48,11 @@ function ctf_modebase.flag_on_punch(puncher, nodepos, node)
 		return
 	end
 
-	local target_team = node.name:sub(node.name:find("top_") + 4)
+	local top = node.name:find("top_")
+	if not top then
+		return
+	end
+	local target_team = node.name:sub(top + 4)
 
 	if pteam ~= target_team then
 		if ctf_modebase.flag_captured[pteam] then
