@@ -122,7 +122,7 @@ rocket.on_step = function(self, dtime, moveresult)
 		if can_boom(pos) then
 			tnt.boom(pos, {
 				radius = self.radius,
-				ignore_indestructible = true,
+				-- ignore_indestructible = true,
 				puncher_name = self.puncher_name
 			})
 		end

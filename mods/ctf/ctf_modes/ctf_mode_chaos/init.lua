@@ -13,10 +13,11 @@ ctf_modebase.register_mode("chaos", {
 		"ctf_map:reinforced_cobble 2",
 	},
 	physics = {sneak_glitch = true, new_move = true},
-	blacklisted_nodes = {"default:apple"},
+
 	team_chest_items = {
 		"default:cobble 80", "default:wood 80", "ctf_map:damage_cobble 20", "ctf_map:reinforced_cobble 20",
-		"default:torch 30", "ctf_teams:door_steel 2", "default:obsidian 35", "bucket:bucket_water 1"
+		"default:torch 30", "ctf_teams:door_steel 2", "default:obsidian 35", "bucket:bucket_water 1",
+		"rocket_launcher:launcher", "rocket_launcher:rocket 5",
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,

@@ -36,7 +36,7 @@ minetest.register_node("ctf_modebase:flag", {
 			{0.25,-0.5000,0.0000,0.3625,0.5000,0.1125}
 		}
 	},
-	groups = {immortal=1,is_flag=1,flag_bottom=1,not_in_creative_inventory=1},
+	groups = {immortal=1,is_flag=1,flag_bottom=1,not_in_creative_inventory=1,ignore = 1},
 	on_punch = function(pos, node, puncher, pointed_thing, ...)
 		local pos_above = vector.offset(pos, 0, 1, 0)
 		local node_above = minetest.get_node(pos_above)
@@ -81,7 +81,7 @@ for name, def in pairs(ctf_teams.team) do
 				{-0.5,0,0.0500,0.2500,0.5000,0.0625}
 			}
 		},
-		groups = {immortal=1,is_flag=1,flag_top=1,not_in_creative_inventory=1,[name]=1},
+		groups = {immortal=1,is_flag=1,flag_top=1,not_in_creative_inventory=1,[name]=1,ignore = 1},
 		on_punch = function(pos, node, puncher, pointed_thing, ...)
 			if node.name ~= "ctf_modebase:flag_captured_top" then
 				ctf_modebase.flag_on_punch(puncher, pos, node)
@@ -118,7 +118,7 @@ minetest.register_node("ctf_modebase:flag_captured_top",{
 			{0.25,-0.5000,0.0000,0.3625,0.5000,0.1125}
 		}
 	},
-	groups = {immortal=1,is_flag=1,flag_top=1,not_in_creative_inventory=1},
+	groups = {immortal=1,is_flag=1,flag_top=1,not_in_creative_inventory=1,ignore = 1},
 	on_punch = function(pos, node, puncher, pointed_thing)
 		hud_events.new(puncher, {
 			quick = true,

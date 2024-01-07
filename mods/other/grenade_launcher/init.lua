@@ -3,7 +3,7 @@ local gren = table.copy(minetest.registered_craftitems["grenades:frag"].grenade)
 gren.description = "Grenade for Grenade Launcher"
 gren.image = "grenade_launcher_grenade.png"
 gren.explode_radius = 4
-gren.explode_damage = 16
+gren.explode_damage = 18
 gren.clock = 2.5
 gren.infinite = true
 
@@ -35,7 +35,7 @@ minetest.register_tool("grenade_launcher:launcher", {
 		end
 		minetest.sound_play('grenade_launcher_plop',{to_player = name, gain = 0.5})
 		itemstack:set_wear(WEAR_MAX - 6000)
-		ctf_modebase.update_wear.start_update(user:get_player_name(), "grenade_launcher:launcher", WEAR_MAX/6, true)
+		ctf_modebase.update_wear.start_update(user:get_player_name(), "grenade_launcher:launcher", WEAR_MAX/4, true)
 		return itemstack
 	end,
 	on_use = function(itemstack, user, pointed_thing)
