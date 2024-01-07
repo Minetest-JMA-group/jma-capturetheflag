@@ -16,7 +16,7 @@ ctf_modebase.register_mode("chaos", {
 	blacklisted_nodes = {"default:apple"},
 	team_chest_items = {
 		"default:cobble 80", "default:wood 80", "ctf_map:damage_cobble 20", "ctf_map:reinforced_cobble 20",
-		"default:torch 30", "ctf_teams:door_steel 2",
+		"default:torch 30", "ctf_teams:door_steel 2", "default:obsidian 35", "bucket:bucket_water"
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,
