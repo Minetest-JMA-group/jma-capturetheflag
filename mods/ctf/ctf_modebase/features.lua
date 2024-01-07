@@ -383,20 +383,24 @@ return {
 		-- Place treasures
 		local tr = ctf_modebase:get_current_mode().treasures or {}
 
-		--If the treasures list is empty, chests will not be placed
-		if not next(tr) then
-			return
+		local treasurefy_func
+		local no_treasures = true
+		-- If the treasures list is empty, chests will not be placed
+		if next(tr) then
+			local map_treasures = table.copy(tr)
+
+			for k, v in pairs(ctf_map.treasure.treasure_from_string(ctf_map.current_map.treasures)) do
+				map_treasures[k] = v
+			end
+			treasurefy_func = function(inv) ctf_map.treasure.treasurefy_node(inv, map_treasures) end
+			no_treasures = false
 		end
 
-		local map_treasures = table.copy(tr)
-
-		for k, v in pairs(ctf_map.treasure.treasure_from_string(ctf_map.current_map.treasures)) do
-			map_treasures[k] = v
-		end
 
 		ctf_map.prepare_map_nodes(
 			ctf_map.current_map,
-			function(inv) ctf_map.treasure.treasurefy_node(inv, map_treasures) end,
+			treasurefy_func,
+			no_treasures,
 			ctf_modebase:get_current_mode().team_chest_items or {},
 			ctf_modebase:get_current_mode().blacklisted_nodes or {}
 		)
@@ -743,6 +747,7 @@ return {
 			if is_pro(minetest.get_player_by_name(pname), rank) then
 				return true, true
 			elseif (rank.score or 0) >= 10 then
+				print("yes")
 				return true, deny_pro
 			end
 		end

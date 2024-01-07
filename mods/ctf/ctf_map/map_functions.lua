@@ -248,7 +248,7 @@ local function place_treasure_chests(mapmeta, pos1, pos2, data, param2_data, tre
 	end
 end
 
-function ctf_map.prepare_map_nodes(mapmeta, treasurefy_node_callback, team_chest_items, blacklisted_nodes)
+function ctf_map.prepare_map_nodes(mapmeta, treasurefy_node_callback, no_treasures, team_chest_items, blacklisted_nodes)
 	local vm = VoxelManip()
 	local pos1, pos2 = vm:read_from_map(mapmeta.pos1, mapmeta.pos2)
 
@@ -256,7 +256,9 @@ function ctf_map.prepare_map_nodes(mapmeta, treasurefy_node_callback, team_chest
 	local param2_data = vm:get_param2_data()
 
 	prepare_nodes(pos1, pos2, data, team_chest_items, blacklisted_nodes)
-	place_treasure_chests(mapmeta, pos1, pos2, data, param2_data, treasurefy_node_callback)
+	if not no_treasures then
+		place_treasure_chests(mapmeta, pos1, pos2, data, param2_data, treasurefy_node_callback)
+	end
 
 	vm:set_data(data)
 	vm:set_param2_data(param2_data)
