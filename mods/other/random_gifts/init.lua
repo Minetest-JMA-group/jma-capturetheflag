@@ -46,22 +46,22 @@ local function show_formspec(player)
 	local formspec =
 		"formspec_version[7]" ..
 		"size[10,5]" ..
-		"no_prepend[]" ..
-		"background[0,0;10,5;random_gifts_background.png]"..
+		-- "no_prepend[]" ..
+		-- "background[0,0;10,5;random_gifts_background.png]"..
 		"button_exit[9.3,0;0.7,0.7;;X]" ..
-		"style_type[image_button;bgcolor=red]" ..
-		"style_type[item_image_button;bgcolor=red]"
+		"style_type[image_button;bgcolor=black]" ..
+		"style_type[item_image_button;bgcolor=black]"
 
 	local box = open_boxes[player_name]
 
-	local total_width = 4 --amount of elements
+	local total_width = 8 --amount of elements
 	local element_width = 1 --width of each element
 	local spacing = 0.2 --space between elements
 	local total_elements_width = total_width * element_width + (total_width - 1) * spacing
 
 	local start_offset = (10 - total_elements_width) / 2 --X centering
 
-	for i = 1, 4 do
+	for i = 1, total_width do
 		local offset = start_offset + (i - 1) * (element_width + spacing)
 		local gift_index = box.gifts[i]
 		if gift_index then
@@ -79,7 +79,7 @@ local function show_formspec(player)
 			 	offset, gift.image, field_name, amount)
 			end
 		else
-			formspec = formspec .. "box[" .. offset .. ",1.7;1,1;red]"
+			formspec = formspec .. "box[" .. offset .. ",1.7;1,1;gray]"
 		end
 	end
 
@@ -117,7 +117,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	end
 
 	local box_pos = box.entity:get_pos()
-	if vector.distance(box_pos, player:get_pos()) > 4 then
+	if vector.distance(box_pos, player:get_pos()) > 5 then
 		open_boxes[player_name] = nil
 		minetest.close_formspec(player_name, fs_name)
 		minetest.chat_send_player(player_name, "You're too far away")
@@ -183,22 +183,11 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	show_formspec(player)
 end)
 
-local function get_box_texture()
-	local textures = {
-		"random_gifts_box.png",
-		"radom_gifts_green_box.png"
-	}
-	return {
-		textures[math.random(1, #textures)] .. "^(random_gifts_box_ribbon.png^[multiply:" ..
-		random_rgb_color() .. ")"
-	}
-end
-
 minetest.register_entity("random_gifts:gift", {
 	initial_properties = {
 		visual = "mesh",
-		textures = {"random_gifts_box.png"},
-		mesh = "random_gifts_giftbox.obj",
+		textures = {"radom_gifts_chest.png"},
+		mesh = "random_gifts_chest.obj",
 		physical = true,
 		makes_footstep_sound = false,
 		backface_culling = false,
@@ -207,7 +196,7 @@ minetest.register_entity("random_gifts:gift", {
 		pointable = true,
 		glow = 1,
 		visual_size = {x = 10, y = 10, z = 10},
-		collisionbox = {-0.45, -0.45, -0.45, 0.45, 0.45, 0.45},
+		collisionbox = {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5},
 	},
 
 	timer = 0,
@@ -248,13 +237,13 @@ minetest.register_entity("random_gifts:gift", {
 	end,
 
 	on_activate = function(self, staticdata, dtime_s)
-		self.object:set_properties({textures = get_box_texture()})
+		-- self.object:set_properties({textures = "radom_gifts_chest.png"})
 		local par = minetest.add_entity(self.object:get_pos(), "random_gifts:parachute")
 		par:set_attach(self.object)
 		self.parachute = par
 
 		self.selected_gifts = {}
-		for _ = 2, 4 do
+		for _ = 1, math.random(4, 8) do
 			local selected = choose_item_with_chance(list)
 			if selected then
 				table.insert(self.selected_gifts, selected)
@@ -283,6 +272,7 @@ minetest.register_entity("random_gifts:gift", {
 			self.object:remove()
 			return
 		end
+		self.object:set_properties({mesh = "random_gifts_chest_opened.obj"})
 	end,
 
 	-- on_punch = function(self, puncher)

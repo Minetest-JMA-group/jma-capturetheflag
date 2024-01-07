@@ -362,12 +362,6 @@ return {
 		teams_left = #team_list
 		many_teams = #team_list > 2
 
-		local map_treasures = table.copy(ctf_modebase:get_current_mode().treasures or {})
-
-		for k, v in pairs(ctf_map.treasure.treasure_from_string(ctf_map.current_map.treasures)) do
-			map_treasures[k] = v
-		end
-
 		if #delete_queue > 0 then
 			local p1, p2 = unpack(delete_queue)
 
@@ -384,6 +378,20 @@ return {
 			minetest.delete_area(p1, p2)
 
 			delete_queue = {}
+		end
+
+		-- Place treasures
+		local tr = ctf_modebase:get_current_mode().treasures or {}
+
+		--If the treasures list is empty, chests will not be placed
+		if not next(tr) then
+			return
+		end
+
+		local map_treasures = table.copy(tr)
+
+		for k, v in pairs(ctf_map.treasure.treasure_from_string(ctf_map.current_map.treasures)) do
+			map_treasures[k] = v
 		end
 
 		ctf_map.prepare_map_nodes(
