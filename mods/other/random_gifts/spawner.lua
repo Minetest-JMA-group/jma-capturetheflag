@@ -2,7 +2,7 @@ local timer
 local spawn_interval = 60
 
 local function spawn_giftbox()
-	local spawn_amount = math.max(10, math.min(#minetest.get_connected_players(), 30))
+	local spawn_amount = math.max(20, math.min(#minetest.get_connected_players(), 40))
 
 	local vm = VoxelManip()
 	local pos1, pos2 = vm:read_from_map(ctf_map.current_map.pos1, ctf_map.current_map.pos2)
