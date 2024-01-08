@@ -102,9 +102,13 @@ function ctf_modebase.mode_vote.start_vote()
 	voted = {}
 	voters_count = 0
 
-	local mode_index = new_mode and table.indexof(ctf_modebase.modelist, new_mode) or -1
-	if mode_index == -1 or mode_index+1 > #ctf_modebase.modelist then
+	if new_mode == nil then
 		new_mode = ctf_modebase.modelist[math.random(1, #ctf_modebase.modelist)]
+	end
+
+	local mode_index = table.indexof(ctf_modebase.modelist, new_mode) or -1
+	if mode_index == -1 or mode_index+1 > #ctf_modebase.modelist then
+		new_mode = ctf_modebase.modelist[1]
 	else
 		new_mode = ctf_modebase.modelist[mode_index + 1]
 	end
