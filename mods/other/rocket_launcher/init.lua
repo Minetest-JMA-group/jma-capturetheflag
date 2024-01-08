@@ -1,5 +1,4 @@
-local default_radius = tonumber(minetest.settings:get("rocket_launcher_radius")) or 3
-local ballistic = minetest.settings:get_bool("rocket_launcher_ballistic", true)
+local default_radius = 5
 
 minetest.register_craftitem("rocket_launcher:rocket", {
 	wield_scale = {x=1,y=1,z=1.5},
@@ -33,9 +32,7 @@ minetest.register_tool("rocket_launcher:launcher", {
 					ent.puncher_name = name
 					obj:set_velocity({x=dir.x * 30, y=dir.y * 30, z=dir.z * 30})
 					user:add_velocity({x=dir.x * -4, y=dir.y * -4, z=dir.z * -4})
-					if ballistic == true then
-						obj:set_acceleration({x=0,z=0,y=-1})
-					end
+					obj:set_acceleration({x=0,z=0,y=-1})
 					obj:set_rotation({x=-pitch, y=0, z=0})
 				end
 			end
