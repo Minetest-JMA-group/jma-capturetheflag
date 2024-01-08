@@ -31,7 +31,7 @@ ctf_modebase.register_mode("classic", {
 		["grenades:frag" ] = {rarity = 0.1, max_stacks = 1},
 		["grenades:smoke"] = {rarity = 0.2, max_stacks = 2},
 
-		["ctf_changes:bucket_lava"] = {rarity = 0.2, max_stacks = 1},
+		["ctf_changes:bucket_lava"] = {rarity = 0.1, max_stacks = 1},
 		["bucket:bucket_water"] = {rarity = 0.2, max_stacks = 1},
 		["bucket:bucket_empty"] = {rarity = 0.2, max_stacks = 1},
 
