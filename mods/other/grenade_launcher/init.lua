@@ -94,15 +94,14 @@ minetest.register_entity("grenade_launcher:grenade", {
 		if not pos then return end
 
 		if moveresult.collides then
-			if not self.alt_mode then
+			if not minetest.is_protected(pos,"") then
 				tnt.boom(pos, {
 					puncher_name = self.puncher_name,
 					radius = 3,
 				})
-			else
-				non_dest_explosion(def, self, pos, self.player_name)
 			end
 			self.object:remove()
+			return
 		end
 
 		local vel = self.object:get_velocity()

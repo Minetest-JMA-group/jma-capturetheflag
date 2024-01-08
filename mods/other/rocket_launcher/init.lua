@@ -1,14 +1,5 @@
 local default_radius = tonumber(minetest.settings:get("rocket_launcher_radius")) or 3
 local ballistic = minetest.settings:get_bool("rocket_launcher_ballistic", true)
-local safe_areas = minetest.settings:get_bool("rocket_launcher_safe_areas", true)
-
-local function can_boom(pos)
-	if safe_areas == false then
-		return true
-	else
-		return not minetest.is_protected(pos,"")
-	end
-end
 
 minetest.register_craftitem("rocket_launcher:rocket", {
 	wield_scale = {x=1,y=1,z=1.5},
@@ -106,7 +97,7 @@ rocket.on_step = function(self, dtime, moveresult)
 			local prop = obj and obj:get_properties()
 			if prop then
 				if obj:is_player() or prop.collide_with_objects == true then
-					if can_boom(pos) then
+					if not minetest.is_protected(pos,"") then
 						tnt.boom(pos, {
 							radius = self.radius,
 							puncher_name = self.puncher_name
@@ -119,7 +110,7 @@ rocket.on_step = function(self, dtime, moveresult)
 	end
 
 	if moveresult.collides then
-		if can_boom(pos) then
+		if not minetest.is_protected(pos,"") then
 			tnt.boom(pos, {
 				radius = self.radius,
 				-- ignore_indestructible = true,
