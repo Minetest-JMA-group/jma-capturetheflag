@@ -385,20 +385,6 @@ local function tnt_explode(pos, radius, ignore_protection, ignore_on_blast, igno
 	vm:update_map()
 	vm:update_liquids()
 
-	-- call check_single_for_falling for everything within 1.5x blast radius
-	for y = -radius * 1.5, radius * 1.5 do
-	for z = -radius * 1.5, radius * 1.5 do
-	for x = -radius * 1.5, radius * 1.5 do
-		local rad = {x = x, y = y, z = z}
-		local s = vector.add(pos, rad)
-		local r = vector.length(rad)
-		if r / radius < 1.4 then
-			minetest.check_single_for_falling(s)
-		end
-	end
-	end
-	end
-
 	for _, queued_data in pairs(on_blast_queue) do
 		local dist = math.max(1, vector.distance(queued_data.pos, pos))
 		local intensity = (radius * radius) / (dist * dist)
@@ -693,7 +679,7 @@ function tnt.register_tnt(def)
 		light_source = 5,
 		drop = "",
 		sounds = default.node_sound_wood_defaults(),
-		groups = {falling_node = 1, not_in_creative_inventory = 1},
+		groups = {not_in_creative_inventory = 1},
 		on_timer = function(pos, elapsed)
 			tnt.boom(pos, def)
 		end,
@@ -702,7 +688,6 @@ function tnt.register_tnt(def)
 		on_construct = function(pos)
 			minetest.sound_play("tnt_ignite", {pos = pos}, true)
 			minetest.get_node_timer(pos):start(4)
-			minetest.check_for_falling(pos)
 		end,
 	})
 end
