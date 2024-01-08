@@ -423,8 +423,8 @@ function tnt.boom(pos, def)
 		eject_drops(drops, pos, radius)
 	end
 	add_effects(pos, radius, drops)
-	minetest.log("action", "A TNT explosion occurred at " .. minetest.pos_to_string(pos) ..
-		" with radius " .. radius)
+	-- minetest.log("action", "A TNT explosion occurred at " .. minetest.pos_to_string(pos) ..
+	-- 	" with radius " .. radius)
 end
 
 minetest.register_node("tnt:boom", {
