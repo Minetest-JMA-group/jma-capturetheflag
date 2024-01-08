@@ -90,7 +90,7 @@ local function add_drop(drops, item)
 end
 
 local basic_flame_on_construct -- cached value
-local function destroy(drops, npos, cid, c_air, c_fire,
+local function destroy(npos, cid, c_air, c_fire,
 		on_blast_queue, on_construct_queue,
 		ignore_protection, ignore_on_blast, ignore_indestructible, owner)
 	if not ignore_protection and minetest.is_protected(npos, owner) then
@@ -118,10 +118,6 @@ local function destroy(drops, npos, cid, c_air, c_fire,
 		}
 		return c_fire
 	else
-		local node_drops = minetest.get_node_drops(def.name, "")
-		for _, item in pairs(node_drops) do
-			add_drop(drops, item)
-		end
 		return c_air
 	end
 end
@@ -370,7 +366,7 @@ local function tnt_explode(pos, radius, ignore_protection, ignore_on_blast, igno
 			local cid = data[vi]
 			local p = {x = pos.x + x, y = pos.y + y, z = pos.z + z}
 			if cid ~= c_air and cid ~= c_ignore then
-				data[vi] = destroy(drops, p, cid, c_air, c_fire,
+				data[vi] = destroy(p, cid, c_air, c_fire,
 					on_blast_queue, on_construct_queue,
 					ignore_protection, ignore_on_blast, ignore_indestructible, owner)
 			end
