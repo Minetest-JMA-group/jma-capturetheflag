@@ -157,14 +157,14 @@ end
 
 local function entity_physics(pos, radius, drops, puncher_name)
 	local objs = minetest.get_objects_inside_radius(pos, radius)
-	for _, obj in pairs(objs) do
+	for _, obj in ipairs(objs) do
 		local obj_pos = obj:get_pos()
 		local dist = math.max(1, vector.distance(pos, obj_pos))
 
 		local damage = (4 / dist) * radius
 		if obj:is_player() then
 			local dir = vector.normalize(vector.subtract(obj_pos, pos))
-			local moveoff = vector.multiply(dir, 2 / dist * radius)
+			local moveoff = vector.multiply(dir, dist * radius)
 			obj:add_velocity(moveoff)
 
 			if puncher_name then
@@ -180,37 +180,6 @@ local function entity_physics(pos, radius, drops, puncher_name)
 				end
 			else
 				obj:set_hp(obj:get_hp() - damage)
-			end
-		else
-			local luaobj = obj:get_luaentity()
-
-			-- object might have disappeared somehow
-			if luaobj then
-				local do_damage = true
-				local do_knockback = true
-				local entity_drops = {}
-				local objdef = minetest.registered_entities[luaobj.name]
-
-				if objdef and objdef.on_blast then
-					do_damage, do_knockback, entity_drops = objdef.on_blast(luaobj, damage)
-				end
-
-				if do_knockback then
-					local obj_vel = obj:get_velocity()
-					obj:set_velocity(calc_velocity(pos, obj_pos,
-							obj_vel, radius * 10))
-				end
-				if do_damage then
-					if not obj:get_armor_groups().immortal then
-						obj:punch(obj, 1.0, {
-							full_punch_interval = 1.0,
-							damage_groups = {fleshy = damage},
-						}, nil)
-					end
-				end
-				for _, item in pairs(entity_drops) do
-					add_drop(drops, item)
-				end
 			end
 		end
 	end
