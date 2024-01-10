@@ -12,8 +12,9 @@ minetest.register_tool("grenade_launcher:launcher", {
 		local pos = user:get_pos()
 		local dir = user:get_look_dir()
 		if pos and dir then
-			pos.y = pos.y + 1.3
-			local obj = minetest.add_entity(pos, "grenade_launcher:grenade")
+			pos.y = pos.y + 1.5
+			local ahead = vector.add(pos, vector.multiply(dir, 1))
+			local obj = minetest.add_entity(ahead, "grenade_launcher:grenade")
 			if obj then
 				local ent = obj:get_luaentity()
 				ent.puncher_name = name
@@ -39,7 +40,8 @@ minetest.register_entity("grenade_launcher:grenade", {
 		backface_culling = false,
 		static_save = false,
 		pointable = false,
-		collide_with_objects = false,
+		collide_with_objects = true,
+		collisionbox = {-0.1, -0.1, -0.1, 0.1, 0.1, 0.1}
 	},
 	timer = 0,
 	on_activate = function(self)
