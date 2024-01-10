@@ -1,21 +1,10 @@
-
-local gren = table.copy(minetest.registered_craftitems["grenades:frag"].grenade)
-gren.description = "Grenade for Grenade Launcher"
-gren.image = "grenade_launcher_grenade.png"
-gren.explode_radius = 4
-gren.explode_damage = 18
-gren.clock = 2.5
-gren.infinite = true
-
-grenades.register_grenade("grenade_launcher:specfrag", gren)
-
 local WEAR_MAX = 65535
 minetest.register_tool("grenade_launcher:launcher", {
 	description = "Grenade Launcher",
 	wield_scale = {x=2.0,y=2.0,z=2.5},
 	inventory_image = "grenade_launcher.png",
 	range = 0,
-	on_secondary_use = function(itemstack, user)
+	on_use = function(itemstack, user)
 		if itemstack:get_wear() > 0 then
 			return
 		end
@@ -36,15 +25,6 @@ minetest.register_tool("grenade_launcher:launcher", {
 		minetest.sound_play('grenade_launcher_plop',{to_player = name, gain = 0.5})
 		itemstack:set_wear(WEAR_MAX - 6000)
 		ctf_modebase.update_wear.start_update(user:get_player_name(), "grenade_launcher:launcher", WEAR_MAX/4, true)
-		return itemstack
-	end,
-	on_use = function(itemstack, user, pointed_thing)
-		if itemstack:get_wear() > 0 then
-			return
-		end
-		minetest.registered_craftitems["grenade_launcher:specfrag"].on_use(itemstack, user, pointed_thing)
-		itemstack:set_wear(WEAR_MAX - 6000)
-		ctf_modebase.update_wear.start_update(user:get_player_name(), "grenade_launcher:launcher", WEAR_MAX/1, true)
 		return itemstack
 	end
 })
