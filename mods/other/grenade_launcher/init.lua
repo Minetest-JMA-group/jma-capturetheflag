@@ -20,7 +20,7 @@ minetest.register_tool("grenade_launcher:launcher", {
 				ent.puncher_name = name
 				local vel = user:get_velocity()
 				local speed = math.sqrt(vel.x^2 + vel.y^2 + vel.z^2)
-				obj:add_velocity(vector.multiply(dir, speed + 15))
+				obj:add_velocity(vector.multiply(dir, speed + 17))
 			end
 		end
 		minetest.sound_play('grenade_launcher_plop',{to_player = name, gain = 0.5})
