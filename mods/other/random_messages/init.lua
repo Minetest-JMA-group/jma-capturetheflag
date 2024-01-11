@@ -67,6 +67,7 @@ function random_messages.read_messages()
 		"Strengthen your defense: build walls, set obstacles, and traps to secure your base.",
 		"Want to skip a match? Use /yes to vote during build time",
 		"Want to get a new skin? Send it to us at https://discord.gg/SSd9XcCqZk",
+		"If you're stuck in the game and can't exit, use the command /kickme",
 		-- connection, fps, minetest issues
 		"Make sure to use the latest version of Minetest (currently 5.8) for an optimal gaming experience.\nUsing outdated versions may lead to compatibility issues and lack of new features.",
 		"If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
