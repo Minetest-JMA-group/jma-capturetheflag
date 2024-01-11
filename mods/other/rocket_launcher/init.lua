@@ -1,7 +1,7 @@
 local default_radius = 5
 
 minetest.register_craftitem("rocket_launcher:rocket", {
-	wield_scale = {x=1,y=1,z=1.5},
+	wield_scale = {x=2,y=2,z=1.5},
 	stack_max = 16,
 	description = "Rocket",
 	inventory_image = "rocket.png",
@@ -25,7 +25,8 @@ minetest.register_tool("rocket_launcher:launcher", {
 			local pitch = user:get_look_vertical()
 			if pos and dir then
 				pos.y = pos.y + 1.5
-				local obj = minetest.add_entity(pos, "rocket_launcher:rocket")
+				local ahead = vector.add(pos, vector.multiply(dir, 1))
+				local obj = minetest.add_entity(ahead, "rocket_launcher:rocket")
 				if obj then
 					local ent = obj:get_luaentity()
 					ent.radius = default_radius
