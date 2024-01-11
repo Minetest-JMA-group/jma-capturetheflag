@@ -34,7 +34,7 @@ random_gifts.list = {
 	{itemname = "ctf_ranged:shotgun_loaded", chance = 8, amount = 1},
 
 	{itemname = "rocket_launcher:launcher", chance = 30, amount = 1},
-	{itemname = "rocket_launcher:rocket", chance = 30, amount = 3},
+	{itemname = "rocket_launcher:rocket", chance = 43, amount = 3},
 
 	{itemname = "ctf_ranged:rifle_loaded", chance = 10, amount = 1},
 
