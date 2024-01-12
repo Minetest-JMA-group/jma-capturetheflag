@@ -7,7 +7,7 @@ fire = {}
 local S = minetest.get_translator("fire")
 
 -- 'Enable fire' setting
-local fire_enabled = minetest.settings:get_bool("enable_fire")
+local fire_enabled = true
 if fire_enabled == nil then
 	-- enable_fire setting not specified, check for disable_fire
 	local fire_disabled = minetest.settings:get_bool("disable_fire")
