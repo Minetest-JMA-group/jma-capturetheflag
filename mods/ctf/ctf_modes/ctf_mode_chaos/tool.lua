@@ -52,12 +52,12 @@ end
 
 grenades.register_grenade("ctf_mode_chaos:small_frag", fragdef_small)
 
-local tool = {holed = {}}
+local tool = {}
 local sounds = {}
 
-local KNOCKBACK_AMOUNT = 40
-local KNOCKBACK_AMOUNT_WITH_FLAG = 25
-local KNOCKBACK_RADIUS = 3.2
+local KNOCKBACK_AMOUNT = 35
+local KNOCKBACK_AMOUNT_WITH_FLAG = KNOCKBACK_AMOUNT / 2
+local KNOCKBACK_RADIUS = 3.5
 grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 	description = "Knockback Grenade, players within a very small area take extreme knockback",
 	image = "ctf_mode_chaos_knockback_grenade.png",
@@ -126,8 +126,8 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 						maxacc = {x = 0, y = -9, z = 0},
 						minexptime = 1,
 						maxexptime = 2.8,
-						minsize = 4,
-						maxsize = 5,
+						minsize = 3,
+						maxsize = 4,
 						collisiondetection = false,
 						collision_removal = false,
 						vertical = false,
@@ -143,7 +143,8 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 
 					local dir = vector.direction(pos, headpos)
 					if dir.y < 0 then dir.y = 0 end
-					v:add_velocity(vector.multiply(dir, kb))
+					local vel = {x = dir.x * kb, y = dir.y * (kb / 1.8), z = dir.z * kb }
+					v:add_velocity(vel)
 				end
 			end
 		end
@@ -185,14 +186,9 @@ for idx, info in ipairs(grenade_list) do
 		inventory_overlay = "ctf_modebase_special_item.png",
 		on_use = function(itemstack, user, pointed_thing)
 			if itemstack:get_wear() > 1 then return end
-			local uname = user:get_player_name()
 
-			if not tool.holed[uname] then
-				if itemstack:get_wear() <= 1 then
-					grenades.throw_grenade(info.name, 17, user)
-				end
-			else
-				return
+			if itemstack:get_wear() <= 1 then
+				grenades.throw_grenade(info.name, 17, user)
 			end
 
 			itemstack:set_wear(WEAR_MAX - 6000)
