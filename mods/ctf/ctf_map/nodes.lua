@@ -20,7 +20,7 @@ minetest.register_node("ctf_map:ignore", {
 minetest.register_node("ctf_map:ind_glass", {
 	description = "Indestructible Barrier Glass",
 	drawtype = "glasslike_framed",
-	tiles = {"default_glass.png", "default_glass_detail.png"},
+	tiles = {"ctf_map_trans.png"},
 	inventory_image = minetest.inventorycube("default_glass.png"),
 	paramtype = "light",
 	sunlight_propagates = true,
