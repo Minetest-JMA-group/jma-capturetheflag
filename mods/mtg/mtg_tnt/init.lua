@@ -158,28 +158,37 @@ end
 local function entity_physics(pos, radius, drops, puncher_name)
 	local objs = minetest.get_objects_inside_radius(pos, radius)
 	for _, obj in ipairs(objs) do
-		local obj_pos = obj:get_pos()
-		local dist = math.max(1, vector.distance(pos, obj_pos))
-
-		local damage = (4 / dist) * radius
 		if obj:is_player() then
-			local dir = vector.normalize(vector.subtract(obj_pos, pos))
-			local moveoff = vector.multiply(dir, dist * radius)
-			obj:add_velocity(moveoff)
+			local obj_pos = obj:get_pos()
+			local dist = math.max(1, vector.distance(pos, obj_pos))
+			local damage = (4 / dist) * radius
 
+			local knockback = true
 			if puncher_name then
 				local puncher = minetest.get_player_by_name(puncher_name)
 				if puncher then
-					obj:punch(puncher, 1, {
-						punch_interval = 1,
-						damage_groups = {
-							fleshy = damage,
-							explosion = 1,
-						}
-					}, nil)
+					local puncher_team = ctf_teams.get(puncher)
+					local obj_team = ctf_teams.get(obj)
+					if puncher_team and obj_team and puncher_team == obj_team then
+						knockback = false
+					else
+						obj:punch(puncher, 1, {
+							punch_interval = 1,
+							damage_groups = {
+								fleshy = damage,
+								explosion = 1,
+							}
+						}, nil)
+					end
 				end
 			else
 				obj:set_hp(obj:get_hp() - damage)
+			end
+
+			if knockback then
+				local dir = vector.normalize(vector.subtract(obj_pos, pos))
+				local moveoff = vector.multiply(dir, dist * radius)
+				obj:add_velocity(moveoff)
 			end
 		end
 	end
