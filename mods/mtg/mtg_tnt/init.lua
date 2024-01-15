@@ -207,19 +207,20 @@ local function add_effects(pos, radius, drops)
 		glow = 15,
 	})
 	minetest.add_particlespawner({
-		amount = 64,
-		time = 0.5,
+		amount = 16,
+		time = 0.05,
 		minpos = vector.subtract(pos, radius / 2),
 		maxpos = vector.add(pos, radius / 2),
 		minvel = {x = -10, y = -10, z = -10},
 		maxvel = {x = 10, y = 10, z = 10},
 		minacc = vector.new(),
 		maxacc = vector.new(),
-		minexptime = 1,
-		maxexptime = 2.5,
+		minexptime = 0.1,
+		maxexptime = 1,
 		minsize = radius * 3,
 		maxsize = radius * 5,
 		texture = "tnt_smoke.png",
+		collisiondetection = true,
 	})
 
 	-- we just dropped some items. Look at the items entities and pick
@@ -242,8 +243,8 @@ local function add_effects(pos, radius, drops)
 	end
 
 	minetest.add_particlespawner({
-		amount = 64,
-		time = 0.1,
+		amount = 32,
+		time = 0.2,
 		minpos = vector.subtract(pos, radius / 2),
 		maxpos = vector.add(pos, radius / 2),
 		minvel = {x = -3, y = 0, z = -3},
