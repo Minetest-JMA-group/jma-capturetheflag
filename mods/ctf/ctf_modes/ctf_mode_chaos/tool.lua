@@ -143,7 +143,7 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 
 					local dir = vector.direction(pos, headpos)
 					if dir.y < 0 then dir.y = 0 end
-					local vel = {x = dir.x * kb, y = dir.y * (kb / 1.8), z = dir.z * kb }
+					local vel = {x = dir.x * kb, y = dir.y * (kb / 1.7), z = dir.z * kb }
 					v:add_velocity(vel)
 				end
 			end
