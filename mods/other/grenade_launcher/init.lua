@@ -30,6 +30,29 @@ minetest.register_tool("grenade_launcher:launcher", {
 	end
 })
 
+local function can_explode(pos, pname, radius)
+	if minetest.is_protected(pos, "") then
+		minetest.chat_send_player(pname, "You can't explode grenade on spawn!")
+		return false
+	end
+
+	local pteam = ctf_teams.get(pname)
+
+	if pteam then
+		for flagteam, team in pairs(ctf_map.current_map.teams) do
+			if not ctf_modebase.flag_captured[flagteam] and team.flag_pos then
+				local distance_from_flag = vector.distance(pos, team.flag_pos)
+				if distance_from_flag <= 5 + radius then
+					minetest.chat_send_player(pname, "You can't explode grenade so close to a flag!")
+					return false
+				end
+			end
+		end
+	end
+	return true
+end
+
+local radius = 3
 minetest.register_entity("grenade_launcher:grenade", {
 	initial_properties = {
 		visual = "sprite",
@@ -76,10 +99,10 @@ minetest.register_entity("grenade_launcher:grenade", {
 		if not pos then return end
 
 		if moveresult.collides then
-			if not minetest.is_protected(pos,"") then
+			if can_explode(pos, self.puncher_name, radius) then
 				tnt.boom(pos, {
 					puncher_name = self.puncher_name,
-					radius = 3,
+					radius = radius,
 				})
 			end
 			self.object:remove()

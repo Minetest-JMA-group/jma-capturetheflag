@@ -1,5 +1,6 @@
 local default_radius = 5
 
+
 minetest.register_craftitem("rocket_launcher:rocket", {
 	wield_scale = {x=2,y=2,z=1.5},
 	stack_max = 16,
@@ -9,7 +10,7 @@ minetest.register_craftitem("rocket_launcher:rocket", {
 
 local WEAR_MAX = 65535
 minetest.register_tool("rocket_launcher:launcher", {
-	wield_scale = {x=1,y=1,z=2},
+	wield_scale = {x=2,y=2,z=2},
 	description = "Rocket Launcher\nUses rockets",
 	inventory_image = "rocket_launcher.png",
 	on_use = function(itemstack, user)
@@ -62,6 +63,28 @@ local rocket = {
 	timer = 0,
 }
 
+local function can_explode(pos, pname, radius)
+	if minetest.is_protected(pos, "") then
+		minetest.chat_send_player(pname, "You can't explode rocket on spawn")
+		return false
+	end
+
+	local pteam = ctf_teams.get(pname)
+
+	if pteam then
+		for flagteam, team in pairs(ctf_map.current_map.teams) do
+			if not ctf_modebase.flag_captured[flagteam] and team.flag_pos then
+				local distance_from_flag = vector.distance(pos, team.flag_pos)
+				if distance_from_flag <= 5 + radius then
+					minetest.chat_send_player(pname, "You can't explode rocket so close to a flag!")
+					return false
+				end
+			end
+		end
+	end
+	return true
+end
+
 rocket.on_step = function(self, dtime, moveresult)
 	self.timer = self.timer + dtime
 	local pos = self.object:get_pos()
@@ -86,6 +109,7 @@ rocket.on_step = function(self, dtime, moveresult)
 			texture = "tnt_smoke.png",
 			glow = 15})
 	end)
+
 	if self.timer >= 60 then
 		self.object:remove()
 	end
@@ -95,7 +119,7 @@ rocket.on_step = function(self, dtime, moveresult)
 			local prop = obj and obj:get_properties()
 			if prop then
 				if obj:is_player() or prop.collide_with_objects == true then
-					if not minetest.is_protected(pos,"") then
+					if can_explode(pos, self.puncher_name, self.radius) then
 						tnt.boom(pos, {
 							radius = self.radius,
 							puncher_name = self.puncher_name
@@ -108,7 +132,7 @@ rocket.on_step = function(self, dtime, moveresult)
 	end
 
 	if moveresult.collides then
-		if not minetest.is_protected(pos,"") then
+		if can_explode(pos, self.puncher_name, self.radius)  then
 			tnt.boom(pos, {
 				radius = self.radius,
 				-- ignore_indestructible = true,
