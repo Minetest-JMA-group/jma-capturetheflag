@@ -75,7 +75,7 @@ local function can_explode(pos, pname, radius)
 		for flagteam, team in pairs(ctf_map.current_map.teams) do
 			if not ctf_modebase.flag_captured[flagteam] and team.flag_pos then
 				local distance_from_flag = vector.distance(pos, team.flag_pos)
-				if distance_from_flag <= 5 + radius then
+				if distance_from_flag <= 4 + radius then
 					minetest.chat_send_player(pname, "You can't explode rocket so close to a flag!")
 					return false
 				end
@@ -102,7 +102,7 @@ rocket.on_step = function(self, dtime, moveresult)
 		minetest.add_particle({
 			pos = pos,
 			velocity = {x=math.random(-1,1),y=math.random(-1,1),z=math.random(-1,1)},
-			expirationtime = 0.7,
+			expirationtime = 1.9,
 			size = 6,
 			collisiondetection = false,
 			vertical = false,

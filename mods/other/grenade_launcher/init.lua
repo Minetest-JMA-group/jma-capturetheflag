@@ -20,7 +20,7 @@ minetest.register_tool("grenade_launcher:launcher", {
 				ent.puncher_name = name
 				local vel = user:get_velocity()
 				local speed = math.sqrt(vel.x^2 + vel.y^2 + vel.z^2)
-				obj:add_velocity(vector.multiply(dir, speed + 17))
+				obj:add_velocity(vector.multiply(dir, speed + 18))
 			end
 		end
 		minetest.sound_play('grenade_launcher_plop',{to_player = name, gain = 0.5})
@@ -42,7 +42,7 @@ local function can_explode(pos, pname, radius)
 		for flagteam, team in pairs(ctf_map.current_map.teams) do
 			if not ctf_modebase.flag_captured[flagteam] and team.flag_pos then
 				local distance_from_flag = vector.distance(pos, team.flag_pos)
-				if distance_from_flag <= 5 + radius then
+				if distance_from_flag <= 4 + radius then
 					minetest.chat_send_player(pname, "You can't explode grenade so close to a flag!")
 					return false
 				end
@@ -64,7 +64,7 @@ minetest.register_entity("grenade_launcher:grenade", {
 		static_save = false,
 		pointable = false,
 		collide_with_objects = true,
-		collisionbox = {-0.1, -0.1, -0.1, 0.1, 0.1, 0.1}
+		collisionbox = {-0.2, -0.2, -0.2, 0.2, 0.2, 0.2}
 	},
 	timer = 0,
 	on_activate = function(self)
