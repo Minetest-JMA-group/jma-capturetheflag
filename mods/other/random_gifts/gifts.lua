@@ -30,7 +30,8 @@ random_gifts.list = {
 	{itemname = "default:obsidian", chance = 10, amount = 25},
 
 	--ranged
-	{itemname = "ctf_ranged:sniper_magnum_loaded", chance = 4, amount = 1},
+	-- {itemname = "ctf_ranged:sniper_magnum_loaded", chance = 4, amount = 1},
+	{itemname = "ctf_ranged:sniper_loaded", chance = 4, amount = 1},
 	{itemname = "ctf_ranged:shotgun_loaded", chance = 8, amount = 1},
 
 	{itemname = "rocket_launcher:launcher", chance = 30, amount = 1},
@@ -39,8 +40,8 @@ random_gifts.list = {
 	{itemname = "ctf_ranged:rifle_loaded", chance = 10, amount = 1},
 
 	--grenades
-	{itemname = "grenades:frag_sticky", chance = 7, amount = 5, oneshot = true},
-	{itemname = "grenades:frag", chance = 10, amount = 10, oneshot = true},
+	{itemname = "grenades:frag_sticky", chance = 3, amount = 5, oneshot = true},
+	{itemname = "grenades:frag", chance = 3, amount = 10, oneshot = true},
 
 	--diamond tools
 	{itemname = "ctf_melee:sword_diamond", chance = 10, amount = 1},
@@ -116,15 +117,15 @@ random_gifts.list = {
 	func = function(_, obj)
         boom(obj)
 	end},
-    {chance = 30, image = "random_gifts_troll.png", oneshot = true,
+    {chance = 30, image = "random_gifts_push.png", oneshot = true,
 	func = function(player)
-        player:add_velocity(vector.new(0, 35, 0)) --launch to the sky!
+        player:add_velocity(vector.new(math.random(0, 40), math.random(0, 20), math.random(0, 40))) --launch to the sky!
 	end},
 	{chance = 10, image = "random_gifts_troll.png", oneshot = true,
 	func = function(_, obj)
         local pos = obj:get_pos()
 		if pos then
-			local pos = vector.offset(pos, 0, 1, 0)
+			local pos = vector.offset(pos, 0, 2, 0)
 			if not minetest.is_protected(pos, "") and  minetest.get_node(pos).name == "air"  then
 				minetest.add_node(pos, {name = "ctf_changes:lava_source"})
 			end
