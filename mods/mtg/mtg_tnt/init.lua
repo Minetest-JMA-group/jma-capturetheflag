@@ -169,7 +169,7 @@ local function entity_physics(pos, radius, drops, puncher_name)
 				if puncher then
 					local puncher_team = ctf_teams.get(puncher)
 					local obj_team = ctf_teams.get(obj)
-					if puncher_team and obj_team and puncher_team == obj_team then
+					if puncher ~= obj and puncher_team and obj_team and puncher_team == obj_team then
 						knockback = false
 					else
 						obj:punch(puncher, 1, {
