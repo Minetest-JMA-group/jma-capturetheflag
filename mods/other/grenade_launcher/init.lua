@@ -3,7 +3,7 @@ minetest.register_tool("grenade_launcher:launcher", {
 	description = "Grenade Launcher",
 	wield_scale = {x=2.0,y=2.0,z=2.5},
 	inventory_image = "grenade_launcher.png",
-	range = 0,
+	range = 4,
 	on_use = function(itemstack, user)
 		if itemstack:get_wear() > 0 then
 			return
