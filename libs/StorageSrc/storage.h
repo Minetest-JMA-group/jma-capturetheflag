@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-2.1-only
+// Copyright (c) 2023 Marko Petrović
 #ifndef STORAGE_H
 #define STORAGE_H
 #include <lua-5.1/lua.hpp>
