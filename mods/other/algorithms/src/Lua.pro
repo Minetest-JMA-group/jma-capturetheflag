@@ -21,4 +21,5 @@ unix {
 }
 !isEmpty(target.path): INSTALLS += target
 
-unix|win32: LIBS += -llua
+
+unix|win32: LIBS += -lluajit-5.1
