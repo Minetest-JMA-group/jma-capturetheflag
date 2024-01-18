@@ -11,9 +11,12 @@ QMAKE_CXXFLAGS_RELEASE += -O2
 
 SOURCES += \
     debug.cpp \
+    minetest.cpp \
+    qlog.cpp \
     storage.cpp
 
 HEADERS += \
+    minetest.h \
     storage.h
 
 # Default rules for deployment.

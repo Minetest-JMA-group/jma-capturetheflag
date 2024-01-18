@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 // Copyright (c) 2023 Marko Petrović
-#include "storage.h"
-#include <QTextStream>
+#include "minetest.h"
 
 void printLuaStack(lua_State* L) {
     int top = lua_gettop(L);
