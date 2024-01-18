@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 // Copyright (c) 2023 Marko Petrović
 #include "storage.h"
-#define qLog QLog(this)
+#define qLog QTextStream(stderr)
 
 lua_Integer storage::get_int(const QString &key)
 {
@@ -62,7 +62,7 @@ err:
     return "";
 }
 
-bool storage::set_int(const QString &key, lua_Integer a)
+bool storage::set_int(const QString &key, const lua_Integer a)
 {
     SAVE_STACK
 

@@ -2,10 +2,11 @@
 // Copyright (c) 2023 Marko Petrović
 #include "minetest.h"
 
-minetest::minetest(lua_State *L) : L(L) {}
+lua_state_class::lua_state_class(lua_State *L) : L(L) {}
+lua_state_class::lua_state_class() {}
 minetest::minetest() {}
 
-void minetest::set_state(lua_State *L)
+void lua_state_class::set_state(lua_State *L)
 {
     if (L != nullptr)
         this->L = L;
@@ -76,4 +77,72 @@ void minetest::chat_send_player(const QString &playername, const QString &msg)
     lua_call(L, 2, 0);
 
     RESTORE_STACK
+}
+
+int minetest::lua_callback_wrapper_comm(lua_State *L)
+{
+    bool handled = false;
+    QString name = lua_tostring(L, 1);
+    QString command = lua_tostring(L, 2);
+    QString params = lua_tostring(L, 3);
+    for (const auto &handler : registered_on_chatcommand) {
+        if (handler(name, command, params)) {
+            handled = true;
+            break;
+        }
+    }
+    lua_pushboolean(L, handled);
+    return 1;
+}
+
+int minetest::lua_callback_wrapper_msg(lua_State *L)
+{
+    bool handled = false;
+    QString name = lua_tostring(L, 1);
+    QString message = lua_tostring(L, 2);
+    for (const auto &handler : registered_on_chatmsg) {
+        if (handler(name, message)) {
+            handled = true;
+            break;
+        }
+    }
+    lua_pushboolean(L, handled);
+    return 1;
+}
+
+bool minetest::first_chatcomm_handler = true;
+bool minetest::first_chatmsg_handler = true;
+
+void minetest::register_on_chat_message(bool (* funcPtr)(QString&, QString&))
+{
+    if (first_chatmsg_handler) {
+        SAVE_STACK
+
+        lua_getglobal(L, "minetest");
+        lua_getfield(L, -1, "register_on_chat_message");
+
+        lua_pushcfunction(L, this->lua_callback_wrapper_msg);
+        lua_call(L, 1, 0);
+
+        RESTORE_STACK
+        first_chatmsg_handler = false;
+    }
+    registered_on_chatmsg.push_front(funcPtr);
+}
+
+void minetest::register_on_chatcommand(bool (* funcPtr)(QString&, QString&, QString&))
+{
+    if (first_chatcomm_handler) {
+        SAVE_STACK
+
+        lua_getglobal(L, "minetest");
+        lua_getfield(L, -1, "register_on_chatcommand");
+
+        lua_pushcfunction(L, this->lua_callback_wrapper_comm);
+        lua_call(L, 1, 0);
+
+        RESTORE_STACK
+        first_chatcomm_handler = false;
+    }
+    registered_on_chatcommand.push_front(funcPtr);
 }

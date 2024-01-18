@@ -4,13 +4,13 @@
 #define STORAGE_H
 #include "minetest.h"
 
-// Assume that Lua table storage is on the top of the stack
-class storage : public minetest {
+// Assume that Lua StorageRef object is on the top of the stack
+class storage : public lua_state_class {
 public:
-    using minetest::minetest;
+    using lua_state_class::lua_state_class;
     lua_Integer get_int(const QString &key);
     QString get_string(const QString &key);
-    bool set_int(const QString &key, lua_Integer a);
+    bool set_int(const QString &key, const lua_Integer a);
     bool set_string(const QString &key, const QString &str);
 };
 
