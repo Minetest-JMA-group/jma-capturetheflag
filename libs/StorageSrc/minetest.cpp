@@ -146,3 +146,47 @@ void minetest::register_on_chatcommand(bool (* funcPtr)(QString&, QString&, QStr
     }
     registered_on_chatcommand.push_front(funcPtr);
 }
+
+void pushQStringList(lua_State *L, const QStringList &privlist) {
+    lua_newtable(L);
+    for (const QString &priv : privlist) {
+        lua_pushboolean(L, true);
+        lua_setfield(L, -2, priv.toUtf8().data());
+    }
+}
+
+void minetest::create_command_deftable(lua_State *L, const struct cmd_def &def)
+{
+    lua_newtable(L);
+
+    lua_pushstring(L, def.description.toUtf8().data());
+    lua_setfield(L, -2, "description");
+
+    lua_pushstring(L, def.params.toUtf8().data());
+    lua_setfield(L, -2, "params");
+
+    pushQStringList(L, def.privs);
+    lua_setfield(L, -2, "privs");
+
+    lua_pushcfunction(L, def.func);
+    lua_setfield(L, -2, "func");
+}
+
+void minetest::dont_call_this_use_macro_reg_chatcommand(const QString &comm, cmd_def &def)
+{
+    continue_registration_dont_use_or_change.lock();
+    internal_thread_no_modify = std::thread([&]() {
+        continue_registration_dont_use_or_change.lock();
+        SAVE_STACK
+
+        lua_getglobal(L, "minetest");
+        lua_getfield(L, -1, "register_chatcommand");
+        lua_pushstring(L, comm.toUtf8().data());
+        def.func = *registered_chatcommands_no_modify.front().target<int(*)(lua_State *)>();
+        create_command_deftable(L, def);
+        lua_call(L, 2, 0);
+
+        RESTORE_STACK
+        continue_registration_dont_use_or_change.unlock();
+    });
+}
