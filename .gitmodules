@@ -18,3 +18,6 @@
 [submodule "mods/extras"]
 	path = mods/extras
 	url = https://github.com/Nanowolf4/jma-extras.git
+[submodule "libs/Qt5.12.8-Sources"]
+	path = libs/Qt5.12.8-Sources
+	url = https://github.com/markopetrovi/Qt5.12.8-Sources.git
