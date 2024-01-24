@@ -113,6 +113,9 @@ int minetest::lua_callback_wrapper_msg(lua_State *L)
 bool minetest::first_chatcomm_handler = true;
 bool minetest::first_chatmsg_handler = true;
 
+std::forward_list<chatmsg_sig> minetest::registered_on_chatmsg = std::forward_list<chatmsg_sig>();
+std::forward_list<chatcommand_sig> minetest::registered_on_chatcommand = std::forward_list<chatcommand_sig>();
+
 void minetest::register_on_chat_message(bool (* funcPtr)(QString&, QString&))
 {
     if (first_chatmsg_handler) {
@@ -172,21 +175,15 @@ void minetest::create_command_deftable(lua_State *L, const struct cmd_def &def)
     lua_setfield(L, -2, "func");
 }
 
-void minetest::dont_call_this_use_macro_reg_chatcommand(const QString &comm, cmd_def &def)
+void minetest::dont_call_this_use_macro_reg_chatcommand(const QString &comm, const struct cmd_def &def)
 {
-    continue_registration_dont_use_or_change.lock();
-    internal_thread_no_modify = std::thread([&]() {
-        continue_registration_dont_use_or_change.lock();
-        SAVE_STACK
+    SAVE_STACK
 
-        lua_getglobal(L, "minetest");
-        lua_getfield(L, -1, "register_chatcommand");
-        lua_pushstring(L, comm.toUtf8().data());
-        def.func = *registered_chatcommands_no_modify.front().target<int(*)(lua_State *)>();
-        create_command_deftable(L, def);
-        lua_call(L, 2, 0);
+    lua_getglobal(L, "minetest");
+    lua_getfield(L, -1, "register_chatcommand");
+    lua_pushstring(L, comm.toUtf8().data());
+    create_command_deftable(L, def);
+    lua_call(L, 2, 0);
 
-        RESTORE_STACK
-        continue_registration_dont_use_or_change.unlock();
-    });
+    RESTORE_STACK
 }

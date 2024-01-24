@@ -8,8 +8,6 @@
 #include <QTextStream>
 #include <forward_list>
 #include <functional>
-#include <thread>
-#include <mutex>
 #define INT_ERROR std::numeric_limits<lua_Integer>::min()
 
 #define SAVE_STACK int cur_top, old_top = lua_gettop(L);
@@ -19,7 +17,6 @@
 
 #define chatcommand_sig bool (*)(QString&, QString&, QString&)
 #define chatmsg_sig bool (*)(QString&, QString&)
-#define regcmd_sig std::function<int(lua_State*)>
 
 void printLuaStack(lua_State* L);
 void pushQStringList(lua_State *L, const QStringList &privlist);
@@ -43,9 +40,9 @@ struct cmd_ret {
 };
 
 struct cmd_def {
-    QStringList& privs;
-    QString& description;
-    QString& params;
+    const QStringList& privs;
+    const QString& description;
+    const QString& params;
     int (*func)(lua_State* L);
 };
 
@@ -55,13 +52,10 @@ private:
     void *StorageRef = nullptr;
     static bool first_chatmsg_handler;
     static bool first_chatcomm_handler;
-    void create_command_deftable(lua_State *L, const struct cmd_def &def);
+    static void create_command_deftable(lua_State *L, const struct cmd_def &def);
     static int lua_callback_wrapper_msg(lua_State *L);
     static int lua_callback_wrapper_comm(lua_State *L);
 public:
-    std::mutex continue_registration_dont_use_or_change;
-    std::forward_list<regcmd_sig> registered_chatcommands_no_modify;
-    std::thread internal_thread_no_modify;
     static std::forward_list<chatmsg_sig> registered_on_chatmsg;
     static std::forward_list<chatcommand_sig> registered_on_chatcommand;
     using lua_state_class::lua_state_class;
@@ -73,24 +67,18 @@ public:
 
     void register_on_chat_message(chatmsg_sig);
     void register_on_chatcommand(chatcommand_sig);
-    void dont_call_this_use_macro_reg_chatcommand(const QString &comm, struct cmd_def &def);
+    void dont_call_this_use_macro_reg_chatcommand(const QString &comm, const struct cmd_def &def);
 };
 
-#define register_chatcommand(comm, privs, description, params, func);   \
-dont_call_this_use_macro_reg_chatcommand(comm, {privs, description, params, nullptr});   \
-minetest::registered_chatcommands_no_modify.push_front([](lua_State *L) {    \
+#define register_chatcommand(comm, privs, description, params, func)   \
+dont_call_this_use_macro_reg_chatcommand(comm, cmd_def{privs, description, params, [](lua_State *L) -> int {    \
     QString name = lua_tostring(L, 1);  \
-    QString params = lua_tostring(L, 2);    \
-    struct cmd_ret ret = func(name, params);  \
+    QString cmdparams = lua_tostring(L, 2); \
+    struct cmd_ret ret = func(name, cmdparams)   \
     lua_pushboolean(L, ret.success);    \
-    if (!ret.ret_msg.isEmpty()) {   \
-        lua_pushstring(L, ret.ret_msg.toUtf8().data()); \
-        return 2;   \
-    }   \
-    return 1;   \
-}); \
-minetest::continue_registration_dont_use_or_change.unlock();   \
-minetest::internal_thread_no_modify.join();
+    lua_pushstring(L, ret.ret_msg.toUtf8().data()); \
+    return 2;   \
+}}); \
 
 
 /* Usually one would do something like
