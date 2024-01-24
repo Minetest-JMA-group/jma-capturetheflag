@@ -74,12 +74,11 @@ public:
 dont_call_this_use_macro_reg_chatcommand(comm, cmd_def{privs, description, params, [](lua_State *L) -> int {    \
     QString name = lua_tostring(L, 1);  \
     QString cmdparams = lua_tostring(L, 2); \
-    struct cmd_ret ret = func(name, cmdparams)   \
+    struct cmd_ret ret = func(name, cmdparams);   \
     lua_pushboolean(L, ret.success);    \
     lua_pushstring(L, ret.ret_msg.toUtf8().data()); \
     return 2;   \
-}}); \
-
+}})
 
 /* Usually one would do something like
  * #define qLog QLog(&m)
