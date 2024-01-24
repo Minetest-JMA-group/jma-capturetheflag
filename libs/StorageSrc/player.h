@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: LGPL-2.1-only
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2023 Marko Petrović
 #ifndef PLAYER_H
 #define PLAYER_H
