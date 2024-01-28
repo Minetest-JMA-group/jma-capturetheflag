@@ -80,34 +80,26 @@ void minetest::get_mod_storage()
     if (is_top_modstorage())
         return;
 
-    constexpr auto setMetaTable_noGC = [](lua_State *L) {
-        // Set nil for the __gc field in the metatable
-        luaL_getmetatable(L, "StorageRef");
-        lua_pushnil(L);
-        lua_setfield(L, -2, "__gc");
-        lua_setmetatable(L, -2);
-    };
-
     if (StorageRef == nullptr) {
         lua_getglobal(L, "minetest");
         lua_getfield(L, -1, "get_mod_storage");
         lua_remove(L, -2);
         lua_call(L, 0, 1);
         void *retrievedPointer = lua_touserdata(L, -1);
-
-        SAVE_STACK
         StorageRef = *(void **)retrievedPointer;
-        luaL_getmetatable(L, "StorageRef");
-        lua_getfield(L, -1, "__gc");
-        Storage_GC = lua_tocfunction(L, -1);
-        RESTORE_STACK
 
-        setMetaTable_noGC(L);
-        printLuaStack(L);
+        luaL_newmetatable(L, "StorageRef_nogc");
+        luaL_getmetatable(L, "StorageRef");
+        copyLuaTable(L, -1, -2);
+        lua_pushnil(L);
+        lua_setfield(L, -3, "__gc");
+        lua_pop(L, 1);  // Pop the original StorageRef metatable
+        lua_setmetatable(L, -2);    // Set new StorageRef_nogc to modstorage userobject
     }
     else {
         *(void **)(lua_newuserdata(L, sizeof(void *))) = StorageRef;
-        setMetaTable_noGC(L);
+        luaL_getmetatable(L, "StorageRef_nogc");
+        lua_setmetatable(L, -2);
     }
 }
 
@@ -124,8 +116,6 @@ minetest::~minetest()
         SAVE_STACK
         *(void **)(lua_newuserdata(L, sizeof(void *))) = StorageRef;
         luaL_getmetatable(L, "StorageRef");
-        lua_pushcfunction(L, Storage_GC);
-        lua_setfield(L, -2, "__gc");
         lua_setmetatable(L, -2);
         RESTORE_STACK
     }

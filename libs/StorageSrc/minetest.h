@@ -21,6 +21,7 @@
 void printLuaStack(lua_State* L);
 void printLuaTable(lua_State* L, int index);
 void printLuaType(lua_State *L, int index, QTextStream &where);
+void copyLuaTable(lua_State *L, int srcIndex, int destIndex);
 void pushQStringList(lua_State *L, const QStringList &privlist);
 inline bool lua_isinteger(lua_State *L, int index)
 {
@@ -51,7 +52,6 @@ struct cmd_def {
 class minetest : public lua_state_class {
 private:
     void *StorageRef = nullptr;
-    lua_CFunction Storage_GC = nullptr;
     static bool first_chatmsg_handler;
     static bool first_chatcomm_handler;
     static void create_command_deftable(lua_State *L, const struct cmd_def &def);

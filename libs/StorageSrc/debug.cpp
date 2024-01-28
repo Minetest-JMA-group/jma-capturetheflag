@@ -37,7 +37,7 @@ void printLuaTable(lua_State *L, int index) {
         index = lua_gettop(L) + index + 1;
     // Make sure the value at the given index is a table
     if (!lua_istable(L, index)) {
-        qPrint << "Not a table\n";
+        QTextStream(stderr) << "printLuaTable: Argument not a table!\n";
         return;
     }
 
@@ -55,6 +55,36 @@ void printLuaTable(lua_State *L, int index) {
         qPrint << "\n";
 
         // Pop the value, leaving the key on the top for the next iteration
+        lua_pop(L, 1);
+    }
+}
+
+void copyLuaTable(lua_State *L, int srcIndex, int destIndex)
+{
+    if (destIndex < 0)
+        destIndex = lua_gettop(L) + destIndex + 1;
+    if (srcIndex < 0)
+        srcIndex = lua_gettop(L) + srcIndex + 1;
+
+    if (!lua_istable(L, srcIndex) || !lua_istable(L, destIndex)) {
+        QTextStream(stderr) << "copyLuaTable: Argument not a table!\n";
+        return;
+    }
+
+    // Push the first key onto the stack
+    lua_pushnil(L);
+
+    while (lua_next(L, srcIndex) != 0) {
+        // Key is at index -2 and value is at index -1 on the stack
+        // Push the key copy onto the stack
+        lua_pushvalue(L, -2);
+        // Push the value copy onto the stack
+        lua_pushvalue(L, -2);
+
+        // Set the value at the corresponding key in the destination table
+        lua_rawset(L, destIndex);
+
+        // Pop the original value, leaving the key on the top for the next iteration
         lua_pop(L, 1);
     }
 }
