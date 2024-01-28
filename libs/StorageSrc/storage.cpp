@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2023 Marko Petrović
-#include "storage.h"
+#include <storage.h>
 #define qLog QTextStream(stderr)
 
 lua_Integer storage::get_int(const QString &key)
@@ -32,10 +32,10 @@ err:
 }
 
 
-QString storage::get_string(const QString &key)
+QByteArray storage::get_string(const QString &key)
 {
     SAVE_STACK
-    QString res;
+    QByteArray res;
 
     if (!lua_isuserdata(L, -1))
         goto err;
@@ -90,7 +90,7 @@ err:
     return false;
 }
 
-bool storage::set_string(const QString &key, const QString &str)
+bool storage::set_string(const QString &key, const QByteArray &str)
 {
     SAVE_STACK
 
@@ -104,7 +104,7 @@ bool storage::set_string(const QString &key, const QString &str)
 
     lua_pushvalue(L, old_top);
     lua_pushstring(L, key.toUtf8().data());
-    lua_pushstring(L, str.toUtf8().data());
+    lua_pushstring(L, str.data());
 
     if (lua_pcall(L, 3, 0, 0)) {
         qLog << "Error calling storage function\n" << lua_tostring(L, -1) << "\n";

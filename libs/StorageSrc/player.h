@@ -2,7 +2,7 @@
 // Copyright (c) 2023 Marko Petrović
 #ifndef PLAYER_H
 #define PLAYER_H
-#include "minetest.h"
+#include <minetest.h>
 
 // Assume that Player object is on the top of the stack
 class player : public lua_state_class {

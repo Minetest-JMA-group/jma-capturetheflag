@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2023 Marko Petrović
-#include "player.h"
+#include <player.h>
 #define qLog QTextStream(stderr)
 
 bool player::get_meta()

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2023 Marko Petrović
-#include "minetest.h"
+#include <minetest.h>
 
 lua_state_class::lua_state_class(lua_State *L) : L(L) {}
 lua_state_class::lua_state_class() {}
@@ -18,24 +18,126 @@ void lua_state_class::set_state(lua_State *L)
     lua_setmetatable(L, -2);
 */
 
+QString minetest::get_current_modname()
+{
+    SAVE_STACK
+
+    lua_getglobal(L, "minetest");
+    lua_getfield(L, -1, "get_current_modname");
+
+    lua_call(L, 0, 1);
+    QString res = lua_tostring(L, -1);
+
+    RESTORE_STACK
+    return res;
+}
+
+QString minetest::get_modpath(const QString &modname)
+{
+    SAVE_STACK
+
+    lua_getglobal(L, "minetest");
+    lua_getfield(L, -1, "get_modpath");
+
+    lua_pushstring(L, modname.toUtf8().data());
+    lua_call(L, 1, 1);
+    QString res = lua_tostring(L, -1);
+
+    RESTORE_STACK
+    return res;
+}
+
+QString minetest::get_worldpath()
+{
+    SAVE_STACK
+
+    lua_getglobal(L, "minetest");
+    lua_getfield(L, -1, "get_worldpath");
+
+    lua_call(L, 0, 1);
+    QString res = lua_tostring(L, -1);
+
+    RESTORE_STACK
+    return res;
+}
+
+void minetest::register_privilege(const QString &name, const QString &definition)
+{
+    SAVE_STACK
+
+    lua_getglobal(L, "minetest");
+    lua_getfield(L, -1, "register_privilege");
+
+    lua_pushstring(L, name.toUtf8().data());
+    lua_pushstring(L, definition.toUtf8().data());
+    lua_call(L, 2, 0);
+
+    RESTORE_STACK
+}
+
 void minetest::get_mod_storage()
 {
+    if (is_top_modstorage())
+        return;
+
+    constexpr auto setMetaTable_noGC = [](lua_State *L) {
+        // Set nil for the __gc field in the metatable
+        luaL_getmetatable(L, "StorageRef");
+        lua_pushnil(L);
+        lua_setfield(L, -2, "__gc");
+        lua_setmetatable(L, -2);
+    };
+
     if (StorageRef == nullptr) {
         lua_getglobal(L, "minetest");
         lua_getfield(L, -1, "get_mod_storage");
         lua_remove(L, -2);
         lua_call(L, 0, 1);
         void *retrievedPointer = lua_touserdata(L, -1);
+
+        SAVE_STACK
         StorageRef = *(void **)retrievedPointer;
+        luaL_getmetatable(L, "StorageRef");
+        lua_getfield(L, -1, "__gc");
+        Storage_GC = lua_tocfunction(L, -1);
+        RESTORE_STACK
+
+        setMetaTable_noGC(L);
+        printLuaStack(L);
     }
     else {
         *(void **)(lua_newuserdata(L, sizeof(void *))) = StorageRef;
+        setMetaTable_noGC(L);
+    }
+}
+
+void minetest::pop_modstorage()
+{
+    if (is_top_modstorage())
+        lua_pop(L, 1);
+}
+
+minetest::~minetest()
+{
+    // Construct a StorageRef object WITH __gc method to collect it
+    if (StorageRef != nullptr && L != nullptr) {
+        SAVE_STACK
+        *(void **)(lua_newuserdata(L, sizeof(void *))) = StorageRef;
         luaL_getmetatable(L, "StorageRef");
-        // Set nil for the __gc field in the metatable
-        lua_pushnil(L);
+        lua_pushcfunction(L, Storage_GC);
         lua_setfield(L, -2, "__gc");
         lua_setmetatable(L, -2);
+        RESTORE_STACK
     }
+}
+
+bool minetest::is_top_modstorage()
+{
+    if (lua_gettop(L) == 0)
+        return false;
+    if (!lua_isuserdata(L, -1))
+        return false;
+    return *(void **)lua_touserdata(L, -1) == StorageRef;
 }
 
 void minetest::log_message(const QString &level, const QString &msg)
