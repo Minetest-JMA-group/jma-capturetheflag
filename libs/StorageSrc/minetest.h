@@ -2,12 +2,11 @@
 // Copyright (c) 2023 Marko Petrović
 #ifndef MINETEST_H
 #define MINETEST_H
-#include <lua-5.1/lua.hpp>
+#include <luajit-2.1/lua.hpp>
 #include <QString>
 #include <QStringList>
 #include <QTextStream>
 #include <forward_list>
-#include <functional>
 #define INT_ERROR std::numeric_limits<lua_Integer>::min()
 
 #define SAVE_STACK int cur_top, old_top = lua_gettop(L);
