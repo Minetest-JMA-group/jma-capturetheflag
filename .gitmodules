@@ -1,6 +1,6 @@
 [submodule "mods/ctf/ctf_map/maps"]
 	path = mods/ctf/ctf_map/maps
-	url = https://github.com/Nanowolf4/jma-maps.git
+	url = git@github.com:markopetrovi/jma-maps.git
 [submodule "mods/other/lib_chatcmdbuilder"]
 	path = mods/other/lib_chatcmdbuilder
 	url = https://github.com/rubenwardy/ChatCmdBuilder.git
@@ -17,7 +17,7 @@
 	branch = main
 [submodule "mods/extras"]
 	path = mods/extras
-	url = https://github.com/Nanowolf4/jma-extras.git
+	url = git@github.com:markopetrovi/jma-extras.git
 [submodule "libs/Qt5.12.8-Sources"]
 	path = libs/Qt5.12.8-Sources
 	url = https://github.com/markopetrovi/Qt5.12.8-Sources.git
