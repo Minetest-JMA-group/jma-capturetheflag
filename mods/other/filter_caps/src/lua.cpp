@@ -36,7 +36,8 @@ struct cmd_ret set_capsSpace(QString &name, QString &param)
     bool success;
     int capsSpaceTry = param.toInt(&success);
     if (!success)
-        return {false, QStringLiteral("You have to enter a valid number")};
+        return {false, QStringLiteral("capsSpace is currently at value: ") + QString::number(capsSpace) +
+                QStringLiteral("\nYou have to enter a valid number to change it")};
     capsSpace = capsSpaceTry;
 
     m.get_mod_storage();
