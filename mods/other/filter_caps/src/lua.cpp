@@ -16,21 +16,15 @@ int parse(lua_State* L)
     }
     QString text(lua_tostring(L, 2));
 
-    bool firstUpper = true; // Keep first uppercase char in the string preserved, for things like :D
     int currCapsSpace = 100000000;
     for (int i = 0; i < text.size(); i++) {
         if (text[i].isUpper()) {
-            if (!firstUpper || currCapsSpace < capsSpace) {
+            if (currCapsSpace < capsSpace)
                 text[i] = text[i].toLower();
-            }
-            else
-                firstUpper = false;
             currCapsSpace = -1;
         }
-        if (!text[i].isLetter()) {
-            firstUpper = true;
+        if (!text[i].isLetter())
             currCapsSpace++;
-        }
     }
 
     lua_pushstring(L, text.toUtf8().data());
@@ -57,6 +51,10 @@ extern "C" int luaopen_mylibrary(lua_State* L)
     m.set_state(L);
     m.get_mod_storage();
     m.pop_modstorage();
+    m.register_privilege("filtering", "Filter manager");
+    m.register_chatcommand("capsSpace", QStringList("filtering"),
+                           "Set the minimal number of words between two capitalized words",
+                           "<number_of_words>", set_capsSpace);
 
 
     lua_newtable(L);
