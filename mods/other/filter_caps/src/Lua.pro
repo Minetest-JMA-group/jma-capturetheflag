@@ -12,8 +12,7 @@ QMAKE_CXXFLAGS_RELEASE += -O2
 SOURCES += \
     lua.cpp
 
-HEADERS += \
-    lua.h
+HEADERS +=
 
 # Default rules for deployment.
 unix {
@@ -22,3 +21,5 @@ unix {
 !isEmpty(target.path): INSTALLS += target
 
 unix|win32: LIBS += -lluajit-5.1
+
+INCLUDEPATH += /home/marko/jma-capturetheflag/libs/StorageSrc

@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2023 Marko Petrović
-#include "lua.h"
+#include <minetest.h>
+#include <storage.h>
 #include <QString>
 #include <QStringList>
+
+minetest m;
+int capsSpace = 2;
 
 int parse(lua_State* L)
 {
@@ -11,28 +15,53 @@ int parse(lua_State* L)
         return 1;
     }
     QString text(lua_tostring(L, 2));
-    lua_Integer minLen = lua_tointeger(L, 1);
 
-    QString result;
-    for (QString &word : text.split(" ")) {
-        if (word.size() <= minLen) {
-            result += word + " ";
-            continue;
+    bool firstUpper = true; // Keep first uppercase char in the string preserved, for things like :D
+    int currCapsSpace = 100000000;
+    for (int i = 0; i < text.size(); i++) {
+        if (text[i].isUpper()) {
+            if (!firstUpper || currCapsSpace < capsSpace) {
+                text[i] = text[i].toLower();
+            }
+            else
+                firstUpper = false;
+            currCapsSpace = -1;
         }
-        QChar first = word[0];
-        word = word.toLower();
-        word[0] = first;
-        result += word + " ";
+        if (!text[i].isLetter()) {
+            firstUpper = true;
+            currCapsSpace++;
+        }
     }
-    lua_pushstring(L, result.toUtf8().data());
+
+    lua_pushstring(L, text.toUtf8().data());
     return 1;
+}
+
+struct cmd_ret set_capsSpace(QString &name, QString &param)
+{
+    bool success;
+    int capsSpaceTry = param.toInt(&success);
+    if (!success)
+        return {false, "You have to enter a valid number"};
+    capsSpace = capsSpaceTry;
+
+    m.get_mod_storage();
+    storage s(m.L);
+    s.set_int("capsSpace", capsSpace);
+    m.pop_modstorage();
 }
 
 extern "C" int luaopen_mylibrary(lua_State* L)
 {
+    m.set_state(L);
+    m.get_mod_storage();
+    m.pop_modstorage();
+
+
     lua_newtable(L);
     lua_pushcfunction(L, parse);
     lua_setfield(L, -2, "parse");
+    lua_setglobal(L, "filter_parse");
 
-    return 1;
+    return 0;
 }
