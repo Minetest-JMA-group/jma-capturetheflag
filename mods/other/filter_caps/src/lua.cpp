@@ -42,13 +42,14 @@ struct cmd_ret set_capsSpace(QString &name, QString &param)
     bool success;
     int capsSpaceTry = param.toInt(&success);
     if (!success)
-        return {false, "You have to enter a valid number"};
+        return {false, QStringLiteral("You have to enter a valid number")};
     capsSpace = capsSpaceTry;
 
     m.get_mod_storage();
     storage s(m.L);
     s.set_int("capsSpace", capsSpace);
     m.pop_modstorage();
+    return {true, QStringLiteral("capsSpace set to: ") + QString::number(capsSpace)};
 }
 
 extern "C" int luaopen_mylibrary(lua_State* L)
