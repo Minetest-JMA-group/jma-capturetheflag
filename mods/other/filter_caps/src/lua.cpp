@@ -50,7 +50,10 @@ extern "C" int luaopen_mylibrary(lua_State* L)
 {
     m.set_state(L);
     m.get_mod_storage();
+    storage s(L);
+    capsSpace = s.get_int("capsSpace");
     m.pop_modstorage();
+
     m.register_privilege("filtering", "Filter manager");
     m.register_chatcommand("capsSpace", QStringList("filtering"),
                            "Set the minimal number of words between two capitalized words",
@@ -60,7 +63,7 @@ extern "C" int luaopen_mylibrary(lua_State* L)
     lua_newtable(L);
     lua_pushcfunction(L, parse);
     lua_setfield(L, -2, "parse");
-    lua_setglobal(L, "filter_parse");
+    lua_setglobal(L, "filter_caps");
 
     return 0;
 }
