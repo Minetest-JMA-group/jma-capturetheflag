@@ -21,11 +21,11 @@ algorithms.load_library = function()
 
 	if not c_mods[modname] then
 		minetest.log("["..modname.."]: Attempted to load shared object file without permission!")
-		return
+		return false
 	end
 
 	if already_loaded[modname] then
-		return
+		return true
 	end
 	already_loaded[modname] = true
 
@@ -34,10 +34,11 @@ algorithms.load_library = function()
 	if not libinit and err then
 		minetest.log("["..modname.."]: Failed to load shared object file")
 		minetest.log("["..modname.."]: "..err)
-		return
+		return false
 	end
 
 	libinit()
+	return true
 end
 algorithms.load_library()
 
