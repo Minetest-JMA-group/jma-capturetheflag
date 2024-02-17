@@ -12,8 +12,7 @@ QMAKE_CXXFLAGS_RELEASE += -O2
 SOURCES += \
     lua.cpp
 
-HEADERS += \
-    lua.h
+HEADERS +=
 
 # Default rules for deployment.
 unix {

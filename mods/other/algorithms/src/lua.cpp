@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2023 Marko Petrović
-#include "lua.h"
+#include <lua-5.1/lua.hpp>
+#include <QTextStream>
 #include <QString>
 
 int countCaps(lua_State* L)
@@ -43,12 +44,13 @@ int upper(lua_State* L)
 
 extern "C" int luaopen_mylibrary(lua_State* L)
 {
-    lua_newtable(L);
+    lua_getglobal(L, "algorithms");
     lua_pushcfunction(L, countCaps);
     lua_setfield(L, -2, "countCaps");
     lua_pushcfunction(L, lower);
     lua_setfield(L, -2, "lower");
     lua_pushcfunction(L, upper);
     lua_setfield(L, -2, "upper");
-    return 1;
+    lua_pop(L, 1);
+    return 0;
 }

@@ -2,18 +2,33 @@
 -- Copyright (c) 2023 Marko Petrović
 
 algorithms = {}
-local MP = minetest.get_modpath(minetest.get_current_modname())
-local ie = minetest.request_insecure_environment()
-local libinit, err = ie.package.loadlib(MP.."/mylibrary.so", "luaopen_mylibrary")
-local mylibrary
+-- Register dummy functions, provided from C++
+algorithms.countCaps = function(string) return 0 end
+algorithms.lower = function(string) return string end
+algorithms.upper = function(string) return string end
+local loaded = {}
 
-if not libinit and err then
-	minetest.log("[algorithms]: Failed to load shared object file")
-	minetest.log("[algorithms]: "..err)
-	mylibrary = {}
-else
-	mylibrary = libinit()
+-- Load the shared library mylibrary.so in the mod folder of the calling mod
+algorithms.load_library = function()
+	local modname = minetest.get_current_modname()
+	-- Prevent double loading
+	if loaded[modname] then
+		return
+	end
+	loaded[modname] = true
+
+	local MP = minetest.get_modpath(modname)
+	local ie = minetest.request_insecure_environment()
+	local libinit, err = ie.package.loadlib(MP.."/mylibrary.so", "luaopen_mylibrary")
+
+	if not libinit and err then
+		minetest.log("["..modname.."]: Failed to load shared object file")
+		minetest.log("["..modname.."]: "..err)
+	else
+		libinit()
+	end
 end
+algorithms.load_library()
 
 local unit_to_secs = {
 	s = 1, m = 60, h = 3600,
@@ -21,12 +36,59 @@ local unit_to_secs = {
 	[""] = 1,
 }
 
+-- Convert input using time labels (s, m, h, etc) into seconds
 algorithms.parse_time = function(t)
+	if type(t) ~= "string" then
+		return 0
+	end
 	local secs = 0
 	for num, unit in t:gmatch("(%d+)([smhDWMY]?)") do
 		secs = secs + (tonumber(num) * (unit_to_secs[unit] or 1))
 	end
 	return secs
+end
+
+local function checkPlural(timeNum, timeStr)
+	if timeNum == 1 then
+		return timeStr
+	end
+	return timeStr.."s"
+end
+
+-- Convert time in seconds to rounded human-readable string
+algorithms.time_to_string = function(sec)
+	if type(sec) ~= "number" then
+		return ""
+	end
+	sec = math.floor(sec)
+
+	local min = math.floor(sec / 60)
+	sec = sec % 60
+	local hour = math.floor(min / 60)
+	min = min % 60
+	local day = math.floor(hour / 24)
+	hour = hour % 24
+	local month = math.floor(day / 30)
+	day = day % 30
+	local year = math.floor(month / 12)
+	month = month % 12
+
+	if year > 0 then
+		return "more than a year"
+	end
+	if month > 0 then
+		return tostring(month) .. " " .. checkPlural(month, "month")
+	end
+	if day > 0 then
+		return tostring(day) .. " " .. checkPlural(day, "day")
+	end
+	if hour > 0 then
+		return tostring(hour) .. " " .. checkPlural(hour, "hour")
+	end
+	if min > 0 then
+		return tostring(min) .. " " .. checkPlural(min, "minute")
+	end
+	return tostring(sec) .. " " .. checkPlural(sec, "second")
 end
 
 -- Separate the string into n-grams
@@ -45,10 +107,6 @@ algorithms.nGram = function(string, window_size)
 	end
 	return ret
 end
-
-algorithms.countCaps = mylibrary.countCaps or function(string) return 0 end
-algorithms.lower = mylibrary.lower or function(string) return string end
-algorithms.upper = mylibrary.upper or function(string) return string end
 
 -- Create a matrix of integers with dimensions n x m
 algorithms.createMatrix = function(n, m)
