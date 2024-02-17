@@ -11,6 +11,8 @@ Modifications: None
 
 
 License of Code:
+Modified by Nanowolf4 and Maintainer_ under the same license.
+Original copyright notice follows:
 ----------------
 
 The MIT License (MIT)
