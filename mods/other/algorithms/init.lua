@@ -15,6 +15,20 @@ else
 	mylibrary = libinit()
 end
 
+local unit_to_secs = {
+	s = 1, m = 60, h = 3600,
+	D = 86400, W = 604800, M = 2592000, Y = 31104000,
+	[""] = 1,
+}
+
+algorithms.parse_time = function(t)
+	local secs = 0
+	for num, unit in t:gmatch("(%d+)([smhDWMY]?)") do
+		secs = secs + (tonumber(num) * (unit_to_secs[unit] or 1))
+	end
+	return secs
+end
+
 -- Separate the string into n-grams
 algorithms.nGram = function(string, window_size)
 	if type(string) ~= "string" or type(window_size) ~= "number" then
