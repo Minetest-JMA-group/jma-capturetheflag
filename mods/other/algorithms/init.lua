@@ -6,19 +6,25 @@ algorithms = {}
 algorithms.countCaps = function(string) return 0 end
 algorithms.lower = function(string) return string end
 algorithms.upper = function(string) return string end
-local loaded = {}
+local already_loaded = {}
+local c_mods = {}
+local ie = minetest.request_insecure_environment()
+local list = minetest.settings:get("secure.c_mods") or ""
+
+for word in list:gmatch("[^,%s]+") do
+	c_mods[word] = true
+end
 
 -- Load the shared library mylibrary.so in the mod folder of the calling mod
 algorithms.load_library = function()
 	local modname = minetest.get_current_modname()
-	-- Prevent double loading
-	if loaded[modname] then
+
+	if already_loaded[modname] or not c_mods[modname] then
 		return
 	end
-	loaded[modname] = true
+	already_loaded[modname] = true
 
 	local MP = minetest.get_modpath(modname)
-	local ie = minetest.request_insecure_environment()
 	local libinit, err = ie.package.loadlib(MP.."/mylibrary.so", "luaopen_mylibrary")
 
 	if not libinit and err then
