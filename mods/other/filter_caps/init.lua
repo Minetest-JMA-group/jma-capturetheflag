@@ -1,6 +1,6 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 -- Copyright (c) 2023 Marko Petrović
-algorithms.load_library()
+assert(algorithms.load_library())
 local registered_on_chat_message = {}
 
 filter_caps.register_on_chat_message = function(func)
