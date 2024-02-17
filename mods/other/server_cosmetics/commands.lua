@@ -72,7 +72,7 @@ end
 minetest.register_chatcommand("cosmetics", {
 	description = "Manage cosmetics",
 	params = "<show/s> [playername] | <give/g|take/t> <playername> <cosmetic>",
-	privs = {moderator = true},
+	privs = {cosmetic_manager = true},
 	func = function(name, params)
 		params = string.split(params, "%s", false, 2, true)
 
