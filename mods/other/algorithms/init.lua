@@ -39,10 +39,13 @@ local unit_to_secs = {
 -- Convert input using time labels (s, m, h, etc) into seconds
 algorithms.parse_time = function(t)
 	if type(t) ~= "string" then
-		return 0
+		return nil
 	end
-	local secs = 0
+	local secs = nil
 	for num, unit in t:gmatch("(%d+)([smhDWMY]?)") do
+		if not secs then
+			secs = 0
+		end
 		secs = secs + (tonumber(num) * (unit_to_secs[unit] or 1))
 	end
 	return secs
