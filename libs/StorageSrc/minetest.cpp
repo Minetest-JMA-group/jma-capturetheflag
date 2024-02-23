@@ -109,6 +109,11 @@ void minetest::pop_modstorage()
         lua_pop(L, 1);
 }
 
+void minetest::register_on_shutdown(void (*function)())
+{
+    registered_on_shutdown.push_front(function);
+}
+
 minetest::~minetest()
 {
     // Construct a StorageRef object WITH __gc method to collect it
@@ -119,6 +124,9 @@ minetest::~minetest()
         lua_setmetatable(L, -2);
         RESTORE_STACK
     }
+    // Call shutdown callbacks
+    for (const auto &handler : registered_on_shutdown)
+        handler();
 }
 
 bool minetest::is_top_modstorage()

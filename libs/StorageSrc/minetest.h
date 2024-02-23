@@ -16,6 +16,7 @@
 
 #define chatcommand_sig bool (*)(QString&, QString&, QString&)
 #define chatmsg_sig bool (*)(QString&, QString&)
+#define shutdown_sig void (*)()
 
 void printLuaStack(lua_State* L);
 void printLuaTable(lua_State* L, int index);
@@ -57,6 +58,7 @@ private:
     static int lua_callback_wrapper_msg(lua_State *L);
     static int lua_callback_wrapper_comm(lua_State *L);
     bool is_top_modstorage();
+    std::forward_list<shutdown_sig> registered_on_shutdown;
 public:
     static std::forward_list<chatmsg_sig> registered_on_chatmsg;
     static std::forward_list<chatcommand_sig> registered_on_chatcommand;
@@ -75,6 +77,7 @@ public:
 
     void register_on_chat_message(chatmsg_sig);
     void register_on_chatcommand(chatcommand_sig);
+    void register_on_shutdown(shutdown_sig);
     void dont_call_this_use_macro_reg_chatcommand(const QString &comm, const struct cmd_def &def);
 };
 
