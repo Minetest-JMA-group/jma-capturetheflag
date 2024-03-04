@@ -107,7 +107,7 @@ minetest.register_chatcommand("wb", {
 			return false, string.format("Player '%s' has no rankings!", giver_name)
 		end
 
-		if old_giver_ranks.score < msg_price then
+		if old_giver_ranks.score == nil or old_giver_ranks.score < msg_price then
 			return false, string.format("You don't have enough score to give! You need at least %i score.", msg_price)
 		end
 
