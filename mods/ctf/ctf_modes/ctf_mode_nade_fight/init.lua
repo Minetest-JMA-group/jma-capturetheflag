@@ -46,7 +46,7 @@ ctf_modebase.register_mode("nade_fight", {
 
 		["grenades:smoke"] = {rarity = 0.2, max_stacks = 3},
 		["grenades:poison"] = {rarity = 0.1, max_stacks = 2},
-		["bucket:bucket_water"] = {rarity = 0.2, max_stacks = 1},
+		["default:water_source"] = {rarity = 0.2, max_stacks = 1},
 	},
 	crafts = {
 		"ctf_map:damage_cobble",
