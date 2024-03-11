@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2023 Marko Petrović
-#include <lua-5.1/lua.hpp>
+#include <luajit-2.1/lua.hpp>
 #include <QTextStream>
 #include <QString>
 
