@@ -473,7 +473,7 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 			end
 			minetest.set_node(pos, {name="air"})
 			if tnt_modpath then
-				tnt.boom(pos, {radius=blast_radius, damage_radius=blast_radius+3})
+				tnt.boom(pos, {radius=blast_radius, damage_radius=blast_radius+3, puncher_name=ignitor_name})
 			end
 			kerblam(pos, puncher, dirs, min_range)
 		end,
@@ -493,7 +493,7 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 			player = minetest.get_player_by_name(player_name)
 		end
 		if tnt_modpath then
-			tnt.boom(target, {radius=blast_radius, damage_radius=blast_radius+3})
+			tnt.boom(target, {radius=blast_radius, damage_radius=blast_radius+3, puncher_name=player_name})
 		end
 		kerblam(target, player, dirs, min_range)
 	end
@@ -717,7 +717,7 @@ if enable_grenade then
 				end
 				object:remove()
 				if tnt_modpath then
-					tnt.boom(lastpos, {radius=1, damage_radius=2})
+					tnt.boom(lastpos, {radius=1, damage_radius=2, puncher_name=player_name})
 				end
 				kerblam(lastpos, player, ico1, 2)
 			end
