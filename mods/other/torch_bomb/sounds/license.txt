@@ -1,0 +1,4 @@
+https://freesound.org/people/nettimato/sounds/350345/ by nettimato July 15th, 2016 under CC-0, from the bweapons modpack:
+torch_bomb_bolt_hit
+torch_bomb_crossbow_fire
+torch_bomb_crossbow_reload

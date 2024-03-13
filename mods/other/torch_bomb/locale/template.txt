@@ -1,0 +1,24 @@
+# textdomain: torch_bomb
+
+
+### init.lua ###
+
+#@1 is the type of bomb that this rocket lofts
+@1 Rocket=
+#@1 is the material the crossbow is made out of
+@1 Torch Crossbow=
+#material the crossbow is made out of
+Bronze=
+Mega Torch Bomb=
+
+#help text in the fuse setting window
+Rocket accelerates at 1 m/s^2.@nFuse duration from 1 to @1 seconds:=
+
+#button label
+Set=
+#material the crossbow is made out of
+Steel=
+Torch Bomb=
+Torch Grenade=
+#material the crossbow is made out of
+Wooden=
