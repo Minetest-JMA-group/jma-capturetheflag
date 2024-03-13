@@ -88,7 +88,7 @@ function FakePlayer.create(pos, player_name)
 
 	-- Player object
 	
-	self.get_player_name = return_empty_string
+	self.get_player_name = return_value(player_name)
 	self.get_player_velocity = return_nil
 	self.get_look_dir = return_value({x=0,y=1,z=0})
 	self.get_look_horizontal = return_zero

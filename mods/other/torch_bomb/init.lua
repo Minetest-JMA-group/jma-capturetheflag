@@ -27,6 +27,32 @@ local crossbow_range = tonumber(minetest.settings:get("torch_bomb_base_crossbow_
 local enable_crossbows = minetest.settings:get_bool("torch_bomb_enable_crossbows", true)
 local torch_bow_uses = tonumber(minetest.settings:get("torch_bomb_base_crossbow_uses")) or 30
 
+minetest.register_chatcommand("torchbomb", {
+	description = "Torch bomb configuration",
+	params = "<command> ...",
+	privs = { dev=true },
+	func = function(name, param)
+		local iter = param:gmatch("%S+")
+		local command = iter()
+		if command == "help" then
+			minetest.chat_send_player(name, "List of possible commands:")
+			minetest.chat_send_player(name, "grenade_range: Set the range from explosion in which torches are placed")
+			return true
+		end
+		if command == "grenade_range" then
+			local numberString = iter()
+			if not numberString or numberString == "" or not tonumber(numberString) then
+				minetest.chat_send_player(name, "Current grenade_range value is: "..tostring(grenade_range))
+				return false, "You have to enter valid grenade_range value to change it"
+			end
+			grenade_range = math.floor(tonumber(numberString))
+			minetest.settings:set("torch_bomb_grenade_range", grenade_range)
+			return true, "grenade_range set to "..tostring(grenade_range)
+		end
+		return false, "Invalid command; Run /torchbomb help for available commands"
+	end,
+})
+
 -- Detect creative mod
 local creative_mod = minetest.get_modpath("creative")
 -- Cache creative mode setting as fallback if creative mod not present
@@ -350,7 +376,7 @@ local function kerblam(pos, placer, dirs, min_range)
 		minetest.pos_to_string(pos) .. " and placed " .. #targets .. " torches.")
 
 	for _, target in ipairs(targets) do
-		embed_torch(target, placer, pos)
+		embed_torch(target, fakeplayer, pos)
 	end	
 end
 
@@ -472,8 +498,12 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 				puncher = minetest.get_player_by_name(ignitor_name)
 			end
 			minetest.set_node(pos, {name="air"})
+			local damage_rad = 0
+			if ctf_modebase:get_current_mode() == ctf_modebase.modes["nade_fight"] then
+				damage_rad = blast_radius+3
+			end
 			if tnt_modpath then
-				tnt.boom(pos, {radius=blast_radius, damage_radius=blast_radius+3, puncher_name=ignitor_name})
+				tnt.boom(pos, {radius=blast_radius, damage_radius=damage_rad, puncher_name=ignitor_name})
 			end
 			kerblam(pos, puncher, dirs, min_range)
 		end,
@@ -492,8 +522,12 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 		if player_name then
 			player = minetest.get_player_by_name(player_name)
 		end
+		local damage_rad = 0
+		if ctf_modebase:get_current_mode() == ctf_modebase.modes["nade_fight"] then
+			damage_rad = blast_radius+3
+		end
 		if tnt_modpath then
-			tnt.boom(target, {radius=blast_radius, damage_radius=blast_radius+3, puncher_name=player_name})
+			tnt.boom(target, {radius=blast_radius, damage_radius=damage_rad, puncher_name=player_name})
 		end
 		kerblam(target, player, dirs, min_range)
 	end
@@ -716,8 +750,12 @@ if enable_grenade then
 					player = minetest.get_player_by_name(player_name)
 				end
 				object:remove()
+				local damage_rad = 0
+				if ctf_modebase:get_current_mode() == ctf_modebase.modes["nade_fight"] then
+					damage_rad = 2
+				end
 				if tnt_modpath then
-					tnt.boom(lastpos, {radius=1, damage_radius=2, puncher_name=player_name})
+					tnt.boom(lastpos, {radius=1, damage_radius=damage_rad, puncher_name=player_name})
 				end
 				kerblam(lastpos, player, ico1, 2)
 			end
