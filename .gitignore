@@ -18,3 +18,4 @@ debug.txt
 *.blend1
 
 *.pro.user
+.gitmodules
