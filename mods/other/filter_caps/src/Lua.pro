@@ -22,4 +22,4 @@ unix {
 
 unix|win32: LIBS += -lluajit-5.1
 
-INCLUDEPATH += /home/marko/jma-capturetheflag/libs/StorageSrc
+INCLUDEPATH += "/home/marko/Minetest stvari/jma-capturetheflag/libs/StorageSrc"
