@@ -42,7 +42,8 @@ local v = {
 	{"jma_emoji", "jma"},
 	{"rabbit_emoji", "rabbit"},
 	{"sus_emoji", "sus"},
-	{"troll_emoji", "troll"}
+	{"troll_emoji", "troll"},
+	{"rick_emoji", "rick"},
 	
 }
 
@@ -87,27 +88,61 @@ minetest.register_on_chat_message(function(name, message, pos)
 
 		for _, v in pairs(v) do
 			if string.find(checkingmessage, v[2], 1, true) ~=nil then
+				
+				if v[2] == "rick" then
+					local player = minetest.get_player_by_name(name)
+					
+					local pos = player:get_pos()
+					
+					minetest.add_particlespawner({
+						amount = 1,
+						time = 0.01,
+						minpos = {x=pos.x, y=pos.y+2, z=pos.z},
+						maxpos = {x=pos.x, y=pos.y+2, z=pos.z},
+						minvel = {x=0, y=0.15, z=0}, --minvel
+						maxvel = {x=0, y=0.15, z=0}, --maxvel
+						minacc = {x=0,y=0,z=0}, --minacc
+						maxacc = {x=0,y=0,z=0}, --maxacc
+						minexptime = 2.5, --minexptime
+						maxexptime = 2.5, --maxexptime
+						minsize = 9, --minsize
+						maxsize = 9, --maxsize
+						collisiondetection = false, --collisiondetection
+						texture = "rick_emoji.png",
+						animation = {
+						    type = "vertical_frames",
 
-				local player = minetest.get_player_by_name(name)
+						    aspect_w = 347,
+
+						    aspect_h = 350,
+
+						    length = 2.0,
+						}
+					})
 				
-				local pos = player:get_pos()
-				
-				minetest.add_particlespawner(
-					1, --amount
-					0.01, --time
-					{x=pos.x, y=pos.y+2, z=pos.z}, --minpos
-					{x=pos.x, y=pos.y+2, z=pos.z}, --maxpos
-					{x=0, y=0.15, z=0}, --minvel
-					{x=0, y=0.15, z=0}, --maxvel
-					{x=0,y=0,z=0}, --minacc
-					{x=0,y=0,z=0}, --maxacc
-					2.5, --minexptime
-					2.5, --maxexptime
-					9, --minsize
-					9, --maxsize
-					false, --collisiondetection
-					v[1]..".png"
-				)
+				else
+
+					local player = minetest.get_player_by_name(name)
+					
+					local pos = player:get_pos()
+					
+					minetest.add_particlespawner(
+						1, --amount
+						0.01, --time
+						{x=pos.x, y=pos.y+2, z=pos.z}, --minpos
+						{x=pos.x, y=pos.y+2, z=pos.z}, --maxpos
+						{x=0, y=0.15, z=0}, --minvel
+						{x=0, y=0.15, z=0}, --maxvel
+						{x=0,y=0,z=0}, --minacc
+						{x=0,y=0,z=0}, --maxacc
+						2.5, --minexptime
+						2.5, --maxexptime
+						9, --minsize
+						9, --maxsize
+						false, --collisiondetection
+						v[1]..".png"
+					)
+				end
 				
 			end
 		
