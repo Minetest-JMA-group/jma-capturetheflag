@@ -8,6 +8,10 @@ Available chat smiles to spawn emoji:
 
 ![Screenshot](https://i.ibb.co/SrJxw4b/Projec43t-1.gif)
 
+## Changes made
+
+To toggle emojis use the "/emoji [on/off]" command. You must have the "emoji_toggle" privilege to use this command.
+
 
 ---------------------------------------------------------------------
 
