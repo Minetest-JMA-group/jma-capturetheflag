@@ -2,7 +2,7 @@
 
 local bg = "bg_emoji.png"
 
-local form = "size[10,7.8] bgcolor[#333444cc; false] image_button_exit[0,0;2,2;"..bg.."^2_emoji.png;2_emoji;] image_button_exit[2,0;2,2;"..bg.."^5_emoji.png;5_emoji;] image_button_exit[4,0;2,2;"..bg.."^7_emoji.png;7_emoji;] image_button_exit[6,0;2,2;"..bg.."^8_emoji.png;8_emoji;] image_button_exit[8,0;2,2;"..bg.."^9_emoji.png;9_emoji;] image_button_exit[0,2;2,2;"..bg.."^10_emoji.png;10_emoji;] image_button_exit[2,2;2,2;"..bg.."^11_emoji.png;11_emoji;] image_button_exit[4,2;2,2;"..bg.."^12_emoji.png;12_emoji;] image_button_exit[6,2;2,2;"..bg.."^13_emoji.png;13_emoji;] image_button_exit[8,2;2,2;"..bg.."^14_emoji.png;14_emoji;] image_button_exit[0,4;2,2;"..bg.."^15_emoji.png;15_emoji;] image_button_exit[2,4;2,2;"..bg.."^16_emoji.png;16_emoji;] image_button_exit[4,4;2,2;"..bg.."^17_emoji.png;17_emoji;] image_button_exit[6,4;2,2;"..bg.."^18_emoji.png;18_emoji;] image_button_exit[8,4;2,2;"..bg.."^20_emoji.png;20_emoji;] image_button_exit[0,6;2,2;"..bg.."^21_emoji.png;21_emoji;]"
+local form = "size[10,7.8] bgcolor[#333444cc; false] image_button_exit[0,0;2,2;"..bg.."^2_emoji.png;2_emoji;] image_button_exit[2,0;2,2;"..bg.."^5_emoji.png;5_emoji;] image_button_exit[4,0;2,2;"..bg.."^7_emoji.png;7_emoji;] image_button_exit[6,0;2,2;"..bg.."^8_emoji.png;8_emoji;] image_button_exit[8,0;2,2;"..bg.."^9_emoji.png;9_emoji;] image_button_exit[0,2;2,2;"..bg.."^10_emoji.png;10_emoji;] image_button_exit[2,2;2,2;"..bg.."^11_emoji.png;11_emoji;] image_button_exit[4,2;2,2;"..bg.."^12_emoji.png;12_emoji;] image_button_exit[6,2;2,2;"..bg.."^13_emoji.png;13_emoji;] image_button_exit[8,2;2,2;"..bg.."^14_emoji.png;14_emoji;] image_button_exit[0,4;2,2;"..bg.."^15_emoji.png;15_emoji;] image_button_exit[2,4;2,2;"..bg.."^16_emoji.png;16_emoji;] image_button_exit[4,4;2,2;"..bg.."^17_emoji.png;17_emoji;] image_button_exit[6,4;2,2;"..bg.."^18_emoji.png;18_emoji;] image_button_exit[8,4;2,2;"..bg.."^20_emoji.png;20_emoji;] image_button_exit[0,6;2,2;"..bg.."^21_emoji.png;21_emoji;] image_button_exit[2,6;2,2;"..bg.."^jma_emoji.png;jma_emoji;] image_button_exit[4,6;2,2;"..bg.."^rabbit_emoji.png;rabbit_emoji;] image_button_exit[6,6;2,2;"..bg.."^sus_emoji.png;sus_emoji;] image_button_exit[8,6;2,2;"..bg.."^troll_emoji.png;troll_emoji;]"
 
 local storage = minetest.get_mod_storage()
 
@@ -39,6 +39,10 @@ local v = {
 	{"18_emoji", "xP"},
 	{"20_emoji", ":P"},
 	{"21_emoji", ":O"},
+	{"jma_emoji", "jma"},
+	{"rabbit_emoji", "rabbit"},
+	{"sus_emoji", "sus"},
+	{"troll_emoji", "troll"}
 	
 }
 
