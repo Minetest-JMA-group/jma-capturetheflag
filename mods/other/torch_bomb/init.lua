@@ -485,7 +485,7 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 		
 		on_construct = function(pos)
 			if tnt_modpath then
-				minetest.sound_play("tnt_ignite", {pos = pos})
+				minetest.sound_play("tnt_ignite", {pos = pos, max_hear_distance = 32})
 			end
 			minetest.get_node_timer(pos):start(3)
 			minetest.check_for_falling(pos)
@@ -651,7 +651,7 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 	
 		on_construct = function(pos)
 			if tnt_modpath then
-				minetest.sound_play("tnt_ignite", {pos = pos})
+				minetest.sound_play("tnt_ignite", {pos = pos, max_hear_distance = 32})
 			end
 			minetest.get_node_timer(pos):start(3)
 			minetest.check_for_falling(pos)
