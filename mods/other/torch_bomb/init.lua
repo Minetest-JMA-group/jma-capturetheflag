@@ -503,7 +503,7 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 				damage_rad = blast_radius+3
 			end
 			if tnt_modpath then
-				tnt.boom(pos, {radius=blast_radius, damage_radius=damage_rad, puncher_name=ignitor_name})
+				tnt.boom(pos, {radius=blast_radius, damage_radius=damage_rad, puncher_name=ignitor_name, explode_center=true})
 			end
 			kerblam(pos, puncher, dirs, min_range)
 		end,
@@ -527,7 +527,7 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 			damage_rad = blast_radius+3
 		end
 		if tnt_modpath then
-			tnt.boom(target, {radius=blast_radius, damage_radius=damage_rad, puncher_name=player_name})
+			tnt.boom(target, {radius=blast_radius, damage_radius=damage_rad, puncher_name=player_name, explode_center=true})
 		end
 		kerblam(target, player, dirs, min_range)
 	end
@@ -755,7 +755,7 @@ if enable_grenade then
 					damage_rad = 2
 				end
 				if tnt_modpath then
-					tnt.boom(lastpos, {radius=1, damage_radius=damage_rad, puncher_name=player_name})
+					tnt.boom(lastpos, {radius=1, damage_radius=damage_rad, puncher_name=player_name, explode_center=true})
 				end
 				kerblam(lastpos, player, ico1, 2)
 			end
