@@ -27,28 +27,6 @@ local crossbow_range = tonumber(minetest.settings:get("torch_bomb_base_crossbow_
 local enable_crossbows = minetest.settings:get_bool("torch_bomb_enable_crossbows", true)
 local torch_bow_uses = tonumber(minetest.settings:get("torch_bomb_base_crossbow_uses")) or 30
 
-local function can_explode(pos, pname, radius) -- stolen from rocket_launcher/init.lua
-	if minetest.is_protected(pos, "") then
-		minetest.chat_send_player(pname, "You can't explode that on spawn")
-		return false
-	end
-
-	local pteam = ctf_teams.get(pname)
-
-	if pteam then
-		for flagteam, team in pairs(ctf_map.current_map.teams) do
-			if not ctf_modebase.flag_captured[flagteam] and team.flag_pos then
-				local distance_from_flag = vector.distance(pos, team.flag_pos)
-				if distance_from_flag <= 4 + radius then
-					minetest.chat_send_player(pname, "You can't explode that so close to a flag!")
-					return false
-				end
-			end
-		end
-	end
-	return true
-end
-
 minetest.register_chatcommand("torchbomb", {
 	description = "Torch bomb configuration",
 	params = "<command> ...",
@@ -776,15 +754,10 @@ if enable_grenade then
 				if ctf_modebase:get_current_mode() == ctf_modebase.modes["nade_fight"] then
 					damage_rad = 2
 				end
-
-				if can_explode(self.lastpos, self.player_name, 3) then
-					if tnt_modpath then
-							tnt.boom(lastpos, {radius=1, damage_radius=damage_rad, puncher_name=player_name})
-					end
-					kerblam(lastpos, player, ico1, 2)
-				else
-					inv = minetest.get_inventory({type="player", name=self.player_name}):add_item("main", "torch_bomb:torch_grenade 1")
+				if tnt_modpath then
+					tnt.boom(lastpos, {radius=1, damage_radius=damage_rad, puncher_name=player_name})
 				end
+				kerblam(lastpos, player, ico1, 2)
 			end
 			self.lastpos={x=pos.x, y=pos.y, z=pos.z}
 		end,
