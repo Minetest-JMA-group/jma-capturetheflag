@@ -18,7 +18,7 @@ int parse(lua_State* L)
         return 1;
     }
     QString text(lua_tostring(L, 2));
-    QStringList words = text.split(' ', Qt::SkipEmptyParts);
+    QStringList words = text.split(' ', QString::SkipEmptyParts);
     text.clear();
 
     // Iterate over the words
@@ -124,7 +124,7 @@ struct cmd_ret remove_from_wl(QString &name, QString &param)
 
 struct cmd_ret filter_caps_console(QString &name, QString &param)
 {
-    QStringList tokens = param.split(' ', Qt::SkipEmptyParts);
+    QStringList tokens = param.split(' ', QString::SkipEmptyParts);
     QString arg;
     if (tokens.size() >= 2)
         arg = tokens[1];
