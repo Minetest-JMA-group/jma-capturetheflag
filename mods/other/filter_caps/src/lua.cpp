@@ -22,25 +22,31 @@ int parse(lua_State* L)
     text.clear();
 
     // Iterate over the words
-    int currCapsSpace = -1;
+    int currCapsSpace = capsSpace + 1;
     for (QString& word : words) {
         QString lw = word.toLower();
         if (whitelist->contains(lw)) {
             text += word + " ";
             continue;
         }
-        if (lw != word)
-            currCapsSpace = 0;
-        else
+        if (currCapsSpace < capsSpace) {
+            if (lw == word)
+                currCapsSpace++;
+            else
+                currCapsSpace = 0;
+            text += lw + " ";
+            continue;
+        }
+        if (lw == word)
             currCapsSpace++;
+        else
+            currCapsSpace = 0;
+
         int countCaps = 0;
         for (int i = 0; i < word.size(); i++) {
             if (word[i].isUpper()) {
-                if (currCapsSpace > capsSpace)
+                if (++countCaps > capsMax)
                     word[i] = word[i].toLower();
-                else
-                    if (++countCaps > capsMax)
-                        word[i] = word[i].toLower();
             }
         }
         text += word + " ";
@@ -112,6 +118,7 @@ struct cmd_ret dump_wl(QString &name, QString &param)
 struct cmd_ret remove_from_wl(QString &name, QString &param)
 {
     Q_UNUSED(name)
+    param = param.toLower();
     if (whitelist->take(param) == QJsonValue::Undefined)
         return {false, "Word \"" + param + "\" hasn't existed in the whitelist"};
     QJsonDocument doc(*whitelist);
@@ -126,6 +133,8 @@ struct cmd_ret filter_caps_console(QString &name, QString &param)
 {
     QStringList tokens = param.split(' ', QString::SkipEmptyParts);
     QString arg;
+    if (tokens.size() == 0)
+        goto end;
     if (tokens.size() >= 2)
         arg = tokens[1];
     if (tokens[0] == "add")
@@ -138,7 +147,7 @@ struct cmd_ret filter_caps_console(QString &name, QString &param)
         return set_capsMax(name, arg);
     if (tokens[0] == "capsSpace")
         return set_capsSpace(name, arg);
-
+end:
     m.chat_send_player(name, "Invalid usage. Usage: filter_caps <command> [arg]");
     m.chat_send_player(name, "capsSpace <int>: Set the minimal number of words between two capitalized words");
     m.chat_send_player(name, "capsMax <int>: Set the maximal number of capital letters in one word");
