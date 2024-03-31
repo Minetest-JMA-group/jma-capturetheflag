@@ -78,8 +78,8 @@ function ctf_melee.simple_register_sword(name, def)
 		base_def.on_secondary_use = def.rightclick_func
 	end
 
-	base_def.on_use = function(itemstack, user, pointed, ...)
-		if name == "ctf_melee:sword_rick_astley" then
+	if name == "ctf_melee:sword_rick_astley" then
+		base_def.on_use = function(itemstack, user, pointed, ...)
 			pos = user:get_pos()
 			minetest.add_particlespawner({
 				amount = 1,
