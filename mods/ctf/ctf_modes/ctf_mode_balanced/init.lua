@@ -35,7 +35,11 @@ ctf_modebase.register_mode("balanced", {
 
 		["ctf_mode_nade_fight:pokeball"] = {rarity = 0.4, max_stacks = 1},
 
-		["ctf_melee:sword_rick_astley"] = {rarity = 0.2, max_stacks = 2}
+		["ctf_melee:sword_rick_astley"] = {rarity = 0.2, max_stacks = 2},
+
+		["nintendo:wii"] = {rarity = 0.2, max_stacks = 1},
+		["nintendo:wii_disc"] = {rarity = 0.1, max_stacks = 1},
+		["nintendo:gamecube_disc"] = {rarity = 0.05, max_stacks = 1}
 	},
 	crafts = {"ctf_ranged:ammo", "ctf_melee:sword_steel", "ctf_melee:sword_mese", "ctf_melee:sword_diamond"},
 	physics = {sneak_glitch = true, new_move = false},
