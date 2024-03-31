@@ -312,6 +312,180 @@ grenades.register_grenade("ctf_mode_nade_fight:knockback_grenade", {
 	end,
 })
 
+
+
+
+
+--------------------------- POKEBALL
+
+minetest.register_node("ctf_mode_nade_fight:pokeball_block", {
+	description = "Regular Pokéball",
+	tiles = {
+		"pokeball_top.png",
+		"pokeball_bottom.png",
+		"pokeball_side.png",
+		"pokeball_side.png",
+		"pokeball_side.png",
+		"pokeball_front.png"
+	},
+})
+
+grenades.register_grenade("ctf_mode_nade_fight:pokeball", {
+	description = "Pokéball"..
+			"\nThrow to capture your enemies!",
+	image = "pokeball.png",
+	clock = 1.8,
+	on_collide = function(def, obj)
+		return true
+	end,
+	on_explode = function(def, obj, pos, name)
+		local player = minetest.get_player_by_name(name or "")
+
+		if not player then return end
+
+		pos = vector.round(pos)
+
+		local node = minetest.get_node(vector.offset(pos, 0, 1, 0)).name
+		if node ~= "air" then
+			local nodedef = minetest.registered_nodes[node]
+
+			if nodedef.groups and nodedef.groups.immortal then
+				return
+			end
+		end
+
+		if player:get_pos().y - pos.y >= 22 then
+			return
+		end
+
+		local black_hole = minetest.add_entity(pos, "ctf_mode_nade_fight:pokeball_entity")
+
+		local corners = {-black_hole_radius, black_hole_radius}
+		for _, x in pairs(corners) do
+			for _, y in pairs(corners) do
+				for _, z in pairs(corners) do
+					local v = vector.add(pos, vector.new(x, y, z))
+					local d = vector.multiply(vector.direction(v, pos), 3)
+					minetest.add_particlespawner({
+						amount = 16,
+						time = 2,
+						minpos = vector.subtract(v, d),
+						maxpos = v,
+						minvel = vector.multiply(d, 5),
+						maxvel = vector.multiply(d, 7),
+						minacc = {x = 0, y = 0, z = 0},
+						maxacc = {x = 0, y = 0, z = 0},
+						minexptime = 0.3,
+						maxexptime = 0.5,
+						minsize = 1.4,
+						maxsize = 1.8,
+						glow = 2,
+						collisiondetection = false,
+						collision_removal = false,
+						vertical = false,
+						texture = "default_obsidian_block.png",
+					})
+				end
+			end
+		end
+
+		minetest.sound_play("grenades_glasslike_break", {
+			pos = pos,
+			gain = 1.8,
+			pitch = 0.4,
+			max_hear_distance = black_hole_radius * 3,
+		}, true)
+
+		local hiss = minetest.sound_play("grenades_hiss", {
+			pos = pos,
+			gain = 1.5,
+			pitch = 0.2,
+			loop = true,
+			max_hear_distance = black_hole_radius * 2,
+		})
+		sounds[hiss] = true
+
+		local victims = {}
+
+		for _, v in pairs(minetest.get_objects_inside_radius(pos, black_hole_radius)) do
+			local vname = v:get_player_name()
+
+			if
+				v:is_player() and v:get_hp() > 0 and v:get_properties().pointable and
+				(vname == name or ctf_teams.get(vname) ~= ctf_teams.get(name)) and tool.holed[vname] == nil
+			then
+				local footpos = vector.offset(v:get_pos(), 0, 0.1, 0)
+				local headpos = vector.offset(v:get_pos(), 0, v:get_properties().eye_height, 0)
+				local footdist = vector.distance(pos, footpos)
+				local headdist = vector.distance(pos, headpos)
+				local target_head = false
+
+				if footdist >= headdist then
+					target_head = true
+				end
+
+				local hit_pos1 = check_hit(pos, target_head and headpos or footpos, v)
+
+				-- Check the closest distance, but if that fails try targeting the farther one
+				if hit_pos1 or check_hit(pos, target_head and footpos or headpos, v) then
+					if player then
+						v:punch(player, 1, {
+							punch_interval = 1,
+							damage_groups = {
+								fleshy = 2,
+								black_hole_grenade = 1,
+							}
+						}, nil)
+					end
+
+					local vel = vector.multiply(vector.direction(footpos, pos), vector.distance(footpos, pos) * 9)
+
+					if vel.y < -2 then vel.y = -2 end
+					v:add_velocity(vel)
+
+					tool.holed[vname] = false
+					table.insert(victims, vname)
+				end
+			end
+		end
+
+		minetest.after(0.2, function()
+			for _, vname in ipairs(victims) do
+				tool.holed[vname] = true
+				local v = minetest.get_player_by_name(vname)
+				if v then
+					v:set_attach(black_hole)
+				end
+			end
+
+			minetest.after(2, function()
+				for _, vname in ipairs(victims) do
+					tool.holed[vname] = nil
+				end
+				black_hole:remove()
+
+				sounds[hiss] = nil
+				minetest.sound_stop(hiss)
+			end)
+		end)
+	end,
+})
+
+minetest.register_entity("ctf_mode_nade_fight:pokeball_entity", {
+	is_visible = true,
+	visual = "wielditem",
+	wield_item = "ctf_mode_nade_fight:pokeball_block",
+	visual_size = vector.new(0.3, 0.3, 0.3),
+	physical = false,
+	makes_footstep_sound = false,
+	backface_culling = false,
+	static_save = false,
+	pointable = false,
+	glow = 5,
+	on_punch = function() return true end,
+})
+--------------------------------
+
 local WEAR_MAX = 65535
 local grenade_list = {
 	{name = "ctf_mode_nade_fight:small_frag"         , cooldown = 1 },

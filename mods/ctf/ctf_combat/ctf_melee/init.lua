@@ -26,6 +26,12 @@ local sword_mats = {
 		inventory_image = minetest.registered_tools["default:sword_diamond"].inventory_image,
 		damage_groups = {fleshy = 8},
 		full_punch_interval = 0.6,
+	},
+	rick_astley = {
+		description = "Rick Astley sword",
+		inventory_image = "rick_astley_sword.png",
+		damage_groups = {fleshy = 6},
+		full_punch_interval = 0.6,
 	}
 }
 
@@ -70,6 +76,37 @@ function ctf_melee.simple_register_sword(name, def)
 		end
 
 		base_def.on_secondary_use = def.rightclick_func
+	end
+
+	if name == "ctf_melee:sword_rick_astley" then
+		base_def.on_use = function(itemstack, user, pointed, ...)
+			pos = user:get_pos()
+			minetest.add_particlespawner({
+				amount = 1,
+				time = 0.01,
+				minpos = {x=pos.x, y=pos.y+2, z=pos.z},
+				maxpos = {x=pos.x, y=pos.y+2, z=pos.z},
+				minvel = {x=0, y=0.15, z=0}, --minvel
+				maxvel = {x=0, y=0.15, z=0}, --maxvel
+				minacc = {x=0,y=0,z=0}, --minacc
+				maxacc = {x=0,y=0,z=0}, --maxacc
+				minexptime = 2.5, --minexptime
+				maxexptime = 2.5, --maxexptime
+				minsize = 9, --minsize
+				maxsize = 9, --maxsize
+				collisiondetection = false, --collisiondetection
+				texture = "rick_emoji.png",
+				animation = {
+				    type = "vertical_frames",
+
+				    aspect_w = 347,
+
+				    aspect_h = 350,
+
+				    length = 2.0,
+				}
+			})
+		end
 	end
 
 	minetest.register_tool(name, base_def)
@@ -296,6 +333,11 @@ function ctf_melee.register_sword(name, def)
 					node_on_punch(pointed.under, node, user, pointed)
 				end
 			end
+		end
+
+		minetest.chat_send_all("hiii")
+		if name == "ctf_melee:sword_rick_astley" then
+			minetest.chat_send_all("yo")
 		end
 
 		slash_stab_sword_func("LMB", itemstack, user, pointed, ...)
