@@ -49,6 +49,7 @@ ctf_modebase.register_mode("nade_fight", {
 		["default:water_source"] = {rarity = 0.2, max_stacks = 1},
 		["torch_bomb:torch_grenade"] = {rarity = 0.1, max_stacks = 1, min_count = 1, max_count = 4},
 		["torch_bomb:mega_torch_bomb_rocket"] = {rarity = 0.05, max_stacks = 1, max_count = 1},
+		["easter_egg:egg"] = {rarity = 0.03, max_stacks = 1},
 	},
 	crafts = {
 		"ctf_map:damage_cobble",

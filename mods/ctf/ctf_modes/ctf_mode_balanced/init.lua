@@ -39,7 +39,8 @@ ctf_modebase.register_mode("balanced", {
 
 		["nintendo:wii"] = {rarity = 0.2, max_stacks = 1},
 		["nintendo:wii_disc"] = {rarity = 0.1, max_stacks = 1},
-		["nintendo:gamecube_disc"] = {rarity = 0.05, max_stacks = 1}
+		["nintendo:gamecube_disc"] = {rarity = 0.05, max_stacks = 1},
+		["easter_egg:egg"] = {rarity = 0.03, max_stacks = 1},
 	},
 	crafts = {"ctf_ranged:ammo", "ctf_melee:sword_steel", "ctf_melee:sword_mese", "ctf_melee:sword_diamond"},
 	physics = {sneak_glitch = true, new_move = false},
