@@ -18,6 +18,7 @@ local function boom(obj)
 end
 
 random_gifts.list = {
+	{itemname = "easter_egg:egg", chance = 2, amount = 2},
 	{itemname = "default:stone", chance = 40, amount = 50},
 	{itemname = "default:cobble", chance = 40, amount = 50},
 
