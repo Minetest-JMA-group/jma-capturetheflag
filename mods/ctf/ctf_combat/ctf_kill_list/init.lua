@@ -31,48 +31,65 @@ local HUD_DEFINITIONS = {
 		color = 0xFFFFFF,
 	},
 }
-
 local kill_list = {}
+local player_settings = {}
 
 local image_scale_map = ctf_settings.settings["ctf_kill_list:tp_size"].image_scale_map
-local function update_hud_line(player, idx, new)
-	idx = HUD_LINES - (idx-1)
+local function update_kill_list_hud(player)
+	local player_name = PlayerName(player)
+	local ps = player_settings[player_name]
+	for idx = 1, ps.history_size, 1 do
+		local new = kill_list[idx]
+		idx = ps.history_size - (idx-1)
 
-	local image_scale = tonumber(ctf_settings.get(player, "ctf_kill_list:tp_size"))
+		local img_scale = ps.image_scale
 
-	image_scale = image_scale_map[image_scale] * 2
+		img_scale = image_scale_map[img_scale] * 2
 
-	for i=1, 3, 1 do
-		local hname = string.format(HUDNAME_FORMAT, idx, i)
-		local phud = hud:get(player, hname)
+		for i=1, 3, 1 do
+			local hname = string.format(HUDNAME_FORMAT, idx, i)
+			local phud = hud:get(player, hname)
 
-		if new then
-			if phud then
+			if new then
+				if phud then
+					hud:change(player, hname, {
+						text = (new[i].text or new[i].image),
+						image_scale = img_scale,
+						color = new[i].color or 0xFFFFFF
+					})
+				else
+					local newhud = table.copy(HUD_DEFINITIONS[i])
+
+					newhud.offset.y = -(idx-1)*HUD_LINE_HEIGHT
+					newhud.text = new[i].text or new[i].image
+					newhud.image_scale = img_scale
+					newhud.color = new[i].color or 0xFFFFFF
+					hud:add(player, hname, newhud)
+				end
+			elseif phud then
 				hud:change(player, hname, {
-					text = (new[i].text or new[i].image),
-					image_scale = image_scale,
-					color = new[i].color or 0xFFFFFF
+					text = ""
 				})
-			else
-				local newhud = table.copy(HUD_DEFINITIONS[i])
-
-				newhud.offset.y = -(idx-1)*HUD_LINE_HEIGHT
-				newhud.text = new[i].text or new[i].image
-				newhud.image_scale = image_scale
-				newhud.color = new[i].color or 0xFFFFFF
-				hud:add(player, hname, newhud)
 			end
-		elseif phud then
-			hud:change(player, hname, {
-				text = ""
-			})
 		end
 	end
 end
 
-local function update_kill_list_hud(player)
-	for i=1, HUD_LINES, 1 do
-		update_hud_line(player, i, kill_list[i])
+function ctf_kill_list.apply_settings(player, update_hud)
+	local player_name = PlayerName(player)
+	local ps = {}
+	ps.history_size = tonumber(ctf_settings.get(player, "ctf_kill_list:history_size")) or HUD_LINES
+	ps.image_scale = tonumber(ctf_settings.get(player, "ctf_kill_list:tp_size")) or 2
+
+	player_settings[player_name] = ps
+
+	if update_hud then
+		if hud.huds[player_name] then
+			for i in pairs(hud.huds[player_name]) do
+				hud:remove(player, i)
+			end
+		end
+		update_kill_list_hud(player)
 	end
 end
 
@@ -111,7 +128,11 @@ ctf_api.register_on_match_end(function()
 end)
 
 minetest.register_on_joinplayer(function(player)
-	update_kill_list_hud(player)
+	ctf_kill_list.apply_settings(player)
+end)
+
+minetest.register_on_leaveplayer(function(player)
+	player_settings[PlayerName(player)] = nil
 end)
 
 function ctf_kill_list.add(killer, victim, weapon_image, comment)
