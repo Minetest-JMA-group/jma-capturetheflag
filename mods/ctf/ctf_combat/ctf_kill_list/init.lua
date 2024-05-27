@@ -38,6 +38,7 @@ local image_scale_map = ctf_settings.settings["ctf_kill_list:tp_size"].image_sca
 local function update_kill_list_hud(player)
 	local player_name = PlayerName(player)
 	local ps = player_settings[player_name]
+	if not ps then return end
 	for idx = 1, ps.history_size, 1 do
 		local new = kill_list[idx]
 		idx = ps.history_size - (idx-1)
