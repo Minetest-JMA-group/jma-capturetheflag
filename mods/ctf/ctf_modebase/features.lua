@@ -747,7 +747,6 @@ return {
 			if is_pro(minetest.get_player_by_name(pname), rank) then
 				return true, true
 			elseif (rank.score or 0) >= 10 then
-				print("yes")
 				return true, deny_pro
 			end
 		end
