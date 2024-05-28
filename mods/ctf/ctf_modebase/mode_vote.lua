@@ -49,9 +49,13 @@ local function show_modechoose_form(player)
 	local vote = 0
 	while vote <= MAX_ROUNDS do
 		local vote_num = vote
+		local label = tostring(vote)
+		if vote_num == 0 then
+			label = "Skip"
+		end
 		elements[string.format("vote_%d", vote_num)] = {
 			type = "button",
-			label = vote_num,
+			label = label,
 			exit = true,
 			pos = {"center", i},
 			size = {1.4, 0.7},
