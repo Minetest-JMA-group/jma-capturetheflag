@@ -161,15 +161,32 @@ local function get_suicide_image(reason)
 
 	if reason.type == "node_damage" then
 		local node = reason.node
-		if node == "ctf_map:spike" then
-			image = "ctf_map_spike.png"
-		elseif node:match("default:lava") then
-			image = "default_lava.png"
-		elseif node:match("fire:") then
-			image = "fire_basic_flame.png"
+		if node:find("lava") then
+			return "default_lava.png"
+		end
+
+		local node_def = minetest.registered_nodes[node]
+		if node_def then
+			local inv_image = node_def.inventory_image
+			if inv_image and inv_image ~= "" then
+				image = inv_image
+			elseif node_def.tiles and node_def.tiles[1] then
+				local tiles1 = node_def.tiles[1]
+				if type(tiles1) == "string" then
+					image = tiles1
+				elseif tiles1.name and tiles1.name ~= "" then
+					if tiles1.animation then
+						local h = tiles1.animation.aspect_h or 16
+						return tiles1.name .. "^[verticalframe:" .. h .. ":1"
+					end
+					image = tiles1.name
+				end
+			end
 		end
 	elseif reason.type == "drown" then
-		image = "default_water.png"
+		image = "bubble.png"
+	elseif reason.type == "fall" then
+		image = "ctf_kill_list_falling_man.png"
 	end
 
 	return image
