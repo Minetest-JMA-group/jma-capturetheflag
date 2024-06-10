@@ -97,14 +97,12 @@ function ranks.remove_rank(name)
 end
 
 function ranks.get_player_prefix(name)
-	if minetest.settings:get("ranks.prefix_chat") ~= "false" then
-		local rank = ranks.get_rank(name)
-		if rank then
-			local def = ranks.get_def(rank)
-			if def.prefix then
-				local colour = get_colour(def.colour)
-				return {prefix = def.prefix, color = colour}
-			end
+	local rank = ranks.get_rank(name)
+	if rank then
+		local def = ranks.get_def(rank)
+		if def.prefix then
+			local colour = get_colour(def.colour)
+			return {prefix = def.prefix, color = colour}
 		end
 	end
 	return nil
