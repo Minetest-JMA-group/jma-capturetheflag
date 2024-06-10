@@ -93,6 +93,7 @@ local function show_modechoose_form(player)
 end
 
 local function send_formspec()
+	if not voted then return end
 	for pname in pairs(voted) do
 		if not voted[pname] then
 			show_modechoose_form(pname)
