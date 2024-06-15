@@ -21,7 +21,6 @@ minetest.after(1.0, function()
 	add_fall_damage("default:desert_sand", 2)
 	add_fall_damage("default:silver_sand", 2)
 	add_fall_damage("default:gravel", 3)
-	add_fall_damage("caverealms:coal_dust", 3)
 	add_fall_damage("tnt:tnt_burning", 4)
 end)
 
@@ -29,7 +28,7 @@ end)
 -- Falling stuff
 --
 
-local node_fall_hurt = minetest.settings:get_bool("node_fall_hurt") ~= false
+local node_fall_hurt = true
 local delay = 0.1 -- used to simulate lag
 local gravity = minetest.settings:get("movement_gravity") or 9.81
 local builtin_shared = ...
