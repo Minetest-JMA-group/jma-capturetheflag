@@ -1,4 +1,5 @@
 ctf_chat = {}
+local callbacks = {}
 local colorize = minetest.colorize
 
 minetest.override_chatcommand("msg", {
@@ -38,14 +39,9 @@ minetest.override_chatcommand("msg", {
 	end
 })
 
-function ctf_chat.send_me(name, param)
-end
-
 minetest.override_chatcommand("me", {
 	func = function(name, param)
 		minetest.log("action", string.format("[CHAT] ME from %s: %s", name, param))
-
-		ctf_chat.send_me(name, param)
 
 		local pteam = ctf_teams.get(name)
 		if pteam then
@@ -84,35 +80,53 @@ minetest.register_chatcommand("t", {
 	end
 })
 
+function ctf_chat.register_on_chat_message_format(func)
+	table.insert(callbacks, func)
+end
+
+local function format_prefixes(name, pteam_color)
+	local prefixes = {}
+
+	local rank = ranks.get_player_prefix(name)
+	if rank then
+		table.insert(prefixes, 1, colorize(rank.color, rank.prefix))
+	end
+
+	local pro_prefix = "[PRO]"
+	local current_mode = ctf_modebase:get_current_mode()
+	if current_mode and current_mode.player_is_pro and current_mode.player_is_pro(name) == true then
+		table.insert(prefixes, 1, colorize(pteam_color, pro_prefix))
+	end
+
+	return joinStrings(prefixes)
+end
+
 -- Formatting chat messages
 function minetest.format_chat_message(name, message)
-	if filter_caps then
-		message = filter_caps.parse(name, message)
-	end
 	local pteam_color = "white"
 	local pteam = ctf_teams.get(name)
 	if pteam then
 		pteam_color = ctf_teams.team[pteam].color
 	end
 
-	local msg = string.format("<%s>: %s", colorize(pteam_color, name), message)
+	local colorized_name = colorize(pteam_color, name)
+	local prefixes = format_prefixes(name, pteam_color)
+	local formatted_msg = joinStrings({prefixes, "<" .. colorized_name .. ">:", message})
 
-	local rank = ranks.get_player_prefix(name)
+    if not formatted_msg or #formatted_msg == 0 then
+        minetest.log("error", "[ctf_chat]: Chat message formatting failed! Player: " .. name .. " Raw msg: " .. message)
+		return string.format("%s %s", name or "", message or "")
+    end
 
-	local pro = false
-	local current_mode = ctf_modebase:get_current_mode()
-	if current_mode and current_mode.player_is_pro and current_mode.player_is_pro(name) == true then
-		pro = true
+	local components = {
+		name = name,
+		message = message,
+		prefixes = prefixes,
+	}
+
+	for _, func in ipairs(callbacks) do
+		func(formatted_msg, components)
 	end
 
-	local pro_prefix = "[PRO]"
-	if rank and pro then
-		msg = string.format("%s %s %s", colorize(pteam_color, pro_prefix), colorize(rank.color, rank.prefix), msg)
-	elseif pro and not rank then
-		msg = string.format("%s %s", colorize(pteam_color, pro_prefix), msg)
-	elseif not pro and rank then
-		msg = string.format("%s %s", colorize(rank.color, rank.prefix), msg)
-	end
-
-	return msg
+	return formatted_msg
 end
