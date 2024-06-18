@@ -85,20 +85,20 @@ function ctf_chat.register_on_chat_message_format(func)
 end
 
 local function format_prefixes(name, pteam_color)
-	local prefixes = {}
+	local rank_prefix = ""
+	local pro_prefix = ""
 
 	local rank = ranks.get_player_prefix(name)
 	if rank then
-		table.insert(prefixes, 1, colorize(rank.color, rank.prefix))
+		rank_prefix = colorize(rank.color, rank.prefix)
 	end
 
-	local pro_prefix = "[PRO]"
 	local current_mode = ctf_modebase:get_current_mode()
 	if current_mode and current_mode.player_is_pro and current_mode.player_is_pro(name) == true then
-		table.insert(prefixes, 1, colorize(pteam_color, pro_prefix))
+		pro_prefix = colorize(pteam_color, "[PRO]")
 	end
 
-	return joinStrings(prefixes)
+	return joinStrings(pro_prefix, rank_prefix)
 end
 
 -- Formatting chat messages
@@ -115,7 +115,7 @@ function minetest.format_chat_message(name, message)
 
 	local colorized_name = colorize(pteam_color, name)
 	local prefixes = format_prefixes(name, pteam_color)
-	local formatted_msg = joinStrings({prefixes, "<" .. colorized_name .. ">:", message})
+	local formatted_msg = joinStrings(prefixes, "<" .. colorized_name .. ">:", message)
 
     if not formatted_msg or #formatted_msg == 0 then
         minetest.log("error", "[ctf_chat]: Chat message formatting failed! Player: " .. name .. " Raw msg: " .. message)
@@ -128,9 +128,7 @@ function minetest.format_chat_message(name, message)
 		prefixes = prefixes,
 	}
 
-	for _, func in ipairs(callbacks) do
-		func(formatted_msg, components)
-	end
+	RunCallbacks(callbacks, formatted_msg, components)
 
 	return formatted_msg
 end

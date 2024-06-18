@@ -82,18 +82,14 @@ function HumanReadable(input)
 	return out
 end
 
-function joinStrings(strings)
+function joinStrings(...)
     local result = ""
-    local isFirstNonEmpty = true
-    for i, str in ipairs(strings) do
-        if str:match("%S") then
-            if not isFirstNonEmpty then
-				-- Add a space between non-empty strings if it's not the first non-empty string
+    for i, str in ipairs({...}) do
+        if str ~= "" and str ~= " " then
+            if result ~= "" then
                 result = result .. " "
             end
-			-- Trim leading and trailing spaces from the string and append it to the result
-            result = result .. str:match("^%s*(.-)%s*$")
-            isFirstNonEmpty = false
+            result = result .. str
         end
     end
     return result
