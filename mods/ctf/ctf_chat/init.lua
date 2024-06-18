@@ -103,6 +103,10 @@ end
 
 -- Formatting chat messages
 function minetest.format_chat_message(name, message)
+	if filter_caps then
+		message = filter_caps.parse(name, message)
+	end
+
 	local pteam_color = "white"
 	local pteam = ctf_teams.get(name)
 	if pteam then
