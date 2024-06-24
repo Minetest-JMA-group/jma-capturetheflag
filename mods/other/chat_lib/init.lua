@@ -14,9 +14,9 @@ end
 chat_lib.chat_send_all = minetest.chat_send_all
 chat_lib.chat_send_player = minetest.chat_send_player
 
-function minetest.chat_send_all(message)
+function minetest.chat_send_all(message, source)
 	for _, func in ipairs(chat_lib.registered_on_chat_send_all) do
-		if func(message) == true then
+		if func(message, source) == true then
 			-- Message is handled, not be sent to all players
 			return
 		end
@@ -25,9 +25,9 @@ function minetest.chat_send_all(message)
 	chat_lib.chat_send_all(message)
 end
 
-function minetest.chat_send_player(name, message)
+function minetest.chat_send_player(name, message, source)
 	for _, func in ipairs(chat_lib.registered_on_chat_send_player) do
-		if func(name, message) == true then
+		if func(name, message, source) == true then
 			-- Message is handled, not be sent to player
 			return
 		end
