@@ -82,6 +82,19 @@ function HumanReadable(input)
 	return out
 end
 
+function joinStrings(...)
+    local result = ""
+    for i, str in ipairs({...}) do
+        if str ~= "" and str ~= " " then
+            if result ~= "" then
+                result = result .. " "
+            end
+            result = result .. str
+        end
+    end
+    return result
+end
+
 --
 --- TABLES
 --
