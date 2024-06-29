@@ -1,3 +1,6 @@
+-- * Copyright (c) 2024 Nanowolf4  (E-Mail: n4w@tutanota.com, XMPP/Jabber: n4w@nixnet.serivces)
+-- * SPDX-License-Identifier: GPL-3.0-or-later
+
 chat_lib = {
 	registered_on_chat_send_all = {},
 	registered_on_chat_send_player = {}
