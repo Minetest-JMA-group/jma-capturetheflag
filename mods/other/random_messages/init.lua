@@ -88,7 +88,7 @@ end
 function random_messages.display_message(message_number)
 	local msg = random_messages.messages[message_number] or message_number
 	if msg then
-		minetest.chat_send_all(minetest.colorize("#808080", msg))
+		minetest.chat_send_all(minetest.colorize("#808080", msg), "random_messages")
 	end
 end
 
