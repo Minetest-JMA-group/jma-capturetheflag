@@ -9,7 +9,7 @@ playertag = {
 	TYPE_ENTITY  = TYPE_ENTITY,
 }
 
-local function add_entity_tag(player, old_observers, resp_attempts)
+local function add_entity_tag(player, old_observers, readded)
 	local player_name = player:get_player_name()
 	-- Hide fixed nametag
 	player:set_nametag_attributes({
@@ -69,16 +69,12 @@ local function add_entity_tag(player, old_observers, resp_attempts)
 	players[player_name].nametag_entity = ent2 and ent2:get_luaentity()
 	players[player_name].symbol_entity = ent3 and ent3:get_luaentity()
 
-	resp_attempts = resp_attempts or 0
-	if resp_attempts > 3 then
-		return
-	end
+	if readded then return end
 	players[player_name].timer = minetest.after(5, function()
 		if minetest.get_player_by_name(player_name) ~= nil then -- check if the player is still online
 			if not ent:get_luaentity() or (ent.set_observers and not (ent2:get_luaentity() or ent3:get_luaentity())) then
 				minetest.log("warning", "playertag: respawning entity for " .. player_name)
-				add_entity_tag(player, old_observers)
-				resp_attempts = resp_attempts + 1
+				add_entity_tag(player, old_observers, true)
 			end
 		end
 	end)
@@ -144,13 +140,12 @@ function playertag.set(player, type, color, extra)
 	local oldset = players[player:get_player_name()]
 	if not oldset then return end
 
-	if oldset.type ~= type or oldset.color ~= color then
-		extra = extra or {}
-		extra.type = type
-		extra.color = color
+	-- update it anyway
+	extra = extra or {}
+	extra.type = type
+	extra.color = color
 
-		update(player, extra)
-	end
+	update(player, extra)
 
 	return players[player:get_player_name()]
 end

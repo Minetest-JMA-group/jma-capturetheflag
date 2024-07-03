@@ -33,6 +33,31 @@ minetest.register_entity("wield3d:entity", {
 	end
 })
 
+local function add_wielditem(player)
+	local entity = minetest.add_entity(player:get_pos(), "wield3d:entity")
+	local setting = ctf_settings.get(player, "use_old_wielditem_display")
+
+	entity:set_attach(
+		player,
+		location[1], location[2], location[3],
+		setting == "false"
+	)
+
+	local player_name = player:get_player_name()
+
+	players[player_name] = {entity=entity, item="wield3d:hand"}
+
+	player:hud_set_flags({wielditem = (setting == "true")})
+end
+
+local function remove_wielditem(player)
+	local pname = player:get_player_name()
+	if players[pname] ~= nil then
+		players[pname].entity:remove()
+		players[pname] = nil
+	end
+end
+
 local function update_entity(player)
 	local pname = player:get_player_name()
 	local item = player:get_wielded_item():get_name()
@@ -46,7 +71,11 @@ local function update_entity(player)
 	end
 	players[pname].item = item
 
-	players[pname].entity:set_properties({wield_item = item})
+	if players[pname].entity:get_luaentity() then
+		players[pname].entity:set_properties({wield_item = item})
+	else
+		add_wielditem(player)
+	end
 end
 
 local globalstep_timer = 0
@@ -62,49 +91,6 @@ minetest.register_globalstep(function(dtime)
 		end
 	end
 end)
-
-local function add_wielditem(player, resp_attempts)
-	local entity = minetest.add_entity(player:get_pos(), "wield3d:entity")
-	local setting = ctf_settings.get(player, "use_old_wielditem_display")
-
-	entity:set_attach(
-		player,
-		location[1], location[2], location[3],
-		setting == "false"
-	)
-
-	local player_name = player:get_player_name()
-
-	players[player_name] = {entity=entity, item="wield3d:hand"}
-
-	player:hud_set_flags({wielditem = (setting == "true")})
-	update_entity(player)
-
-	resp_attempts = resp_attempts or 0
-	if resp_attempts > 3 then
-		return
-	end
-	players[player_name].timer = minetest.after(5, function()
-		if minetest.get_player_by_name(player_name) ~= nil then -- check if the player is still online
-			if not entity:get_luaentity() then
-				minetest.log("warning", "wield3d: respawning entity for " .. player_name)
-				add_wielditem(player)
-				resp_attempts = resp_attempts + 1
-			end
-		end
-	end)
-end
-
-local function remove_wielditem(player)
-	local pname = player:get_player_name()
-	if players[pname] ~= nil then
-		players[pname].entity:remove()
-		if players[pname].timer then
-			players[pname].timer:cancel()
-		end
-		players[pname] = nil
-	end
-end
 
 minetest.register_on_joinplayer(function(player)
 	local pname = player:get_player_name()
