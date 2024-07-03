@@ -9,7 +9,8 @@ playertag = {
 	TYPE_ENTITY  = TYPE_ENTITY,
 }
 
-local function add_entity_tag(player, old_observers)
+local function add_entity_tag(player, old_observers, resp_attempts)
+	local player_name = player:get_player_name()
 	-- Hide fixed nametag
 	player:set_nametag_attributes({
 		color = {a = 0, r = 0, g = 0, b = 0}
@@ -23,7 +24,7 @@ local function add_entity_tag(player, old_observers)
 		ent2 = minetest.add_entity(player:get_pos(), "playertag:tag")
 		ent2:set_observers(old_observers.nametag_entity or {})
 		ent2:set_properties({
-			nametag = player:get_player_name(),
+			nametag = player_name,
 			nametag_color = "#EEFFFFDD",
 			nametag_bgcolor = "#0000002D"
 		})
@@ -40,9 +41,9 @@ local function add_entity_tag(player, old_observers)
 
 	-- Build name from font texture
 	local texture = "npcf_tag_bg.png"
-	local x = math.floor(134 - ((player:get_player_name():len() * 11) / 2))
+	local x = math.floor(134 - ((player_name:len() * 11) / 2))
 	local i = 0
-	player:get_player_name():gsub(".", function(char)
+	player_name:gsub(".", function(char)
 		local n = "_"
 		if char:byte() > 96 and char:byte() < 123 or char:byte() > 47 and char:byte() < 58 or char == "-" then
 			n = char
@@ -64,9 +65,23 @@ local function add_entity_tag(player, old_observers)
 	end
 
 	-- Store
-	players[player:get_player_name()].entity = ent:get_luaentity()
-	players[player:get_player_name()].nametag_entity = ent2 and ent2:get_luaentity()
-	players[player:get_player_name()].symbol_entity = ent3 and ent3:get_luaentity()
+	players[player_name].entity = ent:get_luaentity()
+	players[player_name].nametag_entity = ent2 and ent2:get_luaentity()
+	players[player_name].symbol_entity = ent3 and ent3:get_luaentity()
+
+	resp_attempts = resp_attempts or 0
+	if resp_attempts > 3 then
+		return
+	end
+	players[player_name].timer = minetest.after(5, function()
+		if minetest.get_player_by_name(player_name) ~= nil then -- check if the player is still online
+			if not ent:get_luaentity() or (ent.set_observers and not (ent2:get_luaentity() or ent3:get_luaentity())) then
+				minetest.log("warning", "playertag: respawning entity for " .. player_name)
+				add_entity_tag(player, old_observers)
+				resp_attempts = resp_attempts + 1
+			end
+		end
+	end)
 end
 
 local function remove_entity_tag(player)
@@ -80,6 +95,10 @@ local function remove_entity_tag(player)
 
 		if tag.symbol_entity then
 			tag.symbol_entity.object:remove()
+		end
+
+		if tag.timer then
+			tag.timer:cancel()
 		end
 	end
 end
@@ -157,8 +176,10 @@ minetest.register_entity("playertag:tag", {
 		pointable = false,
 	},
 	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir, damage)
-		puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
-		minetest.log("warning", puncher:get_player_name() ..  " is trying to damage non-pointable entity \"playertag:tag\".")
+		if minetest.is_player(puncher) then
+			puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
+			minetest.log("warning", puncher:get_player_name() .. " is trying to damage non-pointable entity \"playertag:tag\".")
+		end
 		return true
 	end
 })

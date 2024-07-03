@@ -25,8 +25,10 @@ minetest.register_entity("wield3d:entity", {
 		glow = 7,
 	},
 	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir, damage)
-		puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
-		minetest.log("warning", puncher:get_player_name() ..  " is trying to damage non-pointable entity \"wield3d:entity\".")
+		if minetest.is_player(puncher) then
+			puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
+			minetest.log("warning", puncher:get_player_name() .. " is trying to damage non-pointable entity \"wield3d:entity\".")
+		end
 		return true
 	end
 })
@@ -61,7 +63,7 @@ minetest.register_globalstep(function(dtime)
 	end
 end)
 
-local function add_wielditem(player)
+local function add_wielditem(player, resp_attempts)
 	local entity = minetest.add_entity(player:get_pos(), "wield3d:entity")
 	local setting = ctf_settings.get(player, "use_old_wielditem_display")
 
@@ -70,16 +72,36 @@ local function add_wielditem(player)
 		location[1], location[2], location[3],
 		setting == "false"
 	)
-	players[player:get_player_name()] = {entity=entity, item="wield3d:hand"}
+
+	local player_name = player:get_player_name()
+
+	players[player_name] = {entity=entity, item="wield3d:hand"}
 
 	player:hud_set_flags({wielditem = (setting == "true")})
 	update_entity(player)
+
+	resp_attempts = resp_attempts or 0
+	if resp_attempts > 3 then
+		return
+	end
+	players[player_name].timer = minetest.after(5, function()
+		if minetest.get_player_by_name(player_name) ~= nil then -- check if the player is still online
+			if not entity:get_luaentity() then
+				minetest.log("warning", "wield3d: respawning entity for " .. player_name)
+				add_wielditem(player)
+				resp_attempts = resp_attempts + 1
+			end
+		end
+	end)
 end
 
 local function remove_wielditem(player)
 	local pname = player:get_player_name()
 	if players[pname] ~= nil then
 		players[pname].entity:remove()
+		if players[pname].timer then
+			players[pname].timer:cancel()
+		end
 		players[pname] = nil
 	end
 end

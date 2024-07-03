@@ -15,8 +15,10 @@ minetest.register_entity("hpbar:entity", {
 		pointable = false,
 	},
 	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir, damage)
-		puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
-		minetest.log("warning", puncher:get_player_name() ..  " is trying to damage non-pointable entity \"hpbar:entity\".")
+		if minetest.is_player(puncher) then
+			puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
+			minetest.log("warning", puncher:get_player_name() .. " is trying to damage non-pointable entity \"hpbar:entity\".")
+		end
 		return true
 	end
 })
