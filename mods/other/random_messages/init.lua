@@ -81,7 +81,7 @@ function random_messages.read_messages()
 		"To report a player sending inappropriate private messages to you, use /report playername PM",
 
 		"Use /change_vote <questionID> to change your vote on the poll. Check question ID with /list_questions",
-		"Join our special relay bot running on XMPP/jabber at jmactf_relay@muc.nixnet.services"
+		"Join our special relay bot running on XMPP/Jabber at jmactf_relay@muc.nixnet.services"
 	}
 end
 
@@ -95,6 +95,10 @@ end
 function random_messages.show_message()
 	local message = random_messages.messages[math.random(1, #random_messages.messages)]
 	random_messages.display_message(message)
+end
+
+function random_messages.get_random_message()
+	return random_messages.messages[math.random(1, #random_messages.messages)]
 end
 
 function random_messages.list_messages()

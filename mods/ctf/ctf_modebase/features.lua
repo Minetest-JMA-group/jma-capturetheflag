@@ -19,6 +19,41 @@ ctf_core.testing = {
 	end
 }
 
+local hud = mhud.init()
+local LOADING_SCREEN_TARGET_TIME = 5
+local loading_screen_time
+
+-- tag: map_image
+local old_announce = ctf_modebase.map_chosen
+function ctf_modebase.map_chosen(map, ...)
+	local found = false
+	for _, p in pairs(minetest.get_connected_players()) do
+		if hud:exists(p, "loading_screen") then
+			found = true
+
+			hud:add(p, "map_image", {
+				hud_elem_type = "image",
+				position = {x = 0.5, y = 0.5},
+				image_scale = -100,
+				z_index = 1001,
+				texture = map.dirname.."_screenshot.png^[opacity:30",
+			})
+
+			hud:change(p, "loading_text", {
+				text = "Loading Map: " .. map.name .. "...",
+			})
+		end
+	end
+
+	-- Reset loading screen timer
+	if found then
+		loading_screen_time = minetest.get_us_time()
+	end
+
+	return old_announce(map, ...)
+end
+
+
 local function update_playertag(player, t, nametag, team_nametag, team_symbol_nametag)
 	local entity_players = {}
 	local nametag_players = table.copy(ctf_teams.online_players[t].players)
@@ -48,11 +83,12 @@ local function update_playertag(player, t, nametag, team_nametag, team_symbol_na
 	nametag.object:set_observers(entity_players)
 end
 
+local tags_hidden = false
 local update_timer = false
-local function update_playertags()
-	if not update_timer then
+local function update_playertags(time)
+	if not update_timer and not tags_hidden then
 		update_timer = true
-		minetest.after(1.2, function()
+		minetest.after(time or 1.2, function()
 			update_timer = false
 			for _, p in pairs(minetest.get_connected_players()) do
 				local t = ctf_teams.get(p)
@@ -69,6 +105,35 @@ local function update_playertags()
 				end
 			end
 		end)
+	end
+end
+
+local PLAYERTAGS_OFF = false
+local PLAYERTAGS_ON = true
+local function set_playertags_state(state)
+	if state == PLAYERTAGS_ON and tags_hidden then
+		tags_hidden = false
+
+		update_playertags(0)
+	elseif state == PLAYERTAGS_OFF and not tags_hidden then
+		tags_hidden = true
+
+		for _, p in pairs(minetest.get_connected_players()) do
+			local playertag = playertag.get(p)
+
+			if ctf_teams.get(p) and playertag then
+				local team_nametag = playertag.nametag_entity
+				local nametag = playertag.entity
+				local symbol_entity = playertag.symbol_entity
+
+				if nametag and team_nametag and symbol_entity then
+					-- Occasionally crashes in singleplayer, so call it safely
+					pcall( team_nametag.object.set_observers,  team_nametag.object, {})
+					pcall(symbol_entity.object.set_observers, symbol_entity.object, {})
+					pcall(      nametag.object.set_observers,       nametag.object, {})
+				end
+			end
+		end
 	end
 end
 
@@ -421,8 +486,53 @@ return {
 			ctf_modebase:get_current_mode().team_chest_items or {},
 			ctf_modebase:get_current_mode().blacklisted_nodes or {}
 		)
+
+		if loading_screen_time then
+			local total_time = (minetest.get_us_time() - loading_screen_time) / 1e6
+
+			minetest.after(math.abs(LOADING_SCREEN_TARGET_TIME - total_time), function()
+				hud:clear_all()
+				set_playertags_state(PLAYERTAGS_ON)
+			end)
+		end
+
 	end,
 	on_match_end = function()
+		set_playertags_state(PLAYERTAGS_OFF)
+		for _, p in pairs(minetest.get_connected_players()) do
+			if ctf_teams.get(p) then
+				hud:add(p, "loading_screen", {
+					hud_elem_type = "image",
+					position = {x = 0.5, y = 0.5},
+					image_scale = -100.5,
+					z_index = 1000,
+					texture = "[combine:1x1^[invert:rgba^[opacity:1^[colorize:#34323d:255"
+				})
+
+				-- z_index 1001 is reserved for the next map's image. Search file for `tag: map_image`
+
+				hud:add(p, "loading_text", {
+					hud_elem_type = "text",
+					position = {x = 0.5, y = 0.5},
+					alignment = {x = "center", y = "up"},
+					text_scale = 2,
+					text = "Loading Next Map...",
+					color = 0x7ec5ff,
+					z_index = 1002,
+				})
+				hud:add(p, {
+					hud_elem_type = "text",
+					position = {x = 0.5, y = 0.75},
+					alignment = {x = "center", y = "center"},
+					text = random_messages.get_random_message(),
+					color = 0xffffff,
+					z_index = 1002,
+				})
+			end
+		end
+
+		loading_screen_time = minetest.get_us_time()
+
 		recent_rankings.on_match_end()
 
 		if ctf_map.current_map then
