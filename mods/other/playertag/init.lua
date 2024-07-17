@@ -11,9 +11,6 @@ playertag = {
 
 local function add_entity_tag(player, old_observers, readded)
 	local player_pos = player:get_pos()
-	if math.abs(player_pos.y) >= 30927 then
-		return
-	end
 
 	local player_name = player:get_player_name()
 	-- Hide fixed nametag
@@ -22,7 +19,7 @@ local function add_entity_tag(player, old_observers, readded)
 	})
 
 	local ent = minetest.add_entity(player:get_pos(), "playertag:tag")
-	if not ent then return end -- Crash hot fix
+	if not ent then return end
 	local ent2 = false
 	local ent3 = false
 

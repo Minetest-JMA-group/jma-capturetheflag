@@ -35,6 +35,8 @@ minetest.register_entity("wield3d:entity", {
 
 local function add_wielditem(player)
 	local entity = minetest.add_entity(player:get_pos(), "wield3d:entity")
+	if not entity then return end
+
 	local setting = ctf_settings.get(player, "use_old_wielditem_display")
 
 	entity:set_attach(
