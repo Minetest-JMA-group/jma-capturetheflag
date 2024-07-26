@@ -238,7 +238,7 @@ local function place_treasure_chests(mapmeta, pos1, pos2, data, param2_data, tre
 
 		if #place_positions < a.amount then
 			minetest.log("error",
-				string.format("[MAP] Couldn't place %d of the %d chests needed to place in zone %d",
+				string.format("[MAP] Couldn't place %d of the %d chests needed to place in zone %s",
 					a.amount - #place_positions,
 					a.amount,
 					i
