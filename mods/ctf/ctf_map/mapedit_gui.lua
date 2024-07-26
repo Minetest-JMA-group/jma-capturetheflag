@@ -85,7 +85,7 @@ ctf_map.register_map_command("resave_all", function(name, params)
 			return
 		end
 
-		local map = ctf_map.load_map_meta(dir, dirlist[dir])
+		local map = ctf_map.load_map_meta(dir, dir, dirlist[dir])
 
 
 		if map.enabled then
@@ -198,7 +198,7 @@ function ctf_map.show_map_editor(player)
 
 					minetest.after(0.5, function()
 						local idx = table.indexof(dirlist, dirlist_sorted[selected_map])
-						local map = ctf_map.load_map_meta(idx, dirlist_sorted[selected_map])
+						local map = ctf_map.load_map_meta(idx, idx, dirlist_sorted[selected_map])
 
 						ctf_map.place_map(map, function()
 								minetest.after(2, edit_map, pname, map)
@@ -221,7 +221,7 @@ function ctf_map.show_map_editor(player)
 
 					minetest.after(0.5, function()
 						local idx = table.indexof(dirlist, dirlist_sorted[selected_map])
-						local map = ctf_map.load_map_meta(idx, dirlist_sorted[selected_map])
+						local map = ctf_map.load_map_meta(idx, idx, dirlist_sorted[selected_map])
 
 						minetest.after(2, edit_map, pname, map)
 					end)

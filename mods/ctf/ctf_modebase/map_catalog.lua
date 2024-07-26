@@ -16,7 +16,7 @@ local function init()
 
 	local maps_len = #maps
 	for i, dirname in ipairs(maps) do
-		local map = ctf_map.load_map_meta(i, dirname, maps_len)
+		local map = ctf_map.load_map_meta(i, maps_len, dirname)
 		if map.map_version and map.enabled then
 			table.insert(ctf_modebase.map_catalog.maps, map)
 			table.insert(ctf_modebase.map_catalog.map_names, map.name)

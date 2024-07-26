@@ -26,7 +26,7 @@ local function calc_flag_center(map)
 	return flag_center
 end
 
-function ctf_map.load_map_meta(idx, dirname, max_idx)
+function ctf_map.load_map_meta(idx, max_idx, dirname)
 	local meta = Settings(ctf_map.maps_dir .. dirname .. "/map.conf")
 
 	if not meta then error("Map '"..dump(dirname).."' not found") end
@@ -35,7 +35,7 @@ function ctf_map.load_map_meta(idx, dirname, max_idx)
 
 	local map
 
-	local off_start_x = -(608 * max_idx / 2)
+	local off_start_x = -(608 * (max_idx / 2))
 	local offset = vector.new(off_start_x + (608 * idx), 0, 0) -- 608 is a multiple of 16, the size of a mapblock
 
 	if not meta:get("map_version") then
