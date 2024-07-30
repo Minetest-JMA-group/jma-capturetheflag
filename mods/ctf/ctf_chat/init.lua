@@ -71,7 +71,7 @@ minetest.register_chatcommand("t", {
 			local tcolor = ctf_teams.team[tname].color
 			for username in pairs(ctf_teams.online_players[tname].players) do
 				minetest.chat_send_player(username,
-						colorize(tcolor, "<" .. name .. "> ** " .. param .. " **"))
+						colorize(tcolor, "[TEAM] <" .. name .. "> ** " .. param .. " **"))
 			end
 		else
 			minetest.chat_send_player(name,
