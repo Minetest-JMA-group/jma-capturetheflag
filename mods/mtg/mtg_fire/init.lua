@@ -80,6 +80,7 @@ minetest.register_node("fire:basic_flame", flame_fire_node)
 -- Permanent flame node
 local permanent_fire_node = table.copy(fire_node)
 permanent_fire_node.description = S("Permanent Fire")
+permanent_fire_node.groups.igniter = nil
 
 minetest.register_node("fire:permanent_flame", permanent_fire_node)
 
