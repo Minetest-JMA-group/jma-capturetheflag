@@ -32,7 +32,7 @@ player_api.register_model("character.b3d", {
 minetest.register_on_joinplayer(function(player)
 	player_api.set_model(player, "character.b3d")
 	player:set_local_animation(nil, nil, nil, nil, 0)
-	player_anim_data[player:get_player_name()] = {timer = 0, r_hand_sleep = false}
+	player_anim_data[player:get_player_name()] = {timer = 0, r_hand_sleep = false, v_look = 0}
 end)
 
 minetest.register_on_leaveplayer(function(player)
@@ -121,29 +121,36 @@ function player_api.globalstep(dtime)
 				end
 
 				local anim_data = player_anim_data[name]
+				local v_look = player:get_look_vertical()
 				local timer = anim_data.timer
-				local v_deg = math.deg(player:get_look_vertical())
 
-				if v_deg > 90 then
-					v_deg = 90
-				elseif v_deg < -90 then
-					v_deg = -90
-				end
+				if (v_look ~= anim_data.v_look or r_hand) and timer > 0.15 then
+					local v_deg = math.deg(v_look)
 
-				if timer > 0.15 then
+					if v_deg > 90 then
+						v_deg = 90
+					elseif v_deg < -90 then
+						v_deg = -90
+					end
+
 					player:set_bone_position("Head", {x = 0, y = 6.1, z = 0}, {x = -v_deg, y = 0, z = 0})
-					timer = 0
-				end
-				timer = timer + dtime
-				anim_data.timer = timer
 
-				if r_hand then
-					player:set_bone_position("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = -v_deg, z = -90})
-					anim_data.r_hand_sleep = false
-				elseif not anim_data.r_hand_sleep then
+					if r_hand then
+						player:set_bone_position("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = -v_deg, z = -90})
+						anim_data.r_hand_sleep = false
+					end
+
+					anim_data.timer = 0
+					anim_data.v_look = v_look
+					return
+				end
+
+				if not r_hand and not anim_data.r_hand_sleep then
 					player:set_bone_position("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = 0, z = -90})
 					anim_data.r_hand_sleep = true
 				end
+				timer = timer + dtime
+				anim_data.timer = timer
 			end
 		end
 	end
