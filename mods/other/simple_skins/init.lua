@@ -269,7 +269,7 @@ minetest.register_on_joinplayer(function(player)
 
 	-- otherwise use skin from simple_skins.mt file or default if not set
 	elseif not skins.skins[name] then
-		skins.skins[name] = "character_1"
+		skins.skins[name] = "character_6"
 	end
 
 	skins.update_player_skin(player)
