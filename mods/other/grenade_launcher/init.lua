@@ -52,7 +52,7 @@ local function can_explode(pos, pname, radius)
 	return true
 end
 
-local radius = 3
+local radius = 2
 minetest.register_entity("grenade_launcher:grenade", {
 	initial_properties = {
 		visual = "sprite",
