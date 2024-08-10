@@ -1,15 +1,15 @@
--- local function add_score(player, score)
--- 	local receiver_name = player:get_player_name()
--- 	local mode = ctf_modebase:get_current_mode()
--- 	if mode then
--- 		local old_receiver_ranks = mode.rankings:get(receiver_name)
--- 		if type(old_receiver_ranks) == "table" then
--- 			local old_receiver_score = old_receiver_ranks.score or 0
--- 			mode.rankings:set(receiver_name, {score = old_receiver_score + score})
--- 			minetest.chat_send_player(receiver_name, "You got " .. score .. " scores!")
--- 		end
--- 	end
--- end
+local function add_score(player, score)
+	local receiver_name = player:get_player_name()
+	local mode = ctf_modebase:get_current_mode()
+	if mode then
+		local old_receiver_ranks = mode.rankings:get(receiver_name)
+		if type(old_receiver_ranks) == "table" then
+			local old_receiver_score = old_receiver_ranks.score or 0
+			mode.rankings:set(receiver_name, {score = old_receiver_score + score})
+			minetest.chat_send_player(receiver_name, "You got " .. score .. " scores!")
+		end
+	end
+end
 
 local function boom(obj)
     local pos = obj:get_pos()
@@ -97,18 +97,18 @@ random_gifts.list = {
 	-- end},
 
 	--score
-	-- {chance = 30, image = "random_gifts_10xp.png", oneshot = true,
-	-- func = function(player)
-	-- 	add_score(player, 10)
-	-- end},
-	-- {chance = 15, image = "random_gifts_50xp.png", oneshot = true,
-	-- func = function(player)
-	-- 	add_score(player, 50)
-	-- end},
-	-- {chance = 5, image = "random_gifts_100xp.png", oneshot = true,
-	-- func = function(player)
-	-- 	add_score(player, 100)
-	-- end},
+	{chance = 30, image = "random_gifts_10xp.png", oneshot = true,
+	func = function(player)
+		add_score(player, 10)
+	end},
+	{chance = 10, image = "random_gifts_50xp.png", oneshot = true,
+	func = function(player)
+		add_score(player, 50)
+	end},
+	{chance = 1, image = "random_gifts_100xp.png", oneshot = true,
+	func = function(player)
+		add_score(player, 100)
+	end},
 	-- {chance = 2, image = "random_gifts_200xp.png", oneshot = true,
 	-- func = function(player)
 	-- 	add_score(player, 200)
