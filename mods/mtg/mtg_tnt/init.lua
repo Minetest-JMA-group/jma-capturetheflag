@@ -388,12 +388,7 @@ function tnt.boom(pos, def)
 	local meta = minetest.get_meta(pos)
 	local owner = meta:get_string("owner")
 	if not def.explode_center and def.ignore_protection ~= true then
-		local node = minetest.get_node(pos)
-		if node.name == "air" then
-			minetest.set_node(pos, {name = "tnt:boom"})
-		else
-			return
-		end
+		def.explode_center = true
 	end
 	local sound = def.sound or "tnt_explode"
 	minetest.sound_play(sound, {pos = pos, gain = 2.5,
