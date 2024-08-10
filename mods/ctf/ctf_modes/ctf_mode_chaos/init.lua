@@ -7,7 +7,7 @@ local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 
 local tool = ctf_core.include_files("tool.lua")
 
---[[ctf_modebase.register_mode("chaos", {
+ctf_modebase.register_mode("chaos", {
 	hp_regen = 4,
 	-- treasures = {} -- no treasures!
 	crafts = {
@@ -84,4 +84,4 @@ local tool = ctf_core.include_files("tool.lua")
 			return 0
 		end
 	end,
-})]]
+})
