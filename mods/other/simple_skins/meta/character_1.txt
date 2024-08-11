@@ -1,2 +1,2 @@
-name = "Maiki",
+name = "Mikey",
 author = "Maintainer_",
