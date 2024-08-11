@@ -21,3 +21,9 @@
 [submodule "libs/Qt5.12.8-Sources"]
 	path = libs/Qt5.12.8-Sources
 	url = https://github.com/markopetrovi/Qt5.12.8-Sources.git
+[submodule "mods/shared"]
+	path = mods/shared
+	url = https://github.com/markopetrovi/jma-shared.git
+[submodule "mods/shared_private"]
+	path = mods/shared_private
+	url = git@github.com:markopetrovi/jma-shared-private.git
