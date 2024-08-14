@@ -1,0 +1,3 @@
+# textdomain: enderpearl
+Ender Pearl=
+Left click to throw it@nIt will teleport you on the node it hit making you 2 damage@n(it won't work if you launch it in an unloaded world area)=
