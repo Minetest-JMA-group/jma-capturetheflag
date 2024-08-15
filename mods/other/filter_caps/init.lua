@@ -1,6 +1,15 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 -- Copyright (c) 2023 Marko Petrović
-assert(algorithms.load_library())
+
+if not algorithms.load_library() then
+	minetest.log("warning", "filter_caps library cannot be loaded, using dummy functions")
+	filter_caps = {}
+
+	function filter_caps.parse(_, message)
+		return message
+	end
+end
+
 local registered_on_chat_message = {}
 
 filter_caps.register_on_chat_message = function(func)
