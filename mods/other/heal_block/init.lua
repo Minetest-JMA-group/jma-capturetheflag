@@ -26,7 +26,7 @@ minetest.register_node("heal_block:heal", {
             end
         end
         minetest.item_place(itemstack, placer, pointed_thing)
-        return ItemStack{}
+        return itemstack
     end,
 
     on_timer = function(pos, elapsed)
@@ -39,19 +39,9 @@ minetest.register_node("heal_block:heal", {
         for _, player in ipairs(players_in_range) do
             local player_name = player:get_player_name()
             if not last_heal_time[player_name] or os.time() - last_heal_time[player_name] >= 1 then
-                local hp = player:get_hp()
-                player:set_hp(hp + 1)
+                player:set_hp(player:get_hp() + 1)
                 last_heal_time[player_name] = os.time()
             end
         end
-    end
-})
-
-minetest.register_abm({
-    nodenames = {"heal_block:heal"},
-    interval = 2, -- adjust the interval to your liking (in seconds)
-    chance = 1,
-    action = function(pos, node)
-        minetest.get_node_timer(pos):start(1) -- start the timer with a 1-second interval
     end
 })
