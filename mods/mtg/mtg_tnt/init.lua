@@ -156,6 +156,7 @@ local function calc_velocity(pos1, pos2, old_vel, power)
 end
 
 local function entity_physics(pos, radius, drops, puncher_name, damage_mod)
+	damage_mod = damage_mod or 0
 	local objs = minetest.get_objects_inside_radius(pos, radius)
 	for _, obj in ipairs(objs) do
 		if obj:is_player() then
