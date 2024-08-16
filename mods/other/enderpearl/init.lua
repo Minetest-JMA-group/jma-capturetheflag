@@ -1,6 +1,5 @@
 enderpearl = {}
 local function find_teleport_pos(pos) end
-local S = minetest.get_translator("enderpearl")
 local callbacks = {}
 
 
