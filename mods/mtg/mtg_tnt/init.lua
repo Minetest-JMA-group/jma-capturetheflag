@@ -392,7 +392,7 @@ function tnt.boom(pos, def)
 		def.explode_center = true
 	end
 	local sound = def.sound or "tnt_explode"
-	minetest.sound_play(sound, {pos = pos, gain = 2.5,
+	minetest.sound_play(sound, {pos = pos, gain = 2.5, pitch = math.random(10, 20) / 10,
 			max_hear_distance = math.min(def.radius * 20, 128)}, true)
 	local drops, radius = tnt_explode(pos, def.radius, def.ignore_protection,
 			def.ignore_on_blast, def.ignore_indestructible, owner, def.explode_center)
