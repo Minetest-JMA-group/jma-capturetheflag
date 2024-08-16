@@ -103,6 +103,7 @@ minetest.register_entity("grenade_launcher:grenade", {
 				tnt.boom(pos, {
 					puncher_name = self.puncher_name,
 					radius = radius,
+					damage_modifier = 3.4,
 				})
 			end
 			self.object:remove()

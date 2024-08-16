@@ -155,13 +155,13 @@ local function calc_velocity(pos1, pos2, old_vel, power)
 	return vel
 end
 
-local function entity_physics(pos, radius, drops, puncher_name)
+local function entity_physics(pos, radius, drops, puncher_name, damage_mod)
 	local objs = minetest.get_objects_inside_radius(pos, radius)
 	for _, obj in ipairs(objs) do
 		if obj:is_player() then
 			local obj_pos = obj:get_pos()
 			local dist = math.max(1, vector.distance(pos, obj_pos))
-			local damage = (4 / dist) * radius
+			local damage = (4 / dist) * (radius + damage_mod)
 
 			local knockback = true
 			if puncher_name then
@@ -397,7 +397,7 @@ function tnt.boom(pos, def)
 			def.ignore_on_blast, def.ignore_indestructible, owner, def.explode_center)
 	-- append entity drops
 	local damage_radius = (radius / math.max(1, def.radius)) * def.damage_radius
-	entity_physics(pos, damage_radius, drops, def.puncher_name)
+	entity_physics(pos, damage_radius, drops, def.puncher_name, def.damage_modifier)
 	if not def.disable_drops then
 		eject_drops(drops, pos, radius)
 	end
