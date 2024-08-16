@@ -60,7 +60,7 @@ ctf_modebase.register_mode("nade_fight", {
 	blacklisted_nodes = {"default:apple"},
 	team_chest_items = {
 		"default:cobble 80", "default:wood 80", "ctf_map:damage_cobble 20", "ctf_map:reinforced_cobble 20",
-		"default:torch 30", "ctf_teams:door_steel 2",
+		"default:torch 30", "ctf_teams:door_steel 2","heal_block:heal",
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,

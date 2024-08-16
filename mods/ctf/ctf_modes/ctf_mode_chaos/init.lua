@@ -20,7 +20,7 @@ ctf_modebase.register_mode("chaos", {
 	team_chest_items = {
 		"default:cobble 80", "default:wood 80", "ctf_map:damage_cobble 20", "ctf_map:reinforced_cobble 20",
 		"default:torch 30", "ctf_teams:door_steel 2", "default:obsidian 35", "bucket:bucket_water 1",
-		"rocket_launcher:launcher", "rocket_launcher:rocket 5",
+		"rocket_launcher:launcher", "rocket_launcher:rocket 5", "heal_block:heal",
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,

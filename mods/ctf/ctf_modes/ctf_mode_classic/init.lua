@@ -36,7 +36,7 @@ ctf_modebase.register_mode("classic", {
 	},
 	crafts = {"ctf_ranged:ammo", "ctf_melee:sword_steel", "ctf_melee:sword_mese", "ctf_melee:sword_diamond"},
 	physics = {sneak_glitch = true, new_move = false},
-	team_chest_items = {"default:cobble 99", "default:wood 99", "default:torch 30", "ctf_teams:door_steel 2"},
+	team_chest_items = {"default:cobble 99", "default:wood 99", "default:torch 30", "ctf_teams:door_steel 2","heal_block:heal",},
 	rankings = rankings,
 	recent_rankings = recent_rankings,
 	summary_ranks = {
