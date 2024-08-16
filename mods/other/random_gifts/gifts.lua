@@ -60,8 +60,7 @@ random_gifts.list = {
 	{itemname = "ctf_melee:sword_steel", chance = 15, amount = 1},
 
 	-- buckets
-	{itemname = "ctf_changes:bucket_lava", chance = 30, amount = 1},
-	{itemname = "bucket:bucket_water", chance = 30, amount = 1},
+	{itemname = "bucket:bucket_water", chance = 10, amount = 1},
 
 	--other
 	{itemname = "ctf_healing:medkit", chance = 27, amount = 1},
@@ -121,15 +120,5 @@ random_gifts.list = {
     {chance = 30, image = "random_gifts_push.png", oneshot = true,
 	func = function(player)
         player:add_velocity(vector.new(math.random(0, 40), math.random(0, 20), math.random(0, 40))) --launch to the sky!
-	end},
-	{chance = 10, image = "random_gifts_troll.png", oneshot = true,
-	func = function(_, obj)
-        local pos = obj:get_pos()
-		if pos then
-			local pos = vector.offset(pos, 0, 2, 0)
-			if not minetest.is_protected(pos, "") and  minetest.get_node(pos).name == "air"  then
-				minetest.add_node(pos, {name = "ctf_changes:lava_source"})
-			end
-		end
-	end},
+	end}
 }
