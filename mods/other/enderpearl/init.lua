@@ -9,8 +9,7 @@ local callbacks = {}
 ----------------------
 
 minetest.register_craftitem("enderpearl:ender_pearl", {
-  description = S("Ender Pearl").."\n"..
-     S("Left click to throw it@nIt will teleport you on the node it hit making you 15 damage@n(it won't work if you launch it in an unloaded world area)"),
+  description = "It will teleport you on the node it hit for the cost of 15 HP point",
   inventory_image = "enderpearl.png",
   stack_max = 16,
   on_use =
@@ -18,13 +17,11 @@ minetest.register_craftitem("enderpearl:ender_pearl", {
       local throw_starting_pos = vector.add({x=0, y=1.5, z=0}, player:get_pos())
       local ender_pearl = minetest.add_entity(throw_starting_pos, "enderpearl:thrown_ender_pearl", player:get_player_name())
 
-      minetest.after(0, function() player:get_inventory():remove_item("main", "enderpearl:ender_pearl") end)
+      player:get_inventory():remove_item("main", "enderpearl:ender_pearl")
 
       minetest.sound_play("enderpearl_throw", {max_hear_distance = 10, pos = player:get_pos()})
     end,
-
 })
-
 
 
 ------------------------

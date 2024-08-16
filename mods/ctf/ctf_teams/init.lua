@@ -50,8 +50,7 @@ ctf_core.include_files(
 	"commands.lua",
 	"register.lua",
 	"team_chest.lua",
-	"team_door.lua",
-	"heal_block.lua"
+	"team_door.lua"
 )
 
 minetest.register_on_mods_loaded(function()
