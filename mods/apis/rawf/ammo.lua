@@ -28,9 +28,10 @@ function api.unload_weapon(weapon, amount)
 	new_wear = weapon:get_wear() + new_wear
 
 	if new_wear >= 65535 then
-		return ItemStack(weapon:get_definition().unloaded_name)
-	end
+		weapon:set_name(weapon:get_definition().unloaded_name)
 
+		return weapon
+	end
 	weapon:set_wear(new_wear)
 
 	return weapon
@@ -56,8 +57,10 @@ function api.load_weapon(weapon, inv, lists)
 		for _, list in pairs(lists) do
 			if inv:contains_item(list, item) then
 				inv:remove_item(list, item)
+				weapon:set_name(weapon:get_definition().loaded_name)
+				weapon:set_wear(0)
 
-				return ItemStack(idef.loaded_name)
+				return weapon
 			end
 		end
 	end
