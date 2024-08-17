@@ -56,7 +56,6 @@ random_gifts.list = {
 	--other
 	{itemname = "ctf_healing:medkit", chance = 27, amount = 1},
 	{itemname = "ctf_mode_nade_fight:grenade_tool_3", chance = 2, amount = 1, oneshot = true},
-	{itemname = "tnt:tnt", chance = 35, amount = 5, oneshot = true},
 	{itemname = "fire:flint_and_steel", chance = 17, amount = 1, oneshot = true},
 
 
@@ -70,7 +69,9 @@ random_gifts.list = {
     {itemname = "ctf_map:damage_cobble", chance = 20, amount = 30},
     {itemname = "ctf_map:reinforced_cobble", chance = 20, amount = 5},
 
-    {itemname = "ctf_ranged:ammo", chance = 40, amount = 20},
+    {itemname = "ctf_ranged:ammo", chance = 43, amount = 5},
+    {itemname = "ctf_ranged:ammo", chance = 5, amount = 20},
+
     {itemname = "ctf_healing:medkit", chance = 10, amount = 1},
 
     {itemname = "grenades:smoke", chance = 20, amount = 1},

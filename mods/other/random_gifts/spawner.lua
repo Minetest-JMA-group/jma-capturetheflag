@@ -27,7 +27,7 @@ local function spawn_giftbox()
 end
 
 function random_gifts.run_spawn_timer()
-	timer = minetest.after(5, spawn_giftbox)
+	timer = minetest.after(10, spawn_giftbox)
 end
 
 function random_gifts.stop_spawn_timer()

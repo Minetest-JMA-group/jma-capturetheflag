@@ -51,18 +51,18 @@ ctf_ranged.simple_register_gun(shotgun_name, {
 	description = "Chaotic Shotgun",
 	texture = "ctf_mode_chaos_shotgun.png",
 	fire_sound = "ctf_mode_chaos_shotgun",
-	rounds = 10,
+	rounds = 5,
 	bullet = {
-		amount = 5,
+		amount = 6,
 		spread = 3.5,
 	},
 	range = 75,
 	damage = 1,
 	automatic = true,
-	fire_interval = 0.4,
+	fire_interval = 0.2,
 	liquid_travel_dist = 5,
 	on_secondary_use = function(itemstack, user, pointed_thing)
-		local meta = itemstack:get_meta()	local meta = itemstack:get_meta()
+		local meta = itemstack:get_meta()
 		if not can_swap(meta) then
 			return
 		end
@@ -163,8 +163,8 @@ minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 		end
 
 		minetest.sound_play("ctf_mode_chaos_grenade_launcher_plop",{to_player = name, gain = 0.5})
-		itemstack:set_wear(itemstack:get_wear() + WEAR_MAX / 4)
-		if itemstack:get_wear() == 65532 then
+		itemstack:set_wear(itemstack:get_wear() + WEAR_MAX / 5)
+		if itemstack:get_wear() >= 65532 then
 			meta:set_int("overheat", 1)
 			meta:set_string("color", "#fc6a6c")
 
