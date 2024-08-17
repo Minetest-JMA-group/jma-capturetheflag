@@ -6,6 +6,7 @@ local old_bounty_reward_func = ctf_modebase.bounties.bounty_reward_func
 local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 
 local tool = ctf_core.include_files("tool.lua")
+ctf_core.include_files("weapons.lua")
 
 ctf_modebase.register_mode("chaos", {
 	hp_regen = 4,
@@ -34,13 +35,13 @@ ctf_modebase.register_mode("chaos", {
 	build_timer = 60,
 
 	is_bound_item = function(_, name)
-		if name == "grenade_launcher:launcher" or name:match("ctf_mode_chaos:") then
+		if name:match("ctf_mode_chaos:") then
 			return true
 		end
 	end,
 	stuff_provider = function(player)
 		return {
-			"grenade_launcher:launcher",
+			"ctf_mode_chaos:grenade_launcher",
 			tool.get_grenade_tool(player),
 			"default:pick_steel",
 			"default:axe_steel",
