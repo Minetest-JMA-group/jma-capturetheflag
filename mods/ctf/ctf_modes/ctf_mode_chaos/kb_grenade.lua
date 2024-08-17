@@ -1,3 +1,4 @@
+local WEAR_MAX = 65535
 local function check_hit(pos1, pos2, obj)
 	local ray = minetest.raycast(pos1, pos2, true, false)
 	local hit = ray:next()
@@ -28,36 +29,10 @@ local function check_hit(pos1, pos2, obj)
 	end
 end
 
-local fragdef_small = table.copy(minetest.registered_craftitems["grenades:frag"].grenade)
-fragdef_small.description = "Firecracker (Hurts anyone near blast)"
-fragdef_small.image = "ctf_mode_chaos_firecracker_grenade.png"
-fragdef_small.explode_radius = 4
-fragdef_small.explode_damage = 16
-fragdef_small.clock = 1.7
-
-local old_explode = fragdef_small.on_explode
-fragdef_small.on_explode = function(def, obj, pos, name, ...)
-	local player = minetest.get_player_by_name(name or "")
-
-	if player and pos then
-		local dist = pos.y - player:get_pos().y
-
-		if dist <= -20 then
-			return
-		end
-	end
-
-	return old_explode(def, obj, pos, name, ...)
-end
-
-grenades.register_grenade("ctf_mode_chaos:small_frag", fragdef_small)
-
-local tool = {}
 local sounds = {}
 
 local KNOCKBACK_AMOUNT = 35
-local KNOCKBACK_AMOUNT_WITH_FLAG = KNOCKBACK_AMOUNT / 2
-local KNOCKBACK_RADIUS = 3.5
+local KNOCKBACK_RADIUS = 4.5
 grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 	description = "Knockback Grenade, players within a very small area take extreme knockback",
 	image = "ctf_mode_chaos_knockback_grenade.png",
@@ -65,6 +40,7 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 	on_collide = function()
 		return true
 	end,
+
 	on_explode = function(def, obj, pos, name)
 		minetest.add_particle({
 			pos = pos,
@@ -134,16 +110,11 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 						texture = "grenades_smoke.png",
 					})
 
-					local kb
-					if ctf_modebase.taken_flags[vname] then
-						kb = KNOCKBACK_AMOUNT_WITH_FLAG
-					else
-						kb = KNOCKBACK_AMOUNT
-					end
+					local kb = KNOCKBACK_AMOUNT
 
 					local dir = vector.direction(pos, headpos)
 					if dir.y < 0 then dir.y = 0 end
-					local vel = {x = dir.x * kb, y = dir.y * (kb / 1.7), z = dir.z * kb }
+					local vel = {x = dir.x * kb, y = dir.y * (kb / 1.8), z = dir.z * kb }
 					v:add_velocity(vel)
 				end
 			end
@@ -151,84 +122,28 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 	end,
 })
 
-local WEAR_MAX = 65535
-local grenade_list = {
-	{name = "ctf_mode_chaos:small_frag"         , cooldown = 1 },
-	{name = "ctf_mode_chaos:knockback_grenade"  , cooldown = 1 },
-}
+do
+	local kb_def = minetest.registered_items["ctf_mode_chaos:knockback_grenade"]
+	kb_def.name = "ctf_mode_chaos:knockback_grenade_tool"
+	kb_def.on_use = function(itemstack, user, pointed_thing)
+		if itemstack:get_wear() > 1 then return end
 
-local held_grenade = {}
-local function swap_next_grenade(itemstack, user, pointed)
-	if itemstack:get_wear() > 1 then return end
+		if itemstack:get_wear() <= 1 then
+			grenades.throw_grenade("ctf_mode_chaos:knockback_grenade", 17, user)
+		end
 
-	local nadeid = itemstack:get_name():sub(-1, -1)
-	local nadeid_next = nadeid + 1
+		itemstack:set_wear(WEAR_MAX - 6000)
+		ctf_modebase.update_wear.start_update(user:get_player_name(), kb_def.name, WEAR_MAX, true)
 
-	if nadeid_next > #grenade_list then
-		nadeid_next = 1
+		return itemstack
 	end
+	minetest.register_tool(kb_def.name, kb_def)
 
-	held_grenade[user:get_player_name()] = nadeid_next
-	return "ctf_mode_chaos:grenade_tool_"..nadeid_next
+
+	ctf_api.register_on_match_end(function()
+		for sound in pairs(sounds) do
+			minetest.sound_stop(sound)
+		end
+		sounds = {}
+	end)
 end
-
-minetest.register_on_leaveplayer(function(player)
-	held_grenade[player:get_player_name()] = nil
-end)
-
-for idx, info in ipairs(grenade_list) do
-	local def = minetest.registered_items[info.name]
-
-	minetest.register_tool("ctf_mode_chaos:grenade_tool_"..idx, {
-		description = def.description..minetest.colorize("gold", "\nRightclick off cooldown to switch to other grenades"),
-		inventory_image = def.inventory_image,
-		wield_image = def.inventory_image,
-		inventory_overlay = "ctf_modebase_special_item.png",
-		on_use = function(itemstack, user, pointed_thing)
-			if itemstack:get_wear() > 1 then return end
-
-			if itemstack:get_wear() <= 1 then
-				grenades.throw_grenade(info.name, 17, user)
-			end
-
-			itemstack:set_wear(WEAR_MAX - 6000)
-			ctf_modebase.update_wear.start_update(
-				user:get_player_name(),
-				"ctf_mode_chaos:grenade_tool_"..idx,
-				WEAR_MAX/info.cooldown,
-				true
-			)
-
-			return itemstack
-		end,
-		on_place = function(itemstack, user, pointed, ...)
-			local node = false
-			local pointed_def
-
-			if pointed and pointed.under then
-				node = minetest.get_node(pointed.under)
-				pointed_def = minetest.registered_nodes[node.name]
-			end
-
-			if node and pointed_def.on_rightclick then
-				return minetest.item_place(itemstack, user, pointed)
-			else
-				return swap_next_grenade(itemstack, user, pointed)
-			end
-		end,
-		on_secondary_use = swap_next_grenade
-	})
-end
-
-function tool.get_grenade_tool(player)
-	return "ctf_mode_chaos:grenade_tool_" .. (held_grenade[PlayerName(player)] or 1)
-end
-
-ctf_api.register_on_match_end(function()
-	for sound in pairs(sounds) do
-		minetest.sound_stop(sound)
-	end
-	sounds = {}
-end)
-
-return tool

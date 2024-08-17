@@ -59,7 +59,7 @@ ctf_ranged.simple_register_gun(shotgun_name, {
 	range = 75,
 	damage = 1,
 	automatic = true,
-	fire_interval = 0.5,
+	fire_interval = 0.4,
 	liquid_travel_dist = 5,
 	on_secondary_use = function(itemstack, user, pointed_thing)
 		local meta = itemstack:get_meta()	local meta = itemstack:get_meta()
@@ -134,6 +134,8 @@ minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 	description = "Grenade Launcher",
 	wield_scale = {x=2.0,y=2.0,z=2.5},
 	inventory_image = "ctf_mode_chaos_grenade_launcher.png",
+	inventory_overlay = "ctf_modebase_special_item.png",
+	wield_image =  "ctf_mode_chaos_grenade_launcher.png",
 	range = 4,
 	on_use = function(itemstack, user)
 		local meta = itemstack:get_meta()

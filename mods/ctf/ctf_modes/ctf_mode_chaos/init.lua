@@ -5,8 +5,8 @@ local features = ctf_modebase.features(rankings, recent_rankings)
 local old_bounty_reward_func = ctf_modebase.bounties.bounty_reward_func
 local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 
-local tool = ctf_core.include_files("tool.lua")
 ctf_core.include_files("weapons.lua")
+ctf_core.include_files("kb_grenade.lua")
 
 ctf_modebase.register_mode("chaos", {
 	hp_regen = 4,
@@ -42,10 +42,10 @@ ctf_modebase.register_mode("chaos", {
 	stuff_provider = function(player)
 		return {
 			"ctf_mode_chaos:grenade_launcher",
-			tool.get_grenade_tool(player),
+			"ctf_mode_chaos:knockback_grenade_tool",
 			"default:pick_steel",
 			"default:axe_steel",
-			"default:obsidian 60"
+			"default:wood 60"
 		}
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
@@ -80,7 +80,7 @@ ctf_modebase.register_mode("chaos", {
 	on_healplayer = features.on_healplayer,
 	calculate_knockback = function(player, hitter, time_from_last_punch, tool_capabilities, dir, distance, damage)
 		if features.can_punchplayer(player, hitter) then
-			return 2 * (tool_capabilities.damage_groups.knockback or 1)
+			return 4 * (tool_capabilities.damage_groups.knockback or 1)
 		else
 			return 0
 		end
