@@ -1,4 +1,4 @@
-local default_radius = 5
+local default_radius = 3
 
 
 minetest.register_craftitem("rocket_launcher:rocket", {
@@ -32,8 +32,8 @@ minetest.register_tool("rocket_launcher:launcher", {
 					local ent = obj:get_luaentity()
 					ent.radius = default_radius
 					ent.puncher_name = name
-					obj:set_velocity({x=dir.x * 30, y=dir.y * 30, z=dir.z * 30})
-					user:add_velocity({x=dir.x * -4, y=dir.y * -4, z=dir.z * -4})
+					obj:set_velocity({x=dir.x * 45, y=dir.y * 45, z=dir.z * 45})
+					user:add_velocity({x=dir.x * -20, y=dir.y * -20, z=dir.z * -20})
 					obj:set_acceleration({x=0,z=0,y=-1})
 					obj:set_rotation({x=-pitch, y=0, z=0})
 				end
@@ -90,15 +90,6 @@ rocket.on_step = function(self, dtime, moveresult)
 	local pos = self.object:get_pos()
 	if not pos then return end
 	minetest.after(0.1,function()
-		minetest.add_particle({
-			pos = pos,
-			velocity = {x=math.random(-0.5,0.5),y=math.random(-0.5,0.5),z=math.random(-0.5,0.5)},
-			expirationtime = 0.1,
-			size = 6,
-			collisiondetection = false,
-			vertical = false,
-			texture = "tnt_boom.png",
-			glow = 15})
 		minetest.add_particle({
 			pos = pos,
 			velocity = {x=math.random(-1,1),y=math.random(-1,1),z=math.random(-1,1)},
