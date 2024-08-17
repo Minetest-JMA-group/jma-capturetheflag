@@ -89,9 +89,8 @@ local function add_drop(drops, item)
 	end
 end
 
-local basic_flame_on_construct -- cached value
 local function destroy(npos, cid, c_air, c_fire,
-		on_blast_queue, on_construct_queue,
+		on_blast_queue,
 		ignore_protection, ignore_on_blast, ignore_indestructible, owner)
 	if not ignore_protection and minetest.is_protected(npos, owner) then
 		return cid
@@ -112,10 +111,6 @@ local function destroy(npos, cid, c_air, c_fire,
 		}
 		return cid
 	elseif def.flammable then
-		on_construct_queue[#on_construct_queue + 1] = {
-			fn = basic_flame_on_construct,
-			pos = vector.new(npos)
-		}
 		return c_fire
 	else
 		return c_air
@@ -333,10 +328,8 @@ local function tnt_explode(pos, radius, ignore_protection, ignore_on_blast, igno
 
 	local drops = {}
 	local on_blast_queue = {}
-	local on_construct_queue = {}
-	basic_flame_on_construct = minetest.registered_nodes["fire:basic_flame"].on_construct
 
-	local c_fire = minetest.get_content_id("fire:basic_flame")
+	local c_fire = minetest.get_content_id("fire:permanent_flame")
 	for z = -radius, radius do
 	for y = -radius, radius do
 	local vi = a:index(pos.x + (-radius), pos.y + y, pos.z + z)
@@ -346,8 +339,7 @@ local function tnt_explode(pos, radius, ignore_protection, ignore_on_blast, igno
 			local cid = data[vi]
 			local p = {x = pos.x + x, y = pos.y + y, z = pos.z + z}
 			if cid ~= c_air and cid ~= c_ignore then
-				data[vi] = destroy(p, cid, c_air, c_fire,
-					on_blast_queue, on_construct_queue,
+				data[vi] = destroy(p, cid, c_air, c_fire, on_blast_queue,
 					ignore_protection, ignore_on_blast, ignore_indestructible, owner)
 			end
 		end
@@ -372,9 +364,6 @@ local function tnt_explode(pos, radius, ignore_protection, ignore_on_blast, igno
 		end
 	end
 
-	for _, queued_data in pairs(on_construct_queue) do
-		queued_data.fn(queued_data.pos)
-	end
 
 	minetest.log("action", "TNT owned by " .. owner .. " detonated at " ..
 		minetest.pos_to_string(pos) .. " with radius " .. radius)
@@ -403,8 +392,6 @@ function tnt.boom(pos, def)
 		eject_drops(drops, pos, radius)
 	end
 	add_effects(pos, radius, drops)
-	-- minetest.log("action", "A TNT explosion occurred at " .. minetest.pos_to_string(pos) ..
-	-- 	" with radius " .. radius)
 end
 
 minetest.register_node("tnt:boom", {
