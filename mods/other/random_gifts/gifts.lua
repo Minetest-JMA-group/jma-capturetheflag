@@ -19,11 +19,11 @@ end
 
 random_gifts.list = {
 	{itemname = "easter_egg:egg", chance = 2, amount = 2},
-	{itemname = "default:stone", chance = 40, amount = 50},
-	{itemname = "default:cobble", chance = 40, amount = 50},
+	{itemname = "default:stone", chance = 40, amount = 99},
+	{itemname = "default:cobble", chance = 40, amount = 99},
 
-	{itemname = "default:dirt", chance = 41, amount = 50},
-	{itemname = "default:apple", chance = 45, amount = 3},
+	{itemname = "default:dirt", chance = 41, amount = 99},
+	{itemname = "default:apple", chance = 45, amount = 5},
 	{itemname = "default:diamond", chance = 5, amount = 2},
 	{itemname = "default:torch", chance = 42, amount = 50},
 	{itemname = "ctf_map:damage_cobble", chance = 25, amount = 30},
@@ -32,21 +32,12 @@ random_gifts.list = {
 
 	--ranged
 	-- {itemname = "ctf_ranged:sniper_magnum_loaded", chance = 4, amount = 1},
-	{itemname = "ctf_ranged:sniper_loaded", chance = 4, amount = 1},
-	{itemname = "ctf_ranged:shotgun_loaded", chance = 8, amount = 1},
 
 	{itemname = "rocket_launcher:launcher", chance = 30, amount = 1},
 	{itemname = "rocket_launcher:rocket", chance = 43, amount = 3},
 
-	{itemname = "ctf_ranged:rifle_loaded", chance = 10, amount = 1},
-
-	--grenades
-	{itemname = "grenades:frag_sticky", chance = 3, amount = 5, oneshot = true},
-	{itemname = "grenades:frag", chance = 3, amount = 10, oneshot = true},
 
 	--diamond tools
-	{itemname = "ctf_melee:sword_diamond", chance = 10, amount = 1},
-	{itemname = "default:axe_diamond", chance = 10, amount = 1},
 	{itemname = "default:shovel_diamond", chance = 10, amount = 1},
 	{itemname = "default:pick_diamond", chance = 10, amount = 1},
 
@@ -70,20 +61,17 @@ random_gifts.list = {
 
 
 	{itemname = "ctf_ranged:pistol_loaded", chance = 20, amount = 1},
-    {itemname = "ctf_ranged:rifle_loaded", chance = 20, amount = 1},
-    {itemname = "ctf_ranged:shotgun_loaded", chance = 5, amount = 1},
     {itemname = "ctf_ranged:smg_loaded", chance = 5, amount = 1},
 
     {itemname = "ctf_map:unwalkable_dirt", chance = 20, amount = 5},
     {itemname = "ctf_map:unwalkable_stone", chance = 20, amount = 5},
     {itemname = "ctf_map:unwalkable_cobble", chance = 20, amount = 5},
     {itemname = "ctf_map:spike", chance = 20, amount = 15},
-    {itemname = "ctf_map:damage_cobble", chance = 20, amount = 5},
+    {itemname = "ctf_map:damage_cobble", chance = 20, amount = 30},
     {itemname = "ctf_map:reinforced_cobble", chance = 20, amount = 5},
 
-    {itemname = "ctf_ranged:ammo", chance = 40, amount = 3},
+    {itemname = "ctf_ranged:ammo", chance = 40, amount = 20},
     {itemname = "ctf_healing:medkit", chance = 10, amount = 1},
-    {itemname = "ctf_healing:bandage", chance = 8, amount = 1},
 
     {itemname = "grenades:smoke", chance = 20, amount = 1},
     {itemname = "grenades:poison", chance = 10, amount = 1},
@@ -119,6 +107,6 @@ random_gifts.list = {
 	end},
     {chance = 30, image = "random_gifts_push.png", oneshot = true,
 	func = function(player)
-        player:add_velocity(vector.new(math.random(0, 40), math.random(0, 20), math.random(0, 40))) --launch to the sky!
+        player:add_velocity(vector.new(math.random(0, 80), math.random(0, 30), math.random(0, 80))) --launch to the sky!
 	end}
 }
