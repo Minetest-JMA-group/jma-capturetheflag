@@ -1,4 +1,5 @@
--- Made by Maintainer_ (FoxLoveFire) 2024 
+-- SPDX-License-Identifier: GPL-3.0-or-later
+-- Copyright (c) 2024 Ivan Shkatov (Maintainer_) ivanskatov672@gmail.com
 local last_heal_time = {}
 minetest.register_node("heal_block:heal", {
     description = "Healing Block",

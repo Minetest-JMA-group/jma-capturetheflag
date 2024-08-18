@@ -1,3 +1,4 @@
+-- SPDX-License-Identifier: GPL-3.0-or-later
 enderpearl = {}
 local function find_teleport_pos(pos) end
 local callbacks = {}
