@@ -1,3 +1,4 @@
+-- Made by Maintainer_ (FoxLoveFire) 2024 
 local last_heal_time = {}
 minetest.register_node("heal_block:heal", {
     description = "Healing Block",
@@ -28,20 +29,21 @@ minetest.register_node("heal_block:heal", {
         minetest.item_place(itemstack, placer, pointed_thing)
         return itemstack
     end,
+    on_construct = function(pos)
+        minetest.get_node_timer(pos):start(1)
+    end,
 
     on_timer = function(pos, elapsed)
-        local players_in_range = {}
-        for _, obj in ipairs(minetest.get_objects_inside_radius(pos, 3)) do
-            if obj:is_player() then
-                table.insert(players_in_range, obj)
+        for _, player in ipairs(minetest.get_objects_inside_radius(pos, 3)) do
+            if player:is_player() then
+                local player_name = player:get_player_name()
+                if not last_heal_time[player_name] or os.time() - last_heal_time[player_name] >= 1 then
+                    local hp = player:get_hp()
+                    player:set_hp(hp + 1)
+                    last_heal_time[player_name] = os.time()
+                end
             end
         end
-        for _, player in ipairs(players_in_range) do
-            local player_name = player:get_player_name()
-            if not last_heal_time[player_name] or os.time() - last_heal_time[player_name] >= 1 then
-                player:set_hp(player:get_hp() + 1)
-                last_heal_time[player_name] = os.time()
-            end
-        end
+        return true 
     end
 })
