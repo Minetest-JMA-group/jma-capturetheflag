@@ -61,43 +61,52 @@ local ID_WATER = minetest.get_content_id("default:water_source")
 ---@param mapmeta table Map meta table
 ---@param callback function
 function ctf_map.remove_barrier(mapmeta, callback)
+	-- print(dump(mapmeta))
 	if not mapmeta.barriers then
-		minetest.log("action", "Clearing barriers using mapmeta.barrier_area")
-
 		local pos1, pos2 = mapmeta.barrier_area.pos1, mapmeta.barrier_area.pos2
-
 		local vm = VoxelManip(pos1, pos2)
-		local data = vm:get_data()
 
-		for i, id in pairs(data) do
-			local done = false
+		minetest.handle_async(function(vm, barrier_nodes)
+			minetest.log("action", "Clearing barriers using mapmeta.barrier_area")
+			local data = vm:get_data()
+			local ID_IGNORE = minetest.CONTENT_IGNORE
 
-			for barriernode_id, replacement_id in pairs(ctf_map.barrier_nodes) do
-				if id == barriernode_id then
+			for i, id in pairs(data) do
+				local done = false
 
-					data[i] = replacement_id
-					done = true
-					break
+				for barriernode_id, replacement_id in pairs(barrier_nodes) do
+					if id == barriernode_id then
+
+						data[i] = replacement_id
+						done = true
+						break
+					end
+				end
+
+				if not done then
+					data[i] = ID_IGNORE
 				end
 			end
+			vm:set_data(data)
 
-			if not done then
-				data[i] = ID_IGNORE
-			end
-		end
+			return vm
+		end, function(vm)
+			vm:write_to_map(false)
 
-		vm:set_data(data)
-		vm:write_to_map(false)
+			minetest.after(0.1, function()
+				local vm = VoxelManip(pos1, pos2)
+				vm:update_liquids()
+			end)
 
-		minetest.after(0.1, function()
-			local vm2 = VoxelManip(pos1, pos2)
-			vm2:update_liquids()
-		end)
+			callback()
+		end, vm, ctf_map.barrier_nodes)
 	else
-		local i = 0
-		for _, barrier_area in pairs(mapmeta.barriers) do
-			minetest.after(i, function()
-				local vm = VoxelManip()
+		local vm = VoxelManip()
+		minetest.handle_async(function(vm, barriers)
+			minetest.log("action", "Clearing barriers using mapmeta.barriers")
+			local ID_IGNORE = minetest.CONTENT_IGNORE
+
+			for _, barrier_area in pairs(barriers) do
 				vm:read_from_map(barrier_area.pos1, barrier_area.pos2)
 
 				local data = vm:get_data()
@@ -105,25 +114,21 @@ function ctf_map.remove_barrier(mapmeta, callback)
 				for idx in pairs(data) do
 					data[idx] = barrier_area.reps[idx] or ID_IGNORE
 				end
-
 				vm:set_data(data)
-				vm:write_to_map(false)
+			end
+
+			return vm
+		end, function(vm)
+			vm:write_to_map(false)
+
+			minetest.after(0.1, function()
+				local vm = VoxelManip(mapmeta.pos1, mapmeta.pos2)
+				vm:update_liquids()
 			end)
 
-			i = i + 0.04
-		end
-
-		minetest.after(i - 0.04, function()
-			local vm = VoxelManip(mapmeta.pos1, mapmeta.pos2)
-			vm:update_liquids()
-
 			callback()
-		end)
-
-		return
+		end, vm, mapmeta.barriers)
 	end
-
-	callback()
 end
 
 
