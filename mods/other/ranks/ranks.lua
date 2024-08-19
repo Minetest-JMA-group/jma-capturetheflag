@@ -1,5 +1,4 @@
 -- ranks/ranks.lua
-
 ranks.register("admin", {
 	prefix = "[Admin]",
 	color = {a = 255, r = 255, g = 0, b = 0},

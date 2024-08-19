@@ -107,7 +107,6 @@ function ranks.get_player_prefix(name)
 	end
 	return nil
 end
-
 ---
 --- Registrations
 ---
