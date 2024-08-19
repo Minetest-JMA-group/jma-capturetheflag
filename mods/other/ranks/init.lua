@@ -11,12 +11,12 @@ local storage = minetest.get_mod_storage()
 --- API
 ---
 
--- [local function] Get colour
-local function get_colour(colour)
-	if type(colour) == "table" and minetest.rgba then
-		return minetest.rgba(colour.r, colour.g, colour.b, colour.a)
-	elseif type(colour) == "string" then
-		return colour
+-- [local function] Get color
+local function get_color(color)
+	if type(color) == "table" and minetest.rgba then
+		return minetest.rgba(color.r, color.g, color.b, color.a)
+	elseif type(color) == "string" then
+		return color
 	else
 		return "#ffffff"
 	end
@@ -101,8 +101,8 @@ function ranks.get_player_prefix(name)
 	if rank then
 		local def = ranks.get_def(rank)
 		if def.prefix then
-			local colour = get_colour(def.colour)
-			return {prefix = def.prefix, color = colour}
+			local color = get_color(def.color)
+			return {prefix = def.prefix, color = color}
 		end
 	end
 	return nil
@@ -132,8 +132,8 @@ minetest.register_on_joinplayer(function(player)
 	end
 end)
 
--- [chatcommand] /rank
-minetest.register_chatcommand("ranking", {
+-- [chatcommand] /set_rank
+minetest.register_chatcommand("set_rank", {
 	description = "Set a player's rank",
 	params = "<player> <new rank> / \"list\" | username, rankname / list ranks",
 	privs = {ranking = true},
@@ -172,8 +172,8 @@ minetest.register_chatcommand("ranking", {
 	end,
 })
 
--- [chatcommand] /getrank
-minetest.register_chatcommand("getrank", {
+-- [chatcommand] /rank
+minetest.register_chatcommand("rank", {
 	description = "Get a player's rank. If no player is specified, your own rank is returned.",
 	params = "<name> | name of player",
 	func = function(name, param)
