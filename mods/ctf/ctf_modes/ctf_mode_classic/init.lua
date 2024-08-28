@@ -33,6 +33,7 @@ ctf_modebase.register_mode("classic", {
 
 		["default:water_source"] = {rarity = 0.2, max_stacks = 1},
 		["easter_egg:egg"] = {rarity = 0.03, max_stacks = 1},
+		["enderpearl:ender_pearl"]  = {min_count = 1, max_count = 6, max_stacks = 1, rarity = 0.2},
 	},
 	crafts = {"ctf_ranged:ammo", "ctf_melee:sword_steel", "ctf_melee:sword_mese", "ctf_melee:sword_diamond"},
 	physics = {sneak_glitch = true, new_move = false},

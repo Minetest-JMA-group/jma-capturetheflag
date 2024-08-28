@@ -26,6 +26,7 @@ function ctf_modebase.start_match_after_vote()
 		ctf_modebase.map_catalog.select_map_for_mode(ctf_modebase.current_mode)
 	end
 
+	ctf_modebase.show_loading_screen()
 	local map = ctf_modebase.map_catalog.maps[ctf_modebase.map_catalog.current_map]
 	ctf_modebase.map_chosen(map)
 	ctf_map.place_map(map, function()

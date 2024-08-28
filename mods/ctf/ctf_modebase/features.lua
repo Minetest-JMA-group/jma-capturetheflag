@@ -137,6 +137,45 @@ local function set_playertags_state(state)
 	end
 end
 
+
+function ctf_modebase.show_loading_screen()
+	set_playertags_state(PLAYERTAGS_OFF)
+	for _, p in pairs(minetest.get_connected_players()) do
+		if ctf_teams.get(p) then
+			hud:add(p, "loading_screen", {
+				hud_elem_type = "image",
+				position = {x = 0.5, y = 0.5},
+				image_scale = -100.5,
+				z_index = 1000,
+				texture = "[combine:1x1^[invert:rgba^[opacity:1^[colorize:#34323d:255"
+			})
+
+			-- z_index 1001 is reserved for the next map's image. Search file for `tag: map_image`
+
+			hud:add(p, "loading_text", {
+				hud_elem_type = "text",
+				position = {x = 0.5, y = 0.5},
+				alignment = {x = "center", y = "up"},
+				text_scale = 2,
+				text = "Loading Next Map...",
+				color = 0x7ec5ff,
+				z_index = 1002,
+			})
+			hud:add(p, {
+				hud_elem_type = "text",
+				position = {x = 0.5, y = 0.75},
+				alignment = {x = "center", y = "center"},
+				text = random_messages.get_random_message(),
+				color = 0xffffff,
+				z_index = 1002,
+			})
+		end
+	end
+
+	loading_screen_time = minetest.get_us_time()
+end
+
+
 local function is_pro(player, rank)
 	local pro_chest = player and player:get_meta():get_int("ctf_rankings:pro_chest:"..
 			(ctf_modebase.current_mode or "")) == 1
@@ -498,40 +537,6 @@ return {
 
 	end,
 	on_match_end = function()
-		set_playertags_state(PLAYERTAGS_OFF)
-		for _, p in pairs(minetest.get_connected_players()) do
-			if ctf_teams.get(p) then
-				hud:add(p, "loading_screen", {
-					hud_elem_type = "image",
-					position = {x = 0.5, y = 0.5},
-					image_scale = -100.5,
-					z_index = 1000,
-					texture = "[combine:1x1^[invert:rgba^[opacity:1^[colorize:#34323d:255"
-				})
-
-				-- z_index 1001 is reserved for the next map's image. Search file for `tag: map_image`
-
-				hud:add(p, "loading_text", {
-					hud_elem_type = "text",
-					position = {x = 0.5, y = 0.5},
-					alignment = {x = "center", y = "up"},
-					text_scale = 2,
-					text = "Loading Next Map...",
-					color = 0x7ec5ff,
-					z_index = 1002,
-				})
-				hud:add(p, {
-					hud_elem_type = "text",
-					position = {x = 0.5, y = 0.75},
-					alignment = {x = "center", y = "center"},
-					text = random_messages.get_random_message(),
-					color = 0xffffff,
-					z_index = 1002,
-				})
-			end
-		end
-
-		loading_screen_time = minetest.get_us_time()
 
 		recent_rankings.on_match_end()
 
