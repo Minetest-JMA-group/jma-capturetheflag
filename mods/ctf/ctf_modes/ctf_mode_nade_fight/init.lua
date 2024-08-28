@@ -50,7 +50,6 @@ ctf_modebase.register_mode("nade_fight", {
 		["torch_bomb:torch_grenade"] = {rarity = 0.1, max_stacks = 1, min_count = 1, max_count = 4},
 		["torch_bomb:mega_torch_bomb_rocket"] = {rarity = 0.05, max_stacks = 1, max_count = 1},
 		["easter_egg:egg"] = {rarity = 0.03, max_stacks = 1},
-		["enderpearl:ender_pearl"]  = {min_count = 1, max_count = 6, max_stacks = 1, rarity = 0.2},
 	},
 	crafts = {
 		"ctf_map:damage_cobble",
