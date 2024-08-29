@@ -108,12 +108,12 @@ local function update(player, settings)
 
 	if player.get_observers and players[pname] then
 		local nametag_entity = players[pname].nametag_entity
-		if nametag_entity and nametag_entity:get_luaentity() then
+		if nametag_entity and nametag_entity.object:get_pos() then
 			old_observers.nametag_entity = nametag_entity.object:get_observers()
 		end
 
 		local symbol_entity = players[pname].symbol_entity
-		if symbol_entity and symbol_entity:get_luaentity() then
+		if symbol_entity and symbol_entity.object:get_pos() then
 			old_observers.symbol_entity = symbol_entity.object:get_observers()
 		end
 	end
