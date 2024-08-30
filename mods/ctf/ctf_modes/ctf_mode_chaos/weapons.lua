@@ -51,7 +51,7 @@ ctf_ranged.simple_register_gun(shotgun_name, {
 	description = "Chaotic Shotgun",
 	texture = "ctf_mode_chaos_shotgun.png",
 	fire_sound = "ctf_mode_chaos_shotgun",
-	rounds = 5,
+	rounds = 10,
 	bullet = {
 		amount = 6,
 		spread = 3.5,
@@ -262,7 +262,7 @@ minetest.register_entity("ctf_mode_chaos:grenade", {
 				tnt.boom(pos, {
 					puncher_name = self.puncher_name,
 					radius = rad,
-					damage_modifier = 3,
+					damage_modifier = 2.5,
 				})
 			end
 			self.object:remove()
