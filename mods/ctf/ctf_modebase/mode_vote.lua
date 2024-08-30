@@ -45,7 +45,7 @@ local function show_modechoose_form(player)
 
 	local elements = {}
 
-	local i = 0.2
+	local i = 0.4
 	local vote = 0
 	while vote <= MAX_ROUNDS do
 		local vote_num = vote
@@ -82,6 +82,18 @@ local function show_modechoose_form(player)
 	}
 	i = i + (ctf_gui.ELEM_SIZE.y - 0.2)
 
+
+	local mode_def = ctf_modebase.modes[new_mode]
+	if mode_def.vote_label then
+		elements["label"] = {
+			type = "label",
+			label = mode_def.vote_label,
+			centered = true,
+			pos = {x = 0, y = i + 0.8},
+			size = {x = 8, y = 0.5},
+		}
+	end
+
 	ctf_gui.old_show_formspec(player, "ctf_modebase:mode_select", {
 		size = {x = 8, y = i + 3.5},
 		title = "Mode: "..HumanReadable(new_mode),
@@ -90,6 +102,7 @@ local function show_modechoose_form(player)
 		header_height = 2.4,
 		elements = elements,
 	})
+
 end
 
 local function send_formspec()
