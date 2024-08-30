@@ -111,12 +111,22 @@ function ctf_modebase.mode_vote.start_vote()
 		new_mode = ctf_modebase.modelist[math.random(1, #ctf_modebase.modelist)]
 	end
 
-	local mode_index = table.indexof(ctf_modebase.modelist, new_mode) or -1
-	if mode_index == -1 or mode_index+1 > #ctf_modebase.modelist then
-		new_mode = ctf_modebase.modelist[1]
-	else
-		new_mode = ctf_modebase.modelist[mode_index + 1]
-	end
+	local mode_def = ctf_modebase.modes[new_mode]
+	local attempts = 1
+	repeat
+		if attempts > #ctf_modebase.modelist then
+			error("Mode selection failed")
+		end
+		attempts = attempts + 1
+
+		local mode_index = table.indexof(ctf_modebase.modelist, new_mode) or -1
+		if mode_index == -1 or mode_index+1 > #ctf_modebase.modelist then
+			new_mode = ctf_modebase.modelist[1]
+		else
+			new_mode = ctf_modebase.modelist[mode_index + 1]
+		end
+		mode_def = ctf_modebase.modes[new_mode]
+	until mode_def.on_prevote and mode_def.on_prevote() == true or not mode_def.on_prevote
 
 	for _, player in pairs(minetest.get_connected_players()) do
 		if ctf_teams.get(player) ~= nil or not ctf_modebase.current_mode then
