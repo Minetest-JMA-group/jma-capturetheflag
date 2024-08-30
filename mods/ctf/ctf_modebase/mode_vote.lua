@@ -89,7 +89,7 @@ local function show_modechoose_form(player)
 			type = "label",
 			label = mode_def.vote_label,
 			centered = true,
-			pos = {x = 0, y = i + 0.8},
+			pos = {x = 0, y = i + 0.9},
 			size = {x = 8, y = 0.5},
 		}
 	end
