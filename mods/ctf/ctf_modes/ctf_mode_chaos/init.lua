@@ -16,7 +16,7 @@ ctf_modebase.register_mode("chaos", {
 		end
 		return false
 	end,
-
+	vote_label = minetest.colorize("orange", "Weekend mode"),
 	hp_regen = 4,
 	crafts = {
 		"ctf_map:damage_cobble",
