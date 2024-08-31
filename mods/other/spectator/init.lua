@@ -116,6 +116,7 @@ minetest.register_on_joinplayer(function(player)
     local meta = player:get_meta()
     if meta:get_int("spectator") == 1 then
         minetest.set_player_privs(name, minetest.string_to_privs(meta:get_string(name), ","))
+		meta:set_int("spectator", 0)
     end 
     spectator.formspec(name)
 end)
