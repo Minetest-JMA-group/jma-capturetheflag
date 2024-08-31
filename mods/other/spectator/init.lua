@@ -23,7 +23,7 @@ spectator.on = function (player)
     local meta = player:get_meta()
 
     meta:set_string(name, minetest.privs_to_string(minetest.get_player_privs(name), ","))
-    meta:set_bool("spectator", true)
+    meta:set_int("spectator", 1)
 
     minetest.set_player_privs(name, {
         noclip = true,
@@ -53,14 +53,13 @@ spectator.off = function (player)
 
     minetest.set_player_privs(name, minetest.string_to_privs(meta:get_string(name), ","))
     meta:set_string(name, "")
-    meta:set_bool("spectator", false)
+    meta:set_int("spectator", 0)
 
     player:set_properties({
         visual = "mesh",
         show_on_minimap = true,
         pointable = true,
     })
-
     player:set_nametag_attributes {text = name}
     player:set_armor_groups({immortal = 0})
 
@@ -100,21 +99,23 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 end)
 
 minetest.register_chatcommand("spectator", {
-    description = "",
+    description = "Shows players in spectator mode",
     params = "",
     func = function (name)
+        local output = {}
         for i,_ in pairs(spectator.in_) do
-            minetest.chat_send_player(name, i)
+            table.insert(output, i)
         end
+        table.sort(output)
+        minetest.chat_send_player(name, "In spectator mode now: " .. table.concat(output, ", "))
     end
 })
 
 minetest.register_on_joinplayer(function(player)
     local name = player:get_player_name()
     local meta = player:get_meta()
-    if meta:get_bool("spectator") then
+    if meta:get_int("spectator") == 1 then
         minetest.set_player_privs(name, minetest.string_to_privs(meta:get_string(name), ","))
     end 
     spectator.formspec(name)
 end)
-
