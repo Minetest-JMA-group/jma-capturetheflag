@@ -14,9 +14,6 @@
 [submodule "mods/extras"]
 	path = mods/extras
 	url = git@github.com:Minetest-JMA-group/jma-extras.git
-[submodule "libs/Qt5.12.8-Sources"]
-	path = libs/Qt5.12.8-Sources
-	url = https://github.com/Minetest-JMA-group/Qt5.12.8-Sources.git
 [submodule "mods/shared"]
 	path = mods/shared
 	url = https://github.com/Minetest-JMA-group/jma-shared.git
