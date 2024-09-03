@@ -5,6 +5,7 @@ spectator.spectators = {}
 spectator.texture = "question.png"
 
 -- Enabled spectator mode
+<<<<<<< HEAD
 function spectator.on(player)
     if player then 
         local name = player:get_player_name()
@@ -53,6 +54,54 @@ function spectator.off(player)
     
         spectator.spectators[name] = nil
     end
+=======
+spectator.on = function (player)
+    local name = player:get_player_name()
+    local meta = player:get_meta()
+
+    meta:set_string(name, minetest.privs_to_string(minetest.get_player_privs(name), ","))
+    meta:set_int("spectator", 1)
+
+    minetest.set_player_privs(name, {
+        noclip = true,
+        fly = true,
+        fast = true
+    })
+
+    player:set_properties({
+        visual = "",
+        show_on_minimap = false,
+        pointable = false,
+    })
+    player:set_nametag_attributes({color={a=0},text = " "})
+    player:set_nametag_attributes{text = "\0"}
+    player:set_armor_groups({immortal = 1})
+    player:get_inventory():set_list("main", {})
+    player:get_inventory():set_list("craft", {})
+    player:get_inventory():set_list("craftpreview", {})
+
+    spectator.in_[name] = true
+end
+
+-- Disabled spectator mode
+spectator.off = function (player)
+    local name = player:get_player_name()
+    local meta = player:get_meta()
+
+    minetest.set_player_privs(name, minetest.string_to_privs(meta:get_string(name), ","))
+    meta:set_string(name, "")
+    meta:set_int("spectator", 0)
+
+    player:set_properties({
+        visual = "mesh",
+        show_on_minimap = true,
+        pointable = true,
+    })
+    player:set_nametag_attributes {text = name}
+    player:set_armor_groups({immortal = 0})
+
+    spectator.in_[name] = nil
+>>>>>>> 0021958e1184e0c42a52d9427de2fd90768cf7a0
 end
 
 ctf_api.register_on_match_end(function()
@@ -94,7 +143,11 @@ minetest.register_chatcommand("spectator", {
     params = "",
     func = function (name)
         local output = {}
+<<<<<<< HEAD
         for i,_ in pairs(spectator.spectators) do
+=======
+        for i,_ in pairs(spectator.in_) do
+>>>>>>> 0021958e1184e0c42a52d9427de2fd90768cf7a0
             table.insert(output, i)
         end
         table.sort(output)
@@ -107,6 +160,13 @@ minetest.register_on_joinplayer(function(player)
     local meta = player:get_meta()
     if meta:get_int("spectator") == 1 then
         minetest.set_player_privs(name, minetest.string_to_privs(meta:get_string(name), ","))
+<<<<<<< HEAD
         meta:set_int("spectator", 0)
     end 
 end)
+=======
+		meta:set_int("spectator", 0)
+    end 
+    spectator.formspec(name)
+end)
+>>>>>>> 0021958e1184e0c42a52d9427de2fd90768cf7a0
