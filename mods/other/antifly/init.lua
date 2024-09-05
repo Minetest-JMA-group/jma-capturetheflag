@@ -1,7 +1,6 @@
---[[
- * Copyright (c) 2023 Nanowolf4 (n4w@tutanota.com)
- * SPDX-License-Identifier: GPL-3.0-or-later
--]]
+-- * Copyright (c) 2024 Nanowolf4 (n4w@tutanota.com)
+-- * SPDX-License-Identifier: GPL-3.0-or-later
+
 
 local handlers = {}
 local match_started = false
@@ -34,17 +33,6 @@ local function isWalkable(pos)
 	end
 	return false
 end
-
--- Check that each vector component does not exceed the tolerance
--- local function compare_vectors(vec1, vec2, tolerance)
--- 	for i = 1, 3 do
--- 		if math.abs(vec1[i] - vec2[i]) > tolerance then
--- 			return false
--- 		end
--- 	end
-
--- 	return true
--- end
 
 local function is_on_surface(pos)
 	if isWalkable(pos) or isWalkable(vecnew(pos.x, pos.y - 1, pos.z)) then
