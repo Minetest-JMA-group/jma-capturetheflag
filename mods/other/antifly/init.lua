@@ -93,7 +93,14 @@ local function new_antifly_handler(player)
 
 	local function tp_to_surface()
 		local function do_tp(p)
-			player:set_pos(vector.offset(p, 0, (collbox[2] + collbox[5]) / 2, 0))
+			if checker.after_tp_pos and vector.distance(checker.after_tp_pos, player:get_pos()) <= 0.2 then
+				minetest.kick_player(name, "An error occurred! Please reconnect to the server")
+				minetest.log("warning", string.format("AntiFly: Failed to teleport player %s to stable position, kicked", name))
+				return
+			end
+			local new_pos = vector.offset(p, 0, (collbox[2] + collbox[5]) / 2, 0)
+			player:set_pos(new_pos)
+			checker.after_tp_pos = player:get_pos()
 		end
 		local curr_pos = vector.floor(player:get_pos())
 		for offy = 1, 5 do
