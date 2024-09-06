@@ -68,21 +68,22 @@ ctf_api.register_on_match_start(function()
 end)
 
 spectator.formspec = function (playername)
-    local formspec = "size[8,3]bgcolor[#080808BB;true]" .. default.gui_bg .. default.gui_bg_img ..
-    [[ 
-        image[0,0;2,2;]] .. spectator.texture .. [[]
-        hypertext[2.3,0.1;5,1;title;<b>Spectator mode</b>]
-        button_exit[1.5,2.3;2,0.8;yes;Yes]
-        button_exit[3.5,2.3;2,0.8;no;No]
-        button_exit[5.5,2.3;2,0.8;cancel;Cancel]
+    local formspec = "size[8,3]bgcolor[#080808BB;true]" .. default.gui_bg .. default.gui_bg_img .. [[
+    hypertext[2.3,0.1;5,1;title;<b>Spectator mode<\b>]
+    image[0,0;2,2;spectator_question.png]
+    button_exit[1.5,2.3;2,0.8;yes;Yes]
+    button_exit[3.5,2.3;2,0.8;no;No]
+    button_exit[5.5,2.3;2,0.8;cancel;Cancel]
     ]]
     formspec = formspec .. "label[2.3,0.7;" .. "Watch the game?" .. "]"
 
-    minetest.show_formspec(playername, "f_spec", formspec)
+    minetest.show_formspec(playername, "spectator_mode", formspec)
+
+    return true
 end
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
-    if formname == "f_spec" then
+    if formname == "spectator_mode" then
         if fields["yes"] then
             spectator.on(player)
         end
