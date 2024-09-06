@@ -131,17 +131,17 @@ function player_api.globalstep(dtime)
 				end
 
 				if timer > 0.15 then
-					player:set_bone_override("Head", {x = 0, y = 6.1, z = 0}, {x = -v_deg, y = 0, z = 0})
+					player:set_bone_position("Head", {x = 0, y = 6.1, z = 0}, {x = -v_deg, y = 0, z = 0})
 					timer = 0
 				end
 				timer = timer + dtime
 				anim_data.timer = timer
 
 				if r_hand then
-					player:set_bone_override("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = -v_deg, z = -90})
+					player:set_bone_position("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = -v_deg, z = -90})
 					anim_data.r_hand_sleep = false
 				elseif not anim_data.r_hand_sleep then
-					player:set_bone_override("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = 0, z = -90})
+					player:set_bone_position("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = 0, z = -90})
 					anim_data.r_hand_sleep = true
 				end
 			end
