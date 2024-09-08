@@ -81,10 +81,11 @@ spectator.formspec = function (playername)
 end
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
-    if formname == "spectator_mode" then
-        if fields["yes"] then
-            spectator.on(player)
-        end
+    if formname ~= "spectator_mode" then
+		return 
+    end
+    if fields["yes"] then
+        spectator.on(player)
     end
 
 	return true
