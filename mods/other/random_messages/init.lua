@@ -59,7 +59,7 @@ function random_messages.read_messages()
 		"You can press sneak while jumping to jump up two blocks.",
 		"Use /donate <playername> <score> to reward a teammate for their work.",
 		"A medic and knight working together can wreak havoc on the enemy team(s).",
-		"Think someone is cheating? Send proofs to the email address loki(a)jma-sig.de",
+		"Check/news to see our recent updates and rules, you will also figure out how to get the [PRO] tag at that page.",
 		"Join us on Discord: https://ctf.jma-sig.de",
 		"Use /news to see the server news and the Rules.",
 		"Please avoid or refrain from introducing any other potentially offensive or inappropriate topics.",
