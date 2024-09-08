@@ -78,8 +78,6 @@ spectator.formspec = function (playername)
     formspec = formspec .. "label[2.3,0.7;" .. "Watch the game?" .. "]"
 
     minetest.show_formspec(playername, "spectator_mode", formspec)
-
-    return true
 end
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
@@ -88,6 +86,8 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
             spectator.on(player)
         end
     end
+
+	return true
 end)
 
 minetest.register_chatcommand("spectator", {
