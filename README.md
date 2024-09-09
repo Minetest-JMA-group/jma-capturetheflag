@@ -1,7 +1,4 @@
-# Capture The Flag
-
-[![ContentDB](https://content.minetest.net/packages/rubenwardy/capturetheflag/shields/downloads/)](https://content.minetest.net/packages/rubenwardy/capturetheflag/)  [![Build status](https://github.com/MT-CTF/capturetheflag/workflows/build/badge.svg)](https://github.com/MT-CTF/capturetheflag/actions)
-
+# JMA Capture The Flag
 
 ## Installation
 
@@ -10,14 +7,9 @@
 Capture the flag uses several submodules. Make sure to grab them all by cloning like this:
 
 ```sh
-git clone --recursive https://github.com/MT-CTF/capturetheflag.git
+git clone --recursive https://github.com/Minetest-JMA-group/jma-capturetheflag.git
 ```
 (Using ssh to clone is recommended for developers/contributors)
-
-### ContentDB
-
-Simply download the game with the ingame content browser.
-Note that this version may be slightly behind the git version, but it will be a little more stable.
 
 ## Recommended Setup
 
