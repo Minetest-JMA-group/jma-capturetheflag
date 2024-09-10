@@ -30,6 +30,7 @@ function spectator.on(player)
         player:get_inventory():set_list("main", {})
     
         spectator.spectators[name] = true
+        ctf_teams.remove_online_player(player)
     end
 end
 
