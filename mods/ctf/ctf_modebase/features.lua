@@ -473,6 +473,7 @@ local item_levels = {
 
 local delete_queue = {}
 local team_switch_after_capture = false
+local streak_bonus_received = {}
 
 return {
 	on_new_match = function()
@@ -537,13 +538,13 @@ return {
 
 	end,
 	on_match_end = function()
-
 		recent_rankings.on_match_end()
 
 		if ctf_map.current_map then
 			-- Queue deletion for after the players have left
 			delete_queue = {ctf_map.current_map.pos1, ctf_map.current_map.pos2}
 		end
+		streak_bonus_received = {}
 	end,
 	team_allocator = function(player)
 		player = PlayerName(player)
@@ -767,6 +768,25 @@ return {
 
 		recent_rankings.add(pname, {score = capture_reward, flag_captures = #teamnames})
 
+		local streak_idx = ctf_modebase.player_on_flag_attempt_streak[pname]
+		if streak_idx then
+			local streak_bonus = 0
+			if streak_bonus_received[pname] then
+				streak_bonus = math.floor(math.abs(streak_bonus_received[pname] - streak_idx * 6.1))
+			else
+				streak_bonus = math.floor(streak_idx * 6.1)
+			end
+			streak_bonus_received[pname] = streak_bonus
+
+			hud_events.new(pname, {
+				text = "Streak Bonus +" .. streak_bonus,
+				color = "info",
+				quick = true,
+			})
+
+			recent_rankings.add(pname, {score =  streak_bonus}, true)
+		end
+
 		teams_left = teams_left - #teamnames
 
 		if teams_left <= 1 then
@@ -785,8 +805,6 @@ return {
 			for _, p in ipairs(minetest.get_connected_players()) do
 				ctf_modebase.summary.show_gui(p:get_player_name(), match_rankings, special_rankings, rank_values, formdef)
 			end
-
-			ctf_modebase.announce(win_text)
 
 			ctf_modebase.start_new_match(5)
 		else

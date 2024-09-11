@@ -40,6 +40,10 @@ ctf_modebase = {
 	flag_attempt_history = {
 		-- ["player"] = {time0, time1, time2, ...}
 	},
+
+	player_on_flag_attempt_streak = {
+		-- ["player"] = streak index
+	},
 }
 
 ctf_gui.old_init()

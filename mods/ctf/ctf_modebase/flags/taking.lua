@@ -1,6 +1,6 @@
 -- this is table of streaks.
 -- mega streak means 4 or 5 attempt in less than 10 minutes
-local streaks = {
+ctf_modebase.flag_attempt_streaks = {
 	[3] = "three",
 	[4] = "four",
 	[5] = "mega",
@@ -128,11 +128,14 @@ function ctf_modebase.flag_on_punch(puncher, nodepos, node)
 			ctf_modebase.flag_attempt_history[pname] = new
 		end
 
-		local streak = streaks[number_of_attempts]
-		if number_of_attempts >= 10 then
-			streak = "EXA"
+		if number_of_attempts > 14 then
+			number_of_attempts = 14
 		end
+
+		local streak = ctf_modebase.flag_attempt_streaks[number_of_attempts]
 		if streak then
+			ctf_modebase.player_on_flag_attempt_streak[pname] = number_of_attempts
+
 			minetest.chat_send_all(minetest.colorize(ctf_teams.team[pteam].color,  pname) ..
 				minetest.colorize("#02e7fc",  " is on a " .. streak .. " attempt streak!"))
 		end
@@ -182,6 +185,7 @@ ctf_api.register_on_match_end(function()
 	ctf_modebase.flag_taken = {}
 	ctf_modebase.flag_captured = {}
 	ctf_modebase.flag_attempt_history = {}
+	ctf_modebase.player_on_flag_attempt_streak = {}
 end)
 
 ctf_teams.register_on_allocplayer(function(player, new_team, old_team)
