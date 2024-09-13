@@ -2,7 +2,7 @@
 -- Copyright (c) 2024 Ivan Shkatov (Maintainer_) ivanskatov672@gmail.com
 spectator = {}
 spectator.spectators = {}
-spectator.build_time = true
+local spectator.build_time = true
 
 -- Enabled spectator mode
 function spectator.on(player)
@@ -68,7 +68,7 @@ ctf_api.register_on_match_start(function()
     spectator.build_time = false
 end)
 
-spectator.formspec = function (playername)
+function spectator.formspec(playername)
     local formspec = "size[8,3]bgcolor[#080808BB;true]" .. default.gui_bg .. default.gui_bg_img .. [[
     hypertext[2.3,0.1;5,1;title;<b>Spectator mode<\b>]
     image[0,0;2,2;spectator_question.png]
