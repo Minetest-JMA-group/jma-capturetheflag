@@ -7,29 +7,51 @@ ctf_settings.register("auto_trash_stone_swords", {
 	default = "false"
 })
 
+ctf_settings.register("auto_trash_stone_tools", {
+	type = "bool",
+	label = "Auto-trash stone tools when you pick up a better one",
+	description = "Only triggers when picking up tools from the ground",
+	default = "false"
+})
+
 local simplify_for_saved_stuff = function(iname)
 	if not iname or iname == "" then return iname end
 
-	if iname:match("default:pick_(%a+)") then
-		return "pick"
-	elseif iname:match("default:axe_(%a+)") then
-		return "axe"
-	elseif iname:match("default:shovel_(%a+)") then
-		return "shovel"
-	elseif iname:match("ctf_mode_nade_fight:") then
-		return "nade_fight_grenade"
-	elseif
-		iname == "ctf_mode_classes:knight_sword" or
-		iname == "ctf_mode_classes:support_bandage" or
-		iname == "ctf_mode_classes:ranged_rifle_loaded"
+	local match
+
+	match = iname:match("default:pick_(%S+)")
+	if match then
+		return "pick", match
+	end
+
+	match = iname:match("default:axe_(%S+)")
+	if match then
+		return "axe", match
+	end
+
+	match = iname:match("default:shovel_(%S+)")
+	if match then
+		return "shovel", match
+	end
+
+	match = iname:match("ctf_mode_nade_fight:(%S+)")
+	if match then
+		return "nade_fight_grenade", match
+	end
+
+	if
+	iname == "ctf_mode_classes:knight_sword" or
+	iname == "ctf_mode_classes:support_bandage" or
+	iname == "ctf_mode_classes:ranged_rifle_loaded"
 	then
 		return "class_primary"
 	end
 
-	local mod, match = iname:match("(%a+):sword_(%a+)")
+	local mod
+	mod, match = iname:match("(%S+):sword_(%S+)")
 
 	if mod and (mod == "default" or mod == "ctf_melee") and match then
-		return "sword"
+		return "sword", match
 	end
 
 	return iname
@@ -197,14 +219,14 @@ function ctf_modebase.player.give_initial_stuff(player)
 	inv:set_list("main", new)
 end
 
-minetest.register_on_item_pickup(function(itemstack, picker)
+local function swap_tools(itemstack, picker, inv, inv_action, item_index)
 	if ctf_modebase.current_mode and ctf_teams.get(picker) then
 		local mode = ctf_modebase:get_current_mode()
 		for name, func in pairs(mode.initial_stuff_item_levels) do
 			local priority = func(itemstack)
 
 			if priority then
-				local inv = picker:get_inventory()
+				inv = inv or picker:get_inventory()
 				for i=1, 8 do -- loop through the top row of the player's inv
 					local compare = inv:get_stack("main", i)
 
@@ -212,31 +234,55 @@ minetest.register_on_item_pickup(function(itemstack, picker)
 						local cprio = func(compare)
 
 						if cprio and cprio < priority then
+							local item, typ = simplify_for_saved_stuff(compare:get_name())
+							-- minetest.log(dump(item)..dump(typ))
 							inv:set_stack("main", i, itemstack)
 
-							if compare:get_name() == "ctf_melee:sword_stone" and
+							if item == "sword" and typ == "stone" and
 							ctf_settings.get(picker, "auto_trash_stone_swords") == "true" then
 								return ItemStack("")
+							end
+
+							if item ~= "sword" and typ == "stone" and
+							ctf_settings.get(picker, "auto_trash_stone_tools") == "true" then
+								return ItemStack("")
 							else
-								local result = inv:add_item("main", compare):get_count()
-
-								if result == 0 then
-									return ItemStack("")
+								if inv_action then
+									inv:set_stack("main", item_index, compare)
+									return
 								else
-									compare:set_count(result)
-
-									return compare
+									local result = inv:add_item("main", compare):get_count()
+									if result == 0 then
+										return ItemStack("")
+									else
+										compare:set_count(result)
+										return compare
+									end
 								end
 							end
 						end
 					end
 				end
-
 				break -- We already found a place for it, don't check for one held by a different item type
 			end
 		end
 	end
+end
+
+minetest.register_on_item_pickup(function(itemstack, picker)
+	return swap_tools(itemstack, picker)
 end)
+
+minetest.register_on_player_inventory_action(function(player, action, inventory, inventory_info)
+	if action == "put" and inventory_info.listname == "main" then
+		local index = inventory_info.index
+		local stack = swap_tools(ItemStack(inventory_info.stack), player, inventory, true, index)
+		if stack then
+			inventory:set_stack("main", index, stack)
+		end
+	end
+end)
+
 
 function ctf_modebase.player.empty_inv(player)
 	player:get_inventory():set_list("main", {})
