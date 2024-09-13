@@ -2,7 +2,7 @@
 -- Copyright (c) 2024 Ivan Shkatov (Maintainer_) ivanskatov672@gmail.com
 spectator = {}
 spectator.spectators = {}
-spectator.texture = "question.png"
+spectator.build_time = true
 
 -- Enabled spectator mode
 function spectator.on(player)
@@ -30,6 +30,7 @@ function spectator.on(player)
         player:get_inventory():set_list("main", {})
     
         spectator.spectators[name] = true
+
         ctf_teams.remove_online_player(player)
     end
 end
@@ -60,12 +61,11 @@ ctf_api.register_on_match_end(function()
     for player_name,_ in pairs(spectator.spectators) do
         spectator.off(minetest.get_player_by_name(player_name))
     end
+    spectator.build_time = true
 end)
 
 ctf_api.register_on_match_start(function()
-    for _, player in pairs(minetest.get_connected_players()) do
-        spectator.formspec(player:get_player_name())
-    end
+    spectator.build_time = false
 end)
 
 spectator.formspec = function (playername)
@@ -88,7 +88,6 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
     if fields["yes"] then
         spectator.on(player)
     end
-
 	return true
 end)
 
@@ -102,6 +101,18 @@ minetest.register_chatcommand("spectator", {
         end
         table.sort(output)
         minetest.chat_send_player(name, "In spectator mode now: " .. table.concat(output, ", "))
+    end
+})
+
+minetest.register_chatcommand("watch", {
+    description = "Watch the game", 
+    params = "",
+    func = function(name, _)
+        minetest.chat_send_player(name, tostring(spectator.build_time))
+        if spectator.build_time == false then
+            return "You can join to spectator mode only in build time!"
+        end
+        spectator.formspec(name)
     end
 })
 
