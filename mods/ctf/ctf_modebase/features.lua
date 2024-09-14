@@ -489,12 +489,18 @@ return {
 		if #delete_queue > 0 then
 			local p1, p2 = unpack(delete_queue)
 
-			for _, object_drop in pairs(minetest.get_objects_in_area(p1, p2)) do
-				if not object_drop:is_player() then
-					local drop = object_drop:get_luaentity()
+			local ignore_objects = {
+				"hpbar:entity",
+				"wield3d:entity",
+				"playertag:tag",
+			}
 
-					if drop and drop.name == "__builtin:item" then
-						object_drop:remove()
+			for _, obj in pairs(minetest.get_objects_in_area(p1, p2)) do
+				if not obj:is_player() then
+					local luaent = obj:get_luaentity()
+
+					if luaent and table.indexof(ignore_objects, luaent.name) == -1 then
+						obj:remove()
 					end
 				end
 			end
