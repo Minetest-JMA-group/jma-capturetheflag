@@ -101,6 +101,8 @@ minetest.register_chatcommand("spectator", {
         end
         table.sort(output)
         minetest.chat_send_player(name, "In spectator mode now: " .. table.concat(output, ", "))
+
+        return true
     end
 })
 
@@ -118,6 +120,8 @@ minetest.register_chatcommand("watch", {
             end
         end
         spectator.formspec(name)
+
+        return true
     end
 })
 
