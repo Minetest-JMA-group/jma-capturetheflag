@@ -493,6 +493,7 @@ return {
 				"hpbar:entity",
 				"wield3d:entity",
 				"playertag:tag",
+				"server_cosmetics:hat"
 			}
 
 			for _, obj in pairs(minetest.get_objects_in_area(p1, p2)) do
