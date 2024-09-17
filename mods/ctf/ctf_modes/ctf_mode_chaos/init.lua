@@ -8,10 +8,13 @@ local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 ctf_core.include_files("weapons.lua")
 ctf_core.include_files("kb_grenade.lua")
 
+local allow_once = false
+
 ctf_modebase.register_mode("chaos", {
 	on_prevote = function()
 		local today = tonumber(os.date("%w"))
-		if today == 0 or today == 6 then
+		if today == 0 or today == 6 or allow_once then
+			allow_once = false
 			return true
 		end
 		return false
@@ -92,4 +95,13 @@ ctf_modebase.register_mode("chaos", {
 			return 0
 		end
 	end,
+})
+
+minetest.register_chatcommand("wannachaos", {
+	description = "Allow chaos mode once",
+	privs = {dev = true},
+	func = function()
+		allow_once = true
+		return true, "Chaos mode enabled for one-time"
+	end
 })
