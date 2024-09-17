@@ -1,7 +1,6 @@
---[[
-	* SPDX-License-Identifier: GPL-3.0-or-later
-	* Copyright (c) 2023 Nanowolf4 (n4w@tutanota.com)
-]]
+-- * Copyright (c) 2024 Nanowolf4 (n4w@tutanota.com)
+-- * SPDX-License-Identifier: GPL-3.0-or-later
+
 
 random_gifts = {}
 local open_boxes = {}
