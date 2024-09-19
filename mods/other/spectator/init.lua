@@ -36,6 +36,7 @@ function spectator.on(player)
         spectator.spectators[name] = true
 
         ctf_teams.remove_online_player(player)
+        ctf_teams.player_team[name] = nil 
     end
 end
 
