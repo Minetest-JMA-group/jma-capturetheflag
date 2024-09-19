@@ -8,6 +8,8 @@ local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 ctf_core.include_files("weapons.lua")
 ctf_core.include_files("kb_grenade.lua")
 
+local rg_treasures = ctf_core.include_files("rg_treasures.lua")
+
 local allow_once = false
 
 ctf_modebase.register_mode("chaos", {
@@ -62,12 +64,16 @@ ctf_modebase.register_mode("chaos", {
 	on_mode_start = function()
 		ctf_modebase.bounties.bounty_reward_func = ctf_modebase.bounty_algo.kd.bounty_reward_func
 		ctf_modebase.bounties.get_next_bounty = ctf_modebase.bounty_algo.kd.get_next_bounty
+
+		random_gifts.set_items(rg_treasures)
 		random_gifts.run_spawn_timer()
 	end,
 	on_mode_end = function()
 		ctf_modebase.bounties.bounty_reward_func = old_bounty_reward_func
 		ctf_modebase.bounties.get_next_bounty = old_get_next_bounty
+
 		random_gifts.stop_spawn_timer()
+		random_gifts.set_items({})
 	end,
 	on_new_match = features.on_new_match,
 	on_match_end = features.on_match_end,

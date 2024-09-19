@@ -6,7 +6,7 @@ local function add_score(player, score)
 		if type(old_receiver_ranks) == "table" then
 			local old_receiver_score = old_receiver_ranks.score or 0
 			mode.rankings:set(receiver_name, {score = old_receiver_score + score})
-			minetest.chat_send_player(receiver_name, "You got " .. score .. " scores!")
+			minetest.chat_send_player(receiver_name, "+" .. score .. " score!")
 		end
 	end
 end
@@ -17,7 +17,7 @@ local function boom(obj)
     minetest.add_node(pos, {name = "tnt:tnt_burning"})
 end
 
-random_gifts.list = {
+return {
 	{itemname = "easter_egg:egg", chance = 2, amount = 2},
 	{itemname = "default:stone", chance = 40, amount = 99},
 	{itemname = "default:cobble", chance = 40, amount = 99},
