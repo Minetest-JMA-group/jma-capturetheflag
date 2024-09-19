@@ -4,6 +4,10 @@ spectator = {}
 spectator.spectators = {}
 local build_time = true
 
+minetest.regsiter_privilege("spectator", {
+    give_to_singleplayer = false,
+    give_to_admin = false
+})
 -- Enabled spectator mode
 function spectator.on(player)
     if player then 
@@ -94,6 +98,7 @@ end)
 minetest.register_chatcommand("spectator", {
     description = "Shows players in spectator mode",
     params = "",
+    privs = {spectator = true},
     func = function (name)
         local output = {}
         for i,_ in pairs(spectator.spectators) do
@@ -109,6 +114,7 @@ minetest.register_chatcommand("spectator", {
 minetest.register_chatcommand("watch", {
     description = "Watch the game", 
     params = "",
+    privs = {spectator = true},
     func = function(name, _)
         if build_time == false then
             return false, "You can join to spectator mode only in build time!"
