@@ -1,7 +1,6 @@
 -- * Copyright (c) 2024 Nanowolf4 (n4w@tutanota.com)
 -- * SPDX-License-Identifier: GPL-3.0-or-later
 
-
 random_gifts = {}
 local open_boxes = {}
 
@@ -17,19 +16,18 @@ function random_gifts.entity_exists(obj)
 end
 local entity_exists = random_gifts.entity_exists
 
-dofile(minetest.get_modpath("random_gifts") .. "/gifts.lua")
-local list = random_gifts.list
+local list = {}
 
-local function choose_item_with_chance(itemList)
+local function choose_item_with_chance(itemlist)
     local total_chance = 0
-    for _, item in ipairs(itemList) do
+    for _, item in ipairs(itemlist) do
         total_chance = total_chance + item.chance
     end
 
     local random_value = math.random(total_chance)
     local accumulated_chance = 0
 
-    for i, item in ipairs(itemList) do
+    for i, item in ipairs(itemlist) do
         accumulated_chance = accumulated_chance + item.chance
         if random_value <= accumulated_chance then
             return i
@@ -284,6 +282,10 @@ minetest.register_entity("random_gifts:gift", {
     --     return true
     -- end,
 })
+
+function random_gifts.set_items(itemlist)
+	list = itemlist
+end
 
 minetest.register_entity("random_gifts:parachute", {
 	initial_properties = {
