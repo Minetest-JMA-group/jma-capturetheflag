@@ -8,21 +8,40 @@ minetest.register_privilege("spectator", {
     give_to_singleplayer = false,
     give_to_admin = false
 })
+
+minetest.register_chatcommand("make_spectator", {
+	description = "Allow a player to spectate matches",
+	privs = {server = true},
+    params = "<name>",
+	func = function(_, target_name)
+		if target_name ~= "" and minetest.player_exists(target_name) then
+			local privs = minetest.get_player_privs(target_name)
+            if privs.spectator == true then
+                return true, "No need, the player is already has spectator privilege"
+            end
+			privs.spectator = true
+			minetest.set_player_privs(target_name, privs)
+			return true, target_name .. " has been granted spectator privilege"
+		end
+		return false, "Player does not exist or is not set"
+	end,
+})
+
 -- Enabled spectator mode
 function spectator.on(player)
-    if player then 
+    if player then
         local name = player:get_player_name()
         local meta = player:get_meta()
-    
+
         meta:set_string(name, minetest.privs_to_string(minetest.get_player_privs(name), ","))
         meta:set_int("spectator", 1)
-    
+
         minetest.set_player_privs(name, {
             noclip = true,
             fly = true,
             fast = true
         })
-    
+
         player:set_properties({
             visual = "",
             show_on_minimap = false,
@@ -32,11 +51,11 @@ function spectator.on(player)
         player:set_nametag_attributes{text = "\0"}
         player:set_armor_groups({immortal = 1})
         player:get_inventory():set_list("main", {})
-    
+
         spectator.spectators[name] = true
 
         ctf_teams.remove_online_player(player)
-        ctf_teams.player_team[name] = nil 
+        ctf_teams.player_team[name] = nil
     end
 end
 
@@ -45,11 +64,11 @@ function spectator.off(player)
     if player then
         local name = player:get_player_name()
         local meta = player:get_meta()
-    
+
         minetest.set_player_privs(name, minetest.string_to_privs(meta:get_string(name), ","))
         meta:set_string(name, "")
         meta:set_int("spectator", 0)
-    
+
         player:set_properties({
             visual = "mesh",
             show_on_minimap = true,
@@ -57,7 +76,7 @@ function spectator.off(player)
         })
         player:set_nametag_attributes {text = name}
         player:set_armor_groups({immortal = 0})
-    
+
         spectator.spectators[name] = nil
     end
 end
@@ -88,7 +107,7 @@ end
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
     if formname ~= "spectator_mode" then
-		return 
+		return
     end
     if fields["yes"] then
         spectator.on(player)
@@ -113,7 +132,7 @@ minetest.register_chatcommand("spectator", {
 })
 
 minetest.register_chatcommand("watch", {
-    description = "Watch the game", 
+    description = "Watch the game",
     params = "",
     privs = {spectator = true},
     func = function(name, _)
@@ -138,5 +157,5 @@ minetest.register_on_joinplayer(function(player)
     if meta:get_int("spectator") == 1 then
         minetest.set_player_privs(name, minetest.string_to_privs(meta:get_string(name), ","))
         meta:set_int("spectator", 0)
-    end 
+    end
 end)
