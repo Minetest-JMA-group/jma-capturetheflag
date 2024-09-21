@@ -4,7 +4,7 @@ spectator = {}
 spectator.spectators = {}
 local build_time = true
 
-minetest.regsiter_privilege("spectator", {
+minetest.register_privilege("spectator", {
     give_to_singleplayer = false,
     give_to_admin = false
 })
