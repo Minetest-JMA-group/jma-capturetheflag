@@ -159,3 +159,7 @@ minetest.register_on_joinplayer(function(player)
         meta:set_int("spectator", 0)
     end
 end)
+
+minetest.register_on_leaveplayer(function(player)
+    spectator.spectators[player:get_player_name()] = nil
+end)
