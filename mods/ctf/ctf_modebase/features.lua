@@ -53,8 +53,24 @@ function ctf_modebase.map_chosen(map, ...)
 	return old_announce(map, ...)
 end
 
+local function supports_observers(x)
+	if x then
+		if x.object then x = x.object end
+		if x.get_observers and x:get_pos() then
+			return true
+		end
+	end
+	return false
+end
 
-local function update_playertag(player, t, nametag, team_nametag, team_symbol_nametag)
+local function update_playertag(player, t, nametag, team_nametag, symbol_nametag)
+	if not      supports_observers(nametag.object) or
+	   not supports_observers(team_nametag.object) or
+	   not supports_observers(symbol_nametag.object)
+	then
+		return
+	end
+
 	local entity_players = {}
 	local nametag_players = table.copy(ctf_teams.online_players[t].players)
 	local symbol_players = {}
@@ -78,9 +94,9 @@ local function update_playertag(player, t, nametag, team_nametag, team_symbol_na
 		end
 	end
 
-	team_nametag.object:set_observers(nametag_players)
-	team_symbol_nametag.object:set_observers(symbol_players)
 	nametag.object:set_observers(entity_players)
+	team_nametag.object:set_observers(nametag_players)
+	symbol_nametag.object:set_observers(symbol_players)
 end
 
 local tags_hidden = false
@@ -126,16 +142,16 @@ local function set_playertags_state(state)
 				local nametag = playertag.entity
 				local symbol_entity = playertag.symbol_entity
 
-				if nametag and team_nametag and symbol_entity then
-					-- Occasionally crashes in singleplayer, so call it safely
-					pcall( team_nametag.object.set_observers,  team_nametag.object, {})
-					pcall(symbol_entity.object.set_observers, symbol_entity.object, {})
-					pcall(      nametag.object.set_observers,       nametag.object, {})
+				if supports_observers(nametag) and supports_observers(team_nametag) and supports_observers(symbol_entity) then
+					team_nametag.object:set_observers({})
+					symbol_entity.object:set_observers({})
+					nametag.object:set_observers({})
 				end
 			end
 		end
 	end
 end
+
 
 
 function ctf_modebase.show_loading_screen()
