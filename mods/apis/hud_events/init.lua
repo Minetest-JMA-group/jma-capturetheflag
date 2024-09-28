@@ -45,7 +45,7 @@ local function show_quick_hud_event(player, huddef)
 
 	if not hud:exists(player, "hud_event_quick") then
 		hud:add(player, "hud_event_quick", {
-			hud_elem_type = "text",
+			type = "text",
 			position = {x = 0.5, y = 0.5},
 			offset = {x = 0, y = 20},
 			alignment = {x = "center", y = "down"},
@@ -76,7 +76,7 @@ local function handle_hud_events(player, channel)
 
 	if not hud:exists(player, event_name) then
 		hud:add(player, event_name, {
-			hud_elem_type = "text",
+			type = "text",
 			position = {x = 0.5, y = 0.5},
 			offset = {x = 0, y = 45 + (channel - 1) * 25},
 			alignment = {x = "center", y = "down"},

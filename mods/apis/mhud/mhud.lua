@@ -128,7 +128,7 @@ function hud.add(self, player, name, def)
 		self.huds[pname] = {}
 	end
 
-	def = convert_def(def, def.hud_elem_type)
+	def = convert_def(def, def.type)
 
 	local id = pobj:hud_add(def)
 
@@ -159,7 +159,7 @@ function hud.change(self, player, name, def)
 	local pname = get_playername(player)
 	assert(self.huds[pname] and self.huds[pname][name], "Attempt to change hud that doesn't exist!")
 
-	def = convert_def(def, def.hud_elem_type or self.huds[pname][name].def.hud_elem_type)
+	def = convert_def(def, def.type or self.huds[pname][name].def.type)
 
 	for stat, val in pairs(def) do
 		pobj:hud_change(self.huds[pname][name].id, stat, val)

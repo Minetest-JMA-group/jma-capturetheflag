@@ -311,7 +311,7 @@ grenades.register_grenade("grenades:flashbang", {
 
 					for i = 0, 5, 1 do
 						local key = v:hud_add({
-							hud_elem_type = "image",
+							type = "image",
 							position = {x = 0, y = 0},
 							name = "flashbang hud "..pname,
 							scale = {x = -200, y = -200},

@@ -214,7 +214,7 @@ function ctf_ranged.show_scope(name, item_name, fov_mult)
 	}
 
 	hud:add(player, "ctf_ranged:scope", {
-		hud_elem_type = "image",
+		type = "image",
 		position = {x = 0.5, y = 0.5},
 		text = "ctf_ranged_rifle_crosshair.png",
 		scale = {x = scale_const, y = scale_const},

@@ -29,7 +29,7 @@ local function vote_timer_hud(player)
 
 	if not hud:exists(player, "skip_vote:timer") then
 		hud:add(player, "skip_vote:timer", {
-			hud_elem_type = "text",
+			type = "text",
 			position = {x = 1, y = 0.5},
 			offset = {x =-100, y = -30},
 			text = time_str,
@@ -44,7 +44,7 @@ end
 
 local function add_vote_hud(player)
 	hud:add(player, "skip_vote:vote", {
-		hud_elem_type = "text",
+		type = "text",
 		position = {x = 1, y = 0.5},
 		offset = {x = -100, y = 0},
 		text = "/yes /no or /abs",

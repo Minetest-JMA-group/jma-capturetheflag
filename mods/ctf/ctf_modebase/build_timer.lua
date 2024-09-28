@@ -16,7 +16,7 @@ local function timer_func(time_left)
 
 		if not hud:exists(player, "build_timer") then
 			hud:add(player, "build_timer", {
-				hud_elem_type = "text",
+				type = "text",
 				position = {x = 0.5, y = 0.5},
 				offset = {x = 0, y = -42},
 				text = time_str,

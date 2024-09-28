@@ -32,7 +32,7 @@ function ctf_modebase.map_chosen(map, ...)
 			found = true
 
 			hud:add(p, "map_image", {
-				hud_elem_type = "image",
+				type = "image",
 				position = {x = 0.5, y = 0.5},
 				image_scale = -100,
 				z_index = 1001,
@@ -159,7 +159,7 @@ function ctf_modebase.show_loading_screen()
 	for _, p in pairs(minetest.get_connected_players()) do
 		if ctf_teams.get(p) then
 			hud:add(p, "loading_screen", {
-				hud_elem_type = "image",
+				type = "image",
 				position = {x = 0.5, y = 0.5},
 				image_scale = -100.5,
 				z_index = 1000,
@@ -169,7 +169,7 @@ function ctf_modebase.show_loading_screen()
 			-- z_index 1001 is reserved for the next map's image. Search file for `tag: map_image`
 
 			hud:add(p, "loading_text", {
-				hud_elem_type = "text",
+				type = "text",
 				position = {x = 0.5, y = 0.5},
 				alignment = {x = "center", y = "up"},
 				text_scale = 2,
@@ -178,7 +178,7 @@ function ctf_modebase.show_loading_screen()
 				z_index = 1002,
 			})
 			hud:add(p, {
-				hud_elem_type = "text",
+				type = "text",
 				position = {x = 0.5, y = 0.75},
 				alignment = {x = "center", y = "center"},
 				text = random_messages.get_random_message(),

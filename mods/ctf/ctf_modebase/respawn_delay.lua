@@ -66,7 +66,7 @@ local function respawn(player, time)
 	respawn_delay[pname].state = true
 
 	hud:add(pname, "left", {
-		hud_elem_type = "text",
+		type = "text",
 		position = {x = 0.5, y = 0.1},
 		alignment = {x = "center", y = "down"},
 		text_scale = 2,

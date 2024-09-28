@@ -11,20 +11,20 @@ local HUDNAME_FORMAT = "kill_list:%d,%d"
 
 local HUD_DEFINITIONS = {
 	{
-		hud_elem_type = "text",
+		type = "text",
 		position = {x = 0, y = 0.8},
 		offset = {x = MAX_NAME_LENGTH*10, y = 0},
 		alignment = {x = "left", y = "center"},
 		color = 0xFFFFFF,
 	},
 	{
-		hud_elem_type = "image",
+		type = "image",
 		position = {x = 0, y = 0.8},
 		offset = {x = (MAX_NAME_LENGTH*10) + 28, y = 0},
 		alignment = {x = "center", y = "center"},
 	},
 	{
-		hud_elem_type = "text",
+		type = "text",
 		position = {x = 0, y = 0.8},
 		offset = {x = (MAX_NAME_LENGTH*10) + 54, y = 0},
 		alignment = {x = "right", y = "center"},

@@ -46,7 +46,7 @@ end
 local function add_marker(pname, pteam, message, pos, owner)
 	if not hud:get(pname, "marker_" .. owner) then
 		hud:add(pname, "marker_" .. owner, {
-			hud_elem_type = "waypoint",
+			type = "waypoint",
 			world_pos = pos,
 			precision = 1,
 			color = 0x31e800,
