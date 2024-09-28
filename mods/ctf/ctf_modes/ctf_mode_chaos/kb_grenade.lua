@@ -40,6 +40,7 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 	on_collide = function()
 		return true
 	end,
+	touch_interaction = "short_dig_long_place", -- throw with short tap
 
 	on_explode = function(def, obj, pos, name)
 		minetest.add_particle({

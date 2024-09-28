@@ -4,7 +4,7 @@ local function remove_flora(pos, radius)
 	local pos2 = vector.add(pos, radius)
 
 	for _, p in ipairs(minetest.find_nodes_in_area(pos1, pos2, {
-		"group:flora", "group:mushroom", "default:snow"
+		"group:flora", "group:mushroom", "default:snow", "group:grenade_breakable"
 	})) do
 		if vector.distance(pos, p) <= radius then
 			minetest.remove_node(p)
@@ -205,9 +205,10 @@ local register_smoke_grenade = function(name, description, image, damage)
 								local dname = target:get_player_name()
 								local dteam = ctf_teams.get(dname)
 								if dname ~= pname and dteam ~= pteam then
-									target:punch(thrower, 10, {
+									target:punch(thrower, 1, {
 										damage_groups = {
-											fleshy = 1,
+											fleshy = 2,
+											grenade = 1,
 											poison_grenade = 1,
 										}
 									})
