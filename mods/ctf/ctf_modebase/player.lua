@@ -347,7 +347,7 @@ function ctf_modebase.player.update(player)
 		if mode.physics then
 			player:set_physics_override({
 				sneak_glitch = nil_to_default(mode.physics.sneak_glitch, false),
-				new_move = nil_to_default(mode.physics.new_move, true),
+				new_move = true,
 			})
 		end
 	end
