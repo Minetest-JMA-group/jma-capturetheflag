@@ -83,7 +83,7 @@ function ctf_modebase.flag_huds.update_player(player)
 		hud:change(player, "flag_status", flag_status)
 	else
 		hud:add(player, "flag_status", {
-			hud_elem_type = "text",
+			type = "text",
 			position = {x = 1, y = 0},
 			offset = {x = -6, y = 6},
 			alignment = {x = "left", y = "down"},
@@ -106,7 +106,7 @@ function ctf_modebase.flag_huds.update_player(player)
 			hud:change(player, hud_label, {waypoint_text = base_label})
 		else
 			hud:add(player, hud_label, {
-				hud_elem_type = "waypoint",
+				type = "waypoint",
 				waypoint_text = base_label,
 				color = ctf_teams.team[tname].color_hex,
 				world_pos = def.flag_pos,
@@ -148,7 +148,7 @@ function ctf_modebase.flag_huds.track_capturer(player, time)
 		player_timers[player] = time + 1
 
 		hud:add(player, "flag_timer", {
-			hud_elem_type = "text",
+			type = "text",
 			position = {x = 0.5, y = 0},
 			alignment = {x = "center", y = "down"},
 			color = 0xFF0000,

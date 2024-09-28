@@ -22,7 +22,7 @@ local function update(player)
 		})
 	else
 		hud:add(player, "combat_indicator", {
-			hud_elem_type = "text",
+			type = "text",
 			position = {x = 1, y = 0.2},
 			alignment = {x = "left", y = "down"},
 			offset = {x = -6, y = 0},

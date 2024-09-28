@@ -102,7 +102,7 @@ minetest.register_on_joinplayer(function(player)
 		hb.init_hudbar(player, "sprint")
 	else
 		info.hud = player:hud_add({
-			hud_elem_type = "statbar",
+			type = "statbar",
 			position      = {x=0.5, y=1},
 			size          = {x=24, y=24},
 			text          = "sprint_stamina_icon.png",

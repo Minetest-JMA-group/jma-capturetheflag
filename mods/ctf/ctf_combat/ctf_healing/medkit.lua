@@ -114,7 +114,7 @@ local function start_medkit_heal(playername)
 	healing_players[playername] = {hp = php}
 
 	hud:add(player, "healing_overlay", {
-		hud_elem_type = "image",
+		type = "image",
 		position = {x = 0.5, y = 0.5},
 		image_scale = -100,
 		texture = "[combine:1x1^[invert:rgba^[opacity:1^[colorize:#099bd1:101"
