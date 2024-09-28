@@ -7,10 +7,6 @@
 [submodule "mods/other/skybox"]
 	path = mods/other/skybox
 	url = https://github.com/MT-CTF/skybox.git
-[submodule "mods/apis/mhud"]
-	path = mods/apis/mhud
-	url = https://github.com/LoneWolfHT/mhud.git
-	branch = main
 [submodule "mods/extras"]
 	path = mods/extras
 	url = git@github.com:Minetest-JMA-group/jma-extras.git
