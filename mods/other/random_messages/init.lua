@@ -70,7 +70,7 @@ function random_messages.read_messages()
 		"If you're stuck in the game and can't exit, use the command /kickme",
 		"Try modern HUD instead of hearts/arrows (in the in-game settings)",
 		-- connection, fps, minetest issues
-		"Make sure to use the latest version of Minetest (currently 5.8) for an optimal gaming experience.\nUsing outdated versions may lead to compatibility issues and lack of new features.",
+		"Don't forget to upgrade to Minetest 5.9.1, the most recent version, to avoid any issues with the game.",
 		"If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
 		"Having a stable internet connection is crucial as it minimizes lag, ensuring smoother multiplayer interactions",
 		--translator usage tips
