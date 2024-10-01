@@ -13,7 +13,7 @@ local players = {}
 local HUDBAR_REGISTERED
 
 local function use_hudbars(player)
-	return HUDBAR_REGISTERED and ctf_settings.get(player, "use_hudbars") == "true"
+	return HUDBAR_REGISTERED and ctf_settings.get(player, "hudbars:use_hudbars") == "true"
 end
 
 -- from https://github.com/rubenwardy/sprint

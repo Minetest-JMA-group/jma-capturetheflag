@@ -50,7 +50,7 @@ dofile(minetest.get_modpath("hudbars").."/default_settings.lua")
 local function player_exists(player)
 	-- hack to convince functions that players without hudbars aren't players
 	if player ~= nil and player:is_player() then
-		return ctf_settings.get(player, "use_hudbars") == "true"
+		return ctf_settings.get(player, "hudbars:use_hudbars") == "true"
 	end
 end
 
