@@ -35,8 +35,10 @@ local function isWalkable(pos)
 end
 
 local function is_on_surface(pos)
-	if isWalkable(pos) or isWalkable(vecnew(pos.x, pos.y - 1, pos.z)) then
+	for y = 1, 0, -1 do -- checking the node on the player's position and under the player
+		if isWalkable({x = pos.x, y = pos.y + y, z = pos.z}) then
 		return true
+		end
 	end
 
 	for dx = -1, 1 do
