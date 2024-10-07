@@ -35,16 +35,23 @@ minetest.register_node("heal_block:heal", {
         return itemstack
     end,
 
-    on_construct = function(pos)
+    after_place_node = function(pos, placer)
         minetest.get_node_timer(pos):start(1)
+        local pteam = ctf_teams.get(placer)
+        if pteam then
+            minetest.get_meta(pos):set_string("team", pteam)
+        end
     end,
 
     on_timer = function(pos)
         for _, player in ipairs(minetest.get_objects_inside_radius(pos, 3)) do
             if player:is_player() then
-                local hp = player:get_hp()
-                if hp < player:get_properties().hp_max then
-                    player:set_hp(hp + 1)
+                local pteam = ctf_teams.get(player:get_player_name())
+                if pteam and pteam == minetest.get_meta(pos):get_string("team") then
+                    local hp = player:get_hp()
+                    if hp < player:get_properties().hp_max then
+                        player:set_hp(hp + 2)
+                    end
                 end
             end
         end
