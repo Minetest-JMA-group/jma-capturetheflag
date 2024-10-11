@@ -61,7 +61,7 @@ local function show_formspec(player)
 	for i = 1, total_width do
 		local offset = start_offset + (i - 1) * (element_width + spacing)
 		local gift_index = box.gifts[i]
-		if gift_index then
+		if gift_index and list[gift_index] then
 			local gift = list[gift_index]
 			local amount = gift.amount or 1
 			local field_name = "item_" .. gift_index
