@@ -824,6 +824,8 @@ return {
 
 			local win_text = HumanReadable(pteam) .. " Team Wins!"
 
+			minetest.chat_send_all(minetest.colorize(pteam, win_text))
+
 			local match_rankings, special_rankings, rank_values, formdef = ctf_modebase.summary.get()
 			formdef.title = win_text
 
