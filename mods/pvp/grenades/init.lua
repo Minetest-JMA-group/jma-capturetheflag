@@ -3,20 +3,20 @@ grenades = {
 }
 
 local cooldown = ctf_core.init_cooldowns()
-local max_vel = 27
+local max_vel = 30
 
 function grenades.throw_grenade(name, startspeed, player)
+	local player_vel = player:get_velocity()
+	if math.abs(player_vel.x) > max_vel or math.abs(player_vel.y) > max_vel or math.abs(player_vel.z) > max_vel then
+		minetest.log("warning", "grenades: Player " .. player:get_player_name() .. " exceeded the maximum allowed velocity: " .. vector.to_string(player_vel))
+		return
+	end
+
 	local dir = player:get_look_dir()
 	local pos = vector.offset(player:get_pos(), 0, player:get_properties().eye_height, 0)
 
 	local obj = minetest.add_entity(pos, name)
 	if not obj then
-		return
-	end
-
-	local player_vel = player:get_velocity()
-	if math.abs(player_vel.x) > max_vel or math.abs(player_vel.y) > max_vel or math.abs(player_vel.z) > max_vel then
-		minetest.log("warning", "grenades: Player " .. player:get_player_name() .. " exceeded the maximum allowed velocity. Velocity vector: " .. vector.to_string(player_vel))
 		return
 	end
 
