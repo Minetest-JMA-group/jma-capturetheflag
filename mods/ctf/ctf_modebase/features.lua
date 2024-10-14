@@ -335,8 +335,8 @@ local function tp_player_near_flag(player)
 	end
 
 	apply()
-	minetest.after(0.2, function() -- TODO remove after respawn bug will be fixed
-		if player:is_player() and vector.distance(player:get_pos(), ctf_map.current_map.teams[tname].flag_pos) > 2.5 then
+	minetest.after(0.1, function() -- TODO remove after respawn bug will be fixed
+		if player:is_player() then
 			apply()
 		end
 	end)
