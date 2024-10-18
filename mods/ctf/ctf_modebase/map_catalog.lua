@@ -34,27 +34,38 @@ minetest.register_on_mods_loaded(function()
 	assert(#ctf_modebase.map_catalog.maps > 0 or ctf_core.settings.server_mode == "mapedit")
 end)
 
-function ctf_modebase.map_catalog.select_map(filter)
+function ctf_modebase.map_catalog.select_map(filter, full_pool)
 	local maps = {}
-	for idx, map in ipairs(maps_pool) do
-		if not filter or filter(ctf_modebase.map_catalog.maps[map]) then
-			table.insert(maps, idx)
+	for _, pool in pairs({maps_pool, full_pool and used_maps}) do
+		for idx, map in ipairs(pool) do
+			if not filter or filter(ctf_modebase.map_catalog.maps[map]) then
+				table.insert(maps, full_pool and map or idx)
+			end
 		end
 	end
 
 	local selected = maps[math.random(1, #maps)]
-	ctf_modebase.map_catalog.current_map = maps_pool[selected]
 
-	if map_repeat_interval > 0 then
-		if #used_maps < map_repeat_interval then
-			table.insert(used_maps, maps_pool[selected])
-			maps_pool[selected] = maps_pool[#maps_pool]
-			maps_pool[#maps_pool] = nil
-		else
-			used_maps[used_maps_idx], maps_pool[selected] = maps_pool[selected], used_maps[used_maps_idx]
-			used_maps_idx = used_maps_idx + 1
-			if used_maps_idx > #used_maps then
-				used_maps_idx = 1
+	if not selected then
+		selected = ctf_modebase.map_catalog.map_dirnames["plains"]
+	end
+
+	if full_pool then
+		ctf_modebase.map_catalog.current_map = selected
+	else
+		ctf_modebase.map_catalog.current_map = maps_pool[selected]
+
+		if map_repeat_interval > 0 then
+			if #used_maps < map_repeat_interval then
+				table.insert(used_maps, maps_pool[selected])
+				maps_pool[selected] = maps_pool[#maps_pool]
+				maps_pool[#maps_pool] = nil
+			else
+				used_maps[used_maps_idx], maps_pool[selected] = maps_pool[selected], used_maps[used_maps_idx]
+				used_maps_idx = used_maps_idx + 1
+				if used_maps_idx > #used_maps then
+					used_maps_idx = 1
+				end
 			end
 		end
 	end
