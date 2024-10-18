@@ -2,8 +2,8 @@ local queue_transfers = false
 
 ctf_rankings.register_on_rank_reset(function(pname, rank)
 	if rank and rank.place then
-		if rank.place <= 100 then
-			server_cosmetics.add_transfers(pname, {"server_cosmetics:headwear:sunglasses:black"})
+		if rank.place <= 120 then
+			server_cosmetics.add_transfers(pname, {["server_cosmetics:headwear:sunglasses:black"] = "give"})
 			queue_transfers = true
 		end
 	end

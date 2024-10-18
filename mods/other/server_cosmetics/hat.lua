@@ -1,16 +1,14 @@
 minetest.register_entity("server_cosmetics:hat", {
-	initial_properties = {
-		visual = "mesh",
-		textures = {},
-		mesh = "server_cosmetics_hat.b3d",
-		physical = false,
-		makes_footstep_sound = false,
-		backface_culling = false,
-		shaded = false,
-		static_save = false,
-		pointable = false,
-		glow = 1,
-	},
+	visual = "mesh",
+	textures = {},
+	mesh = "server_cosmetics_hat.b3d",
+	physical = false,
+	makes_footstep_sound = false,
+	backface_culling = false,
+	shaded = false,
+	static_save = false,
+	pointable = false,
+	glow = 1,
 	on_punch = function() return true end,
 	on_step = function(self, dtime)
 		self.timer = (self.timer or 0) + dtime
