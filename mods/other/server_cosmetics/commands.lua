@@ -1,4 +1,5 @@
 local mods = minetest.get_mod_storage()
+local TRANSFER_QUEUE_VERSION = 2
 
 local function get_table(x)
 	if x and x ~= "" then
@@ -45,28 +46,60 @@ minetest.register_privilege("cosmetic_manager", {
 	description = "Allows doing things like transferring/giving cosmetics",
 })
 
+local queue_version = mods:get_int("transfer_queue_version")
 local transfer_queue = get_table(mods:get_string("transfer_queue"))
 --[[
 {
-	[pname] = {cosmetic1, cosmetic2, ...},
+	[pname] = {[cosmetic1] = "give", [cosmetic2] = "take", ...},
 	...
 }
 --]]
 
-function server_cosmetics.add_transfers(pname, cosmetics)
-	if transfer_queue[pname] then
-		for _, cos in pairs(cosmetics) do
-			if not table.indexof(transfer_queue[pname], cos) then
-				table.insert(transfer_queue[pname], cos)
-			end
-		end
-	else
-		transfer_queue[pname] = cosmetics
-	end
-end
-
 function server_cosmetics.save_transfer_queue()
 	mods:set_string("transfer_queue", minetest.serialize(transfer_queue))
+end
+
+-- Convert older queue formats. Needs to be updated whenever the format is changed
+if queue_version <= 1 then
+	local dir = minetest.get_worldpath().."/server_cosmetics/"
+
+	minetest.mkdir(dir)
+
+	local f, err = io.open(dir.."transfer_queue_backup_v1.txt", "w")
+
+	if f then
+		f:write(minetest.serialize(transfer_queue))
+	else
+		minetest.log("error", err)
+	end
+
+	f:close()
+
+	for pname, list in pairs(transfer_queue) do
+		local new = {}
+		for _, cosmetic in pairs(list) do
+			new[cosmetic] = "give"
+		end
+		transfer_queue[pname] = new
+	end
+
+	server_cosmetics.save_transfer_queue()
+
+	mods:set_int("transfer_queue_version", TRANSFER_QUEUE_VERSION)
+end
+
+function server_cosmetics.add_transfers(pname, cosmetics)
+	if not transfer_queue[pname] then
+		transfer_queue[pname] = {}
+	end
+
+	for cos, action in pairs(cosmetics) do
+		if action == "give" or action == "take" then
+			transfer_queue[pname][cos] = action
+		else -- transfer queue v1
+			transfer_queue[pname][action] = "give"
+		end
+	end
 end
 
 minetest.register_chatcommand("cosmetics", {
@@ -104,9 +137,9 @@ minetest.register_chatcommand("cosmetics", {
 					end
 				else
 					if transfer_queue[playername] then
-						return true, "Cosmetic queue for player "..playername..":\n"..table.concat(transfer_queue[playername], " |\t")
+						return true, "Cosmetic queue for player "..playername..":\n"..dump(transfer_queue[playername])
 					else
-						return true, "No cosmetics are queued to be given to player "..playername
+						return true, "Player "..playername.." has no cosmetics queued"
 					end
 				end
 			end
@@ -123,83 +156,72 @@ minetest.register_chatcommand("cosmetics", {
 
 	-- Verify a valid cosmetic param was given
 		if not params[3] then
-			return false, "You need to specify a cosmetic to give"
+			return false, "You need to specify a cosmetic to give/take"
 		end
 
-		local cosmetic = false
-
+		local cosmetic
+		local matches = {}
 		for k, v in pairs(cosmetic_keys) do
 			if v:match(params[3]) then
-				if cosmetic then
-					return false, "There are multiple cosmetics that could match "..dump(params[3])..", please be more specific"
-				else
-					cosmetic = cosmetic_keys[k]
-				end
+				table.insert(matches, cosmetic_keys[k])
 			end
 		end
 
-		if not cosmetic then
-			return false, "Couldn't find any cosmetic matching "..dump(params[3])
+		if #matches <= 0 then
+			return false, "Couldn't find any cosmetic matching " .. dump(params[3])
+		elseif #matches > 1 then
+			return false, "There are multiple cosmetics that match " .. dump(params[3]) .. ", please be more specific:\n\t" ..
+					minetest.colorize("cyan", table.concat(matches, "\n\t"))
+		else
+			cosmetic = matches[1]
 		end
 
-	-- /cosmetics give <playername> <cosmetic>
+	-- /cosmetics <give/take> <playername> <cosmetic>
+		local action = "given to"
+		local action_past = {"Gave", "to"}
 		if params[1] == "give" or params[1] == "g" then
-			local player = minetest.get_player_by_name(playername)
-
-			if not player then
-				if transfer_queue[playername] then
-					table.insert(transfer_queue[playername], cosmetic)
-
-					server_cosmetics.save_transfer_queue()
-				else
-					transfer_queue[playername] = {cosmetic}
-
-					server_cosmetics.save_transfer_queue()
-				end
-
-				minetest.log("action", "Queued cosmetic "..dump(cosmetic).." to be given to player "..playername..
-						" next time they log in")
-				return true, "Queued cosmetic "..dump(cosmetic).." to be given to player "..playername.." next time they log in"
-			else
-				player:get_meta():set_int(cosmetic, 1)
-
-				minetest.log("action", "Gave cosmetic "..dump(cosmetic).." to player "..playername)
-				return true, "Gave cosmetic "..dump(cosmetic).." to player "..playername
-			end
-	-- /cosmetics take <playername> <cosmetic>
+			params[1] = "give"
 		elseif params[1] == "take" or params[1] == "t" then
+			params[1] = "take"
+			action = "taken from"
+			action_past = {"Took", "from"}
+		end
+
+		if params[1] == "give" or params[1] == "take" then
 			local player = minetest.get_player_by_name(playername)
 
 			if not player then
-				if transfer_queue[playername] then
-					local idx = table.indexof(transfer_queue[playername], cosmetic)
+				if transfer_queue[playername] and
+				transfer_queue[playername][cosmetic] and params[1] ~= transfer_queue[playername][cosmetic] then
+					local msg = "Removed cosmetic "..dump(cosmetic).." from player "..playername.."'s cosmetic queue"
 
-					if idx then
-						table.remove(transfer_queue[playername], idx)
+					transfer_queue[playername][cosmetic] = nil
 
-						if #transfer_queue[playername] <= 0 then
-							transfer_queue[playername] = nil
-						end
-
-						server_cosmetics.save_transfer_queue()
-
-						minetest.log("action", "Removed cosmetic "..dump(cosmetic).." from player "..playername.."'s cosmetic queue")
-						return true, "Removed cosmetic "..dump(cosmetic).." from player "..playername.."'s cosmetic queue"
+					if not next(transfer_queue[playername]) then
+						transfer_queue[playername] = nil
 					end
+
+					server_cosmetics.save_transfer_queue()
+
+					minetest.log("action", msg)
+					return true, msg
 				end
 
-				return false, "Player "..playername.." is not online and the given cosmetic is not in their cosmetic queue"
+				if not transfer_queue[playername] then
+					transfer_queue[playername] = {}
+				end
+
+				transfer_queue[playername][cosmetic] = params[1]
+				server_cosmetics.save_transfer_queue()
+
+				minetest.log("action", "Queued cosmetic "..dump(cosmetic).." to be "..action.." player "..playername..
+						" next time they log in")
+				return true, "Queued cosmetic "..dump(cosmetic).." to be "..action.." player "..playername.." next time they log in"
 			else
-				local meta = player:get_meta()
+				player:get_meta():set_int(cosmetic, (params[1] == "give") and 1 or 0)
 
-				if meta:get_int(cosmetic) ~= 0 then
-					meta:set_int(cosmetic, 0)
-
-					minetest.log("action", "Took cosmetic "..dump(cosmetic).." from player "..playername)
-					return true, "Took cosmetic "..dump(cosmetic).." from player "..playername
-				else
-					return false, "Player "..playername.." doesn't have the cosmetic "..cosmetic
-				end
+				minetest.log("action", action_past[1].." cosmetic "..dump(cosmetic).." "..action_past[2].." player "..playername)
+				return true, action_past[1].." cosmetic "..dump(cosmetic).." "..action_past[2].." player "..playername
 			end
 		end
 
@@ -207,6 +229,7 @@ minetest.register_chatcommand("cosmetics", {
 	end,
 })
 
+-- TODO:
 -- minetest.register_chatcommand("transfer_cosmetics", {
 -- 	description = "Transfer cosmetics from one player to another",
 -- 	params = "<from name> <to name>",
@@ -223,16 +246,34 @@ minetest.register_on_joinplayer(function(player)
 
 	if transfer then
 		local meta = player:get_meta()
+		local gave_count = 0
+		local took_count = 0
 
-		for _, cosmetic in pairs(transfer) do
-			meta:set_int(cosmetic, 1)
-			minetest.log("action", "Transferred cosmetic "..dump(cosmetic).." to player "..name)
+		for cosmetic, action in pairs(transfer) do
+			local set_to = (action == "give") and 1 or 0
+			local old = meta:get_int(cosmetic)
+
+			if old ~= set_to then
+				meta:set_int(cosmetic, set_to)
+
+				if action == "give" then
+					gave_count = gave_count + 1
+					minetest.log("action", "Transferred cosmetic "..dump(cosmetic).." to player "..name)
+				else
+					took_count = took_count + 1
+					minetest.log("action", "Took cosmetic "..dump(cosmetic).." from player "..name)
+				end
+			end
 		end
 
 		transfer_queue[name] = nil
 
 		server_cosmetics.save_transfer_queue()
 
-		minetest.chat_send_player(name, minetest.colorize("purple", "You have received new cosmetics!"))
+		if gave_count + took_count > 0 then
+			minetest.chat_send_player(name, minetest.colorize("purple", (
+				"Your cosmetics have been changed! %d added, %d removed"
+			):format(gave_count, took_count)))
+		end
 	end
 end)

@@ -1,6 +1,23 @@
 server_cosmetics = {
 	cosmetics = {
 		default_cosmetics = {
+			hair = {
+				brown  = "#472E16",
+				black  = "#222"   ,
+				grey   = "#AAA"   ,
+				blonde = "#E6CC7C",
+			},
+			eyes = {
+				blue  = "#2859C5",
+				green = "#477C47",
+				brown = "#2D1400",
+			},
+			skin = {
+				_prefix = "Modify ",
+				tan      = "#cca586",
+				dark_tan = "#6d4832",
+				brown    = "#412d1b",
+			}
 		},
 		headwear = {
 			sunglasses = {
@@ -23,6 +40,10 @@ server_cosmetics = {
 					append = true,
 					color = "#000000^server_cosmetics_sunglasses_shine.png",
 				},
+				tournament = {
+					append = true,
+					color = "#000000^(server_cosmetics_sunglasses_shine.png^[multiply:#ffe346)",
+				},
 			}
 		},
 		entity_cosmetics = {
@@ -40,6 +61,7 @@ server_cosmetics = {
 				["2021"] = {"server_cosmetics_santa_hat.png"},
 				["2022"] = {"server_cosmetics_santa_hat.png^(server_cosmetics_santa_hat_overlay.png^[multiply:green)"},
 				["2023"] = {"server_cosmetics_santa_hat.png^(server_cosmetics_santa_hat_overlay.png^[multiply:purple)"},
+				["2024"] = {"server_cosmetics_santa_hat.png^(server_cosmetics_santa_hat_overlay.png^[multiply:blue)"},
 			},
 			hallows_hat = {
 				_prefix = "Wear ",
@@ -52,8 +74,9 @@ server_cosmetics = {
 					falling = {x = 33, y = 41},
 				},
 				_date_start = 2022,
-				["2022"] = {"server_cosmetics_hallows_hat.png"},
+				["2022"] = {"server_cosmetics_hallows_hat.png^(server_cosmetics_hallows_hat_overlay.png^[multiply:#333)"},
 				["2023"] = {"server_cosmetics_hallows_hat.png^(server_cosmetics_hallows_hat_overlay.png^[multiply:purple)"},
+				["2024"] = {"server_cosmetics_hallows_hat.png^(server_cosmetics_hallows_hat_overlay.png^[multiply:red)"},
 			},
 			crown = {
 				_prefix = "Wear ",
@@ -78,6 +101,10 @@ server_cosmetics = {
 		}
 	}
 }
+
+if os.date("%m/%d") == "04/01" then
+	server_cosmetics.cosmetics.default_cosmetics.skin.smurf = "#0085e8"
+end
 
 minetest.after(0, function()
 	for category, contents in pairs(server_cosmetics.cosmetics) do
@@ -178,11 +205,28 @@ end
 minetest.register_on_joinplayer(function(player)
 	local current = ctf_cosmetics.get_extra_clothing(player)
 
+	if current._unset then
+		ctf_cosmetics.set_extra_clothing(player, {
+			hair = server_cosmetics.cosmetics.default_cosmetics.hair["brown"],
+			eyes = server_cosmetics.cosmetics.default_cosmetics.eyes["blue"],
+		})
+
+		player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
+	end
+
 	minetest.after(1, update_entity_cosmetics, player:get_player_name(), current)
 end)
 
 -- Used for testing with //lua
--- local ocu = server_cosmetics.can_use function server_cosmetics.can_use(p, ...) if p:get_player_name() == "LandarVargan" then return true else return ocu(p, ...) end end
+-- Put through https://mothereff.in/lua-minifier before running
+-- local ocu = server_cosmetics.can_use
+-- function server_cosmetics.can_use(p, ...)
+-- 	if p:get_player_name() == "LandarVargan" then
+-- 		return true
+-- 	else
+-- 		return ocu(p, ...)
+-- 	end
+-- end
 
 function server_cosmetics.can_use(player, clothing, color)
 	if not color then return false end
@@ -272,3 +316,4 @@ end
 
 include("inv_tab.lua")
 include("graves.lua")
+include("ranking_reset.lua")

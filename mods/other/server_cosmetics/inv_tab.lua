@@ -15,11 +15,8 @@ local SCROLLBAR = {width = 0.3}
 
 local function make_scrollbaroptions_for_scroll_container(visible_l, total_l, scroll_factor,arrows)
 
-	if total_l >= visible_l then 
-		return true
-	else 
-		return false
-	end
+	assert(total_l >= visible_l)
+
 	arrows = arrows or "default"
 
 	local thumb_size = (visible_l / total_l) * (total_l - visible_l)
