@@ -26,8 +26,9 @@ local function calc_flag_center(map)
 	return flag_center
 end
 
-function ctf_map.load_map_meta(idx, max_idx, dirname)
-	local meta = Settings(ctf_map.maps_dir .. dirname .. "/map.conf")
+function ctf_map.load_map_meta(idx, dirname)
+	assert(ctf_map.map_path[dirname], "Map "..dirname.." not found")
+	local meta = Settings(ctf_map.map_path[dirname] .. "/map.conf")
 
 	if not meta then error("Map '"..dump(dirname).."' not found") end
 
@@ -35,12 +36,12 @@ function ctf_map.load_map_meta(idx, max_idx, dirname)
 
 	local map
 
-	local off_start_x = -(608 * (max_idx / 2))
+	local off_start_x = -(608 * (#ctf_map.registered_maps / 2))
 	local offset = vector.new(off_start_x + (608 * idx), 0, 0) -- 608 is a multiple of 16, the size of a mapblock
 
 	if not meta:get("map_version") then
 		if not meta:get("r") then
-			error("Map was not properly configured: " .. ctf_map.maps_dir .. dirname .. "/map.conf")
+			error("Map was not properly configured: " .. ctf_map.map_path[dirname].. "/map.conf")
 		end
 
 		local mapr = meta:get("r")
@@ -163,45 +164,6 @@ function ctf_map.load_map_meta(idx, max_idx, dirname)
 			enable_shadows = tonumber(meta:get("enable_shadows") or "0.26"),
 		}
 
-		-- NOTE --
-		-- This code causes an error:
-		-- A fatal error occurred: LUA PANIC: unprotected error in call to Lua API (not enough memory)
-
-		-- if tonumber(meta:get("map_version")) > 2 and not ctf_core.settings.low_ram_mode then
-		-- 	local f, err = io.open(ctf_map.maps_dir .. dirname .. "/barriers.data", "rb")
-
-		-- 	if (ctf_core.settings.server_mode ~= "mapedit" and assert(f, err)) or f then
-		-- 		local barriers = f:read("*all")
-
-		-- 		f:close()
-
-		-- 		assert(barriers and barriers ~= "")
-
-		-- 		barriers = minetest.deserialize(minetest.decompress(barriers, "deflate"))
-
-		-- 		if barriers then
-		-- 			for _, barrier_area in pairs(barriers) do
-		-- 				barrier_area.pos1 = vector.add(barrier_area.pos1, offset)
-		-- 				barrier_area.pos2 = vector.add(barrier_area.pos2, offset)
-
-		-- 				for i = 1, barrier_area.max do
-		-- 					if not barrier_area.reps[i] then
-		-- 						barrier_area.reps[i] = minetest.CONTENT_IGNORE
-		-- 					else
-		-- 						barrier_area.reps[i] = minetest.get_content_id(barrier_area.reps[i])
-		-- 					end
-		-- 				end
-		-- 			end
-
-		-- 			map.barriers = barriers
-		-- 		else
-		-- 			minetest.log("error", "Map "..dirname.." has a corrupted barriers file. Re-save map to fix")
-		-- 		end
-		-- 	else
-		-- 		minetest.log("error", "Map "..dirname.." is missing its barriers file. Re-save map to fix")
-		-- 	end
-		-- end
-
 		for id, def in pairs(map.chests) do
 			map.chests[id].pos1 = vector.add(offset, def.pos1)
 			map.chests[id].pos2 = vector.add(offset, def.pos2)
@@ -224,7 +186,7 @@ function ctf_map.load_map_meta(idx, max_idx, dirname)
 
 	map.flag_center = calc_flag_center(map)
 
-	if ctf_map.skybox_exists(ctf_map.maps_dir .. dirname) then
+	if ctf_map.skybox_exists(ctf_map.map_path[dirname] .. dirname) then
 		skybox.add({dirname, "#ffffff", [5] = "png"})
 
 		map.skybox = dirname

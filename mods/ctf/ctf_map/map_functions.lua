@@ -9,7 +9,7 @@ end
 
 function ctf_map.place_map(mapmeta, callback)
 	local dirname = mapmeta.dirname
-	local schempath = ctf_map.maps_dir .. dirname .. "/map.mts"
+	local schempath = ctf_map.map_path[dirname] .. "/map.mts"
 
 	ctf_map.emerge_with_callbacks(nil, mapmeta.pos1, mapmeta.pos2, function(ctx)
 		local rotation = (mapmeta.rotation and mapmeta.rotation ~= "z") and "90" or "0"
@@ -61,7 +61,6 @@ local ID_WATER = minetest.get_content_id("default:water_source")
 ---@param mapmeta table Map meta table
 ---@param callback function
 function ctf_map.remove_barrier(mapmeta, callback)
-	-- print(dump(mapmeta))
 	if not mapmeta.barriers then
 		local pos1, pos2 = mapmeta.barrier_area.pos1, mapmeta.barrier_area.pos2
 		local vm = VoxelManip(pos1, pos2)
