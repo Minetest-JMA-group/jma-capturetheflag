@@ -502,7 +502,7 @@ return {
 		teams_left = #team_list
 		many_teams = #team_list > 2
 
-		if #delete_queue > 0 then
+		if #delete_queue > 0 and delete_queue._map ~= ctf_map.current_map.dirname then
 			local p1, p2 = unpack(delete_queue)
 
 			local ignore_objects = {
@@ -567,7 +567,7 @@ return {
 
 		if ctf_map.current_map then
 			-- Queue deletion for after the players have left
-			delete_queue = {ctf_map.current_map.pos1, ctf_map.current_map.pos2}
+			delete_queue = {ctf_map.current_map.pos1, ctf_map.current_map.pos2, _map = ctf_map.current_map.dirname}
 		end
 		streak_bonus_received = {}
 	end,
