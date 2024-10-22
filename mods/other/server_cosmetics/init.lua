@@ -217,6 +217,12 @@ minetest.register_on_joinplayer(function(player)
 	minetest.after(1, update_entity_cosmetics, player:get_player_name(), current)
 end)
 
+ctf_api.register_on_new_match(function()
+	for _, player in ipairs(minetest.get_connected_players()) do
+		update_entity_cosmetics(player:get_player_name(), ctf_cosmetics.get_extra_clothing(player))
+	end
+end)
+
 -- Used for testing with //lua
 -- Put through https://mothereff.in/lua-minifier before running
 -- local ocu = server_cosmetics.can_use
