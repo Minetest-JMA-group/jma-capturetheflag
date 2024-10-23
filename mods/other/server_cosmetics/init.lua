@@ -140,7 +140,7 @@ include("hat.lua")
 include("commands.lua")
 
 local hatted = {}
-local function update_entity_cosmetics(player, current)
+function server_cosmetics.update_entity_cosmetics(player, current)
 	player = PlayerObj(player)
 	if not player then return end
 
@@ -176,7 +176,7 @@ local old_set_extra_clothing = ctf_cosmetics.set_extra_clothing
 function ctf_cosmetics.set_extra_clothing(player, ...)
 	local ret = old_set_extra_clothing(player, ...)
 
-	update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
+	server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
 
 	return ret
 end
@@ -215,12 +215,6 @@ minetest.register_on_joinplayer(function(player)
 	end
 
 	minetest.after(1, update_entity_cosmetics, player:get_player_name(), current)
-end)
-
-ctf_api.register_on_new_match(function()
-	for _, player in ipairs(minetest.get_connected_players()) do
-		update_entity_cosmetics(player:get_player_name(), ctf_cosmetics.get_extra_clothing(player))
-	end
 end)
 
 -- Used for testing with //lua

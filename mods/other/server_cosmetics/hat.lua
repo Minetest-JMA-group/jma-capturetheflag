@@ -36,5 +36,19 @@ minetest.register_entity("server_cosmetics:hat", {
 		end
 
 		self.object:set_animation(self.animr.idle, 2)
+	end,
+	on_deactivate = function(self, removal)
+		if not removal then
+			local attachmentInfo = self.object:get_attach()
+			local player = nil
+			if attachmentInfo then
+				player = attachmentInfo.parent
+			end
+
+			if player and player:is_player() then
+				minetest.log("action", "server_cosmetics: Hat entity for player " .. player:get_player_name() .. " unloaded. Re-adding...")
+				server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
+			end
+		end
 	end
 })
