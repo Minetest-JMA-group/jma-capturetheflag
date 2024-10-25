@@ -146,11 +146,6 @@ function server_cosmetics.update_entity_cosmetics(player, current)
 
 	local pname = player:get_player_name()
 
-	if hatted[pname] then
-		hatted[pname]:remove()
-		hatted[pname] = nil
-	end
-
 	local hatname = false
 	for key in pairs(current) do
 		for cosmetic in pairs(server_cosmetics.cosmetics.entity_cosmetics) do
@@ -175,6 +170,12 @@ end
 local old_set_extra_clothing = ctf_cosmetics.set_extra_clothing
 function ctf_cosmetics.set_extra_clothing(player, ...)
 	local ret = old_set_extra_clothing(player, ...)
+
+	local pname = player:get_player_name()
+	if hatted[pname] then
+		hatted[pname]:remove()
+		hatted[pname] = nil
+	end
 
 	server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
 
@@ -215,6 +216,27 @@ minetest.register_on_joinplayer(function(player)
 	end
 
 	minetest.after(1, server_cosmetics.update_entity_cosmetics, player:get_player_name(), current)
+end)
+
+minetest.register_on_leaveplayer(function(player)
+	local pname = player:get_player_name()
+	if hatted[pname] then
+		hatted[pname]:remove()
+		hatted[pname] = nil
+	end
+end)
+
+ctf_api.register_on_new_match(function()
+	minetest.after(5, function()
+		for _, player in ipairs(minetest.get_connected_players()) do
+			local pname = player:get_player_name()
+			local hat = hatted[pname]
+			if hat and not hat:get_pos() then
+				server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
+				minetest.log("action", "server_cosmetics: Hat entity for player " .. player:get_player_name() .. " unloaded. Re-adding... (on new match)")
+			end
+		end
+	end)
 end)
 
 -- Used for testing with //lua
