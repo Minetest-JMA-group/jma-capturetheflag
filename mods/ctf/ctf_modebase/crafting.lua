@@ -181,7 +181,7 @@ crafting.register_recipe({
 })
 
 crafting.register_recipe({
-	output = "ctf_map:landmine",
-	items  = { "default:steel_ingot 1", "grenades:frag" },
+	output = "ctf_landmine:landmine",
+	items  = { "default:steel_ingot", "grenades:frag" },
 	always_known = false,
 })
