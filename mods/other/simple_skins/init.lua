@@ -229,13 +229,8 @@ skins.event_CHG = function(event, player)
 		return -- Do not update wrong skin number
 	end
 
-	if not ctf_modebase.match_started then
-		skins.skins[name] = skins.list[index]
-		player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
-	else
-		minetest.chat_send_player(name, "The skin can be changed during build time only")
-		return
-	end
+	skins.skins[name] = skins.list[index]
+	player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
 
 	if is_50 then
 
