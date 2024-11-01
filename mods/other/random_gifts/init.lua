@@ -99,18 +99,18 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	local box = open_boxes[player_name]
 	if not box then
 		minetest.close_formspec(player_name, fs_name)
-		return
+		return true
 	end
 
 	if fields.quit then
 		open_boxes[player_name] = nil
-		return
+		return true
 	end
 
 	if not entity_exists(box.entity) then
 		open_boxes[player_name] = nil
 		minetest.close_formspec(player_name, fs_name)
-		return
+		return true
 	end
 
 	local box_pos = box.entity:get_pos()
@@ -118,12 +118,18 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 		open_boxes[player_name] = nil
 		minetest.close_formspec(player_name, fs_name)
 		minetest.chat_send_player(player_name, "You're too far away")
-		return
+		return true
 	end
 
 	for i, gift_index in ipairs(box.gifts) do
 		if fields["item_" .. gift_index] then
 			local gift = list[gift_index]
+			if not gift then
+				box.entity:remove()
+				open_boxes[player_name] = nil
+				minetest.close_formspec(player_name, fs_name)
+				return true
+			end
 
 			local stack
 			local remove_giftbox = false
@@ -172,12 +178,13 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 					glow = 5,
 					texture = "random_gifts_spark.png^[multiply:" .. random_rgb_color()
 				})
-				return
+				return true
 			end
 			break
 		end
 	end
 	show_formspec(player)
+	return true
 end)
 
 minetest.register_entity("random_gifts:gift", {
