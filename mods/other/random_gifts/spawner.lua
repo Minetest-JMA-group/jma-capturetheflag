@@ -1,5 +1,5 @@
 local timer
-local spawn_interval = 60
+local spawn_interval = 40
 
 local function spawn_giftbox()
 	local spawn_amount = math.max(20, math.min(#minetest.get_connected_players(), 40))
