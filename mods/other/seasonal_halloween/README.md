@@ -1,1 +1,0 @@
-# seasonal_halloween
