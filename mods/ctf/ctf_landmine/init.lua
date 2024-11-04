@@ -97,7 +97,9 @@ local function landmine_explode(pos)
 end
 
 minetest.register_node("ctf_landmine:landmine", {
-	description = "Landmine",
+	description = "Landmine\n"
+		.. "A trap that explodes when stepped on except for team mates.\n"
+		.. "Effective defensive tool for securing your base.",
 	drawtype = "nodebox",
 	tiles = {
 		"ctf_landmine_landmine.png",
