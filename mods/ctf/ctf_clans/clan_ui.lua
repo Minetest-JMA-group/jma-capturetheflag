@@ -3,7 +3,8 @@ local ui_data = {}
 local back_to_main_button = "button[9.43,0.035;1,1;back_to_main;X]"
 
 local function get_info_form(msg)
-	return "hypertext[0,1;10.47,1.85;h;<global valign=middle> <center>" .. msg .. "</center>]"
+	return "box[0,1;10.47,1.85;black]"
+		.. "hypertext[0,1;10.47,1.85;h;<global valign=middle> <center>" .. msg .. "</center>]"
 end
 
 local formspecs = {
@@ -126,7 +127,7 @@ local formspecs = {
 			.. "tablecolumns[" .. column_imgs .. ";text]"
 			.. "tableoptions[highlight=#777777]"
 			.. "table[5.9,1.4;4.3,7.4;playerlist;" .. list .. "]"
-			.. "button[2.3,10;2.5,0.8;change_color;Change Color]"
+			.. "button[6.2,0.2;2,0.8;options_list;Options]"
 
 
 		local player_name = player:get_player_name()
@@ -151,6 +152,7 @@ local formspecs = {
 	set_rank = function(player, ui_ctx, id)
 		ui_ctx.ranklist = {}
 		local this_clan = ctf_clans.get_clan_def(id)
+		if not this_clan then return end
 		local list = ""
 		local table_imgs = {}
 		local first = true
@@ -194,7 +196,33 @@ local formspecs = {
 			.. "button[4.235,8;2,1;set_rank_apply;Apply]"
 			.. "tablecolumns[".. column_imgs .. ";text]"
 			.. "table[0.5,3;9.5,4.5;ranklist;" .. list .. "]"
-	end
+	end,
+
+	options_list = function()
+		local form = ""
+		local pos_x = 4.035 -- (formspec_size/2)-(button_size/2)
+		local pos_y = 3.5
+		-- local default_pos_y = pos_y
+		local size_x = 2.4
+		local size_y = 0.8
+		local buttons = {
+			{"change_desc", "Description"},
+			{"change_namecolor", "Name Color"},
+			{"change_clanicon", "Icon"},
+		}
+		for _, bt in ipairs(buttons) do
+			-- building the next column
+			-- if i > 4 then
+			-- 	pos_x = pos_x + 4
+			-- 	pos_y = default_pos_y
+			-- end
+			form = form .. string.format("button[%s,%s;%s,%s;%s;%s]", pos_x, pos_y, size_x, size_y, bt[1], bt[2])
+			pos_y = pos_y + 1
+		end
+		return back_to_main_button
+			.. get_info_form("What would you like to change?")
+			.. form
+	end,
 }
 
 sfinv.register_page("sfinv:clans", {
@@ -400,6 +428,9 @@ sfinv.register_page("sfinv:clans", {
 				update_fs = question.callback_no(player, ctx)
 				question = nil
 			end
+		elseif fields.options_list then
+			ctx.page = "options_list"
+			return true, true
 		end
 
 
