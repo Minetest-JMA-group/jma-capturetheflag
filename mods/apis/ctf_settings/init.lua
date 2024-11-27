@@ -148,7 +148,7 @@ minetest.register_on_mods_loaded(function()
 				},
 				ctf_gui.list_to_formspec_str(setting_list),
 				"scroll_container_end[]",
-				make_scrollbaroptions_for_scroll_container(FORMSIZE.y, math.max(lastypos+1, FORMSIZE.y + 0.7), 0.1),
+				make_scrollbaroptions_for_scroll_container(FORMSIZE.y, math.max(lastypos+1, FORMSIZE.y + 0.7), 0.072),
 				{"scrollbar[%f,-0.1;%f,%f;vertical;settings_scrollbar;%f]",
 					FORMSIZE.x - SCROLLBAR_W,
 					SCROLLBAR_W,

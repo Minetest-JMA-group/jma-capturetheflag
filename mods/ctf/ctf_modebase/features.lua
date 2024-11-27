@@ -211,7 +211,7 @@ local function is_pro(player, rank)
 end
 
 
-ctf_settings.register("teammate_nametag_style", {
+ctf_settings.register("ctf_modebase:teammate_nametag_style", {
 	type = "list",
 	description = "Controls what style of nametag to use for teammates.",
 	list = {"Minetest Nametag: Full", "Minetest Nametag: Symbol", "Entity Nametag"},

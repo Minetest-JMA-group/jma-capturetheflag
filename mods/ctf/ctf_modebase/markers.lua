@@ -9,7 +9,7 @@ local blacklist = {
 	"ctf_mode_classes:ranged_rifle_loaded"
 }
 
-ctf_settings.register("prevent_marker_placement", {
+ctf_settings.register("ctf_modebase:prevent_marker_placement", {
 	type = "bool",
 	label = "Prevent automatic marker placement while sniping",
 	description = "Prevent placement of markers while holding ranged weapons,\nthis exludes the shotgun and pistol.",
