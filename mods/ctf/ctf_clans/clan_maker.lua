@@ -1,4 +1,4 @@
-local cc_formname = "clan_creator"
+local cc_formname = "clan_maker"
 local formspec_data = {}
 
 local base_formspec = [[
@@ -6,7 +6,7 @@ formspec_version[7]
 size[18.5,9.5]
 box[0,0;18.5,7.5;black]
 %s
-label[0.5,0.5;Clan Creator]
+label[0.5,0.5;Clan Maker]
 ]]
 
 local rules = [[It is recommended to use English language in the clan description and name, but other languages are also acceptable.
@@ -22,7 +22,7 @@ local function error_form(player_name, label)
 
 end
 
-local function creator_form(player_name, label, clan_name, new_color, desc)
+local function maker_form(player_name, label, clan_name, new_color, desc)
 	new_color = new_color or ""
 	clan_name = clan_name or ""
 	desc = desc or ""
@@ -48,7 +48,7 @@ local function creator_form(player_name, label, clan_name, new_color, desc)
 	end
 end
 
-function ctf_clans.show_clan_creator(player_name)
+function ctf_clans.show_clan_maker(player_name)
 	local curr_id = ctf_clans.get_clan_id(player_name)
 	if curr_id then
 		local clan_name = ctf_clans.get_clan_name(curr_id)
@@ -57,7 +57,7 @@ function ctf_clans.show_clan_creator(player_name)
 		return
 	end
 
-	creator_form(player_name)
+	maker_form(player_name)
 end
 
 local function check_color(color)
@@ -111,7 +111,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	local color = fields.color:trim()
 
 	local function update_form(label)
-		creator_form(player_name, label, truncate_string(cn, 15), truncate_string(color, 7), truncate_string(desc, 60))
+		maker_form(player_name, label, truncate_string(cn, 15), truncate_string(color, 7), truncate_string(desc, 60))
 	end
 
 
@@ -163,7 +163,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 		local id = ctf_clans.create(player_name, new_clan)
 		if id then
 			local bf = string.format(base_formspec, "")
-			local ht = string.format("hypertext[2,1;15,4;hypertext;<bigger>Congratulations, now you're owner of \"%s\".</bigger>\n"
+			local ht = string.format("hypertext[2,1;15,4;hypertext;<big>Congratulations, \"%s\" has been created.</big>\n"
 				.. "Invite new members and enjoy the game!\nClan ID:%s]", new_clan.clan_name, id)
 			local form = string.format("%s%sbutton_exit[8,8;1.5,1;;OK]", bf, ht)
 			minetest.show_formspec(player_name, cc_formname, form)
@@ -173,16 +173,16 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 		end
 
 	elseif fields.random_color then
-		creator_form(player_name, nil, cn, generate_random_color(), desc)
+		maker_form(player_name, nil, cn, generate_random_color(), desc)
 		return
 	end
 end)
 
-minetest.register_chatcommand("clan_creator", {
+minetest.register_chatcommand("clan_maker", {
 	description = "Create a new clan",
 	privs = {},
 	params = "",
 	func = function(name, param)
-		ctf_clans.show_clan_creator(name)
+		ctf_clans.show_clan_maker(name)
 	end
 })

@@ -223,7 +223,7 @@ sfinv.register_page("sfinv:clans", {
 		local id = ctf_clans.get_clan_id(player_name)
 		if not ctf_clans.is_clan_exist(id) then
 			if fields.new_clan then
-				ctf_clans.show_clan_creator(player_name)
+				ctf_clans.show_clan_maker(player_name)
 			end
 			ctx.page = "no_clan"
 			return true, true
