@@ -77,7 +77,7 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 	nametag_players[player:get_player_name()] = nil
 
 	for n in pairs(table.copy(nametag_players)) do
-		local setting = ctf_settings.get(minetest.get_player_by_name(n), "teammate_nametag_style")
+		local setting = ctf_settings.get(minetest.get_player_by_name(n), "ctf_modebase:teammate_nametag_style")
 
 		if setting == "3" then
 			nametag_players[n] = nil
@@ -350,7 +350,7 @@ local function celebrate_team(teamname)
 		local pname = player:get_player_name()
 		local pteam = ctf_teams.get(pname)
 
-		local sound_volume = (tonumber(ctf_settings.get(player, "flag_sound_volume")) or 10.0) / 10
+		local sound_volume = (tonumber(ctf_settings.get(player, "ctf_modebase:flag_sound_volume")) or 10.0) / 10
 
 		if pteam == teamname then
 			minetest.sound_play("ctf_modebase_trumpet_positive", {

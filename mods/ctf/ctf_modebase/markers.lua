@@ -319,7 +319,7 @@ minetest.register_globalstep(function(dtime)
 			local stackname = player:get_wielded_item():get_name()
 
 			local holding_blacklisted_item = false
-			if ctf_settings.get(player, "prevent_marker_placement") == true then
+			if ctf_settings.get(player, "ctf_modebase:prevent_marker_placement") == true then
 				for _, itemstring in ipairs(blacklist) do
 					if stackname:match(itemstring) then
 						holding_blacklisted_item = true

@@ -248,12 +248,12 @@ local function swap_tools(itemstack, picker, inv, inv_action, item_index)
 							inv:set_stack("main", i, itemstack)
 
 							if item == "sword" and typ == "stone" and
-							ctf_settings.get(picker, "auto_trash_stone_swords") == "true" then
+							ctf_settings.get(picker, "ctf_modebase:auto_trash_stone_swords") == "true" then
 								return ItemStack("")
 							end
 
 							if item ~= "sword" and typ == "stone" and
-							ctf_settings.get(picker, "auto_trash_stone_tools") == "true" then
+							ctf_settings.get(picker, "ctf_modebase:auto_trash_stone_tools") == "true" then
 								return ItemStack("")
 							else
 								if inv_action then
