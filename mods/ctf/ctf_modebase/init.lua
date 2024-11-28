@@ -128,9 +128,9 @@ minetest.override_chatcommand("pulverize", {
 
 minetest.register_chatcommand("mode", {
 	description = "Prints the current mode and matches played",
-	func = function()
+	func = function(name)
 		local mode = ctf_modebase.current_mode
-
+		print(dump(minetest.get_player_by_name(name):hud_get_flags()))
 		if not mode then
 			return false, "The game isn't running"
 		end
