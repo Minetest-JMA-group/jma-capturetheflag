@@ -1,15 +1,15 @@
 local ui_data = {}
 
-local back_to_main_button = "button[9.43,0.035;1,1;back_to_main;X]"
+local back_to_main_button = "box[0,0;10.47,1;black]" .. "button[9.43,0.035;1,1;back_to_main;X]"
 
 local function get_info_form(msg)
-	return "box[0,1;10.47,1.85;black]"
+	return "box[0,1;10.47,1.85;#202020]"
 		.. "hypertext[0,1;10.47,1.85;h;<global valign=middle> <center>" .. msg .. "</center>]"
 end
 
 local formspecs = {
-	info_form = function(player, ui_ctx)
-		local info = ui_ctx.info
+	info_form = function(player, ctx)
+		local info = ctx.info
 		local msg = info.msg
 		local status = info.status
 
@@ -28,14 +28,14 @@ local formspecs = {
 			msg = "<b>" .. msg .. "</b>"
 		end
 
-		ui_ctx.info = nil
+		ctx.info = nil
 		return back_to_main_button
 			.. get_info_form(msg)
 			.. "image[4.235,4.5;2,2;" .. img .. "]"
 	end,
 
-	question_form = function(player, ui_ctx)
-		local question = ui_ctx.question
+	question_form = function(player, ctx)
+		local question = ctx.question
 		local msg =  question.msg
 
 		if question.bold then
@@ -48,7 +48,7 @@ local formspecs = {
 			.. "image[4.235,4.5;2,2;ctf_clans_question.png]"
 	end,
 
-	no_clan = function(player, ui_ctx)
+	no_clan = function(player, ctx)
 		local no_clan_ht = [[
 			<global valign=middle>
 			<center><b>You are currently not a member of any clan.</b>
@@ -59,32 +59,32 @@ local formspecs = {
 			.. "button[3.73,7.235;3,1;new_clan;I want a new clan]"
 	end,
 
-	invite = function(player, ui_ctx)
+	invite = function(player, ctx)
 		local msg = "<b>Enter the name of the player you would like to invite</b>"
 		local elems = "button[7.03,4.5;2,1;invite_send;Send Invite]"
-			.. "field[2,4.5;5,1;invite_playername;Player Name;" .. (ui_ctx.invite_field or "") .. "]"
+			.. "field[2,4.5;5,1;invite_playername;Player Name;" .. (ctx.invite_field or "") .. "]"
 
-		if ui_ctx.invite_error then
-			msg = "<style color=red><b>" .. ui_ctx.invite_error .. "</b></style>"
-			ui_ctx.invite_error = nil
+		if ctx.invite_error then
+			msg = "<style color=red><b>" .. ctx.invite_error .. "</b></style>"
+			ctx.invite_error = nil
 		end
 
 		return back_to_main_button .. get_info_form(msg) .. elems
 	end,
 
-	clan_manager = function(player, ui_ctx, id)
+	clan_manager = function(player, ctx, id)
 		local this_clan = ctf_clans.get_clan_def(id)
 		if not this_clan then return end
 
-		ui_ctx.page = "clan_manager"
+		ctx.page = "clan_manager"
 		local list = ""
 		local first = true
 		local table_imgs = {}
-		ui_ctx.playerlist = {}
+		ctx.playerlist = {}
 		local icon_i = 0
 
 		for pn, def in pairs(this_clan.members) do
-			table.insert(ui_ctx.playerlist, pn)
+			table.insert(ctx.playerlist, pn)
 			local rank_name = def.rank
 
 			if rank_name ~= "member" then
@@ -123,7 +123,7 @@ local formspecs = {
 		local formspec = "box[0,0.1;10.47,1;black]" --title bar
 			.. ht
 			.. "box[5.235,1.1;5.235,10.2;gray]" -- members list background
-			.. "hypertext[0,1.1;5.235,10.2;h;<center><b>Description</b></center>\n" .. (this_clan.description or "") .. "]" -- description
+			.. "hypertext[0,1.1;5.235,10.2;h;<center><b>Description</b></center>\n" .. (this_clan.board or "") .. "]" -- description
 			.. "tablecolumns[" .. column_imgs .. ";text]"
 			.. "tableoptions[highlight=#777777]"
 			.. "table[5.4,1.3;4.9,8.8;playerlist;" .. list .. "]"
@@ -135,9 +135,9 @@ local formspecs = {
 			formspec = formspec .. "button[8.3,0.2;2,0.8;invite;Invite]"
 		end
 
-		if ui_ctx.playerlist_selected then
+		if ctx.playerlist_selected then
 			local pl_elements = {}
-			if not ui_ctx.member_options_bar then
+			if not ctx.member_options_bar then
 				table.insert(pl_elements, "image_button[%s,%s;%s,%s;ctf_clans_modify.png;member_options_bar;]")
 			else
 				if ctf_clans.has_permission(id, player_name, "kick") then
@@ -162,8 +162,8 @@ local formspecs = {
 		return formspec
 	end,
 
-	set_rank = function(player, ui_ctx, id)
-		ui_ctx.ranklist = {}
+	set_rank = function(player, ctx, id)
+		ctx.ranklist = {}
 		local this_clan = ctf_clans.get_clan_def(id)
 		if not this_clan then return end
 		local list = ""
@@ -171,7 +171,7 @@ local formspecs = {
 		local first = true
 		local icon_i = 0
 		for rank_name, def in pairs(this_clan.ranks) do
-			table.insert(ui_ctx.ranklist, rank_name)
+			table.insert(ctx.ranklist, rank_name)
 			local icon = ctf_clans.get_rank_icon(def)
 			local col_img
 			if icon then
@@ -199,9 +199,9 @@ local formspecs = {
 		end
 
 		local msg = "Select a rank"
-		if ui_ctx.set_rank_error then
-			msg = "<style color=red><b>" .. ui_ctx.set_rank_error .. "</b></style>"
-			ui_ctx.set_rank_error = nil
+		if ctx.set_rank_error then
+			msg = "<style color=red><b>" .. ctx.set_rank_error .. "</b></style>"
+			ctx.set_rank_error = nil
 		end
 
 		return back_to_main_button
@@ -212,29 +212,27 @@ local formspecs = {
 	end,
 
 	options_list = function()
-		local form = ""
-		local pos_x = 4.035 -- (formspec_size/2)-(button_size/2)
-		local pos_y = 3.5
-		-- local default_pos_y = pos_y
-		local size_x = 2.4
-		local size_y = 0.8
 		local buttons = {
 			{"change_desc", "Description"},
 			{"change_namecolor", "Name Color"},
 			{"change_clanicon", "Icon"},
 		}
+
+		local elements = {}
 		for _, bt in ipairs(buttons) do
-			-- building the next column
-			-- if i > 4 then
-			-- 	pos_x = pos_x + 4
-			-- 	pos_y = default_pos_y
-			-- end
-			form = form .. string.format("button[%s,%s;%s,%s;%s;%s]", pos_x, pos_y, size_x, size_y, bt[1], bt[2])
-			pos_y = pos_y + 1
+			table.insert(elements, "button[%s,%s;%s,%s;" .. bt[1] .. ";" .. bt[2] .. "]")
 		end
+
+		local formspec = ctf_clans.generate_element_layout(elements, {
+			direction = "vertical",
+			pos_start = {4.035, 3.5},
+			size = {2.4, 0.8},
+			spacing = 0.1,
+		})
+
 		return back_to_main_button
 			.. get_info_form("What would you like to change?")
-			.. form
+			.. formspec
 	end,
 }
 
