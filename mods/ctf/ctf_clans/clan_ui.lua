@@ -120,15 +120,14 @@ local formspecs = {
 		local ht = "hypertext[0.1,0.1;10.3,1;h;<global valign=middle color=" .. this_clan.color .."><big>" .. this_clan.clan_name
 			.. "<img name=default_dirt.png width=25 height=25 float=left>]"
 
-		local formspec = "box[5.6,0.9;4.8,10.4;gray]"
-			.. "box[0.1,0.1;10.3,1;black]"
+		local formspec = "box[0,0.1;10.47,1;black]" --title bar
 			.. ht
-			.. "hypertext[0.1,1.1;5.2,5;h;<center><b>Description</b></center>\n" .. (this_clan.description or "?") .. "]"
+			.. "box[5.235,1.1;5.235,10.2;gray]" -- members list background
+			.. "hypertext[0,1.1;5.235,10.2;h;<center><b>Description</b></center>\n" .. (this_clan.description or "") .. "]" -- description
 			.. "tablecolumns[" .. column_imgs .. ";text]"
 			.. "tableoptions[highlight=#777777]"
-			.. "table[5.9,1.4;4.3,7.4;playerlist;" .. list .. "]"
+			.. "table[5.4,1.3;4.9,8.8;playerlist;" .. list .. "]"
 			.. "button[6.2,0.2;2,0.8;options_list;Options]"
-
 
 		local player_name = player:get_player_name()
 
@@ -136,16 +135,30 @@ local formspecs = {
 			formspec = formspec .. "button[8.3,0.2;2,0.8;invite;Invite]"
 		end
 
-		if ui_ctx.playerlist_selected and ui_ctx.playerlist_selected ~= player_name then
-			if ctf_clans.has_permission(id, player_name, "kick") then
-				formspec = formspec .. "button[8.2,9;2,0.8;kick;Kick]"
+		if ui_ctx.playerlist_selected then
+			local pl_elements = {}
+			if not ui_ctx.member_options_bar then
+				table.insert(pl_elements, "image_button[%s,%s;%s,%s;ctf_clans_modify.png;member_options_bar;]")
+			else
+				if ctf_clans.has_permission(id, player_name, "kick") then
+					table.insert(pl_elements, "button[%s,%s;%s,%s;kick;Kick]")
+
+				end
+
+				if ctf_clans.has_permission(id, player_name, "set_rank") then
+					table.insert(pl_elements, "button[%s,%s;%s,%s;set_rank;Set Rank]")
+				end
 			end
 
-			if ctf_clans.has_permission(id, player_name, "set_rank") then
-				formspec = formspec .. "button[5.9,9;2,0.8;set_rank;Set Rank]"
-			end
+			formspec = formspec .. ctf_clans.generate_element_layout(pl_elements, {
+				direction = "horizontal",
+				pos_start = {5.4, 10.2},
+				size = {0.8, 0.8},
+				spacing = 0.1,
+			})
 		end
 
+		-- sfse.open_formspec(player_name, "", "size[10.47,11.35]" .. formspec)
 		return formspec
 	end,
 
@@ -226,7 +239,7 @@ local formspecs = {
 }
 
 sfinv.register_page("sfinv:clans", {
-	title = ("Clans"),
+	title = "Clans",
 	get = function(self, player, context)
 		local player_name = player:get_player_name()
 		local ctx = ui_data[player_name]
@@ -390,6 +403,17 @@ sfinv.register_page("sfinv:clans", {
 
 			local selected_name = ctx.playerlist_selected
 			if selected_name then
+				if selected_name == player_name and ctf_clans.has_permission(id, player_name, "owner") then
+					ctx.page = "info_form"
+					ctx.info = {
+						msg = "You can't kick yourself, you're the owner.",
+						status = false,
+						color = "red",
+						bold = true
+					}
+					return true, true
+				end
+
 				ctx.page = "question_form"
 				ctx.question = {
 					msg = "Kick " .. selected_name.. "?",
@@ -430,6 +454,9 @@ sfinv.register_page("sfinv:clans", {
 			end
 		elseif fields.options_list then
 			ctx.page = "options_list"
+			return true, true
+		elseif fields.member_options_bar then
+			ctx.member_options_bar = true
 			return true, true
 		end
 

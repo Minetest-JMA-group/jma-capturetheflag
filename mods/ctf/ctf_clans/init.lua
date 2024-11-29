@@ -16,7 +16,7 @@ local default_rank_icons = {
 
 local permissions = {
 	owner = {"any"},
-	mod = {"invite", "kick", "set_rank"},
+	mod = {"invite", "kick", "set_rank", "set_description"},
 	member = {"invite"},
 	guest = {}
 }
@@ -199,6 +199,7 @@ function ctf_clans.create(player_name, def)
 		color = def.color or "FFFFFF",
 		title = def.title,
 		description = def.description or "",
+		board = "",
 		owner = def.owner,
 		creation_time = os.time(),
 		members = {[def.owner] = {rank = "owner"}},
@@ -364,3 +365,4 @@ dofile(modpath .. "/chat_commands.lua")
 dofile(modpath .. "/invitation.lua")
 dofile(modpath .. "/clan_maker.lua")
 dofile(modpath .. "/clan_ui.lua")
+dofile(modpath .. "/formspec_helper.lua")
