@@ -1,5 +1,5 @@
-local ui_data = {}
-
+local ui = {}
+local formspec_size = {10.47, 11.35}
 local back_to_main_button = "box[0,0;10.47,1;black]" .. "button[9.43,0.035;1,1;back_to_main;X]"
 
 local function get_info_form(msg)
@@ -7,249 +7,287 @@ local function get_info_form(msg)
 		.. "hypertext[0,1;10.47,1.85;h;<global valign=middle> <center>" .. msg .. "</center>]"
 end
 
-local formspecs = {
-	info_form = function(player, ctx)
-		local info = ctx.info
-		local msg = info.msg
-		local status = info.status
+local function msg_denied(ctx)
+	ctx.page = "info_form"
+	ctx.info = {
+		msg = "Insufficient privileges",
+		status = false,
+		color = "red",
+		bold = true
+	}
+end
 
-		local img = "ctf_clans_question.png"
-		if status == true then
-			img = "ctf_clans_check.png"
-		else
-			img = "ctf_clans_x.png"
+ui.info_form = function(player, ctx)
+	local info = ctx.info
+	local msg = info.msg
+	local status = info.status
+
+	local img = "ctf_clans_question.png"
+	if status == true then
+		img = "ctf_clans_check.png"
+	else
+		img = "ctf_clans_x.png"
+	end
+
+	if info.color then
+		msg = "<style color=" .. info.color .. ">" .. msg .. "</style>"
+	end
+
+	if info.bold then
+		msg = "<b>" .. msg .. "</b>"
+	end
+
+	ctx.info = nil
+	return back_to_main_button
+		.. get_info_form(msg)
+		.. "image[4.235,4.5;2,2;" .. img .. "]"
+end
+
+ui.question_form = function(player, ctx)
+	local question = ctx.question
+	local msg =  question.msg
+
+	if question.bold then
+		msg = "<b>" .. msg .. "</b>"
+	end
+
+
+	return get_info_form(msg)
+		.. "button[5.735,8;2,1;question_yes;Yes]"
+		.. "button[2.735,8;2,1;question_no;No]"
+		.. "image[4.235,4.5;2,2;ctf_clans_question.png]"
+end
+
+ui.no_clan = function(player, ctx)
+	local no_clan_ht = [[
+		<global valign=middle>
+		<center><b>You are currently not a member of any clan.</b>
+		You have the option to start your own clan or join an existing one by accepting an invitation.</center>
+	]]
+	return back_to_main_button
+		.. "hypertext[0,0;10.47,11.35;h;" .. no_clan_ht .. "]"
+		.. "button[3.73,7.235;3,1;new_clan;I want a new clan]"
+end
+
+ui.invite = function(player, ctx)
+	local msg = "<b>Enter the name of the player you would like to invite</b>"
+	local elems = "button[7.03,4.5;2,1;invite_send;Send Invite]"
+		.. "field[2,4.5;5,1;invite_playername;Player Name;" .. (ctx.invite_field or "") .. "]"
+
+	if ctx.invite_error then
+		msg = "<style color=red><b>" .. ctx.invite_error .. "</b></style>"
+		ctx.invite_error = nil
+	end
+
+	return back_to_main_button .. get_info_form(msg) .. elems
+end
+
+ui.clan_manager = function(player, ctx, id)
+	local this_clan = ctf_clans.get_clan_def(id)
+	if not this_clan then return end
+
+	ctx.page = "clan_manager"
+	local list = ""
+	local first = true
+	local table_imgs = {}
+	ctx.playerlist = {}
+	local icon_i = 0
+
+	for pn, def in pairs(this_clan.members) do
+		table.insert(ctx.playerlist, pn)
+		local role_name = def.role
+
+		if role_name ~= "member" then
+			pn = string.format("%s [%s]", pn, role_name)
 		end
 
-		if info.color then
-			msg = "<style color=" .. info.color .. ">" .. msg .. "</style>"
-		end
-
-		if info.bold then
-			msg = "<b>" .. msg .. "</b>"
-		end
-
-		ctx.info = nil
-		return back_to_main_button
-			.. get_info_form(msg)
-			.. "image[4.235,4.5;2,2;" .. img .. "]"
-	end,
-
-	question_form = function(player, ctx)
-		local question = ctx.question
-		local msg =  question.msg
-
-		if question.bold then
-			msg = "<b>" .. msg .. "</b>"
-		end
-
-		return get_info_form(msg)
-			.. "button[5.735,8;2,1;question_yes;Yes]"
-			.. "button[2.735,8;2,1;question_no;No]"
-			.. "image[4.235,4.5;2,2;ctf_clans_question.png]"
-	end,
-
-	no_clan = function(player, ctx)
-		local no_clan_ht = [[
-			<global valign=middle>
-			<center><b>You are currently not a member of any clan.</b>
-			You have the option to start your own clan or join an existing one by accepting an invitation.</center>
-		]]
-		return back_to_main_button
-			.. "hypertext[0,0;10.47,11.35;h;" .. no_clan_ht .. "]"
-			.. "button[3.73,7.235;3,1;new_clan;I want a new clan]"
-	end,
-
-	invite = function(player, ctx)
-		local msg = "<b>Enter the name of the player you would like to invite</b>"
-		local elems = "button[7.03,4.5;2,1;invite_send;Send Invite]"
-			.. "field[2,4.5;5,1;invite_playername;Player Name;" .. (ctx.invite_field or "") .. "]"
-
-		if ctx.invite_error then
-			msg = "<style color=red><b>" .. ctx.invite_error .. "</b></style>"
-			ctx.invite_error = nil
-		end
-
-		return back_to_main_button .. get_info_form(msg) .. elems
-	end,
-
-	clan_manager = function(player, ctx, id)
-		local this_clan = ctf_clans.get_clan_def(id)
-		if not this_clan then return end
-
-		ctx.page = "clan_manager"
-		local list = ""
-		local first = true
-		local table_imgs = {}
-		ctx.playerlist = {}
-		local icon_i = 0
-
-		for pn, def in pairs(this_clan.members) do
-			table.insert(ctx.playerlist, pn)
-			local rank_name = def.rank
-
-			if rank_name ~= "member" then
-				pn = string.format("%s [%s]", pn, rank_name)
-			end
-
-			local icon = ctf_clans.get_rank_icon(this_clan.ranks[rank_name])
-			local col_img
-			if icon then
-				if table_imgs[icon] then
-					col_img = table_imgs[icon]
-				else
-					icon_i = icon_i + 1
-					table_imgs[icon] = icon_i
-					col_img = icon_i
-				end
-			end
-
-			if first then
-				first = false
+		local icon = ctf_clans.get_role_icon(this_clan.roles[role_name])
+		local col_img
+		if icon then
+			if table_imgs[icon] then
+				col_img = table_imgs[icon]
 			else
-				list = list .. ","
+				icon_i = icon_i + 1
+				table_imgs[icon] = icon_i
+				col_img = icon_i
 			end
-
-			list = list .. (col_img or "") .. "," .. minetest.formspec_escape(pn)
-
 		end
 
-		local column_imgs = "image"
-		for fn, i in pairs(table_imgs) do
-			column_imgs = column_imgs .. "," .. string.format("%d=%s", i, fn)
-		end
-		local ht = "hypertext[0.1,0.1;10.3,1;h;<global valign=middle color=" .. this_clan.color .."><big>" .. this_clan.clan_name
-			.. "<img name=default_dirt.png width=25 height=25 float=left>]"
-
-		local formspec = "box[0,0.1;10.47,1;black]" --title bar
-			.. ht
-			.. "box[5.235,1.1;5.235,10.2;gray]" -- members list background
-			.. "hypertext[0,1.1;5.235,10.2;h;<center><b>Description</b></center>\n" .. (this_clan.board or "") .. "]" -- description
-			.. "tablecolumns[" .. column_imgs .. ";text]"
-			.. "tableoptions[highlight=#777777]"
-			.. "table[5.4,1.3;4.9,8.8;playerlist;" .. list .. "]"
-			.. "button[6.2,0.2;2,0.8;options_list;Options]"
-
-		local player_name = player:get_player_name()
-
-		if ctf_clans.has_permission(id, player_name, "invite") then
-			formspec = formspec .. "button[8.3,0.2;2,0.8;invite;Invite]"
+		if first then
+			first = false
+		else
+			list = list .. ","
 		end
 
-		if ctx.playerlist_selected then
-			local pl_elements = {}
+		list = list .. (col_img or "") .. "," .. minetest.formspec_escape(pn)
+
+	end
+
+	local column_imgs = "image"
+	for fn, i in pairs(table_imgs) do
+		column_imgs = column_imgs .. "," .. string.format("%d=%s", i, fn)
+	end
+	local ht = "hypertext[0.1,0.1;10.3,1;h;<global valign=middle color=" .. this_clan.color .."><big>" .. this_clan.clan_name
+		.. "<img name=default_dirt.png width=25 height=25 float=left>]"
+
+	local formspec = "box[0,0.1;10.47,1;black]" --title bar
+		.. ht
+		.. "box[5.235,1.1;5.235,10.2;gray]" -- members list background
+		.. "hypertext[0,1.1;5.235,10.2;h;" .. (minetest.formspec_escape(this_clan.board or "")) .. "]" -- Clan Board
+		.. "tablecolumns[" .. column_imgs .. ";text]"
+		.. "tableoptions[highlight=#777777]"
+		.. "table[5.4,1.3;4.9,8.8;playerlist;" .. list .. "]"
+
+	local player_name = player:get_player_name()
+
+	local title_bar_buttons = {
+		"button[%s,%s;%s,%s;options_list;Options]"
+	}
+
+	if ctf_clans.has_permission(id, player_name, "invite") then
+		table.insert(title_bar_buttons, 1, "button[%s,%s;%s,%s;invite;Invite]")
+	end
+
+	formspec = formspec .. ctf_clans.generate_element_layout(title_bar_buttons, {
+		direction = "horizontal",
+		pos_start = {8.3, 0.2},
+		size = {2, 0.8},
+		spacing = 0.1,
+		reverse = true
+	})
+
+	if ctx.playerlist_selected then
+		local pl_elements = {}
+		local perm_set_role = ctf_clans.has_permission(id, player_name, "set_role")
+		local perm_kick = ctf_clans.has_permission(id, player_name, "kick")
+
+		if perm_set_role or perm_kick then
 			if not ctx.member_options_bar then
 				table.insert(pl_elements, "image_button[%s,%s;%s,%s;ctf_clans_modify.png;member_options_bar;]")
 			else
-				if ctf_clans.has_permission(id, player_name, "kick") then
-					table.insert(pl_elements, "button[%s,%s;%s,%s;kick;Kick]")
+				ctx.member_options_bar = nil
 
+				if perm_set_role then
+					table.insert(pl_elements, "image_button[%s,%s;%s,%s;ctf_clans_roles.png;set_role;]")
 				end
 
-				if ctf_clans.has_permission(id, player_name, "set_rank") then
-					table.insert(pl_elements, "button[%s,%s;%s,%s;set_rank;Set Rank]")
+				if perm_kick then
+					table.insert(pl_elements, "image_button[%s,%s;%s,%s;ctf_clans_kick.png;kick;]")
 				end
 			end
-
-			formspec = formspec .. ctf_clans.generate_element_layout(pl_elements, {
-				direction = "horizontal",
-				pos_start = {5.4, 10.2},
-				size = {0.8, 0.8},
-				spacing = 0.1,
-			})
 		end
 
-		-- sfse.open_formspec(player_name, "", "size[10.47,11.35]" .. formspec)
-		return formspec
-	end,
-
-	set_rank = function(player, ctx, id)
-		ctx.ranklist = {}
-		local this_clan = ctf_clans.get_clan_def(id)
-		if not this_clan then return end
-		local list = ""
-		local table_imgs = {}
-		local first = true
-		local icon_i = 0
-		for rank_name, def in pairs(this_clan.ranks) do
-			table.insert(ctx.ranklist, rank_name)
-			local icon = ctf_clans.get_rank_icon(def)
-			local col_img
-			if icon then
-				if table_imgs[icon] then
-					col_img = table_imgs[icon]
-				else
-					icon_i = icon_i + 1
-					table_imgs[icon] = icon_i
-					col_img = icon_i
-				end
-			end
-
-			if first then
-				first = false
-			else
-				list = list .. ","
-			end
-
-			list = list .. (col_img or "") .. "," .. minetest.formspec_escape(rank_name)
-		end
-
-		local column_imgs = "image"
-		for fn, i in pairs(table_imgs) do
-			column_imgs = column_imgs .. "," .. string.format("%d=%s", i, fn)
-		end
-
-		local msg = "Select a rank"
-		if ctx.set_rank_error then
-			msg = "<style color=red><b>" .. ctx.set_rank_error .. "</b></style>"
-			ctx.set_rank_error = nil
-		end
-
-		return back_to_main_button
-			.. get_info_form(msg)
-			.. "button[4.235,8;2,1;set_rank_apply;Apply]"
-			.. "tablecolumns[".. column_imgs .. ";text]"
-			.. "table[0.5,3;9.5,4.5;ranklist;" .. list .. "]"
-	end,
-
-	options_list = function()
-		local buttons = {
-			{"change_desc", "Description"},
-			{"change_namecolor", "Name Color"},
-			{"change_clanicon", "Icon"},
-		}
-
-		local elements = {}
-		for _, bt in ipairs(buttons) do
-			table.insert(elements, "button[%s,%s;%s,%s;" .. bt[1] .. ";" .. bt[2] .. "]")
-		end
-
-		local formspec = ctf_clans.generate_element_layout(elements, {
-			direction = "vertical",
-			pos_start = {4.035, 3.5},
-			size = {2.4, 0.8},
+		formspec = formspec .. ctf_clans.generate_element_layout(pl_elements, {
+			direction = "horizontal",
+			pos_start = {5.4, 10.2},
+			size = {0.8, 0.8},
 			spacing = 0.1,
 		})
+	end
 
-		return back_to_main_button
-			.. get_info_form("What would you like to change?")
-			.. formspec
-	end,
-}
+	return formspec
+end
+
+ui.set_role = function(player, ctx, id)
+	ctx.rolelist = {}
+	local this_clan = ctf_clans.get_clan_def(id)
+	if not this_clan then return end
+	local list = ""
+	local table_imgs = {}
+	local first = true
+	local icon_i = 0
+	for role_name, def in pairs(this_clan.roles) do
+		table.insert(ctx.rolelist, role_name)
+		local icon = ctf_clans.get_role_icon(def)
+		local col_img
+		if icon then
+			if table_imgs[icon] then
+				col_img = table_imgs[icon]
+			else
+				icon_i = icon_i + 1
+				table_imgs[icon] = icon_i
+				col_img = icon_i
+			end
+		end
+
+		if first then
+			first = false
+		else
+			list = list .. ","
+		end
+
+		list = list .. (col_img or "") .. "," .. minetest.formspec_escape(role_name)
+	end
+
+	local column_imgs = "image"
+	for fn, i in pairs(table_imgs) do
+		column_imgs = column_imgs .. "," .. string.format("%d=%s", i, fn)
+	end
+
+	local msg = "Select a role for: " .. ctx.playerlist_selected
+	if ctx.set_role_error then
+		msg = "<style color=red><b>" .. ctx.set_role_error .. "</b></style>"
+		ctx.set_role_error = nil
+	end
+
+	return back_to_main_button
+		.. get_info_form(msg)
+		.. "button[4.235,8;2,1;set_role_apply;Apply]"
+		.. "tablecolumns[".. column_imgs .. ";text]"
+		.. "table[0.5,3;9.5,4.5;rolelist;" .. list .. "]"
+end
+
+ui.options_list = function()
+	local buttons = {
+		{"show_clanboard_editor", "Edit Clan Board"},
+		{"change_namecolor", "Name Color"},
+		{"change_clanicon", "Icon"},
+	}
+
+	local elements = {}
+	for _, bt in ipairs(buttons) do
+		table.insert(elements, "button[%s,%s;%s,%s;" .. bt[1] .. ";" .. bt[2] .. "]")
+	end
+
+	local formspec = ctf_clans.generate_element_layout(elements, {
+		direction = "vertical",
+		pos_start = {4.035, 3.5},
+		size = {2.4, 0.8},
+		spacing = 0.1,
+	})
+
+	return back_to_main_button
+		.. get_info_form("What would you like to change?")
+		.. formspec
+end
+
+ui.clanboard_editor = function(player, ctx, id)
+	local this_clan = ctf_clans.get_clan_def(id)
+	if not this_clan then return end
+
+	local formspec = "textarea[0,1.1;10.42,8.8;clanboard_textarea;;" .. minetest.formspec_escape(this_clan.board or "") .. "]"
+	.. "button[1.25,10;4,0.8;clanboard_save;Save]"
+	.. "button[5.75,10;4,0.8;back_to_main;Cancel]"
+
+	-- sfse.open_formspec(player:get_player_name(), "", "size[10.47,11.35]" .. back_to_main_button .. formspec)
+
+	return formspec
+end
+
 
 sfinv.register_page("sfinv:clans", {
 	title = "Clans",
 	get = function(self, player, context)
-		local player_name = player:get_player_name()
-		local ctx = ui_data[player_name]
-		local id = ctf_clans.get_clan_id(player_name)
-		local fs = ""
-		if ctx.page and formspecs[ctx.page] then
-			fs = formspecs[ctx.page](player, ctx, id)
+		local ctx = context.clan_ui
+		local id = ctf_clans.get_clan_id(player:get_player_name())
+		local fs
+		if ctx.page and ui[ctx.page] then
+			fs = ui[ctx.page](player, ctx, id)
 		else
 			if id then
-				fs = formspecs.clan_manager(player, ctx, id)
+				fs = ui.clan_manager(player, ctx, id)
 			else
-				fs = formspecs.no_clan(player, ctx)
+				fs = ui.no_clan(player, ctx)
 			end
 		end
 
@@ -258,7 +296,7 @@ sfinv.register_page("sfinv:clans", {
 
 	on_player_receive_fields = function(self, player, context, fields)
 		local player_name = player:get_player_name()
-		local ctx = ui_data[player_name]
+		local ctx = context.clan_ui
 		local id = ctf_clans.get_clan_id(player_name)
 		if not ctf_clans.is_clan_exist(id) then
 			if fields.new_clan then
@@ -269,6 +307,8 @@ sfinv.register_page("sfinv:clans", {
 		end
 
 		local clan_def = ctf_clans.get_clan_def(id)
+		if not clan_def then return end
+
 		local update_fs = false
 
 		if fields.back_to_main then
@@ -282,13 +322,7 @@ sfinv.register_page("sfinv:clans", {
 
 		elseif fields.invite_send then
 			if not ctf_clans.has_permission(id, player_name, "invite") then
-				ctx.page = "info_form"
-				ctx.info = {
-					msg = "Insufficient privileges",
-					status = true,
-					color = "red",
-					bold = true
-				}
+				msg_denied(ctx)
 				return true, true
 			end
 
@@ -330,50 +364,44 @@ sfinv.register_page("sfinv:clans", {
 				update_fs = true
 			end
 
-		elseif fields.set_rank then
+		elseif fields.set_role then
 			if ctx.playerlist_selected then
-				ctx.page = "set_rank"
+				ctx.page = "set_role"
 			end
 			update_fs = true
 
-		elseif fields.ranklist then
-			local event = minetest.explode_table_event(fields.ranklist)
-			local rank_index = event.row
-			if ctx.ranklist[rank_index] then
-				ctx.rank_selected = rank_index
+		elseif fields.rolelist then
+			local event = minetest.explode_table_event(fields.rolelist)
+			local role_index = event.row
+			if ctx.rolelist[role_index] then
+				ctx.role_selected = role_index
 				update_fs = true
 			end
 
-		elseif fields.set_rank_apply then
-			if not ctf_clans.has_permission(id, player_name, "set_rank") then
-				ctx.page = "info_form"
-				ctx.info = {
-					msg = "Insufficient privileges",
-					status = true,
-					color = "red",
-					bold = true
-				}
+		elseif fields.set_role_apply then
+			if not ctf_clans.has_permission(id, player_name, "set_role") then
+				msg_denied(ctx)
 				return true, true
 			end
 
-			if ctx.rank_selected and ctx.playerlist_selected then
+			if ctx.role_selected and ctx.playerlist_selected then
 				local selected_name = ctx.playerlist_selected
 				if selected_name == player_name then
 					return true
 				end
 
-				local rank_name = ctx.ranklist[ctx.rank_selected]
+				local role_name = ctx.rolelist[ctx.role_selected]
 
-				if rank_name == "owner" then
-					ctx.set_rank_error = "The rank cannot be changed to \"Owner\""
+				if role_name == "owner" then
+					ctx.set_role_error = "The role cannot be changed to \"Owner\""
 					return true, true
 				end
 
 				ctx.page = "info_form"
-				if ctf_clans.set_member_rank(id, selected_name, rank_name) then
-					ctx.ranklist = nil
+				if ctf_clans.set_member_role(id, selected_name, role_name) then
+					ctx.rolelist = nil
 					ctx.info = {
-						msg = selected_name  .. "'s rank has been changed to " .. rank_name,
+						msg = selected_name  .. "'s role has been changed to " .. role_name,
 						status = true,
 						bold = true
 					}
@@ -389,13 +417,7 @@ sfinv.register_page("sfinv:clans", {
 
 		elseif fields.kick then
 			if not ctf_clans.has_permission(id, player_name, "kick") then
-				ctx.page = "info_form"
-				ctx.info = {
-					msg = "Insufficient privileges",
-					status = true,
-					color = "red",
-					bold = true
-				}
+				msg_denied(ctx)
 				return true, true
 			end
 
@@ -427,16 +449,16 @@ sfinv.register_page("sfinv:clans", {
 							}
 							minetest.chat_send_player(selected_name, "You are no longer a member of the clan " .. clan_def.clan_name)
 						end
-						return true
+						return true, true
 					end,
 
 					callback_no = function(player, ctx)
 						ctx.page = "clan_manager"
-						return true
+						return true, true
 					end,
 				}
+				return true, true
 			end
-			update_fs = true
 
 		elseif fields.question_yes then
 			local question = ctx.question
@@ -456,17 +478,42 @@ sfinv.register_page("sfinv:clans", {
 		elseif fields.member_options_bar then
 			ctx.member_options_bar = true
 			return true, true
+		elseif fields.show_clanboard_editor then
+			if not ctf_clans.has_permission(id, player_name, "clanboard_write") then
+				msg_denied(ctx)
+				return true, true
+			end
+				ctx.page = "clanboard_editor"
+			return true, true
+		elseif fields.clanboard_save then
+			if not ctf_clans.has_permission(id, player_name, "clanboard_write") then
+				msg_denied(ctx)
+				return true, true
+			end
+			if type(fields.clanboard_textarea) == "string" then
+				if #fields.clanboard_textarea > 1500 then
+					minetest.chat_send_player(player_name, "Unable to save, text longer than 1500 characters")
+					return true
+				end
+				clan_def.board = fields.clanboard_textarea
+				ctx.page = "info_form"
+				ctx.info = {
+					msg = "The changes have been saved",
+					status = true,
+					bold = true
+				}
+				return true, true
+			end
 		end
-
 
 		return true, update_fs
 	end,
 
 	on_enter = function(self, player, context)
-		ui_data[player:get_player_name()] = {}
+		context.clan_ui = {}
 	end,
 
 	on_leave = function(self, player, context)
-		ui_data[player:get_player_name()] = nil
+		context.clan_ui = nil
 	end
 })

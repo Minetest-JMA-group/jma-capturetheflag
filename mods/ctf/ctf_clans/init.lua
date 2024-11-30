@@ -4,20 +4,20 @@
 local storage = minetest.get_mod_storage()
 
 ctf_clans = {
-	clans_ranking = {},
+	clans_roleing = {},
 	max_id = 0,
 	registered_clans = {},
 }
 
-local default_rank_icons = {
+local default_role_icons = {
 	"ctf_clans_owner.png",
 	"ctf_clans_member.png"
 }
 
 local permissions = {
 	owner = {"any"},
-	mod = {"invite", "kick", "set_rank", "set_description"},
-	member = {"invite"},
+	mod = {"invite", "kick", "set_role", "clanboard_editor"}, --"set_description"
+	member = {"invite", "clanboard_editor"},
 	guest = {}
 }
 
@@ -118,25 +118,25 @@ function ctf_clans.is_any_members_online(id)
 	return false
 end
 
-function ctf_clans.get_member_rank(id, player_name)
+function ctf_clans.get_member_role(id, player_name)
 	local this_clan = clans_data[id]
 	local member_def = this_clan.members[player_name]
 	if member_def then
-		return member_def.rank
+		return member_def.role
 	end
 end
 
-local function check_default_permissions(rank, action)
-    local rank_permissions = permissions[rank]
-    if not rank_permissions then
+local function check_default_permissions(role, action)
+    local role_permissions = permissions[role]
+    if not role_permissions then
         return false
     end
 
-    if rank_permissions[1] == "any" then
+    if role_permissions[1] == "any" then
         return true
     end
 
-    for _, permission in ipairs(rank_permissions) do
+    for _, permission in ipairs(role_permissions) do
         if permission == action then
             return true
         end
@@ -148,19 +148,19 @@ end
 function ctf_clans.has_permission(id, player_name, action)
 	local this_clan = clans_data[id]
 
-	local rank_name = this_clan.members[player_name].rank
+	local role_name = this_clan.members[player_name].role
 	if this_clan.owner == player_name then
 		return true
 	end
 
-	if check_default_permissions(rank_name, action) then
+	if check_default_permissions(role_name, action) then
 		return true
 	end
 
-	local rank_def = this_clan.ranks[rank_name]
+	local role_def = this_clan.roles[role_name]
 
-	if rank_def.permissions then
-		for _, permission in ipairs(rank_def.permissions) do
+	if role_def.permissions then
+		for _, permission in ipairs(role_def.permissions) do
 			if permission == action then
 				return true
 			end
@@ -170,23 +170,23 @@ function ctf_clans.has_permission(id, player_name, action)
 	return false
 end
 
-function ctf_clans.get_rank_icon(rank_def)
-	if rank_def.icon_index then
-		return default_rank_icons[rank_def.icon_index]
-	elseif rank_def.icon then
-		return rank_def.icon
+function ctf_clans.get_role_icon(role_def)
+	if role_def.icon_index then
+		return default_role_icons[role_def.icon_index]
+	elseif role_def.icon then
+		return role_def.icon
 	end
 end
 
-function ctf_clans.set_member_rank(id, member_name, new_rank)
+function ctf_clans.set_member_role(id, member_name, new_role)
 	local this_clan = clans_data[id]
 	local member_def = this_clan.members[member_name]
-	local rank_def = this_clan.ranks[new_rank]
-	if member_def and rank_def then
-		-- if new_rank == "owner" then
+	local role_def = this_clan.roles[new_role]
+	if member_def and role_def then
+		-- if new_role == "owner" then
 		-- 	this_clan.owner = member_name
 		-- end
-		member_def.rank = new_rank
+		member_def.role = new_role
 		return true
 	end
 
@@ -202,8 +202,8 @@ function ctf_clans.create(player_name, def)
 		board = "",
 		owner = def.owner,
 		creation_time = os.time(),
-		members = {[def.owner] = {rank = "owner"}},
-		ranks = {
+		members = {[def.owner] = {role = "owner"}},
+		roles = {
 			owner = {icon_index = 1, permissions = {}},
 			member = {icon_index = 2, permissions = {}},
 			custom = {icon = "ctf_clans_random_color.png"},
@@ -257,7 +257,7 @@ function ctf_clans.add_member(id, player_name)
 		minetest.debug("already member of the clan")
 		return false
 	end
-	this_clan.members[player_name] = {rank = "member"}
+	this_clan.members[player_name] = {role = "member"}
 	save_clan_data(id)
 	local key = player_clan_id_key .. player_name
 	storage:set_int(key, id)
