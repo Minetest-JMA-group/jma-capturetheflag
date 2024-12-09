@@ -83,7 +83,7 @@ ui.invite = function(player, ctx)
 end
 
 ui.clan_manager = function(player, ctx, id)
-	local this_clan = ctf_clans.get_clan_def(id)
+	local this_clan = ctf_clans.get_clan(id)
 	if not this_clan then return end
 
 	ctx.page = "clan_manager"
@@ -190,7 +190,7 @@ end
 
 ui.set_role = function(player, ctx, id)
 	ctx.rolelist = {}
-	local this_clan = ctf_clans.get_clan_def(id)
+	local this_clan = ctf_clans.get_clan(id)
 	if not this_clan then return end
 	local list = ""
 	local table_imgs = {}
@@ -262,7 +262,7 @@ ui.options_list = function()
 end
 
 ui.clanboard_editor = function(player, ctx, id)
-	local this_clan = ctf_clans.get_clan_def(id)
+	local this_clan = ctf_clans.get_clan(id)
 	if not this_clan then return end
 
 	local formspec = "textarea[0,1.1;10.42,8.8;clanboard_textarea;;" .. minetest.formspec_escape(this_clan.board or "") .. "]"
@@ -279,12 +279,19 @@ sfinv.register_page("sfinv:clans", {
 	title = "Clans",
 	get = function(self, player, context)
 		local ctx = context.clan_ui
-		local id = ctf_clans.get_clan_id(player:get_player_name())
+		local player_name = player:get_player_name()
+		local id = ctf_clans.get_clan_id(player_name)
 		local fs
 		if ctx.page and ui[ctx.page] then
 			fs = ui[ctx.page](player, ctx, id)
 		else
 			if id then
+				if not ctf_clans.player_is_clan_member(id, player_name) then
+					return sfinv.make_formspec_v7(player, context, "label[0,0.5;Sorry! Something went wrong...\n"
+					.. player_name .. " is in a non-existent clan " ..  id
+					.. "\nPlease report it to the server stuff", false)
+				end
+
 				fs = ui.clan_manager(player, ctx, id)
 			else
 				fs = ui.no_clan(player, ctx)
@@ -306,8 +313,8 @@ sfinv.register_page("sfinv:clans", {
 			return true, true
 		end
 
-		local clan_def = ctf_clans.get_clan_def(id)
-		if not clan_def then return end
+		local this_clan = ctf_clans.get_clan(id)
+		if not this_clan then return end
 
 		local update_fs = false
 
@@ -386,16 +393,11 @@ sfinv.register_page("sfinv:clans", {
 
 			if ctx.role_selected and ctx.playerlist_selected then
 				local selected_name = ctx.playerlist_selected
-				if selected_name == player_name then
-					return true
-				end
+				-- if selected_name == player_name then
+				-- 	return true
+				-- end
 
 				local role_name = ctx.rolelist[ctx.role_selected]
-
-				if role_name == "owner" then
-					ctx.set_role_error = "The role cannot be changed to \"Owner\""
-					return true, true
-				end
 
 				ctx.page = "info_form"
 				if ctf_clans.set_member_role(id, selected_name, role_name) then
@@ -447,7 +449,7 @@ sfinv.register_page("sfinv:clans", {
 								status = true,
 								bold = true
 							}
-							minetest.chat_send_player(selected_name, "You are no longer a member of the clan " .. clan_def.clan_name)
+							minetest.chat_send_player(selected_name, "You are no longer a member of the clan " .. this_clan.clan_name)
 						end
 						return true, true
 					end,
@@ -495,7 +497,8 @@ sfinv.register_page("sfinv:clans", {
 					minetest.chat_send_player(player_name, "Unable to save, text longer than 1500 characters")
 					return true
 				end
-				clan_def.board = fields.clanboard_textarea
+				this_clan.board = fields.clanboard_textarea
+				ctf_clans.storage.save_clan_data(id, this_clan)
 				ctx.page = "info_form"
 				ctx.info = {
 					msg = "The changes have been saved",

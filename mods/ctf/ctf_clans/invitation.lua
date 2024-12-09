@@ -80,7 +80,7 @@ minetest.register_chatcommand("invite",{
 			return false, "You don't have a clan... First create a new one"
 		end
 
-		local def = ctf_clans.get_clan_def(id)
+		local def = ctf_clans.get_clan(id)
 
 		if def.owner ~= name then
 			return false, "You must be owner of the clan to invite a new members. Please contact to " .. def.owner
@@ -104,7 +104,7 @@ minetest.register_chatcommand("invite",{
 local function get_pending_invites(name)
 	local ids = {}
 	for _, v in ipairs(pending_invites[name]) do
-		local def = ctf_clans.get_clan_def(v.clan_id)
+		local def = ctf_clans.get_clan(v.clan_id)
 		if def then
 			table.insert(ids, "[" .. def.clan_name .. "]: " .. v.clan_id .. " | Sender: " .. v.invitedby)
 		end

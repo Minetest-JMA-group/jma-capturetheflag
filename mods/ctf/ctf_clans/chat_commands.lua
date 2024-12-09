@@ -6,7 +6,7 @@ minetest.register_privilege("clans", {
     give_to_admin = true,
 })
 
-minetest.register_chatcommand("aclan_make", {
+minetest.register_chatcommand("aclans_make", {
     description = "Create a new clan",
     privs = {clans = true},
     params = "<player_name> <clan_name> <title> <color> <prefix>",
@@ -43,7 +43,7 @@ minetest.register_chatcommand("aclan_make", {
     end
 })
 
-minetest.register_chatcommand("aclan_kick",{
+minetest.register_chatcommand("aclans_kick",{
 	description = "Kick player from the clan",
     privs = {clans = true},
 	params = "<Player Name>",
@@ -65,7 +65,7 @@ minetest.register_chatcommand("aclan_kick",{
 			return false, "Player a member of a clan, but that clan doesn't exist. WTF?"
 		end
 
-		local def = ctf_clans.get_clan_def(id)
+		local def = ctf_clans.get_clan(id)
 
 		if def.owner == name then
 			return false, "The owner cannot leave his clan"
@@ -80,7 +80,7 @@ minetest.register_chatcommand("aclan_kick",{
 })
 
 
-minetest.register_chatcommand("aclan_remove",{
+minetest.register_chatcommand("aclans_remove",{
 	description = "Remove the clan",
     privs = {clans = true},
 	params = "<clan id>",
@@ -94,7 +94,7 @@ minetest.register_chatcommand("aclan_remove",{
 			return false, "The clan doesn't exist"
 		end
 
-		local def = ctf_clans.get_clan_def(id)
+		local def = ctf_clans.get_clan(id)
 
 		ctf_clans.remove_clan(id)
 
@@ -118,7 +118,7 @@ minetest.register_chatcommand("aclans_dump",{
 
 		local id = ctf_clans.get_clan_id(target)
 		if id then
-			local def = ctf_clans.get_clan_def(id)
+			local def = ctf_clans.get_clan(id)
 			return true, dump(def) .. "\nID: " .. id
 		end
 	end
@@ -135,7 +135,7 @@ minetest.register_chatcommand("adump_clans_ids",{
 
 -- For players
 
-minetest.register_chatcommand("clan_left",{
+minetest.register_chatcommand("clans_left",{
 	description = "Left the current clan",
 	privs = {},
 	params = "",
@@ -149,7 +149,7 @@ minetest.register_chatcommand("clan_left",{
 			return false, "Oh DANG! It seems to be broken. Let the admins know."
 		end
 
-		local def = ctf_clans.get_clan_def(id)
+		local def = ctf_clans.get_clan(id)
 		if def.owner == name then
 			ctf_clans.remove_clan(id)
 			return false, "The owner cannot leave his clan"
@@ -163,7 +163,7 @@ minetest.register_chatcommand("clan_left",{
 	end
 })
 
-minetest.register_chatcommand("clan_id",{
+minetest.register_chatcommand("clans_id",{
 	description = "Shows the ID of the clan the player is a member of",
 	privs = {},
 	params = "<Player Name>",
@@ -189,7 +189,7 @@ minetest.register_chatcommand("delete_my_clan",{
 			return false, "You are not in a clan"
 		end
 
-		local def = ctf_clans.get_clan_def(id)
+		local def = ctf_clans.get_clan(id)
 		if def.owner == name then
 			ctf_clans.remove_clan(id)
 
@@ -201,7 +201,7 @@ minetest.register_chatcommand("delete_my_clan",{
 	end
 })
 
-minetest.register_chatcommand("clan_fix",{
+minetest.register_chatcommand("clans_fix",{
 	description = "Fixing something",
     privs = {},
 	params = "",
