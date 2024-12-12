@@ -23,6 +23,11 @@ ctf_clans.reference = {
 	},
 }
 
+if storage:contains("max_id") then
+	ctf_clans.max_id = storage:get_int("max_id")
+	minetest.log("action", "CTF_CLANS: MAX ID: " .. ctf_clans.max_id)
+end
+
 local default_role_icons = {
 	"ctf_clans_owner.png",
 	"ctf_clans_member.png",
@@ -39,7 +44,7 @@ local permissions = {
 dofile(modpath .. "/clan_storage.lua")
 
 local clans_context = {}
-local player_clan_id_key = "clan_id:"
+local player_clan_id_key = "id:%s"
 
 
 local function load_clan_data(id)
@@ -83,14 +88,14 @@ function ctf_clans.get_clan_name(id)
 end
 
 function ctf_clans.is_clan_exist(id)
-	if id and clans_context[id] or ctf_clans.storage.is_clan_data_exist(id) then
+	if id and (clans_context[id] or ctf_clans.storage.is_clan_data_exist(id)) then
 		return true
 	end
 	return false
 end
 
 function ctf_clans.get_clan_id(player_name)
-	local key = player_clan_id_key .. player_name
+	local key = string.format(player_clan_id_key, player_name)
 	if storage:contains(key) then
 		local id = storage:get_int(key)
 		if id > 0 then
@@ -224,8 +229,7 @@ function ctf_clans.create(player_name, def)
 	save_clan_data(new_id)
 	ctf_clans.storage.save_all_clan_member_data(new_id, new_clan)
 
-	local key = player_clan_id_key .. player_name
-	storage:set_int(key, new_id)
+	storage:set_int(string.format(player_clan_id_key, player_name), new_id)
 
 	minetest.debug("Player " .. def.owner .. " created a new clan: " .. def.clan_name .. " ID:" .. new_id)
 
@@ -234,24 +238,17 @@ end
 
 function ctf_clans.remove_clan(id)
 	for pn in pairs(clans_context[id].members) do
-		local key = player_clan_id_key .. pn
+		local key = string.format(player_clan_id_key, pn)
 		if storage:contains(key) then
 			storage:set_int(key, 0)
 			minetest.debug("Set clan_member to 0 of " .. pn)
 		end
 	end
 
-	local regid = table.indexof(ctf_clans.registered_clans, id)
-	if regid ~= -1 then
-		table.remove(ctf_clans.registered_clans, regid)
-		minetest.debug("Removed " .. regid .. " from the list of the registered clans")
-	end
-
 	clans_context[id] = nil
 	ctf_clans.storage.purge_clan_data(id)
-	save_registered_clans()
 
-	minetest.debug("Clan " .. id .. " has been removed")
+	minetest.debug("Goodbye " .. id .. " :(" )
 end
 
 function ctf_clans.add_member(id, player_name)
@@ -262,8 +259,7 @@ function ctf_clans.add_member(id, player_name)
 	end
 	this_clan.members[player_name] = {role = "member"}
 	save_clan_data(id)
-	local key = player_clan_id_key .. player_name
-	storage:set_int(key, id)
+	storage:set_int(string.format(player_clan_id_key, player_name), id)
 	ctf_clans.storage.new_member(id, this_clan, player_name)
 	minetest.debug(player_name .. " joined the clan " .. this_clan.clan_name)
 	return true
@@ -287,8 +283,7 @@ function ctf_clans.remove_member(id, player_name)
 
 	if this_clan.members[player_name] then
 		this_clan.members[player_name] = nil
-		local key = player_clan_id_key .. player_name
-		storage:set_int(key, 0)
+		storage:set_int(string.format(player_clan_id_key, player_name), 0)
 		ctf_clans.storage.remove_member(id, player_name)
 		minetest.debug(player_name .. " left the clan " .. this_clan.clan_name)
 		return true
@@ -299,7 +294,7 @@ end
 function ctf_clans.fix_entry(player_name)
 	local id = ctf_clans.get_clan_id(player_name)
 	if id then
-		local key = player_clan_id_key .. player_name
+		local key = string.format(player_clan_id_key, player_name)
 		if storage:contains(key) then
 			storage:set_int(key, 0)
 			minetest.log("action", "removing non-existent clan id of " .. player_name)
@@ -329,39 +324,20 @@ minetest.register_on_joinplayer(function(player)
 		return
 	end
 	if ctf_clans.is_clan_exist(id) then -- Load the clan data
-		minetest.debug("clan data loaded: " .. id)
+		clans_context[id] = ctf_clans.storage.load_clan_data(id)
+		minetest.debug("Clan data loaded: " .. id)
 	end
 end)
 
--- minetest.register_on_leaveplayer(function(player)
--- 	local id = ctf_clans.get_clan_id(player:get_player_name())
--- 	if id and id > 0 then
--- 		save_clan_data(id)
--- 		if not ctf_clans.is_any_members_online(id) then
--- 			clans_context[id] = nil
--- 			minetest.log("action", "Unloaded clan data ID: " .. id)
--- 		end
--- 	end
--- end)
-
-minetest.register_on_mods_loaded(function()
-	local max_id_key = "max_id"
-	if storage:contains(max_id_key) then
-		ctf_clans.max_id = storage:get_int(max_id_key)
-	end
-
-	if storage:contains(registered_clans_key) then
-		ctf_clans.registered_clans = minetest.deserialize(storage:get(registered_clans_key))
+minetest.register_on_leaveplayer(function(player)
+	local id = ctf_clans.get_clan_id(player:get_player_name())
+	if id then
+		if not ctf_clans.is_any_members_online(id) then
+			clans_context[id] = nil
+			minetest.log("action", "Unloaded clan data ID: " .. id)
+		end
 	end
 end)
-
--- minetest.register_on_shutdown(function()
--- 	for id, _ in pairs(clans_context) do
--- 		if id > 0 then
--- 			save_clan_data(id)
--- 		end
--- 	end
--- end)
 
 minetest.register_chatcommand("clans_forcesave",{
 	description = "Save the clan data",
