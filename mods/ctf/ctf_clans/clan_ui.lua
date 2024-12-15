@@ -497,7 +497,7 @@ sfinv.register_page("sfinv:clans", {
 					minetest.chat_send_player(player_name, "Unable to save, text longer than 1500 characters")
 					return true
 				end
-				this_clan.board = fields.clanboard_textarea
+				this_clan.board = fields.clanboard_textarea:trim()
 				ctf_clans.storage.save_clan_data(id, this_clan)
 				ctx.page = "info_form"
 				ctx.info = {
