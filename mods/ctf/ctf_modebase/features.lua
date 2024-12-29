@@ -773,9 +773,9 @@ return {
 			capture_reward = capture_reward + score
 		end
 
-		local text = string.format(" has captured the flag and got %d points", capture_reward)
+		local text = string.format(" has captured the flag in " .. ctf_map.get_duration() .. " and got %d points", capture_reward)
 		if many_teams then
-			text = string.format(" has captured the flag of team(s) %s and got %d points",
+			text = string.format(" has captured the flag of team(s) %s in " .. ctf_map.get_duration() .. " and got %d points",
 				HumanReadable(teamnames), capture_reward)
 		end
 
