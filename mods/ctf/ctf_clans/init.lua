@@ -21,6 +21,7 @@ ctf_clans.reference = {
 		owner = {icon_index = 1, permissions = {}},
 		member = {icon_index = 2, permissions = {}},
 	},
+	stats = {wins = 0, loses = 0}
 }
 
 if storage:contains("max_id") then
@@ -81,6 +82,10 @@ function ctf_clans.get_clan(id)
 		return clans_context[id]
 	end
 	return nil
+end
+
+function ctf_clans.get_clan_loaded(id)
+	return clans_context[id]
 end
 
 function ctf_clans.get_clan_name(id)
@@ -228,6 +233,7 @@ function ctf_clans.create(player_name, def)
 	table.insert(ctf_clans.registered_clans, new_id)
 	save_clan_data(new_id)
 	ctf_clans.storage.save_all_clan_member_data(new_id, new_clan)
+	ctf_clans.storage.save_clan_ranking(new_id, new_clan)
 
 	storage:set_int(string.format(player_clan_id_key, player_name), new_id)
 
@@ -383,3 +389,6 @@ dofile(modpath .. "/invitation.lua")
 dofile(modpath .. "/clan_maker.lua")
 dofile(modpath .. "/clan_ui.lua")
 dofile(modpath .. "/formspec_helper.lua")
+dofile(modpath .. "/ranking.lua")
+
+minetest.log("action", "CTF_CLANS loaded ⚔️")

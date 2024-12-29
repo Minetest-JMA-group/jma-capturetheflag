@@ -10,6 +10,7 @@ local registered_clans_cache = {}
 local clan_ctx_key = "ctx:%d"
 local ml_key = "%d:members_list"
 local registered_ids_key = "registered_ids"
+local ranking_key = "ranking:%d"
 
 function ctf_clans.storage.get_registered_ids()
 	local list = registered_clans_cache
@@ -157,6 +158,7 @@ function ctf_clans.storage.save_clan_data(id, clan_data)
 	minetest.debug("Saving clan data", id)
 	local ctx_copy = table.copy(clan_data)
 	ctx_copy.members = nil
+	ctx_copy.ranking = nil
 
 	storage:set_string(string.format(clan_ctx_key, id), minetest.serialize(ctx_copy))
 end
@@ -195,9 +197,9 @@ function ctf_clans.storage.load_clan_data(id)
 	end
 
 	ctx_data.members = ctf_clans.storage.load_all_clan_members(id)
+	ctx_data.ranking = ctf_clans.storage.load_clan_ranking(id)
 
-	-- Restoring required fields
-	-- Questionable idea...
+	-- Restoring required fields if it is missing
 	for ref_name, ref_value in pairs(ctf_clans.reference) do
 		if not ctx_data[ref_name] then
 			ctx_data[ref_name] = ref_value
@@ -224,8 +226,10 @@ function ctf_clans.storage.purge_clan_data(id)
 	end
 	members_list_cache[id] = nil
 
-	-- Deleting members list
+	-- Deleting members list and ranking
 	storage:set_string(string.format(ml_key, id), "")
+	storage:set_int(string.format(ranking_key, id), 0)
+
 	unregister_clan_id(id)
 
 	minetest.log("action", "Clan " .. id .. " deleted.")
@@ -243,5 +247,17 @@ end
 
 -- Checking the existence of the clan
 function ctf_clans.storage.is_clan_data_exist(id)
+	if not id or type(id) ~= "number" then return end
 	return storage:contains(string.format(clan_ctx_key, id))
+end
+
+function ctf_clans.storage.save_clan_ranking(id, clan_data)
+	storage:set_string(string.format(ranking_key, id), minetest.serialize(clan_data.ranking))
+end
+
+function ctf_clans.storage.load_clan_ranking(id)
+	local ranking = minetest.deserialize(storage:get_string(string.format(ranking_key, id)))
+	if type(ranking) == "table" then
+		return ranking
+	end
 end
