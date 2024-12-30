@@ -13,6 +13,7 @@ end)
 
 core.register_chatcommand("light_strength", {
 	params = "<strength>",
+	privs = {server = true},
 	description = S("Set volumetric lighting strength for the current world."),
 	func = function(name, param)
 		local new_strength
