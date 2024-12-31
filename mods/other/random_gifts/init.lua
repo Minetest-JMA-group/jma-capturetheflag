@@ -43,8 +43,8 @@ local function show_formspec(player)
 	local formspec =
 		"formspec_version[7]" ..
 		"size[10,5]" ..
-		-- "no_prepend[]" ..
-		-- "background[0,0;10,5;random_gifts_background.png]"..
+		"no_prepend[]" ..
+		"background[0,0;10,5;random_gifts_background.png]"..
 		"button_exit[9.3,0;0.7,0.7;;X]" ..
 		"style_type[image_button;bgcolor=black]" ..
 		"style_type[item_image_button;bgcolor=black]"
@@ -89,6 +89,8 @@ local function random_rgb_color()
     local b = math.random(0, 255)
 	return minetest.colorspec_to_colorstring({a=0, r=r, g=g, b=b})
 end
+
+random_gifts.random_rgb_color = random_rgb_color
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
 	if formname ~= fs_name then

@@ -44,7 +44,11 @@ server_cosmetics = {
 					append = true,
 					color = "#000000^(server_cosmetics_sunglasses_shine.png^[multiply:#ffe346)",
 				},
-			}
+				blue_classic = {
+					append = false,
+					color = "#000000ff^server_cosmetics_new_year_sunglasses.png",
+				},
+			},
 		},
 		entity_cosmetics = {
 			santa_hat = {
