@@ -83,11 +83,11 @@ minetest.register_entity("fireworks:firework_static", {
 })
 
 local timer
-local spawn_interval = 180
+local spawn_interval = 120
 local reduce_radius = 8
 
 local function spawn_giftbox()
-    local spawn_amount = math.max(15, math.min(#minetest.get_connected_players(), 40))
+    local spawn_amount = math.max(27, math.min(#minetest.get_connected_players(), 70))
 
     local vm = VoxelManip()
     local pos1, pos2 = vm:read_from_map(vector.add(ctf_map.current_map.pos1, reduce_radius), vector.subtract(ctf_map.current_map.pos2, reduce_radius))

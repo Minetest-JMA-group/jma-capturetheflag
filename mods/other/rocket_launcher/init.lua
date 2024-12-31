@@ -105,7 +105,7 @@ rocket.on_step = function(self, dtime, moveresult)
 		self.object:remove()
 	end
 	if self.timer > 0.2 then
-		local objs = minetest.get_objects_inside_radius({x = pos.x, y = pos.y-1, z = pos.z}, 1)
+		local objs = minetest.get_objects_inside_radius({x = pos.x, y = pos.y-1, z = pos.z}, 1.3)
 		for k, obj in pairs(objs) do
 			local prop = obj and obj:get_properties()
 			if prop then

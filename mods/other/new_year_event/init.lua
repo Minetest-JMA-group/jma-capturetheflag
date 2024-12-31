@@ -16,7 +16,7 @@ sfinv.register_page("new_year_event:progress", {
         local form = "real_coordinates[true]"
 
         if firework_count < TARGET_FIREWORK_COUNT then
-            form = string.format("%slabel[0.1,0.5;Launch %d fireworks to earn points!\n%s]", form,
+            form = string.format("%slabel[0.1,0.5;Launch %d fireworks to earn cool glasses!\n%s]", form,
             TARGET_FIREWORK_COUNT,
                 "They can be launched during the New Year event."
             )
