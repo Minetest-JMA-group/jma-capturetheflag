@@ -1,3 +1,8 @@
+do
+    local day, month = os.date("*t").day, os.date("*t").month
+    if month > 1 or (month == 1 and day >= 3) then return end
+end
+
 new_year_event = {}
 
 local TARGET_FIREWORK_COUNT = 73
