@@ -109,9 +109,9 @@ if mods:get_int("_reset_date") ~= 0 and os.date("*t", mods:get_int("_reset_date"
 
 				if hours_left > 0 then
 					if hours_left == 6 then
-						ctf_report.send_report("[RANKING RESET] The queued ranking reset will happen in ~6 hours")
+						-- ctf_report.send_report("[RANKING RESET] The queued ranking reset will happen in ~6 hours")
 					elseif hours_left == 1 then
-						ctf_report.send_report("[RANKING RESET] The queued ranking reset will happen in 1 hour")
+						-- ctf_report.send_report("[RANKING RESET] The queued ranking reset will happen in 1 hour")
 
 						CHECK_INTERVAL = (61 - current.min) * 60
 
