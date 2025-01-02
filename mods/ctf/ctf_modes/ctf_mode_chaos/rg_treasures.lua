@@ -60,7 +60,7 @@ return {
 
 
 	{itemname = "ctf_ranged:pistol_loaded", chance = 20, amount = 1},
-    {itemname = "ctf_ranged:smg_loaded", chance = 5, amount = 1},
+    {itemname = "ctf_ranged:assault_rifle_loaded", chance = 5, amount = 1},
 
     {itemname = "ctf_map:unwalkable_dirt", chance = 20, amount = 5},
     {itemname = "ctf_map:unwalkable_stone", chance = 20, amount = 5},

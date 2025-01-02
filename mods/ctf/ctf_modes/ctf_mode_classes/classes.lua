@@ -17,7 +17,7 @@ local class_props = {
 		},
 		disallowed_items = {
 			"ctf_ranged:rifle",
-			"ctf_ranged:smg",
+			"ctf_ranged:assault_rifle",
 			"ctf_ranged:sniper_magnum",
 		},
 	},
@@ -32,7 +32,7 @@ local class_props = {
 		},
 		disallowed_items = {
 			"ctf_ranged:rifle",
-			"ctf_ranged:smg",
+			"ctf_ranged:assault_rifle",
 			"ctf_ranged:shotgun",
 			"ctf_melee:",
 			"ctf_ranged:sniper_magnum",

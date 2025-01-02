@@ -1,6 +1,6 @@
 local blacklist = {
-	"ctf_ranged:smg",
-	"ctf_ranged:smg_loaded",
+	"ctf_ranged:assault_rifle",
+	"ctf_ranged:assault_rifle_loaded",
 	"ctf_ranged:rifle",
 	"ctf_ranged:rifle_loaded",
 	"ctf_ranged:sniper_magnum",

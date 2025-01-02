@@ -281,20 +281,20 @@ ctf_ranged.simple_register_gun("ctf_ranged:shotgun", {
 	fire_interval = 2,
 })
 
-ctf_ranged.simple_register_gun("ctf_ranged:smg", {
+ctf_ranged.simple_register_gun("ctf_ranged:assault_rifle", {
 	type = "smg",
-	description = "Submachinegun\nDmg: 1 | FR: 0.1s | Mag: 36",
-	texture = "ctf_ranged_smgun.png",
-	fire_sound = "ctf_ranged_pistol",
+	description = "Assault Rifle\nDmg: 1 | FR: 0.1s | Mag: 40",
+	texture = "ctf_ranged_assault_rifle.png",
+	fire_sound = "ctf_ranged_assault_rifle",
 	bullet = {
-		spread = 2,
+		spread = 1.5,
 	},
 	automatic = true,
-	rounds = 36,
-	range = 75,
+	rounds = 40,
+	range = 92,
 	damage = 1,
 	fire_interval = 0.1,
-	liquid_travel_dist = 2,
+	liquid_travel_dist = 10,
 })
 
 ctf_ranged.simple_register_gun("ctf_ranged:sniper", {
