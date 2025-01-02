@@ -1,6 +1,9 @@
 do
-	local day, month = os.date("*t").day, os.date("*t").month
-	if month > 1 or (month == 1 and day >= 3) then return end
+    local date = os.date("*t")
+    local day, month = date.day, date.month
+    if not ((month == 12 and day >= 31) or (month == 1 and day <= 2)) then
+        return
+    end
 end
 
 fireworks = {
