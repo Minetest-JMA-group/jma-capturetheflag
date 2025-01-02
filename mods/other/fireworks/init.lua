@@ -1,7 +1,7 @@
 do
     local date = os.date("*t")
     local day, month = date.day, date.month
-    if not ((month == 12 and day >= 31) or (month == 1 and day <= 2)) then
+    if not ((month == 12 and day >= 31) or (month == 1 and day <= 1)) then
         return
     end
 end
