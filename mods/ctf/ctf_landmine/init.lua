@@ -112,11 +112,11 @@ minetest.register_node("ctf_landmine:landmine", {
 	groups = {cracky=1, level=2},
 	node_box = {
 		type = "fixed",
-		fixed = {-0.5, -0.5, -0.5, 0.5, -0.4, 0.5},
+		fixed = {-0.4375, -0.5000, -0.4375, 0.4375, -0.4750, 0.4375}
 	},
 	selection_box = {
 		type = "fixed",
-		fixed = {-0.5, -0.5, -0.5, 0.5, -0.4, 0.5},
+		fixed = {-0.4375, -0.5000, -0.4375, 0.4375, -0.4750, 0.4375}
 	},
     on_place = function(itemstack, placer, pointed_thing)
 		local pteam = ctf_teams.get(placer:get_player_name())
