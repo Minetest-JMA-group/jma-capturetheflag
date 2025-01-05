@@ -118,6 +118,27 @@ minetest.register_node("ctf_landmine:landmine", {
 		type = "fixed",
 		fixed = {-0.5, -0.5, -0.5, 0.5, -0.4, 0.5},
 	},
+    on_place = function(itemstack, placer, pointed_thing)
+		local pteam = ctf_teams.get(placer:get_player_name())
+
+		if pteam then
+			for flagteam, team in pairs(ctf_map.current_map.teams) do
+				if pteam ~= flagteam and not ctf_modebase.flag_captured[flagteam] and team.flag_pos then
+					local distance_from_flag = vector.distance(placer:get_pos(), team.flag_pos)
+					if distance_from_flag < 15 then -- block landmine placement when closer than 15 nodes to the enemy flag
+						hud_events.new(placer:get_player_name(), {
+							text = "You can't place landmine so close to a flag",
+							color = "warning",
+							quick = true,
+						})
+						return nil
+					end
+				end
+			end
+		end
+
+		return minetest.item_place(itemstack, placer, pointed_thing)
+	end,
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
 		local meta = minetest.get_meta(pos)
 		local name = placer:get_player_name()
