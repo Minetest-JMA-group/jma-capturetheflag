@@ -79,9 +79,8 @@ function random_messages.read_messages()
 		"Use /b to translate the last message to your preferred language",
 		"Want to send a nice welcoming message with the 8 score gift? Use /wb <mode:technical modename> <playername>",
 		"To report a player sending inappropriate private messages to you, use /report playername PM",
-"The chaos mode is active on weekends only.",
+		"The chaos mode is active on weekends only.",
 		"Use /change_vote <questionID> to change your vote on the poll. Check question ID with /list_questions",
-		"Join our special relay bot running on XMPP/Jabber at jmactf_relay@muc.nixnet.services"
 	}
 end
 
