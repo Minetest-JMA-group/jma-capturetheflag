@@ -15,6 +15,7 @@ local HUD_COLORS = {
 	danger = 0xDC3545,
 	light = 0xF8F9FA,
 	dark = 0x212529,
+	gray = 0x808080
 }
 
 local hud_queues = {

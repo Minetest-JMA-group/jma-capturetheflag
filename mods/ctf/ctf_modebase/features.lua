@@ -210,6 +210,58 @@ local function is_pro(player, rank)
 	end
 end
 
+local function flag_event_notify(pname, pteam, flags_taken, to_player_msg, to_teammates_msg, to_victims_msg, to_others_msg)
+	if flags_taken and type(flags_taken) == "string" then
+		flags_taken = {flags_taken}
+	end
+
+	local function send_notify(target, def)
+		if ctf_settings.get(PlayerObj(target), "ctf_modebase:flag_notifications") == "true" then
+			hud_events.new(target, def)
+		end
+	end
+
+	if to_player_msg then
+		send_notify(pname, {
+			text = to_player_msg.text,
+			color = to_player_msg.color or "info",
+			quick = true,
+		})
+	end
+
+	for team, tctx in pairs(ctf_teams.online_players) do
+		for teammate in pairs(tctx.players) do
+			if teammate ~= pname then
+				if team == pteam then
+					send_notify(teammate, {
+						text = to_teammates_msg.text,
+						color = to_teammates_msg.color or "info",
+						quick = true,
+					})
+				elseif to_victims_msg and table.indexof(flags_taken, team) ~= -1 then
+					send_notify(teammate, {
+						text = to_victims_msg.text,
+						color = to_victims_msg.color or "warning",
+						quick = true,
+					})
+				else
+					send_notify(teammate, {
+						text = to_others_msg.text,
+						color = to_others_msg.color or "warning",
+						quick = true,
+					})
+				end
+			end
+		end
+	end
+end
+
+ctf_settings.register("ctf_modebase:flag_notifications", {
+	type = "bool",
+	label = "Show flag event messages",
+	description = "Toggle visibility of HUD messages about flag-related events",
+	default = "true",
+})
 
 ctf_settings.register("ctf_modebase:teammate_nametag_style", {
 	type = "list",
@@ -318,10 +370,10 @@ local function tp_player_near_flag(player)
 	if not tname then return end
 
 	local random_off = {x = 0, y = -0.5, z = 0}
-    repeat
+	repeat
 		random_off.x = math.random(-1, 1)
 		random_off.z = math.random(-1, 1)
-    until random_off.x ~= 0 or random_off.z ~= 0
+	until random_off.x ~= 0 or random_off.z ~= 0
 
 	local pos = vector.add(ctf_map.current_map.teams[tname].flag_pos, random_off)
 
@@ -709,9 +761,19 @@ return {
 		playertag.set(player, playertag.TYPE_BUILTIN, tcolor)
 
 		local text = " has taken the flag"
+		local flag_or_flags = " flag!"
+		local teamnames_readable = HumanReadable(teamname)
 		if many_teams then
-			text = " has taken " .. HumanReadable(teamname) .. "'s flag"
+			text = " has taken " .. teamnames_readable .. "'s flag"
+			flag_or_flags = " flags!"
 		end
+
+		flag_event_notify(pname, pteam, teamname,
+			{text = "You have taken the " .. teamnames_readable .. flag_or_flags},
+			{text = "Your teammate " .. pname .. " has taken the " .. teamnames_readable .. flag_or_flags},
+			{text = pname .. " has taken your flag!", color = "warning"},
+			{text = pname .. text, color = "light"}
+		)
 
 		minetest.chat_send_all(
 			minetest.colorize(tcolor, pname) ..
@@ -730,9 +792,18 @@ return {
 		local tcolor = pteam and ctf_teams.team[pteam].color or "#FFF"
 
 		local text = " has dropped the flag"
+		local teamnames_notify = "Your teammate " .. pname .. text
 		if many_teams then
 			text = " has dropped the flag of team(s) " .. HumanReadable(teamnames)
+			teamnames_notify = "Your teammate " .. pname .. text
 		end
+
+		flag_event_notify(pname, pteam, teamnames,
+			nil,
+			{text = teamnames_notify, color = "light"},
+			{text = pname .. " has dropped your flag!", color = "success"},
+			{text = pname .. text, color = "light"}
+		)
 
 		minetest.chat_send_all(
 			minetest.colorize(tcolor, pname) ..
@@ -774,10 +845,20 @@ return {
 		end
 
 		local text = string.format(" has captured the flag in " .. ctf_map.get_duration() .. " and got %d points", capture_reward)
+		local teamnames_readable = HumanReadable(teamnames)
+		local flag_or_flags = " flag!"
 		if many_teams then
 			text = string.format(" has captured the flag of team(s) %s in " .. ctf_map.get_duration() .. " and got %d points",
-				HumanReadable(teamnames), capture_reward)
+				teamnames_readable, capture_reward)
+			flag_or_flags = " flags!"
 		end
+
+		flag_event_notify(pname, pteam, teamnames,
+			{text = "You have captured: " .. teamnames_readable .. flag_or_flags, color = "success"},
+			{text = "Your teammate " .. pname .. " has captured: " .. teamnames_readable .. flag_or_flags, color = "success"},
+			{text = pname .. " has captured your flag!", color = "warning"},
+			{text = pname .. " has captured: " .. teamnames_readable .. flag_or_flags, color = "light"}
+		)
 
 		minetest.chat_send_all(minetest.colorize(tcolor, pname) .. minetest.colorize(FLAG_MESSAGE_COLOR, text))
 
@@ -911,7 +992,7 @@ return {
 		local rank = rankings:get(pname)
 
 		local deny_pro = "You need to have more than 1.4 kills per death, "..
-		                 "5 captures, and at least 8,000 score to access the pro section."
+						 "5 captures, and at least 8,000 score to access the pro section."
 		if rank then
 			local captures_needed = math.max(0, 5 - (rank.flag_captures or 0))
 			local score_needed = math.max(math.max(0, 8000 - (rank.score or 0)))
