@@ -879,9 +879,9 @@ return {
 		if streak_idx then
 			local streak_bonus = 0
 			if streak_bonus_received[pname] then
-				streak_bonus = math.floor(math.abs(streak_bonus_received[pname] - streak_idx * 10))
+				streak_bonus = math.floor(math.abs(streak_bonus_received[pname] - streak_idx * 20))
 			else
-				streak_bonus = math.floor(streak_idx * 10)
+				streak_bonus = math.floor(streak_idx * 20)
 			end
 			streak_bonus_received[pname] = streak_bonus
 
