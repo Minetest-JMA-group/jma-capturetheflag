@@ -611,6 +611,10 @@ return {
 			minetest.after(math.abs(LOADING_SCREEN_TARGET_TIME - total_time), function()
 				hud:clear_all()
 				set_playertags_state(PLAYERTAGS_ON)
+
+				for _, player in ipairs(minetest.get_connected_players()) do
+					minetest.close_formspec(player:get_player_name(), "ctf_modebase:summary")
+				end
 			end)
 		end
 
