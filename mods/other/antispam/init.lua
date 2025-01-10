@@ -1,141 +1,184 @@
--- SPDX-License-Identifier: GPL-3.0-or-later
--- Copyright (c) 2025 astra0081. (partake-kudos-only@duck.com)
--- Inspired from antispam mod by appgurueu (https://github.com/appgurueu/antispam)
 
-local PLAYERS_MSG = {}
-local PLAYERS_FREQ = {}
-local PLAYER_KICKS = {}
+--[[
+    Anti-Spam mod for Minetest
+    SPDX-License-Identifier: GPL-3.0-or-later
+    Copyright (c) 2025 astra0081X (partake-kudos-only@duck.com)
+    Current Date and Time (UTC): 2025-01-10 11:09:06)
+--]]
 
-local SPAM_SPEED = 5
-local SPAM_SPEED_MSECS = SPAM_SPEED * 1e6
-local SPAM_WARN = 3
-local SPAM_KICK = SPAM_WARN + 4
-local SPAM_MUTE_AFTER_KICKS = 2
-local RESET_TIME = 30
-local WARNING_COLOR = minetest.get_color_escape_sequence("#FFBB33")
-local MUTE_TIME = 60*10
+-- Player data storage
+local players = {}
 
-local function init_player_state(player_name)
-    if not PLAYER_KICKS[player_name] then PLAYER_KICKS[player_name] = 0 end
-    if not PLAYERS_MSG[player_name] then PLAYERS_MSG[player_name] = {} end
-    if not PLAYERS_FREQ[player_name] then
-        PLAYERS_FREQ[player_name] = {0, 0, minetest.get_us_time(), 0}
+-- Default settings
+local MIN_TIME_BETWEEN_MESSAGES = 5  -- Minimum seconds between messages
+local MIN_TIME_BETWEEN_MESSAGES_USEC = MIN_TIME_BETWEEN_MESSAGES * 1e6
+local MESSAGES_BEFORE_WARN = 6  -- Messages before first warning
+local WARNS_BEFORE_MUTE = 3     -- Number of warnings before mute
+local MESSAGE_RESET_TIME = 30    -- Seconds until message count resets
+local MESSAGE_RESET_TIME_USEC = MESSAGE_RESET_TIME * 1e6
+local MUTE_DURATION = 600        -- 10 minutes mute duration
+
+-- Color scheme
+local COLORS = {
+    WARNING = core.get_color_escape_sequence"#FFBB33",
+    SUCCESS = core.get_color_escape_sequence"#44FF44",
+    ERROR = core.get_color_escape_sequence"#FF5555",
+    TITLE = core.get_color_escape_sequence"#55CCFF",
+    TEXT = core.get_color_escape_sequence"#FFFFFF",
+    VALUE = core.get_color_escape_sequence"#FFFF55"
+}
+
+-- Cleanup player data on leave
+core.register_on_leaveplayer(function(player)
+    players[player:get_player_name()] = nil
+end)
+
+local function mute_player(name)
+    local expires = os.time() + MUTE_DURATION
+    local ok = xban.mute_player(name, "Antispam", expires, "Muted for spamming")
+    
+    if ok then
+        core.log("action", string.format("[Antispam] Player %s muted for %d minutes", name, MUTE_DURATION/60))
+    else
+        core.log("action", string.format("[Antispam] Failed to mute player %s", name))
     end
+    
+    players[name] = nil
 end
 
-local function increment_spam_counter(name)
-    PLAYER_KICKS[name] = PLAYER_KICKS[name] + 1
-    if PLAYER_KICKS[name] >= SPAM_MUTE_AFTER_KICKS then
-        local expires = os.time() + MUTE_TIME
-        local ok, e = xban.mute_player(name, "Antispam", expires, "Muted for spamming")
-
-        if ok then
-            minetest.log("action", string.format("[Antispam] Player %s muted for %d minutes due to spam", name, MUTE_TIME/60))
-        else
-            minetest.log("action", string.format("[Antispam] Failed to mute player %s: %s", name, e))
-        end
-
-        -- Reset player data after get muted
-        PLAYER_KICKS[name] = nil
-        PLAYERS_MSG[name] = nil
-        PLAYERS_FREQ[name] = nil
-        init_player_state(name)
-        return true
-    else
-        minetest.kick_player(name, "Kicked for spamming.")
-        minetest.log("action", "[Antispam] Player " .. name .. " kicked for spamming.")
-        return false
+-- Chat message handler
+core.register_on_chat_message(function(name, message)
+    local current_time = core.get_us_time()
+    
+    -- Initialize player data if not exists
+    if not players[name] then
+        players[name] = {
+            messages = {},
+            message_count = 0,
+            last_message_time = 0,
+            warning_count = 0,
+            last_warning_time = 0
+        }
     end
-end
+    
+    local player = players[name]
+    local time_since_last = current_time - player.last_message_time
 
-local function handle_message(name, message)
-    local current_time = minetest.get_us_time()
-
-    if PLAYERS_MSG[name][message] then
-        local message_info = PLAYERS_MSG[name][message]
-        message_info[1] = message_info[1] + 1
-        message_info[2] = current_time
-
-        if message_info[1] >= SPAM_KICK then
-            if increment_spam_counter(name) then
-                return true  -- Player is muted, stop further processing
-            end
-        elseif message_info[1] >= SPAM_WARN then
-            minetest.chat_send_player(name, WARNING_COLOR .. "Warning! You've sent the message '" .. message .. "' too often. Wait at least " .. RESET_TIME .. " seconds before sending it again.")
+    -- Clean old messages
+    for msg, time in pairs(player.messages) do
+        if current_time - time >= MESSAGE_RESET_TIME_USEC then
+            player.messages[msg] = nil
+            player.message_count = player.message_count - 1
         end
-    else
-        PLAYERS_MSG[name][message] = {1, current_time}
     end
 
-    local player_freq = PLAYERS_FREQ[name]
-    local speed = (player_freq[1] * player_freq[2] + (current_time - player_freq[3])) / (player_freq[2] + 1)
+    -- Reset warning count if enough time has passed
+    if current_time - player.last_warning_time >= MESSAGE_RESET_TIME_USEC then
+        player.warning_count = 0
+    end
 
-    if player_freq[2] >= SPAM_WARN then
-        if player_freq[4] + 1 >= SPAM_KICK - SPAM_WARN then
-            if increment_spam_counter(name) then
+    -- Check message frequency
+    if time_since_last < MIN_TIME_BETWEEN_MESSAGES_USEC then
+        player.message_count = player.message_count + 1
+        
+        if player.message_count > MESSAGES_BEFORE_WARN then
+            player.warning_count = player.warning_count + 1
+            player.last_warning_time = current_time
+            
+            if player.warning_count >= WARNS_BEFORE_MUTE then
+                mute_player(name)
                 return true
             end
-        elseif speed <= SPAM_SPEED_MSECS then
-            minetest.chat_send_player(name, WARNING_COLOR .. "Warning! You're sending messages too fast. Wait at least " .. SPAM_SPEED .. " seconds.")
-            player_freq[4] = player_freq[4] + 1
-            player_freq[1] = SPAM_SPEED_MSECS
-            player_freq[2] = SPAM_WARN
-        else
-            player_freq[1] = 0
-            player_freq[2] = 0
-            player_freq[4] = 0
+            
+            core.chat_send_player(name, COLORS.WARNING .. 
+                string.format("[AntiSpam] Warning [%d/%d]: Please slow down! Wait %d seconds between messages.", 
+                    player.warning_count, WARNS_BEFORE_MUTE, MIN_TIME_BETWEEN_MESSAGES))
         end
+    else
+        player.message_count = 1
     end
 
-    PLAYERS_FREQ[name] = {player_freq[1], player_freq[2] + 1, current_time, player_freq[4]}
+    -- Store message data
+    player.messages[message] = current_time
+    player.last_message_time = current_time
 
     return false
-end
+end)
 
-minetest.register_chatcommand("antispam", {
-    params = "<option> <value>",
-    description = "Change spam settings: <option> can be 'speed', 'warn', 'kick', or 'mute_threshold'. <value> is the new value for that option.",
-    privs = {server = true},
+-- Chat command for configuration
+core.register_chatcommand("antispam", {
+    description = "Configure anti-spam settings",
+    params = "<setting> <value>",
+    privs = {filtering = true},
     func = function(name, param)
-        local argv = param:split(" ")
-        if #argv ~= 2 then
-            return false, "Invalid parameters. Usage: /antispam <option> <value>"
+        local option, value = param:match("^(%S+)%s+(%d+)$")
+        
+        if not option or not value then
+            local help = {
+                COLORS.TITLE .. "Anti-Spam Settings",
+                COLORS.TEXT .. "â¢ speed: " .. COLORS.VALUE .. "Seconds between messages " .. 
+                    COLORS.TEXT .. "(default: " .. COLORS.VALUE .. MIN_TIME_BETWEEN_MESSAGES .. COLORS.TEXT .. ")",
+                COLORS.TEXT .. "â¢ warn: " .. COLORS.VALUE .. "Messages before warning " ..
+                    COLORS.TEXT .. "(default: " .. COLORS.VALUE .. MESSAGES_BEFORE_WARN .. COLORS.TEXT .. ")",
+                COLORS.TEXT .. "â¢ mute: " .. COLORS.VALUE .. "Warnings before mute " ..
+                    COLORS.TEXT .. "(default: " .. COLORS.VALUE .. WARNS_BEFORE_MUTE .. COLORS.TEXT .. ")",
+                COLORS.TEXT .. "â¢ reset: " .. COLORS.VALUE .. "Seconds until warnings reset " ..
+                    COLORS.TEXT .. "(default: " .. COLORS.VALUE .. MESSAGE_RESET_TIME .. COLORS.TEXT .. ")",
+                "",
+                COLORS.TITLE .. "Usage: " .. COLORS.TEXT .. "/antispam <setting> <value>"
+            }
+            return false, table.concat(help, "\n")
         end
 
-        local option = argv[1]
-        local value = tonumber(argv[2])
-
-        if not value then
-            return false, "Invalid value. Please provide a valid number."
+        value = tonumber(value)
+        if not value or value < 1 then
+            return false, COLORS.ERROR .. "Error: Value must be positive!"
         end
 
-        if option == "limit" then
-            SPAM_SPEED = value
-            SPAM_SPEED_MSECS = SPAM_SPEED * 1e6
-        elseif option == "warn" then
-            SPAM_WARN = value
-            SPAM_KICK = SPAM_WARN + 4
-        elseif option == "mute_threshold" then
-            SPAM_MUTE_AFTER_KICKS = value
+        local options = {
+            speed = {
+                update = function(v) 
+                    MIN_TIME_BETWEEN_MESSAGES = v
+                    MIN_TIME_BETWEEN_MESSAGES_USEC = v * 1e6
+                end,
+                name = "Message speed",
+                desc = "seconds between messages"
+            },
+            warn = {
+                update = function(v) 
+                    MESSAGES_BEFORE_WARN = v
+                end,
+                name = "Warning threshold",
+                desc = "messages before warning"
+            },
+            mute = {
+                update = function(v) 
+                    WARNS_BEFORE_MUTE = v
+                end,
+                name = "Warnings before mute",
+                desc = "warnings before mute"
+            },
+            reset = {
+                update = function(v) 
+                    MESSAGE_RESET_TIME = v
+                    MESSAGE_RESET_TIME_USEC = v * 1e6
+                end,
+                name = "Reset time",
+                desc = "seconds until reset"
+            }
+        }
+
+        local handler = options[option]
+        if handler then
+            local ok, err = handler.update(value)
+            if ok == false then
+                return false, COLORS.ERROR .. "Error: " .. err
+            end
+            return true, COLORS.SUCCESS .. "[Anti-Spam] " .. COLORS.TEXT .. 
+                        "Updated " .. COLORS.VALUE .. handler.name .. COLORS.TEXT ..
+                        " to " .. COLORS.VALUE .. value .. " " .. COLORS.TEXT .. handler.desc
         else
-            return false, "Invalid option. Available options: speed, warn, kick, mute_threshold."
+            return false, COLORS.ERROR .. "Error: Invalid setting! Use /antispam for help."
         end
-
-        return true, minetest.colorize("#FF0000", "[Antispam] ") .. minetest.colorize("#00FF00", "Option " .. option .. " set to " .. value)
     end
 })
-
-minetest.register_on_leaveplayer(function(player)
-    local pname = player:get_player_name()
-    PLAYERS_MSG[pname] = nil
-    PLAYERS_FREQ[pname] = nil
-end)
-
-minetest.register_on_joinplayer(function(player)
-    local pname = player:get_player_name()
-    init_player_state(pname)
-end)
-
-minetest.register_on_chat_message(function(name, message)
-    handle_message(name, message)
-end)
