@@ -66,6 +66,15 @@ local function handle_message(name, message)
     else
         PLAYERS_MSG[name][message] = {1, current_time}
     end
+	if not PLAYERS_FREQ[name] then
+        PLAYERS_FREQ[name] = {
+			0,
+			0,
+			minetest.get_us_time(),
+			0
+		}
+        return
+    end
 
     local player_freq = PLAYERS_FREQ[name]
     local speed = (player_freq[1] * player_freq[2] + (current_time - player_freq[3])) / (player_freq[2] + 1)
