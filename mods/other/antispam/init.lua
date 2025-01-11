@@ -36,7 +36,7 @@ local function mute_player(name)
     local ok = xban.mute_player(name, "Antispam", expires, "Automatically muted by system, reason: Spamming. Please notify the server staff if you have been falsely muted.")
 
     if ok then
-        core.log("action", string.format("[Antispam] Player %s muted for spamming.", name))
+        core.log("action", string.format("[Antispam] Player %s muted for %d minutes.", name, MUTE_DURATION/60))
     else
         core.log("action", string.format("[Antispam] Failed to mute player %s", name))
     end
