@@ -152,6 +152,14 @@ minetest.register_node("ctf_landmine:landmine", {
 		if is_self_landmine(puncher, pos) == false then
 			landmine_explode(pos)
 		end
+	end,
+	on_destruct = function(pos)
+		for idx, pos_ in ipairs(landmines) do
+			if pos_ == pos then
+				table.remove(landmines, idx)
+				break
+			end
+		end
 	end
 })
 
