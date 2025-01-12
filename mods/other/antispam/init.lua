@@ -5,8 +5,8 @@
     Current Date and Time (UTC): 2025-01-11 14:22:05
 --]]
 
--- Initialize the players table as a global variable
-players = players or {}
+-- Initialize the antispam.players table as a global
+antispam = {players = {}}
 
 -- Default settings
 local MIN_TIME_BETWEEN_MESSAGES = 6  -- Minimum seconds between messages
@@ -28,7 +28,7 @@ local COLORS = {
 
 -- Cleanup player data on leave
 core.register_on_leaveplayer(function(player)
-    players[player:get_player_name()] = nil
+    antispam.players[player:get_player_name()] = nil
 end)
 
 local function mute_player(name)
@@ -40,17 +40,17 @@ local function mute_player(name)
     else
         core.log("action", string.format("[Antispam] Failed to mute player %s", name))
     end
-    
-    players[name] = nil
+
+    antispam.players[name] = nil
 end
 
 -- Chat message handler
 core.register_on_chat_message(function(name, message)
     local current_time = core.get_us_time()
-    
+
     -- Initialize player data if not exists
-    if not players[name] then
-        players[name] = {
+    if not antispam.players[name] then
+        antispam.players[name] = {
             messages = {},
             repeated_messages = {},
             message_count = 0,
@@ -59,8 +59,8 @@ core.register_on_chat_message(function(name, message)
             last_warning_time = 0
         }
     end
-    
-    local player = players[name]
+
+    local player = antispam.players[name]
     local time_since_last = current_time - player.last_message_time
 
     -- Clean old messages (frequency check)
@@ -86,18 +86,18 @@ core.register_on_chat_message(function(name, message)
     -- Check message frequency
     if time_since_last < MIN_TIME_BETWEEN_MESSAGES_USEC then
         player.message_count = player.message_count + 1
-        
+
         if player.message_count >= MESSAGES_BEFORE_WARN then
             player.warning_count = player.warning_count + 1
             player.last_warning_time = current_time
-            
+
             if player.warning_count >= WARNS_BEFORE_MUTE then
                 mute_player(name)
                 return true
             end
-            
-            core.chat_send_player(name, COLORS.WARNING .. 
-                string.format("[AntiSpam] Warning [%d/%d]: Please slow down! Wait %d seconds between messages.", 
+
+            core.chat_send_player(name, COLORS.WARNING ..
+                string.format("[AntiSpam] Warning [%d/%d]: Please slow down! Wait %d seconds between messages.",
                     player.warning_count, WARNS_BEFORE_MUTE, MIN_TIME_BETWEEN_MESSAGES))
         end
     else
@@ -113,14 +113,14 @@ core.register_on_chat_message(function(name, message)
         if msg_data.count >= MESSAGES_BEFORE_WARN then
             player.warning_count = player.warning_count + 1
             player.last_warning_time = current_time
-            
+
             if player.warning_count >= WARNS_BEFORE_MUTE then
                 mute_player(name)
                 return true
             end
-            
-            core.chat_send_player(name, COLORS.WARNING .. 
-                string.format("[AntiSpam] Warning [%d/%d]: Please avoid repeating the same message. Wait %d seconds.", 
+
+            core.chat_send_player(name, COLORS.WARNING ..
+                string.format("[AntiSpam] Warning [%d/%d]: Please avoid repeating the same message. Wait %d seconds.",
                     player.warning_count, WARNS_BEFORE_MUTE, MESSAGE_RESET_TIME))
         end
     else
@@ -144,11 +144,11 @@ core.register_chatcommand("antispam", {
     privs = {server = true},
     func = function(name, param)
         local option, value = param:match("^(%S+)%s+(%d+)$")
-        
+
         if not option or not value then
             local help = {
                 COLORS.TITLE .. "Anti-Spam Settings",
-                COLORS.TEXT .. "• speed: " .. COLORS.VALUE .. "Seconds between messages " .. 
+                COLORS.TEXT .. "• speed: " .. COLORS.VALUE .. "Seconds between messages " ..
                     COLORS.TEXT .. "(default: " .. COLORS.VALUE .. "6" .. COLORS.TEXT .. ")",
                 COLORS.TEXT .. "• warn: " .. COLORS.VALUE .. "Messages before warning " ..
                     COLORS.TEXT .. "(default: " .. COLORS.VALUE .. "6" .. COLORS.TEXT .. ")",
@@ -171,7 +171,7 @@ core.register_chatcommand("antispam", {
 
         local options = {
             speed = {
-                update = function(v) 
+                update = function(v)
                     MIN_TIME_BETWEEN_MESSAGES = v
                     MIN_TIME_BETWEEN_MESSAGES_USEC = v * 1e6
                 end,
@@ -179,17 +179,17 @@ core.register_chatcommand("antispam", {
                 desc = "seconds between messages"
             },
             warn = {
-                update = function(v) 
+                update = function(v)
                     MESSAGES_BEFORE_WARN = v
                 end,
                 name = "warning threshold",
                 desc = "messages before warning"
             },
             mute = {
-                update = function(v) 
+                update = function(v)
                     WARNS_BEFORE_KICK = v
                 end,
-                name = "warnings before mute", 
+                name = "warnings before mute",
                 desc = "warnings before mute"
             },
             duration = {
@@ -200,7 +200,7 @@ core.register_chatcommand("antispam", {
                 desc = "minutes"
             },
             reset = {
-                update = function(v) 
+                update = function(v)
                     MESSAGE_RESET_TIME = v
                     MESSAGE_RESET_TIME_USEC = v * 1e6
                 end,
@@ -212,7 +212,7 @@ core.register_chatcommand("antispam", {
         local handler = options[option]
         if handler then
             handler.update(value)
-            return true, COLORS.SUCCESS .. "[Anti-Spam] " .. COLORS.TEXT .. 
+            return true, COLORS.SUCCESS .. "[Anti-Spam] " .. COLORS.TEXT ..
                         "Updated " .. COLORS.VALUE .. handler.name .. COLORS.TEXT ..
                         " to " .. COLORS.VALUE .. value .. " " .. COLORS.TEXT .. handler.desc
         else
