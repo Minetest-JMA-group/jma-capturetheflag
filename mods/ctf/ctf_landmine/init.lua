@@ -62,7 +62,7 @@ local function landmine_explode(pos)
 		glow = 10
 	})
 
-	minetest.sound_play("grenades_explode", {
+	minetest.sound_play("ctf_landmine_explosion", {
 		pos = pos,
 		gain = 1.0,
 		max_hear_distance = 64,
