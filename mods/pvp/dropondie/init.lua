@@ -1,11 +1,18 @@
 dropondie = {}
 
-local function drop_list(pos, inv, list)
+local function drop_list(pos, vel, inv, list)
 	for _, item in ipairs(inv:get_list(list)) do
 		local obj = minetest.add_item(pos, item)
-
 		if obj then
-			obj:set_velocity({ x = math.random(-1, 1), y = 5, z = math.random(-1, 1) })
+			local random_velocity = {
+				x = math.random(-1, 1),
+				y = 5,
+				z = math.random(-1, 1)
+			}
+
+			local final_velocity = vector.add(vector.divide(vel, 2), random_velocity)
+
+			obj:set_velocity(final_velocity)
 		end
 	end
 
@@ -21,7 +28,7 @@ function dropondie.drop_all(player)
 	local pos = player:get_pos()
 	pos.y = math.floor(pos.y + 0.5)
 
-	drop_list(pos, player:get_inventory(), "main")
+	drop_list(pos, player:get_velocity(), player:get_inventory(), "main")
 end
 
 if ctf_core.settings.server_mode ~= "mapedit" then
