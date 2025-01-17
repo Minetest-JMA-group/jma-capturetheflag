@@ -1,3 +1,0 @@
-name = "pmcskin3d-steve",
-author = "Ottobunny",
-

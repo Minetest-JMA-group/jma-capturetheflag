@@ -1,2 +1,0 @@
-name = "Herobrine",
-author = "Player",

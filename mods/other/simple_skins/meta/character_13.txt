@@ -1,3 +1,0 @@
-name = "Black and White",
-author = "Kappasettes",
-

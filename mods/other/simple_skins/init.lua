@@ -1,320 +1,365 @@
-
--- Simple Skins mod for minetest
--- Adds a simple skin selector to the inventory by using
--- the default sfinv or inventory_plus when running.
--- Released by TenPlus1 and based on Zeg9's code under MIT license
+-- Enhanced Simple Skins mod for Luanti
+-- Provides a comprehensive skin management solution with support for private skin collections, compatibility with previous versions, and better inventory page.
+-- Remade by Nanowolf4 (n4w@tutanota.com), originally developed by TenPlus1 and Zeg9
+-- The code is licensed under the MIT license.
 
 -- Load support for translation.
-local S
+local S = core.get_translator("simple_skins")
+local storage = core.get_mod_storage()
 
-if minetest.get_translator ~= nil then
-	S = minetest.get_translator("simple_skins")
-else
-	if minetest.get_modpath("intllib") then
-		dofile(minetest.get_modpath("intllib").."/init.lua")
-		if intllib.make_gettext_pair then
-			gettext, ngettext = intllib.make_gettext_pair() -- new gettext method
-		else
-			gettext = intllib.Getter() -- old text file method
-		end
-		S = gettext
-	else -- boilerplate function
-		S = function(str, ...)
-			local args = {...}
-			return str:gsub("@%d", function(match)
-				return args[tonumber(match:sub(2))]
-			end)
-		end
-	end
-end
-
+local player_skin_key = "skin:%s"
+local player_collection_key = "player_collection:%s"
 
 skins = {
-	skins = {}, list = {}, meta = {}, formspec = {},
-	modpath = minetest.get_modpath("simple_skins"),
-	invplus = minetest.get_modpath("inventory_plus"),
-	unified_inventory = minetest.get_modpath("unified_inventory"),
-	default_skin_tab = false,
-	sfinv = minetest.get_modpath("sfinv"),
-	transparant_list = false,
-	id = 1,
-	file = minetest.get_worldpath() .. "/simple_skins.mt",
-	preview = true,
-	translate = S,
-	skin_limit = tonumber(minetest.settings:get("simple_skins_limit")) or 300
+    catalog = {},
+    max_skin_id = 0, -- Used to get the last Skin ID
+    skins = {},
+    default_skin = 6
 }
 
+local sorted_skin_ids_public = {}
+local player_collections = {}
 
--- check and use specific inventory
-if skins.unified_inventory then
-	skins.transparant_list = true
-	dofile(skins.modpath .. "/unified_inventory.lua")
+-- Load skin list and metadata
+do
+    local catalog = dofile(core.get_modpath("simple_skins") .. "/skins_list.lua")
+    if not catalog then
+        core.log("error", "[simple_skins] Failed to load skins list.")
+        catalog = {}
+    end
 
-elseif skins.invplus then
-	skins.transparant_list = true
-	dofile(skins.modpath .. "/inventory_plus.lua")
+    skins.catalog = catalog
 
-elseif skins.sfinv then
-	skins.default_skin_tab = not skins.invplus and not skins.unified_inventory
-	dofile(skins.modpath .. "/sfinv.lua")
+    -- Cache sorting for better performance
+    local sorted_skin_ids = {}
+    local i = 1
+    for skin_id, meta in pairs(catalog) do
+        if not meta.private then
+            sorted_skin_ids[i] = skin_id
+            skins.max_skin_id = i
+            i = i + 1
+        end
+    end
+
+    table.sort(sorted_skin_ids, function(a, b) return catalog[a].name < catalog[b].name end)
+    sorted_skin_ids_public = sorted_skin_ids
 end
 
-
--- load skin list and metadata
-local f, data, skin = 1
-
-while skins.id <= skins.skin_limit do
-
-	skin = "character_" .. skins.id
-
-	-- does skin file exist ?
-	f = io.open(skins.modpath .. "/textures/" .. skin .. ".png")
-
-	-- escape loop if not found and remove last entry
-	if not f then
-		skins.list[skins.id] = nil
-		skins.id = skins.id - 1
-		break
-	end
-
-	f:close()
-
-	table.insert(skins.list, skin)
-
-	-- does metadata exist for that skin file ?
-	f = io.open(skins.modpath .. "/meta/" .. skin .. ".txt")
-
-	if f then
-		data = minetest.deserialize("return {" .. f:read("*all") .. "}")
-		f:close()
-	end
-
-	-- add metadata to list
-	skins.meta[skin] = {
-		name = data and data.name and data.name:gsub("[%p%c]", "") or "",
-		author = data and data.author and data.author:gsub("[%p%c]", "") or ""
-	}
-
-	skins.id = skins.id + 1
+function skins.get_skin(name, skin_id)
+    skin_id = skin_id or skins.skins[name]
+    local catalog = skins.catalog
+    if skin_id and catalog[skin_id] then
+        if catalog[skin_id].texture then
+            return catalog[skin_id].texture
+        else -- Backward compatibility with the old simple skins
+            return "character_" .. tostring(skin_id) .. ".png"
+        end
+    end
+    return "character_6.png"
 end
 
+function skins.set_player_skin(name, skin_id)
+    if not skins.catalog[skin_id] then
+        return false, "Skin ID does not exist in the catalog."
+    end
 
--- load player skins file for backwards compatibility
-local input = io.open(skins.file, "r")
-local data = nil
+    if skins.skins[name] == skin_id then
+        return false, "Skin ID " .. skin_id .. " is already set"
+    end
 
-if input then
-	data = input:read("*all")
-	io.close(input)
+    skins.skins[name] = skin_id
+    skins.update_player_skin(core.get_player_by_name(name))
+
+    storage:set_int(player_skin_key:format(name), skin_id)
+
+    core.log("action", "[simple_skins] Skin ID " .. skin_id .. " set for player: " .. name)
+    return true, "Skin changed to ID " .. skin_id
 end
 
-if data and data ~= "" then
+function skins.get_player_collection(name)
+    local player_collection = player_collections[name]
+    if not player_collection then
+        local serialized = storage:get_string(player_collection_key:format(name))
 
-	local lines = string.split(data, "\n")
+        if serialized ~= "" then
+            player_collection = core.deserialize(serialized)
+            if not player_collection then
+                core.log("error", "[simple_skins] Failed to deserialize collection for player: " .. name)
+                player_collection = {}
+            end
+        else
+            player_collection = {}
+        end
 
-	for _, line in pairs(lines) do
-		data = string.split(line, " ", 2)
-		skins.skins[data[1]] = data[2]
-	end
+        -- Caching collections
+        player_collections[name] = player_collection
+    end
+
+    return player_collection
 end
 
+function skins.save_player_collection(name)
+    local player_collection = player_collections[name]
 
--- check for minetest 5.x compatibility
-local is_54 = minetest.has_feature("direct_velocity_on_players")
-local is_50 = minetest.has_feature("object_use_texture_alpha")
+    if type(player_collection) ~= "table" then
+        core.log("error", "[simple_skins] Failed to save collection for player: " .. name .. ". Invalid collection format " .. dump(player_collection))
+        return false
+    end
 
+    local serialized = core.serialize(player_collection)
+    storage:set_string(player_collection_key:format(name), serialized)
 
--- create formspec for skin selection page
-skins.formspec.main = function(name)
-
-	local formspec = "label[.5,2;" .. S("Select Player Skin:") .. "]"
-		.. "textlist[.5,2.5;6.8,6;skins_set;"
-
-	local meta
-	local selected = 1
-
-	for i = 1, #skins.list do
-
-		formspec = formspec .. skins.meta[ skins.list[i] ].name
-
-		if skins.skins[name] == skins.list[i] then
-			selected = i
-			meta = skins.meta[ skins.skins[name] ]
-		end
-
-		if i < #skins.list then
-			formspec = formspec ..","
-		end
-	end
-
-	if skins.transparant_list then
-		formspec = formspec .. ";" .. selected .. ";true]"
-	else
-		formspec = formspec .. ";" .. selected .. ";false]"
-	end
-
-	if meta then
-
-		if meta.name then
-			formspec = formspec .. "label[2,.5;" .. S("Name: ") .. meta.name .. "]"
-		end
-
-		if meta.author then
-			formspec = formspec .. "label[2,1;" .. S("Author: ") .. meta.author .. "]"
-		end
-	end
-
-	-- if preview enabled then add player model to formspec (5.4dev only)
-	if skins.preview == true and is_54 then
-
-		formspec = formspec .. "model[6,-0.2;1.5,3;player;character.b3d;"
-			.. skins.skins[name] .. ".png;0,180;false;true]"
-	end
-
-	return formspec
+    core.log("action", "[simple_skins] Collection saved for player: " .. name)
+    return true
 end
 
+function skins.add_skin_to_collection(name, skin_id)
+    local player_collection = skins.get_player_collection(name)
 
--- Read the image size from a PNG file. (returns width, height)
-local PNG_HDR = string.char(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
-local function read_image_size(filename)
+    if table.indexof(player_collection, skin_id) ~= -1 then
+        return false, "Skin ID already in the collection."
+    end
 
-	local f = io.open(filename, "rb")
+    table.insert(player_collection, skin_id)
+    player_collections[name] = player_collection
+    skins.save_player_collection(name)
 
-	if not f then return end
-
-	f:seek("set", 0x0)
-
-	local hdr = f:read(string.len(PNG_HDR))
-
-	if hdr ~= PNG_HDR then
-		f:close() ; return
-	end
-
-	f:seek("set", 0x13) ; local ws = f:read(1)
-	f:seek("set", 0x17) ; local hs = f:read(1)
-	f:close()
-
-	return ws:byte(), hs:byte()
+    core.log("action", "[simple_skins] Skin ID " .. skin_id .. " added to the collection of player: " .. name)
+    return true
 end
 
+function skins.remove_skin_from_collection(name, skin_id)
+    local player_collection = skins.get_player_collection(name)
 
-function skins.get_skin(name)
-	return skins.skins[name] and (skins.skins[name] .. ".png") or "character.png"
+    local index = table.indexof(player_collection, skin_id)
+    if index == -1 then
+        return false, "Skin ID not found in the collection."
+    end
+
+    table.remove(player_collection, index)
+    player_collections[name] = player_collection
+    skins.save_player_collection(name)
+
+    core.log("action", "[simple_skins] Skin ID " .. skin_id .. " removed from the collection of player: " .. name)
+    return true
 end
 
--- update player skin
-skins.update_player_skin = function(player)
+-- Update player skin
+local is_player_api_exists = core.global_exists("player_api")
+function skins.update_player_skin(player)
+    local name = player:get_player_name()
 
-	if not player then
-		return
-	end
-
-	local name = player:get_player_name()
-
-	if minetest.get_modpath("player_api") then
-		player_api.set_textures(player, {skins.get_skin(name)})
-	else
-		default.player_set_textures(player, {skins.get_skin(name)})
-	end
+    if is_player_api_exists then
+        player_api.set_textures(player, {skins.get_skin(name)})
+    else
+        default.player_set_textures(player, {skins.get_skin(name)})
+    end
 end
 
+-- Load player skin on join
+core.register_on_joinplayer(function(player)
+    local name = player:get_player_name()
+    if not name then return end
 
-skins.event_CHG = function(event, player)
+    -- Check for backward compatibility with Simple Skins
+    local meta = player:get_meta()
+    local old_skin = meta:get_string("simple_skins:skin")
+    if old_skin and old_skin ~= "" then
+        local skin_id = tonumber(old_skin:match("character_(%d+)"))
+        if skin_id then
+            skins.set_player_skin(name, skin_id)
+            core.log("action", "[simple_skins] Converted old skin data for player: " .. name .. " to skin ID " .. skin_id)
+        end
+        -- Purge the old attribute
+        meta:set_string("simple_skins:skin", "")
+    else
+        local skin_id = storage:get_int(player_skin_key:format(name))
+        -- Do we already have a skin in mod storage?
+        if skin_id and skin_id > 0 then
+            skins.skins[name] = skin_id
+        elseif not skins.skins[name] then
+            skins.skins[name] = skins.default_skin
+        end
+    end
 
-	local name = player:get_player_name()
-	local index = math.min(event.index, skins.id)
-
-	if not skins.list[index] then
-		return -- Do not update wrong skin number
-	end
-
-	skins.skins[name] = skins.list[index]
-	player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
-
-	if is_50 then
-
-		local meta = player:get_meta()
-
-		meta:set_string("simple_skins:skin", skins.skins[name])
-	else
-		player:set_attribute("simple_skins:skin", skins.skins[name])
-	end
-end
-
-
--- load player skin on join
-minetest.register_on_joinplayer(function(player)
-
-	local name = player:get_player_name() ; if not name then return end
-	local skin
-
-	if is_50 then
-
-		local meta = player:get_meta()
-
-		skin = meta:get_string("simple_skins:skin")
-	else
-		skin = player:get_attribute("simple_skins:skins")
-	end
-
-	-- do we already have a skin in player attributes?
-	if skin and skin ~= "" then
-		skins.skins[name] = skin
-
-	-- otherwise use skin from simple_skins.mt file or default if not set
-	elseif not skins.skins[name] then
-		skins.skins[name] = "character_6"
-	end
-
-	skins.update_player_skin(player)
+    skins.update_player_skin(player)
 end)
 
+sfinv.register_page("simple_skins:skins", {
+    title = S("Skins"),
+    on_enter = function(self, player, context)
+        context.skins = {show_player_collection = "false"}
+    end,
+    on_leave = function(self, player, context)
+        context.skins = nil
+    end,
+    get = function(self, player, context)
+        local sctx = context.skins
+        local formspec = "label[.5,2;" .. S("Select Player Skin:") .. "]"
+        .. "checkbox[.5,1.4;show_player_collection;" .. S("Show my collection") .. ";" .. sctx.show_player_collection .. "]"
+        .. "textlist[.5,2.5;6.8,6;skins_set;"
 
--- admin command to set player skin (usually for custom skins)
-minetest.register_chatcommand("setskin", {
-	params = "<player> <skin number>",
-	description = S("Admin command to set player skin"),
-	privs = {server = true},
-	func = function(name, param)
+        local name = player:get_player_name()
+        local meta
+        local selected = 1
+        local skins_list = sorted_skin_ids_public
+        if sctx.show_player_collection == "true" then
+            skins_list = skins.get_player_collection(name)
+            sctx.skins_list = skins_list
+        end
+        local skins_list_len = #skins_list
 
-		local playername, skin = string.match(param, "([^ ]+) (-?%d+)")
+        for i, skin_id in ipairs(skins_list) do
+            local skin_data = skins.catalog[skin_id]
+            formspec = formspec .. skin_data.name or "ID: " .. tostring(skin_id)
 
-		if not playername or not skin then
-			return false, S("** Insufficient or wrong parameters")
-		end
+            if skins.skins[name] == skin_id then
+                selected = i
+                meta = skin_data
+            end
 
-		local player = minetest.get_player_by_name(playername)
+            if i < skins_list_len then
+                formspec = formspec .. ","
+            end
+        end
 
-		if not player then
-			return false, S("** Player @1 not online!", playername)
-		end
+        formspec = formspec .. ";" .. selected .. ";false]"
 
-		-- this check is only used when custom skins aren't in use
---		if not skins.list[tonumber(skin)] then
---			return false, S("** Invalid skin number (max value is @1)", id)
---		end
+        if meta then
+            if meta.name then
+                formspec = formspec .. "label[2,.5;" .. S("Name: ") .. meta.name .. "]"
+            end
 
-		skins.skins[playername] = "character_" .. tonumber(skin)
+            if meta.author then
+                formspec = formspec .. "label[2,1;" .. S("Author: ") .. meta.author .. "]"
+            end
+        end
 
-		skins.update_player_skin(player)
+        formspec = formspec .. "model[6,-0.2;1.5,3;player;character.b3d;"
+            .. skins.get_skin(name) .. ";0,180;false;true]"
 
-		if is_50 then
+        return sfinv.make_formspec(player, context, formspec)
+    end,
+    on_player_receive_fields = function(self, player, context, fields)
+        -- Handle checkbox toggle for showing player collection or public skins
+        local sctx = context.skins
+        if fields.show_player_collection then
+            sctx.show_player_collection = fields.show_player_collection
+            return true, true
+        end
 
-			local meta = player:get_meta()
+        local event = core.explode_textlist_event(fields["skins_set"])
+        if event.type == "CHG" then
+            local name = player:get_player_name()
+            local skins_list = sorted_skin_ids_public
+            if sctx.show_player_collection == "true" then
+                skins_list = sctx.skins_list
+            end
+            local skin_id = skins_list[event.index]
+            if not skin_id or not skins.catalog[skin_id] then return true end
 
-			meta:set_string("simple_skins:skin", skins.skins[playername])
-		else
-			player:set_attribute("simple_skins:skin", skins.skins[playername])
-		end
+            skins.set_player_skin(name, skin_id)
 
-		minetest.chat_send_player(playername,
-				S("Your skin has been set to") .. " character_" .. skin)
-
-		return true, "** " .. playername .. S("'s skin set to")
-				.. " character_" .. skin .. ".png"
-	end,
+            -- Refresh the current page
+            return true, true
+        end
+    end,
 })
 
+core.register_chatcommand("skin_collection", {
+    params = "<add/remove/show> <skin_id> [player_name]",
+    description = "Manage a player's skin collection. Use 'add <skin_id>' to add a skin, 'remove <skin_id>' to remove a skin, or 'show' to view a player's collection.",
+    privs = {server = true},
+    func = function(name, param)
+        local args = string.split(param, " ")
 
-print ("[MOD] Simple Skins loaded")
+        if #args < 2 then
+            return false, "Invalid usage. Correct format: /skin_collection <add/remove/show> <skin_id> [player_name]"
+        end
+
+        local action = args[1]
+        local skin_id = tonumber(args[2])
+        local target_name = args[3] or name
+
+        if not skin_id and action ~= "show" then
+            return false, "Invalid skin ID. Please provide a numeric ID for add/remove actions."
+        end
+
+        local player = core.get_player_by_name(target_name)
+        if not player then
+            return false, "Player '" .. target_name .. "' not found or is not online."
+        end
+
+        if action == "add" then
+            local success, message = skins.add_skin_to_collection(target_name, skin_id)
+            if success then
+                return true, "Skin ID " .. skin_id .. " successfully added to " .. target_name .. "'s collection!"
+            else
+                return false, message
+            end
+        elseif action == "remove" then
+            local success, message = skins.remove_skin_from_collection(target_name, skin_id)
+            if success then
+                return true, "Skin ID " .. skin_id .. " successfully removed from " .. target_name .. "'s collection!"
+            else
+                return false, message
+            end
+        elseif action == "show" then
+            local collection = skins.get_player_collection(target_name)
+            if #collection == 0 then
+                return true, target_name .. " has no skins in their collection."
+            end
+            local collection_list = "Collection for " .. target_name .. ": "
+            for i, skin_id in ipairs(collection) do
+                local skin = skins.catalog[skin_id]
+                if skin then
+                    collection_list = collection_list .. skin.name .. " (ID: " .. skin_id .. "), "
+                end
+            end
+            return true, collection_list:sub(1, -3)
+        else
+            return false, "Invalid action. Use 'add' to add a skin, 'remove' to remove a skin, or 'show' to view a player's collection."
+        end
+    end,
+})
+
+core.register_chatcommand("set_skin", {
+    params = "<skin_id> [player_name]",
+    description = "Change the skin of a player. Specify a skin ID and optionally a player name.",
+    privs = {server = true},
+    func = function(name, param)
+        local args = string.split(param, " ")
+
+        if #args < 1 or #args > 2 then
+            return false, "Invalid usage. Correct format: /set_skin <skin_id> [player_name]"
+        end
+
+        local skin_id = tonumber(args[1])
+        if not skin_id then
+            return false, "Invalid skin ID. Please provide a numeric ID."
+        end
+
+        local target_name = args[2] or name
+        local success, message = skins.set_player_skin(target_name, skin_id)
+        return success, message
+    end,
+})
+
+minetest.register_chatcommand("skin_catalog", {
+    params = "",
+    description = "Show the entire catalog of skins.",
+    privs = {server = true},
+    func = function(name, _)
+        local msg_list = {"Skins Catalog:\n"}
+        for skin_id, skin_data in pairs(skins.catalog) do
+            table.insert(msg_list, "ID: " .. skin_id .. " " .. dump(skin_data):gsub("\n", ""))
+        end
+
+        -- Split the message into chunks if it exceeds 255 characters
+        for _, chunk in ipairs(minetest.wrap_text(msg_list, 255)) do
+            minetest.chat_send_player(name, chunk)
+        end
+
+        return true
+    end,
+})

@@ -59,6 +59,17 @@ function sfinv.make_formspec(player, context, content, show_inv, size)
 	return table.concat(tmp, "")
 end
 
+function sfinv.make_formspec_v7(player, context, content, show_inv, size)
+	local tmp = {
+		"formspec_version[7]",
+		size or "size[10.47,11.35]",
+		sfinv.get_nav_fs(player, context, context.nav_titles, context.nav_idx),
+		show_inv and theme_inv or "",
+		content
+	}
+	return table.concat(tmp, "")
+end
+
 function sfinv.get_homepage_name(player)
 	return "sfinv:crafting"
 end
@@ -183,7 +194,11 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 		-- Pass event to page
 		local page = sfinv.pages[context.page]
 		if page and page.on_player_receive_fields then
-			return page:on_player_receive_fields(player, context, fields)
+			local res, update = page:on_player_receive_fields(player, context, fields)
+			if update then
+				sfinv.set_player_inventory_formspec(player)
+			end
+			return res
 		end
 	end
 end)

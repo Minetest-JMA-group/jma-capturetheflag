@@ -1,2 +1,0 @@
-name = "Special OPS",
-author = "0Hi9l",

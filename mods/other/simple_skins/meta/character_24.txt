@@ -1,2 +1,0 @@
-name = "Koro Sensei",
-author = "0Hi9l",
