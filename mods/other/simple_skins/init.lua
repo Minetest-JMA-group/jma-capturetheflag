@@ -55,10 +55,10 @@ function skins.get_skin(name, skin_id)
             return "character_" .. tostring(skin_id) .. ".png"
         end
     end
-    return "character_6.png"
+    return "character_" .. skins.default_skin .. ".png"
 end
 
-function skins.set_player_skin(name, skin_id)
+function skins.set_player_skin(name, skin_id, no_save)
     if not skins.catalog[skin_id] then
         return false, "Skin ID does not exist in the catalog."
     end
@@ -70,9 +70,10 @@ function skins.set_player_skin(name, skin_id)
     skins.skins[name] = skin_id
     skins.update_player_skin(core.get_player_by_name(name))
 
-    storage:set_int(player_skin_key:format(name), skin_id)
+	if not no_save then
+    	storage:set_int(player_skin_key:format(name), skin_id)
+	end
 
-    core.log("action", "[simple_skins] Skin ID " .. skin_id .. " set for player: " .. name)
     return true, "Skin changed to ID " .. skin_id
 end
 
@@ -146,11 +147,16 @@ end
 
 -- Update player skin
 local is_player_api_exists = core.global_exists("player_api")
+local is_ctf_cosmetics_exists = core.global_exists("ctf_cosmetics")
 function skins.update_player_skin(player)
+	if not player then return end
     local name = player:get_player_name()
 
     if is_player_api_exists then
         player_api.set_textures(player, {skins.get_skin(name)})
+		if is_ctf_cosmetics_exists then
+			player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
+		end
     else
         default.player_set_textures(player, {skins.get_skin(name)})
     end
@@ -176,13 +182,16 @@ core.register_on_joinplayer(function(player)
         local skin_id = storage:get_int(player_skin_key:format(name))
         -- Do we already have a skin in mod storage?
         if skin_id and skin_id > 0 then
-            skins.skins[name] = skin_id
-        elseif not skins.skins[name] then
-            skins.skins[name] = skins.default_skin
+            skins.set_player_skin(name, skin_id, true)
         end
     end
+end)
 
-    skins.update_player_skin(player)
+minetest.register_on_leaveplayer(function(player)
+	local name = player:get_player_name()
+	if skins.skins[name] then
+		skins.skins[name] = nil
+	end
 end)
 
 sfinv.register_page("simple_skins:skins", {
@@ -285,10 +294,9 @@ core.register_chatcommand("skin_collection", {
             return false, "Invalid skin ID. Please provide a numeric ID for add/remove actions."
         end
 
-        local player = core.get_player_by_name(target_name)
-        if not player then
-            return false, "Player '" .. target_name .. "' not found or is not online."
-        end
+		if not core.player_exists(name) then
+			return false, "Player doesn't exist."
+		end
 
         if action == "add" then
             local success, message = skins.add_skin_to_collection(target_name, skin_id)
@@ -340,7 +348,12 @@ core.register_chatcommand("set_skin", {
         end
 
         local target_name = args[2] or name
-        local success, message = skins.set_player_skin(target_name, skin_id)
+
+		if not core.player_exists(target_name) then
+			return true, "Player doesn't exist."
+		end
+
+		local success, message = skins.set_player_skin(target_name, skin_id)
         return success, message
     end,
 })
