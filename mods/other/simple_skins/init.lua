@@ -298,7 +298,7 @@ sfinv.register_page("simple_skins:skins", {
 		local sctx = context.skins
 		if fields.show_player_collection then
 			sctx.show_player_collection = fields.show_player_collection
-			sctx.selected_skin_id = skins.skins[name]
+			sctx.selected_skin_id = skins.skins[player:get_player_name()]
 			return true, true
 		end
 

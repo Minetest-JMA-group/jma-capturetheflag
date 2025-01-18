@@ -94,5 +94,46 @@ return {
 	[24] = {
 		name = "Koro Sensei",
 		author = "0Hi9l"
-	}
+	},
+	[25] = {
+		name = "TheKing9000",
+		author = "TheKing9000",
+		texture = "character_1391.png",
+		private = true,
+	},
+	[26] = {
+		name = "nai309",
+		author = "TheKing9000",
+		texture = "character_1390.png",
+		private = true,
+	},
+	[27] = {
+		name = "joshua",
+		author = "juan",
+		texture = "character_2095.png",
+		private = true,
+	},
+	[28] = {
+		name = "Flower Girl",
+		author = "julito",
+		texture = "character_1028.png",
+		private = true,
+	},
+	[29] = {
+		name = "Blue Wolf-Girl",
+		author = "AuroreTheWolf",
+		texture = "character_1118.png",
+		private = true,
+	},
+	[30] = {
+		name = "sniper",
+		author = "ESPTeam",
+		texture = "character_1126.png",
+		private = true,
+	},
+	[31] = {
+		name = "Wolf!!!",
+		author = "Rin",
+		texture = "character_969.png",
+	},
 }
