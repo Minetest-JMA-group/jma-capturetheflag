@@ -232,20 +232,24 @@ end)
 sfinv.register_page("simple_skins:skins", {
 	title = S("Skins"),
 	on_enter = function(self, player, context)
-		context.skins = {show_player_collection = "false"}
+		-- Initialize context when entering the page
+		context.skins = {
+			show_player_collection = "false",
+			selected_skin_id = skins.skins[player:get_player_name()]
+		}
 	end,
 	on_leave = function(self, player, context)
+		-- Clear context when leaving the page
 		context.skins = nil
 	end,
 	get = function(self, player, context)
+		-- Build formspec for skin selection
 		local sctx = context.skins
 		local formspec = "label[.5,2;" .. S("Select Player Skin:") .. "]"
 		.. "checkbox[.5,1.4;show_player_collection;" .. S("Show my collection") .. ";" .. sctx.show_player_collection .. "]"
 		.. "textlist[.5,2.5;6.8,6;skins_set;"
 
 		local name = player:get_player_name()
-		local meta
-		local selected = 1
 		local skins_list = sorted_skin_ids_public
 		if sctx.show_player_collection == "true" then
 			skins_list = skins.get_player_collection(name)
@@ -253,14 +257,14 @@ sfinv.register_page("simple_skins:skins", {
 		end
 		local skins_list_len = #skins_list
 
+		local selected_index = 1
 		for i, skin_id in ipairs(skins_list) do
 			local skin_data = skins.catalog[skin_id]
 			if skin_data then
 				formspec = formspec .. skin_data.name or "ID: " .. tostring(skin_id)
 
-				if skins.skins[name] == skin_id then
-					selected = i
-					meta = skin_data
+				if skin_id == sctx.selected_skin_id then
+					selected_index = i
 				end
 
 				if i < skins_list_len then
@@ -269,8 +273,9 @@ sfinv.register_page("simple_skins:skins", {
 			end
 		end
 
-		formspec = formspec .. ";" .. selected .. ";false]"
+		formspec = formspec .. ";" .. tostring(selected_index) .. ";true]"
 
+		local meta = skins.catalog[sctx.selected_skin_id]
 		if meta then
 			if meta.name then
 				formspec = formspec .. "label[2,.5;" .. S("Name: ") .. meta.name .. "]"
@@ -282,7 +287,9 @@ sfinv.register_page("simple_skins:skins", {
 		end
 
 		formspec = formspec .. "model[6,-0.2;1.5,3;player;character.b3d;"
-			.. skins.get_skin(name) .. ";0,180;false;true]"
+		.. skins.get_skin(name, sctx.selected_skin_id) .. ";0,180;false;true]"
+		.. "button[.5,8.5;2,1;apply_skin;" .. S("Apply") .. "]"
+		.. "label[2,0;" .. S("Current Skin: ") .. skins.catalog[skins.skins[name]].name .. "]"
 
 		return sfinv.make_formspec(player, context, formspec)
 	end,
@@ -291,6 +298,7 @@ sfinv.register_page("simple_skins:skins", {
 		local sctx = context.skins
 		if fields.show_player_collection then
 			sctx.show_player_collection = fields.show_player_collection
+			sctx.selected_skin_id = skins.skins[name]
 			return true, true
 		end
 
@@ -304,9 +312,21 @@ sfinv.register_page("simple_skins:skins", {
 			local skin_id = skins_list[event.index]
 			if not skin_id or not skins.catalog[skin_id] then return true end
 
-			skins.set_player_skin(name, skin_id)
+			-- Save the current selection in the context
+			sctx.selected_skin_id = skin_id
 
 			-- Refresh the current page
+			return true, true
+		end
+
+		-- Apply the selected skin when "Apply" button is pressed
+		if fields.apply_skin then
+			local name = player:get_player_name()
+			local skin_id = sctx.selected_skin_id
+			if skin_id and skins.catalog[skin_id] then
+				skins.set_player_skin(name, skin_id)
+				core.chat_send_player(name, S("Your skin has been changed to: ") .. skins.catalog[skin_id].name)
+			end
 			return true, true
 		end
 	end,
