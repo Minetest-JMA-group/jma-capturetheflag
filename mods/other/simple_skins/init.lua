@@ -145,12 +145,41 @@ function skins.remove_skin_from_collection(name, skin_id)
 	return true
 end
 
+function skins.check_and_clean_player_collection(name)
+	local player_collection = skins.get_player_collection(name)
+	local valid_collection = {}
+	local collection_changed = false
+
+	for _, skin_id in ipairs(player_collection) do
+		if skins.catalog[skin_id] then
+			table.insert(valid_collection, skin_id)
+		else
+			collection_changed = true
+			core.log("action", "[simple_skins] Removed invalid skin ID " .. skin_id .. " from player: " .. name .. "'s collection.")
+		end
+	end
+
+	if collection_changed then
+		player_collections[name] = valid_collection
+		skins.save_player_collection(name)
+		core.chat_send_player(name, S("Error: Your skin collection contained invalid skins. They have been removed."))
+	end
+end
+
 -- Update player skin
 local is_player_api_exists = core.global_exists("player_api")
 local is_ctf_cosmetics_exists = core.global_exists("ctf_cosmetics")
 function skins.update_player_skin(player)
 	if not player then return end
 	local name = player:get_player_name()
+
+	-- is the current skin exist?
+	local skin_id = skins.skins[name]
+	if not skins.catalog[skin_id] then
+		core.chat_send_player(name, S("Error: Your current skin (ID:" .. dump(skin_id) .. ") is invalid. Applying default skin."))
+		skins.skins[name] = skins.default_skin
+		skin_id = skins.default_skin
+	end
 
 	if is_player_api_exists then
 		player_api.set_textures(player, {skins.get_skin(name)})
@@ -180,11 +209,17 @@ core.register_on_joinplayer(function(player)
 		meta:set_string("simple_skins:skin", "")
 	else
 		local skin_id = storage:get_int(player_skin_key:format(name))
+		skins.check_and_clean_player_collection(name)
+
 		-- Do we already have a skin in mod storage?
 		if skin_id and skin_id > 0 then
 			skins.set_player_skin(name, skin_id, true)
+		else
+			skins.skins[name] = skins.default_skin
 		end
 	end
+
+	skins.update_player_skin(player)
 end)
 
 minetest.register_on_leaveplayer(function(player)
@@ -220,15 +255,17 @@ sfinv.register_page("simple_skins:skins", {
 
 		for i, skin_id in ipairs(skins_list) do
 			local skin_data = skins.catalog[skin_id]
-			formspec = formspec .. skin_data.name or "ID: " .. tostring(skin_id)
+			if skin_data then
+				formspec = formspec .. skin_data.name or "ID: " .. tostring(skin_id)
 
-			if skins.skins[name] == skin_id then
-				selected = i
-				meta = skin_data
-			end
+				if skins.skins[name] == skin_id then
+					selected = i
+					meta = skin_data
+				end
 
-			if i < skins_list_len then
-				formspec = formspec .. ","
+				if i < skins_list_len then
+					formspec = formspec .. ","
+				end
 			end
 		end
 
