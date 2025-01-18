@@ -222,7 +222,7 @@ core.register_on_joinplayer(function(player)
 	skins.update_player_skin(player)
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local name = player:get_player_name()
 	if skins.skins[name] then
 		skins.skins[name] = nil
@@ -415,7 +415,7 @@ core.register_chatcommand("set_skin", {
 	end,
 })
 
-minetest.register_chatcommand("skin_catalog", {
+core.register_chatcommand("skin_catalog", {
 	params = "",
 	description = "Show the entire catalog of skins.",
 	privs = {server = true},
@@ -426,8 +426,8 @@ minetest.register_chatcommand("skin_catalog", {
 		end
 
 		-- Split the message into chunks if it exceeds 255 characters
-		for _, chunk in ipairs(minetest.wrap_text(msg_list, 255)) do
-			minetest.chat_send_player(name, chunk)
+		for _, chunk in ipairs(core.wrap_text(msg_list, 255)) do
+			core.chat_send_player(name, chunk)
 		end
 
 		return true
