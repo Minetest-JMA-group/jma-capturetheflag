@@ -227,6 +227,9 @@ core.register_on_leaveplayer(function(player)
 	if skins.skins[name] then
 		skins.skins[name] = nil
 	end
+	if player_collections[name] then
+		player_collections[name] = nil
+	end
 end)
 
 sfinv.register_page("simple_skins:skins", {
@@ -294,17 +297,18 @@ sfinv.register_page("simple_skins:skins", {
 		return sfinv.make_formspec(player, context, formspec)
 	end,
 	on_player_receive_fields = function(self, player, context, fields)
+		local name = player:get_player_name()
+
 		-- Handle checkbox toggle for showing player collection or public skins
 		local sctx = context.skins
 		if fields.show_player_collection then
 			sctx.show_player_collection = fields.show_player_collection
-			sctx.selected_skin_id = skins.skins[player:get_player_name()]
+			sctx.selected_skin_id = skins.skins[name]
 			return true, true
 		end
 
 		local event = core.explode_textlist_event(fields["skins_set"])
 		if event.type == "CHG" then
-			local name = player:get_player_name()
 			local skins_list = sorted_skin_ids_public
 			if sctx.show_player_collection == "true" then
 				skins_list = sctx.skins_list
@@ -321,7 +325,6 @@ sfinv.register_page("simple_skins:skins", {
 
 		-- Apply the selected skin when "Apply" button is pressed
 		if fields.apply_skin then
-			local name = player:get_player_name()
 			local skin_id = sctx.selected_skin_id
 			if skin_id and skins.catalog[skin_id] then
 				skins.set_player_skin(name, skin_id)
