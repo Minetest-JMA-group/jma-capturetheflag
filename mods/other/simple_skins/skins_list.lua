@@ -136,4 +136,10 @@ return {
 		author = "Rin",
 		texture = "character_969.png",
 	},
+	[32] = {
+		name = "Goku super saiyan blue",
+		author = "SamIsHere2012",
+		texture = "character_goku.png",
+		private = true,
+	},
 }
