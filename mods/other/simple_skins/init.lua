@@ -373,6 +373,7 @@ core.register_chatcommand("skin_collection", {
 				return false, message
 			end
 		elseif action == "show" then
+			target_name = args[2] or name
 			local collection = skins.get_player_collection(target_name)
 			if #collection == 0 then
 				return true, target_name .. " has no skins in their collection."
