@@ -87,6 +87,7 @@ end
 local function format_prefixes(name, pteam_color)
 	local rank_prefix = ""
 	local pro_prefix = ""
+	local clan_prefix = ""
 
 	local rank = ranks.get_player_prefix(name)
 	if rank then
@@ -98,7 +99,12 @@ local function format_prefixes(name, pteam_color)
 		pro_prefix = colorize(pteam_color, "[PRO]")
 	end
 
-	return joinStrings(pro_prefix, rank_prefix)
+	local clan = ctf_clans.get_chat_prefix(name)
+	if clan then
+		clan_prefix = colorize(clan.color, clan.prefix)
+	end
+
+	return joinStrings(pro_prefix, rank_prefix, clan_prefix)
 end
 
 -- Formatting chat messages
