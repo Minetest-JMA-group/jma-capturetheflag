@@ -210,7 +210,9 @@ function ctf_ranged.show_scope(name, item_name, fov_mult)
 
 	scoped[name] = {
 		item_name = item_name,
-		wielditem = player:hud_get_flags().wielditem
+		wielditem = player:hud_get_flags().wielditem,
+		hud = true,
+		physics_override = "ctf_ranged:scoping"
 	}
 
 	hud:add(player, "ctf_ranged:scope", {
@@ -222,10 +224,28 @@ function ctf_ranged.show_scope(name, item_name, fov_mult)
 	})
 
 	player:set_fov(1 / fov_mult, true)
-	physics.set(name, "sniper_rifles:scoping", { speed = 0.1, jump = 0 })
+	physics.set(name, "ctf_ranged:scoping", { speed = 0.1, jump = 0 })
 	player:hud_set_flags({ wielditem = false })
 
 end
+
+function ctf_ranged.show_shoulder_scope(name, item_name, fov_mult)
+    local player = minetest.get_player_by_name(name)
+    if not player then
+        return
+    end
+
+    scoped[name] = {
+        item_name = item_name,
+        wielditem = player:hud_get_flags().wielditem,
+		hud = false,
+		physics_override = "ctf_ranged:shoulder_scoping"
+    }
+
+    player:set_fov(1 / fov_mult, true)
+    physics.set(name, "ctf_ranged:shoulder_scoping", { speed = 0.5, jump = 0.5 })
+end
+
 
 function ctf_ranged.hide_scope(name)
 	local player = minetest.get_player_by_name(name)
@@ -233,9 +253,11 @@ function ctf_ranged.hide_scope(name)
 		return
 	end
 
-	hud:remove(name, "ctf_ranged:scope")
+	if scoped[name].hud then
+		hud:remove(name, "ctf_ranged:scope")
+	end
 	player:set_fov(0)
-	physics.remove(name, "sniper_rifles:scoping")
+	physics.remove(name, scoped[name].physics_override)
 	player:hud_set_flags({ wielditem = scoped[name].wielditem })
 	scoped[name] = nil
 end
@@ -283,18 +305,26 @@ ctf_ranged.simple_register_gun("ctf_ranged:shotgun", {
 
 ctf_ranged.simple_register_gun("ctf_ranged:assault_rifle", {
 	type = "smg",
-	description = "Assault Rifle\nDmg: 1 | FR: 0.1s | Mag: 40",
+	description = "Assault Rifle\nDmg: 2 | FR: 0.1s | Mag: 35",
 	texture = "ctf_ranged_assault_rifle.png",
 	fire_sound = "ctf_ranged_assault_rifle",
 	bullet = {
 		spread = 1.5,
 	},
 	automatic = true,
-	rounds = 40,
-	range = 92,
-	damage = 1,
+	rounds = 35,
+	range = 89,
+	damage = 2,
 	fire_interval = 0.1,
-	liquid_travel_dist = 10,
+	liquid_travel_dist = 3,
+	rightclick_func = function(itemstack, user, pointed, ...)
+		if scoped[user:get_player_name()] then
+			ctf_ranged.hide_scope(user:get_player_name())
+		else
+			local item_name = itemstack:get_name()
+			ctf_ranged.show_shoulder_scope(user:get_player_name(), item_name, 2)
+		end
+	end
 })
 
 ctf_ranged.simple_register_gun("ctf_ranged:sniper", {
