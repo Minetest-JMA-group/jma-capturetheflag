@@ -4,7 +4,9 @@ arsdragonfly@gmail.com
 6/19/2013
 --]]
 
-if minetest.settings:get("random_messages_disabled") then return end
+random_messages = {}
+
+if minetest.settings:get("random_messages_disabled") == "true" then return end
 
 local messages = {
     "To talk only with your team, start your messages with /t. For example, /t Hello team!",
@@ -65,19 +67,18 @@ local messages = {
     "Use /change_vote <questionID> to change your vote on the poll. Check question ID with /list_questions",
 }
 
-local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval") or 120)
+local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval")) or 120
 
-local function show_message()
-    local message = messages[math.random(1, #messages)]
-    minetest.chat_send_all(minetest.colorize("#808080", message), "random_messages")
+function random_messages.get_random_message()
+	return messages[math.random(1, #messages)]
 end
 
 local timer = 0
 minetest.register_globalstep(function(dtime)
     timer = timer + dtime
-    if timer >= MESSAGE_INTERVAL then
+    if timer > MESSAGE_INTERVAL then
         if #minetest.get_connected_players() > 0 then
-            show_message()
+			minetest.chat_send_all(minetest.colorize("#808080", random_messages.get_random_message()), "random_messages")
         end
         timer = 0
     end
