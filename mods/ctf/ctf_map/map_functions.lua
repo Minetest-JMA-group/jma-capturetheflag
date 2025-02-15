@@ -38,6 +38,23 @@ function ctf_map.place_map(mapmeta, callback)
 					end
 				end
 			end
+
+			-- Fix base floor if needed
+			local floor_fixed = false
+			local y = p.y - 1
+			for x = p.x - 2, p.x + 2 do
+				for z = p.z - 2, p.z + 2 do
+					local node = minetest.get_node({x = x, y = y, z = z})
+					if node and string.sub(node.name, 1, 8) ~= "ctf_map:" then
+						minetest.set_node({x = x, y = y, z = z}, {name = "ctf_map:cobble"})	
+						floor_fixed = true
+					end
+				end
+			end
+
+			if floor_fixed then
+				minetest.log("action", "Fixed base floor on map: " .. mapmeta.name .. ", team: " .. name)
+			end
 		end
 
 		minetest.after(0, minetest.fix_light, mapmeta.pos1, mapmeta.pos2)
