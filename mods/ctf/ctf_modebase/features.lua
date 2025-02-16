@@ -369,13 +369,38 @@ local function tp_player_near_flag(player)
 	local tname = ctf_teams.get(player)
 	if not tname then return end
 
-	local random_off = {x = 0, y = -0.5, z = 0}
-	repeat
+	local random_off = vector.zero()
+	local flag_pos = ctf_map.current_map.teams[tname].flag_pos
+	local pos = flag_pos
+	local attempts = 0
+	local is_position_suitable = false
+
+	while not is_position_suitable do
+		attempts = attempts + 1
+		if attempts >= 15 then
+			minetest.log("warning", "[ctf_modebase] Could not find a free spawn position")
+			break
+		end
+
 		random_off.x = math.random(-1, 1)
 		random_off.z = math.random(-1, 1)
-	until random_off.x ~= 0 or random_off.z ~= 0
 
-	local pos = vector.add(ctf_map.current_map.teams[tname].flag_pos, random_off)
+		if random_off.x ~= 0 or random_off.z ~= 0 then
+			pos = vector.add(flag_pos, random_off)
+
+			is_position_suitable = true -- Assuming that the position is suitable
+
+			for y_off = 0, 1 do
+				local node = minetest.get_node({x = pos.x, y = pos.y + y_off, z = pos.z})
+				local node_def = minetest.registered_nodes[node.name]
+
+				if node.name ~= "air" and (node_def and not node_def.groups.liquid) then
+					is_position_suitable = false
+					break
+				end
+			end
+		end
+	end
 
 	local rotation_y = vector.dir_to_rotation(
 		vector.direction(pos, ctf_map.current_map.teams[tname].look_pos or ctf_map.current_map.flag_center)
