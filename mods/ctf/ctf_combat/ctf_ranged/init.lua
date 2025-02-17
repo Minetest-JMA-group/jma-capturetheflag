@@ -272,7 +272,15 @@ ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
 	damage = 2,
 	automatic = true,
 	fire_interval = 0.6,
-	liquid_travel_dist = 2
+	liquid_travel_dist = 2,
+	rightclick_func = function(itemstack, user, pointed, ...)
+		if scoped[user:get_player_name()] then
+			ctf_ranged.hide_scope(user:get_player_name())
+		else
+			local item_name = itemstack:get_name()
+			ctf_ranged.show_shoulder_scope(user:get_player_name(), item_name, 2)
+		end
+	end
 })
 
 ctf_ranged.simple_register_gun("ctf_ranged:rifle", {
