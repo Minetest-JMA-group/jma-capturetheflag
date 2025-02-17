@@ -9,7 +9,7 @@ distributed without any warranty.
 
 local MAX_INACTIVE_TIME = 300
 local CHECK_INTERVAL = 10
-local WARN_TIME = 45
+local WARN_TIME = 150
 
 local players = {}
 local checkTimer = 0
