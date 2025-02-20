@@ -150,7 +150,7 @@ function boat.on_step(self, dtime)
 					minetest.chat_send_player(self.driver, S("Boat cruise mode off"))
 				end
 			elseif ctrl.up or self.auto then
-				self.v = self.v + dtime * 2.0
+				self.v = self.v + dtime * 4.55
 			end
 			if ctrl.left then
 				if self.v < -0.001 then
