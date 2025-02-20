@@ -86,9 +86,7 @@ function ctf_modebase.remove_immunity(player)
 
 	immune_players[pname] = nil
 
-	if player_api.players[pname] then
-		player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
-	end
+	player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
 
 	player:set_properties({pointable = true})
 	player:set_armor_groups({fleshy = 100})
@@ -108,9 +106,8 @@ function ctf_modebase.remove_respawn_immunity(player)
 
 	minetest.delete_particlespawner(old.particles, pname)
 
-	if player_api.players[pname] then
-		player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
-	end
+
+	player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
 
 	player:set_properties({pointable = true})
 	player:set_armor_groups({fleshy = 100})
