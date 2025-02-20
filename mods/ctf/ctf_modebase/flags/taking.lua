@@ -34,9 +34,7 @@ local function drop_flags(player, pteam)
 		end
 	end
 
-	if player_api.players[pname] then
-		player_api.set_texture(player, 2, "blank.png")
-	end
+	player_api.set_texture(player, 2, "blank.png")
 
 	ctf_modebase.taken_flags[pname] = nil
 
