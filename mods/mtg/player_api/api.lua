@@ -111,6 +111,7 @@ function player_api.set_textures(player, textures)
 end
 
 function player_api.set_texture(player, index, texture)
+	if not players[player:get_player_name()] then return end
 	local textures = table.copy(player_api.get_textures(player))
 	textures[index] = texture
 	player_api.set_textures(player, textures)
