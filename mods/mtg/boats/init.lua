@@ -135,6 +135,9 @@ end
 function boat.on_step(self, dtime)
 	self.v = get_v(self.object:get_velocity()) * math.sign(self.v)
 	if self.driver then
+		local sprint_info = sprint.get_sprint_info(self.driver)
+		if not sprint_info then return end
+
 		local driver_objref = minetest.get_player_by_name(self.driver)
 		if driver_objref then
 			local ctrl = driver_objref:get_player_control()
@@ -150,19 +153,23 @@ function boat.on_step(self, dtime)
 					minetest.chat_send_player(self.driver, S("Boat cruise mode off"))
 				end
 			elseif ctrl.up or self.auto then
-				self.v = self.v + dtime * 4.55
+				if ctrl.aux1 and sprint_info.stamina > 0 then
+					self.v = self.v + dtime * 5.1
+				else
+					self.v = self.v + dtime * 3.5
+				end
 			end
 			if ctrl.left then
 				if self.v < -0.001 then
-					self.object:set_yaw(self.object:get_yaw() - dtime * 0.9)
+					self.object:set_yaw(self.object:get_yaw() - dtime * 1.5)
 				else
-					self.object:set_yaw(self.object:get_yaw() + dtime * 0.9)
+					self.object:set_yaw(self.object:get_yaw() + dtime * 1.5)
 				end
 			elseif ctrl.right then
 				if self.v < -0.001 then
-					self.object:set_yaw(self.object:get_yaw() + dtime * 0.9)
+					self.object:set_yaw(self.object:get_yaw() + dtime * 1.5)
 				else
-					self.object:set_yaw(self.object:get_yaw() - dtime * 0.9)
+					self.object:set_yaw(self.object:get_yaw() - dtime * 1.5)
 				end
 			end
 		end
@@ -202,8 +209,8 @@ function boat.on_step(self, dtime)
 		p.y = p.y + 1
 		if is_water(p) then
 			local y = self.object:get_velocity().y
-			if y >= 5 then
-				y = 5
+			if y >= 10 then
+				y = 10
 			elseif y < 0 then
 				new_acce = {x = 0, y = 20, z = 0}
 			else

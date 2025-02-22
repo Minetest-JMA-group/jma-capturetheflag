@@ -1,6 +1,7 @@
 -- Sprint mod by rubenwardy. License: MIT.
 -- Heavily modified from a mod by GunshipPenguin
 
+sprint = {}
 -- Config, see README.md
 local MOD_WALK    = tonumber(minetest.settings:get("sprint_speed")     or 1.8)
 local MOD_JUMP    = tonumber(minetest.settings:get("sprint_jump")      or 1.1)
@@ -53,6 +54,10 @@ local function updateHud(player, info)
 			player:hud_change(info.hud, "number", numBars)
 		end
 	end
+end
+
+function sprint.get_sprint_info(name)
+	return players[name]
 end
 
 minetest.register_globalstep(function(dtime)
