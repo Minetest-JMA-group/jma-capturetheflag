@@ -154,9 +154,9 @@ function boat.on_step(self, dtime)
 				end
 			elseif ctrl.up or self.auto then
 				if ctrl.aux1 and sprint_info.stamina > 0 then
-					self.v = self.v + dtime * 5.1
+					self.v = self.v + dtime * 6.5
 				else
-					self.v = self.v + dtime * 3.5
+					self.v = self.v + dtime * 3.9
 				end
 			end
 			if ctrl.left then

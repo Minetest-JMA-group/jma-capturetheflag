@@ -20,17 +20,23 @@ skins = {
 local sorted_skin_ids_public = {}
 local player_collections = {}
 
--- Load skin list and metadata
-do
-	local catalog = dofile(core.get_modpath("simple_skins") .. "/skins_list.lua")
-	if not catalog then
-		core.log("error", "[simple_skins] Failed to load skins list.")
-		catalog = {}
+function skins.register_skins(t)
+	for skin_id, meta in pairs(t) do
+		assert(type(skin_id) == "number", "Skin ID must be a number.")
+		assert(skins.catalog[skin_id] == nil, "Skin ID already exists in the catalog (ID: " .. skin_id .. ")")
+		assert(type(meta) == "table", "Skin metadata must be a table.")
+		assert(meta.name, "Skin metadata must have a 'name' field.")
+
+		skins.catalog[skin_id] = meta
 	end
+end
 
-	skins.catalog = catalog
+-- load default catalog
+skins.register_skins(dofile(core.get_modpath("simple_skins") .. "/skins_list.lua"))
 
+minetest.register_on_mods_loaded(function()
 	-- Cache sorting for better performance
+	local catalog = skins.catalog
 	local sorted_skin_ids = {}
 	local i = 1
 	for skin_id, meta in pairs(catalog) do
@@ -43,7 +49,7 @@ do
 
 	table.sort(sorted_skin_ids, function(a, b) return catalog[a].name < catalog[b].name end)
 	sorted_skin_ids_public = sorted_skin_ids
-end
+end)
 
 function skins.get_skin(name, skin_id)
 	skin_id = skin_id or skins.skins[name]
