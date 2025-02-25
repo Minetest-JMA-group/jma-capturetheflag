@@ -45,7 +45,7 @@ local messages = {
     "A medic and knight working together can wreak havoc on the enemy team(s).",
     "Check/news to see our recent updates and rules, you will also figure out how to get the [PRO] tag at that page.",
     "Join us on Discord: https://ctf.jma-sig.de",
-    "Use /news to see the server news and rules.",
+    "Use /news to see the server news",
     "Please avoid or refrain from introducing any other potentially offensive or inappropriate topics.",
     "Stuck? Use /killme to return to base",
     "Strengthen your defense: build walls, set obstacles, and traps to secure your base.",
@@ -62,9 +62,15 @@ local messages = {
     "Set your preferred language for in-game translator using /lang <lang code> . For example, use /lang en",
     "Use /b to translate the last message to your preferred language",
     "Want to send a nice welcoming message with the 8 score gift? Use /wb <mode:technical modename> <playername>",
-    "To report a player sending inappropriate private messages to you, use /report playername PM",
+    "To report a player sending inappropriate private messages to you, use /report playername PM reason",
     "The chaos mode is active on weekends only.",
     "Use /change_vote <questionID> to change your vote on the poll. Check question ID with /list_questions",
+"Keep the team door closed to stop enemies from getting in",
+"Use /rules to read the server rules.",
+"You can claim the crown as a reward for joining our discord server*,
+"Your vps service is being blocked? Contact our server staff so we can whitelist you",
+"Use /e to send emojis into the air",
+"you have problems exiting the game? use /kickme to get disconnected from the server",
 }
 
 local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval")) or 120
