@@ -51,7 +51,6 @@ local messages = {
     "Strengthen your defense: build walls, set obstacles, and traps to secure your base.",
     "Want to skip a match? Use /yes to vote during build time",
     "Want to get a new skin? Send it to us at https://discord.gg/SSd9XcCqZk",
-    "If you're stuck in the game and can't exit, use the command /kickme",
     "Try modern HUD instead of hearts/arrows (in the in-game settings)",
     -- connection, fps, minetest issues
     "To ensure smooth gameplay, we recommend updating to the latest version of Minetest",
@@ -65,12 +64,12 @@ local messages = {
     "To report a player sending inappropriate private messages to you, use /report playername PM reason",
     "The chaos mode is active on weekends only.",
     "Use /change_vote <questionID> to change your vote on the poll. Check question ID with /list_questions",
-"Keep the team door closed to stop enemies from getting in",
-"Use /rules to read the server rules.",
-"You can claim the crown as a reward for joining our discord server*,
-"Your vps service is being blocked? Contact our server staff so we can whitelist you",
-"Use /e to send emojis into the air",
-"you have problems exiting the game? use /kickme to get disconnected from the server",
+    "Keep the team door closed to stop enemies from getting in",
+    "Use /rules to read the server rules",
+    "You can claim the crown as a reward for joining our Discord server",
+    "Your VPS service is being blocked? Contact our server staff so we can whitelist you",
+    "Use /e to send emojis into the air",
+    "You have problems exiting the game? Use /kickme to get disconnected from the server",
 }
 
 local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval")) or 120
