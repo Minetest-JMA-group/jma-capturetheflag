@@ -215,7 +215,7 @@ core.register_on_joinplayer(function(player)
 		meta:set_string("simple_skins:skin", "")
 	else
 		local skin_id = storage:get_int(player_skin_key:format(name))
-		skins.check_and_clean_player_collection(name)
+		-- skins.check_and_clean_player_collection(name)
 
 		-- Do we already have a skin in mod storage?
 		if skin_id and skin_id > 0 then
