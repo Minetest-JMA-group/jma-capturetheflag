@@ -98,6 +98,10 @@ return {
 		name = "Koro Sensei",
 		author = "0Hi9l"
 	},
+	[25] = {
+		name = "SilentRipper_",
+		author = "leoleg"
+	},
 	[31] = {
 		name = "Wolf!!!",
 		author = "Rin",
