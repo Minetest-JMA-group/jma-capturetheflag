@@ -1,6 +1,18 @@
 -- NOTE:
 -- Public skins starts from 1 to 199
 -- Private skins starts from 200 to 299
+
+--Example of skin definition table:
+--[1] = {
+--	name = "Josh",
+--	author = "juan", -- Optional
+--	texture = "character_josh.png", -- Optional, if not set, the skin will be loaded from "character_1.png (deprecated format)
+--	private = true, -- Optional, if not set or false, the skin will be public
+--},
+
+-- It is very important to keen unique IDs for skins!
+-- Add new skins with ID higher than the last one and keep the IDs range from 1 to 199 for public skins
+
 return {
 	[1] = {
 		name = "Mikey",
@@ -98,13 +110,14 @@ return {
 		name = "Koro Sensei",
 		author = "0Hi9l"
 	},
-	[25] = {
-		name = "SilentRipper_",
-		author = "leoleg"
-	},
 	[31] = {
 		name = "Wolf!!!",
 		author = "Rin",
 		texture = "character_969.png",
+	},
+	[33] = {
+		name = "SilentRipper_",
+		author = "leoleg",
+		texture = "character_silentripper.png",
 	},
 }
