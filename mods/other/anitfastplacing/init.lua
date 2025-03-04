@@ -105,17 +105,30 @@ minetest.register_chatcommand("afp_print",{
 })
 
 minetest.register_chatcommand("afp_interval",{
-	description = "Set interval in seconds",
+	description = "Set placement interval",
 	privs = {dev = true},
-	params = "[<int>]",
-	func = function(_, param)
-		local i = tonumber(param)
-		if i then
-			allowed_interval = i * 1000000
-			storage:set_float("interval", allowed_interval)
-			return true, "Done."
+	params = "<get|set> [interval]",
+	func = function(name, param)
+		local args = param:split(" ")
+		local action = args[1]
+		if not action then
+			return false, "Invalid usage. Add 'get' or 'set' as first argument"
 		end
-		return true, allowed_interval .. " microseconds"
+
+		if action == "get" then
+			return true, "Current interval: " .. allowed_interval / 1000000 -- convert to seconds
+		elseif action == "set" then
+			local interval = tonumber(args[2])
+			if not interval then
+				return false, "Missing or invalid interval"
+			end
+			allowed_interval = interval * 1000000 -- convert to microseconds
+			storage:set_float("interval", allowed_interval)
+
+			minetest.log("action", "[AFP]: " .. name .. " set node placement interval to " .. interval)
+			return true, "Interval set to " .. interval
+		end
+		return false, "Invalid usage"
 	end
 })
 
