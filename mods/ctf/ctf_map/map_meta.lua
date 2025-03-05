@@ -5,7 +5,6 @@ local modname = minetest.get_current_modname()
 
 function ctf_map.skybox_exists(subdir)
 	local list = minetest.get_dir_list(subdir, true)
-
 	return table.indexof(list, "skybox") ~= -1
 end
 
@@ -186,7 +185,7 @@ function ctf_map.load_map_meta(idx, dirname)
 
 	map.flag_center = calc_flag_center(map)
 
-	if ctf_map.skybox_exists(ctf_map.map_path[dirname] .. dirname) then
+	if ctf_map.skybox_exists(ctf_map.map_path[dirname]) then
 		skybox.add({dirname, "#ffffff", [5] = "png"})
 
 		map.skybox = dirname
