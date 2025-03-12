@@ -580,6 +580,14 @@ return {
 		teams_left = #team_list
 		many_teams = #team_list > 2
 
+		-- Detach all players
+		for _, player in ipairs(core.get_connected_players()) do
+			if player:get_attach() then
+				player:set_detach()
+				core.log("action", player:get_player_name() .. " detached")
+			end
+		end
+
 		if #delete_queue > 0 and delete_queue._map ~= ctf_map.current_map.dirname then
 			local p1, p2 = unpack(delete_queue)
 
