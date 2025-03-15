@@ -18,16 +18,15 @@ local function boom(obj)
 end
 
 return {
+	{itemname = "ctf_mode_chaos:power_charge", chance = 45, amount = 10},
 	{itemname = "easter_egg:egg", chance = 2, amount = 2},
 	{itemname = "default:stone", chance = 40, amount = 99},
 	{itemname = "default:cobble", chance = 40, amount = 99},
 
 	{itemname = "default:dirt", chance = 41, amount = 99},
 	{itemname = "default:apple", chance = 45, amount = 5},
-	{itemname = "default:diamond", chance = 5, amount = 2},
 	{itemname = "default:torch", chance = 42, amount = 50},
 	{itemname = "ctf_map:damage_cobble", chance = 25, amount = 30},
-	{itemname = "xpanes:bar_flat", chance = 40, amount = 30},
 	{itemname = "default:obsidian", chance = 10, amount = 25},
 
 	--ranged
