@@ -1,15 +1,68 @@
 -- this is table of streaks.
 -- mega streak means 4 or 5 attempt in less than 10 minutes
 ctf_modebase.flag_attempt_streaks = {
-	[3] = "three",
-	[4] = "four",
-	[5] = "mega",
-	[7] = "mega",
-	[8] = "giga",
-	[10] = "giga",
-	[12] = "tera",
-	[14] = "EXA",
+	[3] = "COMBO",
+	[4] = "RAMPAGE",
+	[5] = "FRENZY",
+	[7] = "UNSTOPPABLE",
+	[8] = "RELENTLESS",
+	[10] = "FLAGMASTER",
+	[12] = "FLAG SEEKER",
+	[14] = "FLAG HUNTER",
+	[15] = "CAPTAIN FLAG",
+	[18] = "SUPERCALIFLAGALISTIC",
+	[20] = "FLAG MAGNET",
+	[25] = "KEYBOARD NINJA",
+	[30] = "FLAG-A-HOLIC",
+	[35] = "MEGA BRAIN",
+	[40] = "FLAG WHISPERER",
+	[45] = "GALAXY BRAIN",
+	[50] = "FLAG VIRTUOSO",
+	[60] = "FLAG CONQUISTADOR",
+	[70] = "CAPTAIN OBVIOUS",
+	[80] = "FLAG COLLECTOR EXTREME",
+	[90] = "FLAG DEITY",
+	[100] = "GOD MODE",
+	[125] = "BEYOND MORTAL",
+	[150] = "ALGORITHM ANOMALY",
+	[200] = "QUANTUM HACKER",
+	[201] = "GALACTIC NUB",
+	[210] = "DONE THIS GAME! OFFICIALLY A HACKER!"
 }
+
+local MAX_STREAK = 210
+
+local function get_streak_color(attempts)
+	-- Light green to Dark green (1-15)
+	if attempts <= 5 then
+		return "#00FF00"      -- Light green
+	elseif attempts <= 10 then
+		return "#00DD00"      -- Medium green
+	elseif attempts <= 15 then
+		return "#009900"      -- Dark green
+	-- Yellow to Orange (16-50)
+	elseif attempts <= 25 then
+		return "#FFFF00"      -- Yellow
+	elseif attempts <= 35 then
+		return "#FFAA00"      -- Light orange
+	elseif attempts <= 50 then
+		return "#FF7700"      -- Dark orange
+	-- Bright orange to Red (51-100)
+	elseif attempts <= 70 then
+		return "#FF5500"      -- Bright orange
+	elseif attempts <= 85 then
+		return "#FF2200"      -- Orange-red
+	elseif attempts <= 100 then
+		return "#FF0000"      -- Pure red
+	-- Light red to Purple (101-210)
+	elseif attempts <= 150 then
+		return "#FF0066"      -- Light red
+	elseif attempts <= 200 then
+		return "#FF0099"      -- Pink-red
+	else
+		return "#FF00FF"      -- Purple
+	end
+end
 
 local function drop_flags(player, pteam)
 	local pname = player:get_player_name()
@@ -126,16 +179,19 @@ function ctf_modebase.flag_on_punch(puncher, nodepos, node)
 			ctf_modebase.flag_attempt_history[pname] = new
 		end
 
-		if number_of_attempts > 14 then
-			number_of_attempts = 14
+		if number_of_attempts > MAX_STREAK then
+			number_of_attempts = MAX_STREAK
 		end
 
 		local streak = ctf_modebase.flag_attempt_streaks[number_of_attempts]
 		if streak then
 			ctf_modebase.player_on_flag_attempt_streak[pname] = number_of_attempts
 
-			minetest.chat_send_all(minetest.colorize(ctf_teams.team[pteam].color,  pname) ..
-				minetest.colorize("#02e7fc",  " is on a " .. streak .. " attempt streak!"))
+			local color = get_streak_color(number_of_attempts)
+			minetest.chat_send_all(string.format("%s is on a %s attempt streak with %d attempts!",
+				minetest.colorize(ctf_teams.team[pteam].color, pname),
+				minetest.colorize(color, streak),
+				number_of_attempts))
 		end
 
 		player_api.set_texture(puncher, 2,
