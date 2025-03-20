@@ -4,12 +4,14 @@ local respawn_delay = {}
 local hud = mhud.init()
 
 minetest.register_entity("ctf_modebase:respawn_movement_freezer", {
-	is_visible = false,
-	physical = false,
-	makes_footstep_sound = false,
-	backface_culling = false,
-	static_save = false,
-	pointable = false,
+	initial_properties = {
+		is_visible = false,
+		physical = false,
+		makes_footstep_sound = false,
+		backface_culling = false,
+		static_save = false,
+		pointable = false,
+	},
 	on_punch = function() return true end,
 })
 
