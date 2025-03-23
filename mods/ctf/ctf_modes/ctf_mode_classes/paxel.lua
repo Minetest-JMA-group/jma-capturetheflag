@@ -108,7 +108,7 @@ minetest.register_tool("ctf_mode_classes:support_paxel", {
 				dig_timers[pname] = minetest.after(DIG_SPEED, dig, pname, pos, PAXEL_POWER, PAXEL_RETRY)
 
 				local dstep = math.floor(65534 / PAXEL_COOLDOWN_TIME)
-				ctf_modebase.update_wear.start_update(pname, "ctf_mode_classes:support_paxel", dstep, true)
+				ctf_modebase.update_wear.start_update(pname, itemstack, dstep, true)
 
 				itemstack:set_wear(65534)
 				return itemstack

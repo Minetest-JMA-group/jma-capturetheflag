@@ -40,7 +40,7 @@ minetest.register_tool("rocket_launcher:launcher", {
 			end
 			minetest.sound_play('fire_extinguish_flame',{to_player = name, gain = 0.5})
 			itemstack:set_wear(WEAR_MAX - 6000)
-			ctf_modebase.update_wear.start_update(user:get_player_name(), "rocket_launcher:launcher", WEAR_MAX/4, true)
+			ctf_modebase.update_wear.start_update(user:get_player_name(), itemstack, WEAR_MAX/4, true)
 			return itemstack
 		end
 	end

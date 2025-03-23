@@ -140,7 +140,7 @@ do
 		end
 
 		itemstack:set_wear(WEAR_MAX - 6000)
-		ctf_modebase.update_wear.start_update(user:get_player_name(), kb_def.name, WEAR_MAX, true)
+		ctf_modebase.update_wear.start_update(user:get_player_name(), itemstack, WEAR_MAX, true)
 
 		return itemstack
 	end

@@ -110,7 +110,7 @@ minetest.override_item(shotgun_name .. "_loaded", {
 	end,
 })
 
-local function run_cooldown(user)
+local function run_cooldown(user, itemstack)
 	local name = user:get_player_name()
 
 	local on_finish = function()
@@ -126,7 +126,7 @@ local function run_cooldown(user)
 		end
 	end
 
-	ctf_modebase.update_wear.start_update(name, grenade_launcher_name, WEAR_MAX / 5, true, on_finish)
+	ctf_modebase.update_wear.start_update(name, itemstack, WEAR_MAX / 5, true, on_finish)
 end
 
 local radius = 2
@@ -233,7 +233,7 @@ minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 		if itemstack:get_wear() >= 65532 then
 			meta:set_int("overheat", 1)
 			meta:set_string("color", "#fc6a6c")
-			run_cooldown(user)
+			run_cooldown(user, itemstack)
 		end
 
 		-- Add recoil and particles for charged shot

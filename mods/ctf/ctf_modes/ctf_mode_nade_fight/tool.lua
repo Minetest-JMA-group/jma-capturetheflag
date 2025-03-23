@@ -362,7 +362,7 @@ for idx, info in ipairs(grenade_list) do
 			itemstack:set_wear(WEAR_MAX - 6000)
 			ctf_modebase.update_wear.start_update(
 				user:get_player_name(),
-				"ctf_mode_nade_fight:grenade_tool_"..idx,
+				itemstack,
 				WEAR_MAX/info.cooldown,
 				true
 			)
