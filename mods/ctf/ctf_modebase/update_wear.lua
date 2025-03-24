@@ -29,7 +29,10 @@ function ctf_modebase.update_wear.find_item_by_id(pinv, item_id)
         end
     end
 
-    item_pos_cache[item_id] = nil
+	if item_pos_cache[item_id] then
+    	item_pos_cache[item_id] = nil
+	end
+
     return nil, nil
 end
 
