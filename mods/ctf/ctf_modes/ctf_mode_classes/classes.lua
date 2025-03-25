@@ -158,11 +158,10 @@ ctf_melee.simple_register_sword("ctf_mode_classes:knight_sword", {
 
 				if player then
 					local pinv = player:get_inventory()
-					local i = ctf_modebase.update_wear.find_item_by_id(pinv, item_id)
+					local i, newstack = ctf_modebase.update_wear.find_item_by_id(pinv, item_id)
 
-					if i then
+					if i and newstack then
 						local inv = player:get_inventory()
-						local newstack = inv:get_stack("main", i)
 						newstack:set_name("ctf_mode_classes:knight_sword")
 						newstack:set_wear(65534)
 						inv:set_stack("main", i, newstack)
