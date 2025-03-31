@@ -1064,6 +1064,10 @@ return {
 
 		if player:get_hp() <= damage then
 			end_combat_mode(player:get_player_name(), "punch", hitter:get_player_name(), weapon_image)
+
+			-- Turn player's camera to face the killer
+			local dir = vector.direction(player:get_pos(), hitter:get_pos())
+			player:set_look_horizontal(minetest.dir_to_yaw(dir))
 		elseif player:get_player_name() ~= hitter:get_player_name() then
 			ctf_combat_mode.add_hitter(player, hitter, weapon_image, 15)
 		end
