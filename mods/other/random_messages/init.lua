@@ -70,6 +70,7 @@ local messages = {
     "Your VPS service is being blocked? Contact our server staff so we can whitelist you",
     "Use /e to send emojis into the air",
     "You have problems exiting the game? Use /kickme to get disconnected from the server",
+    "Check your connection latency to the server with /ping",
 }
 
 local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval")) or 120
