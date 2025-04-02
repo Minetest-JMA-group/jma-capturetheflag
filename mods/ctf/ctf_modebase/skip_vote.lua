@@ -44,7 +44,7 @@ end
 local function vote_timer_hud(player)
 	local yes, no, abs = count_votes()
 
-	local time_str = string.format("Vote to skip match [%d] | Yes: %d | No: %d | Abs: %d",
+	local time_str = string.format("Vote to skip match [%d]\nYes: %d | No: %d | Abs: %d",
 								  math.floor(time_left % 60), yes, no, abs)
 
 	if not hud:exists(player, "skip_vote:timer") then
@@ -65,7 +65,7 @@ end
 local function add_vote_hud(player)
 	hud:add(player, "skip_vote:vote", {
 		type = "text",
-		position = {x = 1, y = 0.5},
+		position = {x = 1, y = 0.52},
 		offset = {x = -100, y = 0},
 		text = "/yes /no or /abs",
 		color = 0xFFFFFF,
