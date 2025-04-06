@@ -52,6 +52,7 @@ local messages = {
     "Want to skip a match? Use /yes to vote during build time",
     "Want to get a new skin? Send it to us at https://discord.gg/SSd9XcCqZk",
     "Try modern HUD instead of hearts/arrows (in the in-game settings)",
+    "It is recommended that you avoid sharing personal information such as your address, phone number, or other confidential data to ensure your safety and privacy.",
     -- connection, fps, minetest issues
     "To ensure smooth gameplay, we recommend updating to the latest version of Minetest",
     "If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
