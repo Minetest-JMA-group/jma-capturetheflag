@@ -14,6 +14,8 @@ ctf_modebase.register_mode("classic", {
 
 		["ctf_teams:door_steel"] = {rarity = 0.2, max_stacks = 3},
 
+		["wind_charges:wind_charge" ] = {min_count = 8, max_count = 16, rarity = 0.1 , max_stacks = 1},
+
 		["default:pick_steel"  ] = {rarity = 0.4, max_stacks = 3},
 		["default:shovel_steel"] = {rarity = 0.4, max_stacks = 2},
 		["default:axe_steel"   ] = {rarity = 0.4, max_stacks = 2},
