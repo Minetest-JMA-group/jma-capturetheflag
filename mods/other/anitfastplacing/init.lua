@@ -73,6 +73,9 @@ local function on_place_node(pos, newnode, oldnode, player)
 end
 
 minetest.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack, pointed_thing)
+	if not placer or not placer:is_player() then
+		return
+	end
 	return on_place_node(pos, newnode, oldnode, placer)
 end)
 
