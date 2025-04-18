@@ -73,7 +73,7 @@ function ctf_modebase.update_wear.start_update(pname, stack, step, down, finish_
 
 		if player then
 			local pinv = player:get_inventory()
-			local pos, stack = ctf_modebase.update_wear.find_item_by_id(pinv, item_id)
+			local pos, _ = ctf_modebase.update_wear.find_item_by_id(pinv, item_id)
 
 			if pos then
 				local wear = stack:get_wear()
