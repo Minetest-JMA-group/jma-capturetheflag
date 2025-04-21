@@ -327,12 +327,6 @@ ctf_healing.register_bandage("ctf_mode_classes:support_bandage", {
 			ctf_modebase.update_wear.start_update(pname, itemstack, step, false,
 			function(item_id)
 				ctf_modebase.remove_immunity(user)
-				local inv = user:get_inventory()
-				local p, new_stack = ctf_modebase.update_wear.find_item_by_id(inv, item_id)
-				if p and new_stack then
-					new_stack:set_wear(65534)
-					inv:set_stack("main", p, new_stack)
-				end
 				local dstep = math.floor(65534 / IMMUNITY_COOLDOWN)
 				ctf_modebase.update_wear.start_update(pname, itemstack, dstep, true)
 			end,
