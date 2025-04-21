@@ -53,7 +53,9 @@ function ctf_map.register_maps_dir(path_to_folder)
 	end
 
 	for _, mapdir in pairs(minetest.get_dir_list(path_to_folder, true)) do
-		ctf_map.register_map(mapdir, path_to_folder)
+		if mapdir:sub(1,1) ~= "." then
+			ctf_map.register_map(mapdir, path_to_folder)
+		end
 	end
 end
 
