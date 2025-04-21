@@ -97,6 +97,10 @@ minetest.register_chatcommand("wb", {
 			return false, "You have to provide player name!"
 		end
 
+		if core.global_exists(block_msgs) and block_msgs.is_chat_blocked(giver_name, receiver_name) then
+			return false, receiver_name.." has you on their block list. You cannot interact with them."
+		end
+
 		local old_receiver_ranks = mode_data.rankings:get(receiver_name)
 		if not old_receiver_ranks then
 			return false, string.format("Player '%s' has no rankings!", receiver_name)
