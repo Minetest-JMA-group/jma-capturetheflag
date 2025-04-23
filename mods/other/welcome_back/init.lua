@@ -97,7 +97,7 @@ minetest.register_chatcommand("wb", {
 			return false, "You have to provide player name!"
 		end
 
-		if core.global_exists(block_msgs) and block_msgs.is_chat_blocked(giver_name, receiver_name) then
+		if core.global_exists("block_msgs") and block_msgs.is_chat_blocked(giver_name, receiver_name) then
 			return false, receiver_name.." has you on their block list. You cannot interact with them."
 		end
 
