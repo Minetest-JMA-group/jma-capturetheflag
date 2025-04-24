@@ -29,7 +29,7 @@ minetest.register_entity("wind_charges:wind_projectile", {
 		local pos = self.object:get_pos()
 		minetest.sound_play("wind_charge_explode", {
 			pos = pos,
-			max_hear_distance = 24,
+			max_hear_distance = 12,
 			gain = 1.0
 		})
 
