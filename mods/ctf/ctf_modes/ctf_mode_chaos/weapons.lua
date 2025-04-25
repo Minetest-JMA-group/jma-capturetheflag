@@ -110,7 +110,7 @@ minetest.override_item(shotgun_name .. "_loaded", {
 	end,
 })
 
-local function run_cooldown(user)
+local function run_cooldown(user, itemstack)
 	local name = user:get_player_name()
 
 	local on_finish = function()
@@ -126,26 +126,66 @@ local function run_cooldown(user)
 		end
 	end
 
-	ctf_modebase.update_wear.start_update(name, grenade_launcher_name, WEAR_MAX / 5, true, on_finish)
+	ctf_modebase.update_wear.start_update(name, itemstack, WEAR_MAX / 5, true, on_finish)
 end
 
 local radius = 2
+
+
+local shot_types = {
+	normal = {
+		speed = 18,
+		radius = 2,
+		wear = WEAR_MAX / 5
+	},
+	powered = {
+		speed = 30,
+		radius = 4,
+		wear = WEAR_MAX / 3
+	}
+}
+
+minetest.register_craftitem("ctf_mode_chaos:power_charge", {
+	description = "Grenade Power Charge",
+	inventory_image = "ctf_mode_chaos_power_charge.png",
+	stack_max = 25,
+})
+
 minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 	description = "Grenade Launcher",
 	wield_scale = {x=2.0,y=2.0,z=2.5},
 	inventory_image = "ctf_mode_chaos_grenade_launcher.png",
 	inventory_overlay = "ctf_modebase_special_item.png",
-	wield_image =  "ctf_mode_chaos_grenade_launcher.png",
+	wield_image = "ctf_mode_chaos_grenade_launcher.png",
 	range = 4,
-	on_use = function(itemstack, user)
+	on_use = function(itemstack, user, pointed_thing)
 		local meta = itemstack:get_meta()
 		if meta:get_int("overheat") == 1 then
 			return
 		end
 
+		local is_sneaking = user:get_player_control().sneak
+		local shot_type = "normal"
+
+		if is_sneaking then
+			local inv = user:get_inventory()
+			local charge = inv:remove_item("main", "ctf_mode_chaos:power_charge 1")
+			if charge:is_empty() then
+				is_sneaking = false
+				hud_events.new(user:get_player_name(), {
+					text = "No power charges",
+					quick = true,
+				})
+			else
+				shot_type = "powered"
+			end
+		end
+
+		local stats = shot_types[shot_type]
 		local name = user:get_player_name()
 		local pos = user:get_pos()
 		local dir = user:get_look_dir()
+
 		if pos and dir then
 			pos.y = pos.y + 1.5
 			local ahead = vector.add(pos, vector.multiply(dir, 1))
@@ -153,23 +193,52 @@ minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 			if obj then
 				local ent = obj:get_luaentity()
 				ent.puncher_name = name
-				if cooldown:get(user) then
-					ent.radius = 1
+				ent.radius = cooldown:get(user) and 1 or stats.radius
+				if shot_type == "powered" then
+					minetest.add_particlespawner({
+						amount = 15,
+						time = 1,
+						minvel = vector.multiply(dir, 2),
+						maxvel = vector.multiply(dir, 4),
+						minacc = vector.new(0, -1, 0),
+						maxacc = vector.new(0, -1, 0),
+						minexptime = 0.5,
+						maxexptime = 1,
+						minsize = 1,
+						maxsize = 2,
+						texture = "smoke_puff.png^[colorize:black:150",
+						attached = obj,
+					})
+					obj:set_properties({
+						textures = {"ctf_mode_chaos_grenade_powered.png^[multiply:red:100"}
+					})
 				end
-				local vel = user:get_velocity()
-				local speed = math.sqrt(vel.x^2 + vel.y^2 + vel.z^2)
-				obj:add_velocity(vector.multiply(dir, speed + 18))
+
+				local speed = vector.length(user:get_velocity())
+				obj:add_velocity(vector.multiply(dir, stats.speed + speed))
 			end
 		end
 
-		minetest.sound_play("ctf_mode_chaos_grenade_launcher_plop",{to_player = name, gain = 0.5})
-		itemstack:set_wear(itemstack:get_wear() + WEAR_MAX / 5)
+		minetest.sound_play("ctf_mode_chaos_grenade_launcher_plop", {
+			to_player = name,
+			gain = 0.5,
+			pitch = shot_type == "powered" and 0.5 or 1.1
+		})
+
+		local new_wear = itemstack:get_wear() + stats.wear
+		if new_wear > 65534 then
+			new_wear = 65534
+		end
+		itemstack:set_wear(new_wear)
 		if itemstack:get_wear() >= 65532 then
 			meta:set_int("overheat", 1)
 			meta:set_string("color", "#fc6a6c")
-
-			run_cooldown(user)
+			run_cooldown(user, itemstack)
 		end
+
+		-- Add recoil and particles for charged shot
+		local recoil_strength = shot_type == "powered" and 10 or 5
+		user:add_velocity(vector.multiply(dir, -recoil_strength))
 
 		cooldown:set(user, 0.3)
 		return itemstack

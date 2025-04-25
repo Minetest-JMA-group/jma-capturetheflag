@@ -1,3 +1,4 @@
+local abs = math.abs
 local stab_slash_time = 20/60 - 0.2
 local stab_slash_cooldown_after = 0.2
 local player_anim_data = {}
@@ -7,6 +8,8 @@ ctf_player = {
 		stab_slash = stab_slash_time + stab_slash_cooldown_after,
 	},
 }
+
+local angle_tolerance = 2 -- in degrees
 
 player_api.register_model("character.b3d", {
 	animation_speed = 30,
@@ -29,10 +32,21 @@ player_api.register_model("character.b3d", {
 	eye_height = 1.47,
 })
 
+local function is_angle_different(old_angle, new_angle)
+	if not old_angle then return true end
+	return abs(old_angle - new_angle) > angle_tolerance
+end
+
 minetest.register_on_joinplayer(function(player)
 	player_api.set_model(player, "character.b3d")
 	player:set_local_animation(nil, nil, nil, nil, 0)
-	player_anim_data[player:get_player_name()] = {timer = 0, r_hand_sleep = false}
+	local name = player:get_player_name()
+	player_anim_data[name] = {
+		timer = 0,
+		r_hand_sleep = false,
+		last_head_angle = nil,
+		last_arm_angle = nil
+	}
 end)
 
 minetest.register_on_leaveplayer(function(player)
@@ -131,17 +145,25 @@ function player_api.globalstep(dtime)
 				end
 
 				if timer > 0.15 then
-					player:set_bone_position("Head", {x = 0, y = 6.1, z = 0}, {x = -v_deg, y = 0, z = 0})
+					if is_angle_different(anim_data.last_head_angle, v_deg) then
+						player:set_bone_position("Head", {x = 0, y = 6.1, z = 0}, {x = -v_deg, y = 0, z = 0})
+						anim_data.last_head_angle = v_deg
+					end
 					timer = 0
 				end
 				timer = timer + dtime
 				anim_data.timer = timer
 
 				if r_hand then
-					player:set_bone_position("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = -v_deg, z = -90})
-					anim_data.r_hand_sleep = false
+					local arm_angle = -v_deg
+					if anim_data.r_hand_sleep or is_angle_different(anim_data.last_arm_angle, arm_angle) then
+						player:set_bone_position("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = arm_angle, z = -90})
+						anim_data.last_arm_angle = arm_angle
+						anim_data.r_hand_sleep = false
+					end
 				elseif not anim_data.r_hand_sleep then
 					player:set_bone_position("Arm_Right_Rot", {x = -2.1, y = 5.2, z = 0}, {x = 180, y = 0, z = -90})
+					anim_data.last_arm_angle = 0
 					anim_data.r_hand_sleep = true
 				end
 			end

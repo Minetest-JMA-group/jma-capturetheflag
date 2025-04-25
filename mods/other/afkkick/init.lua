@@ -7,8 +7,8 @@ to this software to the public domain worldwide. This software is
 distributed without any warranty.
 ]]
 
-local MAX_INACTIVE_TIME = 300
-local CHECK_INTERVAL = 10
+local MAX_INACTIVE_TIME = 280
+local CHECK_INTERVAL = 1
 local WARN_TIME = 150
 
 local players = {}
@@ -44,7 +44,7 @@ end)
 minetest.register_globalstep(function(dtime)
 	local currGameTime = minetest.get_gametime()
 
-	--Check for inactivity once every CHECK_INTERVAL seconds
+	-- Check for inactivity once every CHECK_INTERVAL seconds
 	checkTimer = checkTimer + dtime
 
 	local checkNow = checkTimer >= CHECK_INTERVAL
@@ -52,27 +52,26 @@ minetest.register_globalstep(function(dtime)
 		checkTimer = checkTimer - CHECK_INTERVAL
 	end
 
-	--Loop through each player in players
-	for playerName,_ in pairs(players) do
+	-- Loop through each player in players
+	for playerName, _ in pairs(players) do
 		local player = minetest.get_player_by_name(playerName)
 		if player then
-			--Check if this player is doing an action
-			for _,keyPressed in pairs(player:get_player_control()) do
-				if keyPressed then
-					players[playerName]["lastAction"] = currGameTime
-				end
+			-- Check if this player is doing an action
+			local control = player:get_player_control()
+			if control.up or control.down or control.left or control.right or control.jump or control.sneak or control.dig or control.place then
+				players[playerName]["lastAction"] = currGameTime
 			end
 
-			if checkNow and not minetest.check_player_privs(player, { canafk = true }) then
-				--Kick player if he/she has been inactive for longer than MAX_INACTIVE_TIME seconds
+			if checkNow and not minetest.check_player_privs(player, {canafk = true}) then
+				-- Kick player if he/she has been inactive for longer than MAX_INACTIVE_TIME seconds
 				if players[playerName]["lastAction"] + MAX_INACTIVE_TIME < currGameTime then
 					minetest.kick_player(playerName, "Kicked for inactivity")
 				end
 
-				--Warn player if he/she has less than WARN_TIME seconds to move or be kicked
+				-- Warn player if he/she has less than WARN_TIME seconds to move or be kicked
 				if players[playerName]["lastAction"] + MAX_INACTIVE_TIME - WARN_TIME < currGameTime then
 					minetest.chat_send_player(playerName, minetest.colorize("#FF8C00",
-                        S("Warning, you have @1 seconds to move or be kicked",
+                        S("[Warning], you have @1 seconds to move or be kicked for inactivity",
                     tostring(players[playerName]["lastAction"] + MAX_INACTIVE_TIME - currGameTime + 1))))
 				end
 			end

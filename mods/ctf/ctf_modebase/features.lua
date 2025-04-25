@@ -580,6 +580,14 @@ return {
 		teams_left = #team_list
 		many_teams = #team_list > 2
 
+		-- Detach all players
+		for _, player in ipairs(core.get_connected_players()) do
+			if player:get_attach() then
+				player:set_detach()
+				core.log("action", player:get_player_name() .. " detached")
+			end
+		end
+
 		if #delete_queue > 0 and delete_queue._map ~= ctf_map.current_map.dirname then
 			local p1, p2 = unpack(delete_queue)
 
@@ -1056,6 +1064,10 @@ return {
 
 		if player:get_hp() <= damage then
 			end_combat_mode(player:get_player_name(), "punch", hitter:get_player_name(), weapon_image)
+
+			-- Turn player's camera to face the killer
+			local dir = vector.direction(player:get_pos(), hitter:get_pos())
+			player:set_look_horizontal(minetest.dir_to_yaw(dir))
 		elseif player:get_player_name() ~= hitter:get_player_name() then
 			ctf_combat_mode.add_hitter(player, hitter, weapon_image, 15)
 		end

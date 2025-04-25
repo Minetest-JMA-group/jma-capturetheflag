@@ -23,9 +23,29 @@ local already_voted = false
 
 ctf_modebase.skip_vote = {}
 
+local function count_votes()
+	local yes = 0
+	local no = 0
+	local abs = 0
+
+	for _, vote in pairs(votes) do
+		if vote == "yes" then
+			yes = yes + 1
+		elseif vote == "no" then
+			no = no + 1
+		elseif vote == "abstain" then
+			abs = abs + 1
+		end
+	end
+
+	return yes, no, abs
+end
 
 local function vote_timer_hud(player)
-	local time_str = string.format("Vote to skip match [%d]", math.floor(time_left % 60))
+	local yes, no, abs = count_votes()
+
+	local time_str = string.format("Vote to skip match [%d]\nYes: %d | No: %d | Abs: %d",
+								  math.floor(time_left % 60), yes, no, abs)
 
 	if not hud:exists(player, "skip_vote:timer") then
 		hud:add(player, "skip_vote:timer", {
@@ -45,7 +65,7 @@ end
 local function add_vote_hud(player)
 	hud:add(player, "skip_vote:vote", {
 		type = "text",
-		position = {x = 1, y = 0.5},
+		position = {x = 1, y = 0.52},
 		offset = {x = -100, y = 0},
 		text = "/yes /no or /abs",
 		color = 0xFFFFFF,
@@ -95,17 +115,7 @@ function ctf_modebase.skip_vote.end_vote()
 
 	hud:remove_all()
 
-	local yes = 0
-	local no = 0
-
-	for _, vote in pairs(votes) do
-		if vote == "yes" then
-			yes = yes + 1
-		elseif vote == "no" then
-			no = no + 1
-		end
-	end
-
+	local yes, no, _ = count_votes()
 	votes = nil
 
 	local connected_players = #minetest.get_connected_players()
@@ -247,6 +257,11 @@ local function player_vote(name, vote)
 				text = string.format("[%s]", vote),
 				style = 1
 			})
+		end
+
+		-- Update vote information for all players
+		for _, p in ipairs(minetest.get_connected_players()) do
+			vote_timer_hud(p)
 		end
 	end
 

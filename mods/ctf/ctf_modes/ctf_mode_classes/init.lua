@@ -46,6 +46,8 @@ ctf_modebase.register_mode("classes", {
 		["default:shovel_steel"] = {rarity = 0.4, max_stacks = 2},
 		["default:axe_steel"   ] = {rarity = 0.4, max_stacks = 2},
 
+		["wind_charges:wind_charge" ] = {min_count = 4, max_count = 8, rarity = 0.4 , max_stacks = 1},
+
 		["ctf_ranged:pistol_loaded"        ] = {rarity = 0.2 , max_stacks = 2},
 		["ctf_ranged:shotgun_loaded"       ] = {rarity = 0.05                },
 		["ctf_ranged:assault_rifle_loaded"           ] = {rarity = 0.05                },

@@ -33,6 +33,7 @@ local sounds = {}
 
 local KNOCKBACK_AMOUNT = 35
 local KNOCKBACK_RADIUS = 4.5
+local KNOCKBACK_AMOUNT_WITH_FLAG = 15
 grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 	description = "Knockback Grenade, players within a very small area take extreme knockback",
 	image = "ctf_mode_chaos_knockback_grenade.png",
@@ -112,6 +113,11 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 					})
 
 					local kb = KNOCKBACK_AMOUNT
+					if ctf_modebase.taken_flags[vname] then
+						kb = KNOCKBACK_AMOUNT_WITH_FLAG
+					else
+						kb = KNOCKBACK_AMOUNT
+					end
 
 					local dir = vector.direction(pos, headpos)
 					if dir.y < 0 then dir.y = 0 end
@@ -134,7 +140,7 @@ do
 		end
 
 		itemstack:set_wear(WEAR_MAX - 6000)
-		ctf_modebase.update_wear.start_update(user:get_player_name(), kb_def.name, WEAR_MAX, true)
+		ctf_modebase.update_wear.start_update(user:get_player_name(), itemstack, WEAR_MAX, true)
 
 		return itemstack
 	end

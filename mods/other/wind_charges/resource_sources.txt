@@ -1,0 +1,7 @@
+RESOURCEFILE | SOURCE | DATE | LICENSE
+wind_charge_explode.ogg | https://freesound.org/people/ZHR%C3%98/sounds/514162/ | 08.04.2025 | CC0
+wind_charge_throw.ogg | https://freesound.org/people/Johnnie_Holiday/sounds/696649/ | 08.04.2025 | CC0
+
+Made by Tomlaus (MIT-LICENSE):
+wind_charge.png
+wind_charge_explode_particle.png

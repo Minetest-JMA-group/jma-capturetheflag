@@ -64,8 +64,8 @@ local function landmine_explode(pos)
 
 	minetest.sound_play("ctf_landmine_explosion", {
 		pos = pos,
-		gain = 1.0,
-		max_hear_distance = 64,
+		gain = 0.8,
+		max_hear_distance = 16,
 	})
 
 	for _, obj in pairs(near_objs) do

@@ -11,23 +11,16 @@ local function add_score(player, score)
 	end
 end
 
-local function boom(obj)
-    local pos = obj:get_pos()
-    obj:remove()
-    minetest.add_node(pos, {name = "tnt:tnt_burning"})
-end
-
 return {
+	{itemname = "ctf_mode_chaos:power_charge", chance = 48, amount = 10},
 	{itemname = "easter_egg:egg", chance = 2, amount = 2},
 	{itemname = "default:stone", chance = 40, amount = 99},
 	{itemname = "default:cobble", chance = 40, amount = 99},
 
 	{itemname = "default:dirt", chance = 41, amount = 99},
 	{itemname = "default:apple", chance = 45, amount = 5},
-	{itemname = "default:diamond", chance = 5, amount = 2},
 	{itemname = "default:torch", chance = 42, amount = 50},
 	{itemname = "ctf_map:damage_cobble", chance = 25, amount = 30},
-	{itemname = "xpanes:bar_flat", chance = 40, amount = 30},
 	{itemname = "default:obsidian", chance = 10, amount = 25},
 
 	--ranged
@@ -102,10 +95,6 @@ return {
 	-- 	add_score(player, 200)
 	-- end},
 
-	{chance = 40, image = "random_gifts_troll.png", oneshot = true,
-	func = function(_, obj)
-        boom(obj)
-	end},
     {chance = 30, image = "random_gifts_push.png", oneshot = true,
 	func = function(player)
         player:add_velocity(vector.new(math.random(0, 80), math.random(0, 30), math.random(0, 80))) --launch to the sky!

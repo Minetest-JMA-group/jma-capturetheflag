@@ -20,6 +20,11 @@ ctf_teams = {
 			color_hex = 0x000,
 			irc_color = 8,
 		},
+		yellow = {
+			color = "#ffea00",
+			color_hex = 0x000,
+			irc_color = 8,
+		},
 		purple = {
 			color = "#6f00a7",
 			color_hex = 0x000,

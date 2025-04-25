@@ -153,32 +153,38 @@ ctf_melee.simple_register_sword("ctf_mode_classes:knight_sword", {
 
 		if itemstack:get_wear() == 0 then
 			local step = math.floor(65534 / KNIGHT_USAGE_TIME)
-			ctf_modebase.update_wear.start_update(pname, "ctf_melee:sword_diamond", step, false, function()
+			ctf_modebase.update_wear.start_update(pname, itemstack, step, false, function(item_id)
 				local player = minetest.get_player_by_name(pname)
 
 				if player then
 					local pinv = player:get_inventory()
-					local pos = ctf_modebase.update_wear.find_item(pinv, "ctf_melee:sword_diamond")
+					local i, newstack = ctf_modebase.update_wear.find_item_by_id(pinv, item_id)
 
-					if pos then
-						local newstack = ItemStack("ctf_mode_classes:knight_sword")
+					if i and newstack then
+						local inv = player:get_inventory()
+						newstack:set_name("ctf_mode_classes:knight_sword")
 						newstack:set_wear(65534)
-						player:get_inventory():set_stack("main", pos, newstack)
+						inv:set_stack("main", i, newstack)
 
 						local dstep = math.floor(65534 / KNIGHT_COOLDOWN_TIME)
-						ctf_modebase.update_wear.start_update(pname, "ctf_mode_classes:knight_sword", dstep, true)
+						ctf_modebase.update_wear.start_update(pname, newstack, dstep, true)
 					end
 				end
 			end,
-			function()
+			function(item_id)
 				local player = minetest.get_player_by_name(pname)
 
 				if player then
-					player:get_inventory():remove_item("main", "ctf_melee:sword_diamond")
+					local pinv = player:get_inventory()
+					local i = ctf_modebase.update_wear.find_item_by_id(pinv, item_id)
+					if i then
+						pinv:set_stack("main", i, ItemStack(""))
+					end
 				end
 			end)
 
-			return "ctf_melee:sword_diamond"
+			itemstack:set_name("ctf_melee:sword_diamond")
+			return itemstack
 		end
 	end,
 })
@@ -226,7 +232,7 @@ ctf_ranged.simple_register_gun("ctf_mode_classes:ranged_rifle", {
 			grenades.throw_grenade("grenades:frag", 24, user)
 
 			local step = math.floor(65534 / RANGED_COOLDOWN_TIME)
-			ctf_modebase.update_wear.start_update(user:get_player_name(), "ctf_mode_classes:ranged_rifle_loaded", step, true)
+			ctf_modebase.update_wear.start_update(user:get_player_name(), itemstack, step, true)
 
 			itemstack:set_wear(65534)
 			return itemstack
@@ -281,7 +287,7 @@ minetest.register_node("ctf_mode_classes:scaling_ladder", scaling_def)
 --
 
 local IMMUNITY_TIME = 6
-local IMMUNITY_COOLDOWN = 46
+local IMMUNITY_COOLDOWN = 28
 local HEAL_PERCENT = 0.8
 
 ctf_healing.register_bandage("ctf_mode_classes:support_bandage", {
@@ -299,9 +305,9 @@ ctf_healing.register_bandage("ctf_mode_classes:support_bandage", {
 	heal_max = 5,
 	rightclick_func = function(itemstack, user, pointed)
 		if ctf_settings.get(user, "ctf_mode_classes:simple_support_activate") ~= "true" then
-		    local ctl = user:get_player_control()
-		    if not ctl.sneak and not ctl.aux1 then return end
-        end
+			local ctl = user:get_player_control()
+			if not ctl.sneak and not ctl.aux1 then return end
+		end
 
 		local pname = user:get_player_name()
 
@@ -318,11 +324,11 @@ ctf_healing.register_bandage("ctf_mode_classes:support_bandage", {
 			ctf_modebase.give_immunity(user)
 
 			local step = math.floor(65534 / IMMUNITY_TIME)
-			ctf_modebase.update_wear.start_update(pname, "ctf_mode_classes:support_bandage", step, false,
-			function()
+			ctf_modebase.update_wear.start_update(pname, itemstack, step, false,
+			function(item_id)
 				ctf_modebase.remove_immunity(user)
 				local dstep = math.floor(65534 / IMMUNITY_COOLDOWN)
-				ctf_modebase.update_wear.start_update(pname, "ctf_mode_classes:support_bandage", dstep, true)
+				ctf_modebase.update_wear.start_update(pname, itemstack, dstep, true)
 			end,
 			function()
 				ctf_modebase.remove_immunity(user)

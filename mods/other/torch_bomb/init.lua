@@ -323,7 +323,7 @@ minetest.after(0, function()
 end)
 
 local function play_bolt_hit(pos)
-	minetest.sound_play("torch_bomb_bolt_hit", {pos=pos, gain=1, max_hear_distance=32})
+	minetest.sound_play("torch_bomb_bolt_hit", {pos=pos, gain=1, max_hear_distance=8})
 end
 
 local function embed_torch(target, placer, pos)
@@ -784,7 +784,7 @@ local function register_torch_bow(name, desc, material, image, torch_bow_range, 
 			playerpos.y = playerpos.y + 1.5
 
             if not inv:contains_item("main", {name=torch_item, count=1}) then
-                minetest.sound_play("torch_bomb_crossbow_reload", {pos=playerpos, gain=1, max_hear_distance=64}) --out of ammo sound
+                minetest.sound_play("torch_bomb_crossbow_reload", {pos=playerpos, gain=1, max_hear_distance=8}) --out of ammo sound
                 return
             end
 
@@ -804,7 +804,7 @@ local function register_torch_bow(name, desc, material, image, torch_bow_range, 
 				embed_torch(target_pointed, user, playerpos)
 			end
 
-            minetest.sound_play("torch_bomb_crossbow_fire", {pos=playerpos, gain=1, max_hear_distance=64})
+            minetest.sound_play("torch_bomb_crossbow_fire", {pos=playerpos, gain=1, max_hear_distance=8})
 
             return itemstack
         end,

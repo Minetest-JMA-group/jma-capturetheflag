@@ -44,10 +44,12 @@ ctf_modebase.register_mode("chaos", {
 		"kills", "kill_assists", "bounty_kills",
 		"deaths",
 	},
-	build_timer = 60,
+	build_timer = 25,
 
 	is_bound_item = function(_, name)
-		if name:match("ctf_mode_chaos:") then
+		if name == "ctf_mode_chaos:grenade_launcher" or
+		name == "ctf_mode_chaos:knockback_grenade_tool" or
+		name == "ctf_mode_chaos:chaotic_shotgun" then
 			return true
 		end
 	end,

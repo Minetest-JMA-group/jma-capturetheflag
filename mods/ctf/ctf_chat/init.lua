@@ -70,8 +70,10 @@ minetest.register_chatcommand("t", {
 
 			local tcolor = ctf_teams.team[tname].color
 			for username in pairs(ctf_teams.online_players[tname].players) do
-				minetest.chat_send_player(username,
-						colorize(tcolor, "[TEAM] <" .. name .. "> ** " .. param .. " **"))
+				if not block_msgs or not block_msgs.is_chat_blocked(name, username) then
+					minetest.chat_send_player(username,
+							colorize(tcolor, "[TEAM] <" .. name .. "> ** " .. param .. " **"))
+				end
 			end
 		else
 			minetest.chat_send_player(name,

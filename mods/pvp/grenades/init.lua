@@ -3,7 +3,7 @@ grenades = {
 }
 
 local cooldown = ctf_core.init_cooldowns()
-local max_vel = 30
+local max_vel = 34
 
 function grenades.throw_grenade(name, startspeed, player)
 	local player_vel = player:get_velocity()
@@ -68,8 +68,8 @@ function grenades.register_grenade(name, def)
 
 					if c_result == true then
 						if self.thrower_name then
-							minetest.log("action", "[Grenades] A grenade thrown by " .. self.thrower_name ..
-									" explodes at " .. minetest.pos_to_string(vector.round(pos)))
+							-- minetest.log("action", "[Grenades] A grenade thrown by " .. self.thrower_name ..
+							-- 		" explodes at " .. minetest.pos_to_string(vector.round(pos)))
 							def:on_explode(obj, pos, self.thrower_name)
 						end
 						obj:remove()
@@ -135,8 +135,8 @@ function grenades.register_grenade(name, def)
 
 			if self.timer > def.clock or not self.thrower_name then
 				if self.thrower_name then
-					minetest.log("action", "[Grenades] A grenade thrown by " .. self.thrower_name ..
-					" explodes at " .. minetest.pos_to_string(vector.round(pos)))
+					-- minetest.log("action", "[Grenades] A grenade thrown by " .. self.thrower_name ..
+					-- " explodes at " .. minetest.pos_to_string(vector.round(pos)))
 					def:on_explode(obj, pos, self.thrower_name)
 				end
 

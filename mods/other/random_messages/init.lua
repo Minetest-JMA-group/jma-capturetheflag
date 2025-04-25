@@ -52,6 +52,7 @@ local messages = {
     "Want to skip a match? Use /yes to vote during build time",
     "Want to get a new skin? Send it to us at https://discord.gg/SSd9XcCqZk",
     "Try modern HUD instead of hearts/arrows (in the in-game settings)",
+    "It is recommended that you avoid sharing personal information such as your address, phone number, or other confidential data to ensure your safety and privacy.",
     -- connection, fps, minetest issues
     "To ensure smooth gameplay, we recommend updating to the latest version of Minetest",
     "If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
@@ -70,6 +71,7 @@ local messages = {
     "Your VPS service is being blocked? Contact our server staff so we can whitelist you",
     "Use /e to send emojis into the air",
     "You have problems exiting the game? Use /kickme to get disconnected from the server",
+    "Check your connection latency to the server with /ping",
 }
 
 local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval")) or 120
