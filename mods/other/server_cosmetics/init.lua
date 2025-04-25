@@ -67,6 +67,21 @@ server_cosmetics = {
 				["2023"] = {"server_cosmetics_santa_hat.png^(server_cosmetics_santa_hat_overlay.png^[multiply:purple)"},
 				["2024"] = {"server_cosmetics_santa_hat.png^(server_cosmetics_santa_hat_overlay.png^[multiply:blue)"},
 			},
+			
+			map_creator_helmet = {
+				_prefix = "Wear ",
+				_description = "Map creator helmet",
+				_model = "server_cosmetics_hat.b3d",
+				_preview_rot = {350, 315},
+				_anims = {
+					idle = {x = 24, y = 24},
+					bumpy = {x = 40, y = 40},
+					falling = {x = 24, y = 40},
+
+				},
+				["normal"] = {"server_cosmetics_map_creator_helmet.png"},
+			},
+			
 			hallows_hat = {
 				_prefix = "Wear ",
 				_description = "Hallows Hat",
