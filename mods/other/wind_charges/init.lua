@@ -24,12 +24,11 @@ minetest.register_entity("wind_charges:wind_projectile", {
 	visual_size = {x = 0.5, y = 0.5},
 	timer = 0,
 	lifetime = 16,
-
 	explode = function(self)
 		local pos = self.object:get_pos()
 		minetest.sound_play("wind_charge_explode", {
 			pos = pos,
-			max_hear_distance = 12,
+			max_hear_distance = 8,
 			gain = 1.0
 		})
 
@@ -52,6 +51,13 @@ minetest.register_entity("wind_charges:wind_projectile", {
 
 		local objs = minetest.get_objects_inside_radius(pos, 4)
 		for obj_index, obj in ipairs(objs) do
+			if obj:is_player() then
+				local player = obj
+				local player_name = player:get_player_name()
+				if ctf_teams.get(self.owner_name) == ctf_teams.get(player_name) and self.owner_name ~= player_name then--check if player_name is in the same team as the owner
+					goto continue
+				end
+			end
 			local obj_pos = obj:get_pos()
 			local dist = vector.distance(pos, obj_pos)
 			local dir = vector.direction(pos, obj_pos)
@@ -59,9 +65,25 @@ minetest.register_entity("wind_charges:wind_projectile", {
 			if obj:is_player() then
 				dir.y = 1
 			else
-				dir.y = 0.4
+				local ent = obj:get_luaentity()
+				if ent and ent.name == "__builtin:item" then
+					local owner_name = self.owner_name
+					local owner = minetest.get_player_by_name(owner_name)
+					if not owner then
+						goto continue
+					end
+					local owner_pos = owner:get_pos()
+					dir = vector.direction(pos, owner_pos)
+					power = dist * 3 + 2
+
+					obj:add_velocity({x = 0, y = 4, z = 0})
+					dir.y = 0
+				else
+					dir.y = 0.4
+				end
 			end
 			obj:add_velocity(vector.multiply(dir, power))
+		    ::continue::
 		end
 		self.object:remove()
 	end,
@@ -78,7 +100,12 @@ minetest.register_entity("wind_charges:wind_projectile", {
             self:explode()
             return
         end
-    end
+    end,
+	on_activate = function(self, staticdata, dtime_s)
+		if staticdata and staticdata:match("^owner:") then
+			self.owner_name = staticdata:sub(7)
+		end
+	end,
 })
 
 local players_wind_charge_cooldown = {}
@@ -107,7 +134,7 @@ minetest.register_craftitem("wind_charges:wind_charge", {
 		local dir = user:get_look_dir()
 		local player_velocity = user:get_velocity() or {x = 0, y = 0, z = 0}
 
-		local obj = minetest.add_entity(pos, "wind_charges:wind_projectile")
+		local obj = minetest.add_entity(pos, "wind_charges:wind_projectile", "owner:" .. user_name)
 		if obj then
 			local base_speed = vector.multiply(dir, 18)
 			local total_velocity = vector.add(base_speed, player_velocity)
@@ -116,7 +143,7 @@ minetest.register_craftitem("wind_charges:wind_charge", {
 
 			minetest.sound_play("wind_charge_throw", {
 				pos = pos,
-				max_hear_distance = 16,
+				max_hear_distance = 8,
 				gain = 0.8
 			})
 		end
