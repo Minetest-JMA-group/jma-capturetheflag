@@ -8,10 +8,12 @@ minetest.register_chatcommand("who", {
             table.insert(player_names, player:get_player_name())
         end
 
-        if #player_names > 0 then
-            return true, "Connected players : " .. table.concat(player_names, ", ")
+        local player_count = #player_names 
+
+        if player_count > 0 then
+            return true, "There are " .. player_count .. " player(s) connected: " .. table.concat(player_names, ", ")
         else
-            return true, "No players connected."
+            return true, "No players are connected."
         end
     end,
 })
