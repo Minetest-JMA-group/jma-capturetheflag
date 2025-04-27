@@ -178,6 +178,16 @@ function doors.door_toggle(pos, node, clicker)
 	else
 		minetest.sound_play(def.door.sounds[2],
 			{pos = pos, gain = def.door.gains[2], max_hear_distance = 10}, true)
+		minetest.after(1, function()
+			local door_item_name = minetest.get_node(pos).name
+			if type(minetest.registered_nodes[door_item_name].door) ~= "table" then--is the door still there?
+				return
+			end
+			if string.sub(door_item_name, -#"_c") == "_c" ~= true then--is door open?
+				return
+			end
+			doors.door_toggle(pos)
+		end)
 	end
 
 	minetest.swap_node(pos, {
