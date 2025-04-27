@@ -127,7 +127,7 @@ function ctf_modebase.skip_vote.end_vote()
 		if yes > no then
 			minetest.chat_send_all(string.format(
 				"The vote to skip the match has passed! (%d yes vs %d no)", yes, no))
-	
+
 			voted_skip = true
 			if flags_hold <= 0 then
 				ctf_modebase.start_new_match(5)
@@ -140,6 +140,7 @@ function ctf_modebase.skip_vote.end_vote()
 		minetest.chat_send_all(
 			"The vote to skip the match has failed due to not enough participation.")
 	end
+end
 
 
 -- Automatically start a skip vote after 50m, and subsequent votes every 15m
