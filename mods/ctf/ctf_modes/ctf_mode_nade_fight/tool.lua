@@ -343,18 +343,26 @@ for idx, info in ipairs(grenade_list) do
 	local def = minetest.registered_items[info.name]
 
 	minetest.register_tool("ctf_mode_nade_fight:grenade_tool_"..idx, {
-		description = def.description..minetest.colorize("gold", "\nRightclick off cooldown to switch to other grenades"),
+		description = def.description .. minetest.colorize("gold", "\nRightclick off cooldown to switch to other grenades"),
 		inventory_image = def.inventory_image,
 		wield_image = def.inventory_image,
 		inventory_overlay = "ctf_modebase_special_item.png",
+
 		on_use = function(itemstack, user, pointed_thing)
 			if itemstack:get_wear() > 1 then return end
 			local uname = user:get_player_name()
 
 			if not tool.holed[uname] then
-				if itemstack:get_wear() <= 1 then
-					grenades.throw_grenade(info.name, 17, user)
+				if info.name == "ctf_mode_nade_fight:black_hole_grenade" and not ctf_modebase.match_started then
+					hud_events.new(uname, {
+						quick = true,
+						text = "Impossible to launch a Black Hole during build time",
+						color = "warning",
+					})
+					return
 				end
+
+				grenades.throw_grenade(info.name, 17, user)
 			else
 				return
 			end
