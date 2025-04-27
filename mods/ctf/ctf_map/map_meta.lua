@@ -29,7 +29,10 @@ function ctf_map.load_map_meta(idx, dirname)
 	assert(ctf_map.map_path[dirname], "Map "..dirname.." not found")
 	local meta = Settings(ctf_map.map_path[dirname] .. "/map.conf")
 
-	if not meta then error("Map '"..dump(dirname).."' not found") end
+	if not meta then
+		-- Missing map.conf
+		return
+	end
 
 	minetest.log("info", "load_map_meta: Loading map meta from '" .. dirname .. "/map.conf'")
 
@@ -40,7 +43,8 @@ function ctf_map.load_map_meta(idx, dirname)
 
 	if not meta:get("map_version") then
 		if not meta:get("r") then
-			error("Map was not properly configured: " .. ctf_map.map_path[dirname].. "/map.conf")
+			-- Missing or empty map.conf
+			return
 		end
 
 		local mapr = meta:get("r")

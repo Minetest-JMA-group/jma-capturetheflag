@@ -88,7 +88,7 @@ ctf_map.register_map_command("resave_all", function(name, params)
 		local map = ctf_map.load_map_meta(dir, maplist[dir])
 
 
-		if map.enabled then
+		if map and map.enabled then
 			ctf_map.place_map(map, function()
 				edit_map(name, map)
 
@@ -200,9 +200,15 @@ function ctf_map.show_map_editor(player)
 						local idx = table.indexof(maplist, maplist_sorted[selected_map])
 						local map = ctf_map.load_map_meta(idx, maplist_sorted[selected_map])
 
-						ctf_map.place_map(map, function()
-								minetest.after(2, edit_map, pname, map)
-						end)
+						if map then
+							ctf_map.place_map(map, function()
+									minetest.after(2, edit_map, pname, map)
+							end)
+						else
+							minetest.chat_send_player(pname,
+									minetest.colorize("red", "Error: Map '"..maplist_sorted[selected_map]..
+											"' does not exist or is not enabled"))
+						end
 					end)
 				end,
 			},
@@ -222,8 +228,13 @@ function ctf_map.show_map_editor(player)
 					minetest.after(0.5, function()
 						local idx = table.indexof(maplist, maplist_sorted[selected_map])
 						local map = ctf_map.load_map_meta(idx, maplist_sorted[selected_map])
-
-						minetest.after(2, edit_map, pname, map)
+						if map then
+							minetest.after(2, edit_map, pname, map)
+						else
+							minetest.chat_send_player(pname,
+									minetest.colorize("red", "Error: Map '"..maplist_sorted[selected_map]..
+											"' does not exist or is not enabled"))
+						end
 					end)
 				end,
 			},

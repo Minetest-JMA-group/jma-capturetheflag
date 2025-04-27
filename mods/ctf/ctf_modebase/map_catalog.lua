@@ -13,13 +13,23 @@ local map_repeat_interval
 local function init()
 	table.sort(ctf_map.registered_maps)
 
+	local to_remove = {}
 	for i, dirname in ipairs(ctf_map.registered_maps) do
 		local map = ctf_map.load_map_meta(i, dirname)
-		if map.map_version and map.enabled then
-			table.insert(ctf_modebase.map_catalog.maps, map)
-			table.insert(ctf_modebase.map_catalog.map_names, map.name)
-			ctf_modebase.map_catalog.map_dirnames[map.dirname] = #ctf_modebase.map_catalog.maps
+		if map then
+			if map.map_version and map.enabled then
+				table.insert(ctf_modebase.map_catalog.maps, map)
+				table.insert(ctf_modebase.map_catalog.map_names, map.name)
+				ctf_modebase.map_catalog.map_dirnames[map.dirname] = #ctf_modebase.map_catalog.maps
+			end
+		else
+			minetest.log("info", "Map " .. dirname .. " is invalid")
+			table.insert(to_remove, i)
 		end
+	end
+
+	for i = #to_remove, 1, -1 do
+		table.remove(ctf_map.registered_maps, to_remove[i])
 	end
 
 	for i = 1, #ctf_modebase.map_catalog.maps do
