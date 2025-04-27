@@ -1,5 +1,5 @@
 minetest.register_chatcommand("who", {
-    description = "Liste des joueurs connectés",
+    description = "List of connected players",
     privs = {},  
     func = function(name)
         local players = minetest.get_connected_players()
@@ -9,9 +9,9 @@ minetest.register_chatcommand("who", {
         end
 
         if #player_names > 0 then
-            return true, "Joueurs connectés : " .. table.concat(player_names, ", ")
+            return true, "Connected players : " .. table.concat(player_names, ", ")
         else
-            return true, "Aucun joueur connecté."
+            return true, "No players connected."
         end
     end,
 })
