@@ -37,9 +37,26 @@ function ctf_map.load_map_meta(idx, dirname)
 	minetest.log("info", "load_map_meta: Loading map meta from '" .. dirname .. "/map.conf'")
 
 	local map
+	-- Calculate grid dimensions for map placement
+	local maps_per_row = math.ceil(math.sqrt(#ctf_map.registered_maps)) -- Number of maps per row
+	local row = math.floor((idx - 1) / maps_per_row) -- Current row index
+	local col = (idx - 1) % maps_per_row -- Current column index
 
-	local off_start_x = -(608 * (#ctf_map.registered_maps / 2))
-	local offset = vector.new(off_start_x + (608 * idx), 0, 0) -- 608 is a multiple of 16, the size of a mapblock
+	-- Calculate offsets for x and z axes
+	local map_spacing = 608 -- Spacing between maps (multiple of 16, size of a mapblock)
+	local total_width = maps_per_row * map_spacing -- Total width of the grid
+
+	-- Calculate starting offsets for x and z axes
+	local off_start_x = -(total_width / 2)
+	local off_start_z = -(total_width / 2)
+
+	local offset = vector.new(
+		off_start_x + (col * map_spacing), -- X offset based on column
+		0,
+		off_start_z + (row * map_spacing)  -- Z offset based on row
+	)
+
+	minetest.log("info", string.format("Map %s placed at (%d, %d, %d)", dirname, offset.x, offset.y, offset.z))
 
 	if not meta:get("map_version") then
 		if not meta:get("r") then
@@ -55,10 +72,10 @@ function ctf_map.load_map_meta(idx, dirname)
 
 		offset.y = -maph / 2
 
-		local offset_to_new = vector.new(mapr, maph/2, mapr)
+		local offset_to_new = vector.new(mapr, maph / 2, mapr)
 
 		local pos1 = offset
-		local pos2 = vector.add(offset, vector.new(mapr * 2,  maph, mapr * 2))
+		local pos2 = vector.add(offset, vector.new(mapr * 2, maph, mapr * 2))
 
 		map = {
 			pos1          = pos1,
@@ -96,7 +113,7 @@ function ctf_map.load_map_meta(idx, dirname)
 
 			map.teams[tname] = {
 				enabled = true,
-				flag_pos = vector.add(offset, vector.add( tpos, offset_to_new )),
+				flag_pos = vector.add(offset, vector.add(tpos, offset_to_new)),
 				pos1 = vector.new(),
 				pos2 = vector.new()
 			}
