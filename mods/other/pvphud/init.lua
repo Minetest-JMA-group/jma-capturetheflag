@@ -101,11 +101,11 @@ local function setup_hud(player)
         hud_ids[key] = player:hud_add(huddefs[key])
     end
 
-    local fps_hud = player:hud_add({hud_elem_type="text", position=hudpos, offset={x=-950, y=400}, text="FPS: 0", alignment={x=1, y=1}, scale={x=2, y=2}, number=0xD4AF37})
-    local pos_hud = player:hud_add({hud_elem_type="text", position=hudpos, offset={x=-950, y=420}, text="pos: 0, 0, 0", alignment={x=1, y=1}, scale={x=2, y=2}, number=0xD4AF37})
-    local time_hud = player:hud_add({hud_elem_type="text", position=hudpos, offset={x=-950, y=340}, text="Time: 00:00", alignment={x=1, y=1}, scale={x=2, y=2}, number=0xD4AF37})
-    local rmb_hud = player:hud_add({hud_elem_type="text", position=hudpos, offset={x=-950, y=360}, text="RMB CPS: 0", alignment={x=1, y=1}, scale={x=2, y=2}, number=0xD4AF37})
-    local lmb_hud = player:hud_add({hud_elem_type="text", position=hudpos, offset={x=-950, y=380}, text="LMB CPS: 0", alignment={x=1, y=1}, scale={x=2, y=2}, number=0xD4AF37})
+    local fps_hud = player:hud_add({hud_elem_type="text", position=hudpos, offset={x=-950, y=400}, text="FPS: 0", alignment={x=1, y=1}, scale={x=2, y=2}, number=0xFFFFFF})
+    local pos_hud = player:hud_add({hud_elem_type="text", position=hudpos, offset={x=-950, y=420}, text="pos: 0, 0, 0", alignment={x=1, y=1}, scale={x=2, y=2}, number=0xFFFFFF})
+    local time_hud = player:hud_add({hud_elem_type="text", position=hudpos, offset={x=-950, y=340}, text="Time: 00:00", alignment={x=1, y=1}, scale={x=2, y=2}, number=0xFFFFFF})
+    local rmb_hud = player:hud_add({hud_elem_type="text", position=hudpos, offset={x=-950, y=360}, text="RMB CPS: 0", alignment={x=1, y=1}, scale={x=2, y=2}, number=0xFFFFFF})
+    local lmb_hud = player:hud_add({hud_elem_type="text", position=hudpos, offset={x=-950, y=380}, text="LMB CPS: 0", alignment={x=1, y=1}, scale={x=2, y=2}, number=0xFFFFFF})
 
     players_data[name] = {
         active = true,
