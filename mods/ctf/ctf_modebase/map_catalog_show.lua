@@ -27,7 +27,12 @@ local function show_catalog(pname, current_map)
 						show_catalog(pname, evt.row)
 					end
 				end,
-			}
+			},
+			map_count = {
+				type = "label",
+				pos = {1, 0.25},
+				label = string.format("Map %d of %d", current_map, #ctf_modebase.map_catalog.maps),
+			},
 		}
 	}
 
