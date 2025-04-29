@@ -70,7 +70,7 @@ server_cosmetics = {
 			
 			map_creator_helmet = {
 				_prefix = "Wear ",
-				_description = "Map creator helmet",
+				_description = "Map creator crown",
 				_model = "server_cosmetics_hat.b3d",
 				_preview_rot = {350, 315},
 				_anims = {
@@ -79,7 +79,7 @@ server_cosmetics = {
 					falling = {x = 24, y = 40},
 
 				},
-				["normal"] = {"server_cosmetics_map_creator_helmet.png"},
+				["normal"] = {"server_cosmetics_map_creator_crown.png"},
 			},
 			
 			hallows_hat = {
