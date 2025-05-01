@@ -219,7 +219,7 @@ function ctf_modebase.mode_vote.end_vote()
 		ctf_modebase.mode_vote.start_vote()
 	else
 		ctf_modebase.mode_on_next_match = new_mode
-		ctf_modebase.start_match_after_vote()
+		ctf_modebase.start_match_after_mode_vote()
 	end
 end
 

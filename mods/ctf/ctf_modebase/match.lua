@@ -9,7 +9,7 @@ ctf_modebase.mode_on_next_match = nil
 function ctf_modebase.map_chosen(map)
 end
 
-function ctf_modebase.start_match_after_vote()
+function ctf_modebase.start_match_after_mode_vote()
 	local old_mode = ctf_modebase.current_mode
 
 	if ctf_modebase.mode_on_next_match ~= old_mode then
@@ -22,10 +22,13 @@ function ctf_modebase.start_match_after_vote()
 	if ctf_modebase.map_on_next_match then
 		ctf_modebase.map_catalog.current_map = ctf_modebase.map_catalog.map_dirnames[ctf_modebase.map_on_next_match]
 		ctf_modebase.map_on_next_match = nil
+		ctf_modebase.start_match_after_map_vote()
 	else
-		ctf_modebase.map_catalog.select_map_for_mode(ctf_modebase.current_mode)
+		ctf_modebase.map_vote.start_vote()
 	end
+end
 
+function ctf_modebase.start_match_after_map_vote()
 	ctf_modebase.show_loading_screen()
 	local map = ctf_modebase.map_catalog.maps[ctf_modebase.map_catalog.current_map]
 	ctf_modebase.map_chosen(map)
@@ -71,15 +74,14 @@ local function start_new_match()
 
 	if ctf_modebase.mode_on_next_match then
 		ctf_modebase.current_mode_matches_played = 0
-		ctf_modebase.start_match_after_vote()
-	-- Show mode selection form every 'current_mode_matches'-th match
+		ctf_modebase.start_match_after_mode_vote()
 	elseif ctf_modebase.current_mode_matches_played >= ctf_modebase.current_mode_matches or
 	not ctf_modebase.current_mode then
 		ctf_modebase.current_mode_matches_played = 0
 		ctf_modebase.mode_vote.start_vote()
 	else
 		ctf_modebase.mode_on_next_match = ctf_modebase.current_mode
-		ctf_modebase.start_match_after_vote()
+		ctf_modebase.start_match_after_mode_vote()
 	end
 end
 

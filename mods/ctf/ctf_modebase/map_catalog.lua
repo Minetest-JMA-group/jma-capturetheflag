@@ -44,7 +44,7 @@ minetest.register_on_mods_loaded(function()
 	assert(#ctf_modebase.map_catalog.maps > 0 or ctf_core.settings.server_mode == "mapedit")
 end)
 
-function ctf_modebase.map_catalog.select_map(filter, full_pool)
+function ctf_modebase.map_catalog.sample_maps(filter, full_pool, n)
 	local maps = {}
 	for _, pool in pairs({maps_pool, full_pool and used_maps}) do
 		for idx, map in ipairs(pool) do
@@ -54,8 +54,26 @@ function ctf_modebase.map_catalog.select_map(filter, full_pool)
 		end
 	end
 
-	local selected = maps[math.random(1, #maps)]
+	--Sample the n maps randomly
+	local function shuffle(t)
+		for i = #t, 2, -1 do
+			local j = math.random(i)
+			t[i], t[j] = t[j], t[i]
+		end
+	end
+	shuffle(maps)
 
+	local selected = {}
+	for i = 1, n do
+		table.insert(selected, maps[i])
+	end
+
+
+	return selected
+end
+
+
+function ctf_modebase.map_catalog.select_map(selected)
 	if not selected then
 		selected = ctf_modebase.map_catalog.map_dirnames["plains"]
 	end
@@ -81,8 +99,8 @@ function ctf_modebase.map_catalog.select_map(filter, full_pool)
 	end
 end
 
-function ctf_modebase.map_catalog.select_map_for_mode(mode)
-	ctf_modebase.map_catalog.select_map(function(map)
+function ctf_modebase.map_catalog.sample_map_for_mode(mode, n)
+	return ctf_modebase.map_catalog.sample_maps(function(map)
 		return not map.game_modes or table.indexof(map.game_modes, mode) ~= -1
-	end)
+	end, nil, n)
 end
