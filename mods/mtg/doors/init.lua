@@ -132,6 +132,32 @@ local transform = {
 	},
 }
 
+local player_autoclose_setting = {}
+
+ctf_settings.register("door_autoclose", {
+	type = "bool",
+	label = "Door Autoclose",
+	description = "Closes door automatically.",
+	default = true,
+	on_change = function(player, new_value)
+		local player_name = player:get_player_name()
+		if new_value == "true" then
+			player_autoclose_setting[player_name] = true
+		else
+			player_autoclose_setting[player_name] = false
+		end
+	end,
+})
+
+minetest.register_on_joinplayer(function(player)
+	local player_name = player:get_player_name()
+	if ctf_settings.get(player, "door_autoclose") == "true" then
+		player_autoclose_setting[player_name] = true
+	else
+		player_autoclose_setting[player_name] = false
+	end
+end)
+
 function doors.door_toggle(pos, node, clicker)
 	local meta = minetest.get_meta(pos)
 	node = node or minetest.get_node(pos)
@@ -178,16 +204,18 @@ function doors.door_toggle(pos, node, clicker)
 	else
 		minetest.sound_play(def.door.sounds[2],
 			{pos = pos, gain = def.door.gains[2], max_hear_distance = 10}, true)
-		minetest.after(1, function()
-			local door_item_name = minetest.get_node(pos).name
-			if type(minetest.registered_nodes[door_item_name].door) ~= "table" then--is the door still there?
-				return
-			end
-			if string.sub(door_item_name, -#"_c") == "_c" ~= true then--is door open?
-				return
-			end
-			doors.door_toggle(pos)
-		end)
+		if clicker and player_autoclose_setting[clicker:get_player_name()] == true then
+			minetest.after(1, function()
+				local door_item_name = minetest.get_node(pos).name
+				if type(minetest.registered_nodes[door_item_name].door) ~= "table" then--is the door still there?
+					return
+				end
+				if string.sub(door_item_name, -#"_c") == "_c" ~= true then--is door open?
+					return
+				end
+				doors.door_toggle(pos)
+			end)
+		end
 	end
 
 	minetest.swap_node(pos, {
