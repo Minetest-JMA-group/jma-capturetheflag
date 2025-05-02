@@ -1,6 +1,8 @@
 local VOTING_TIME = 20
+local NUM_MAPS_VOTE = 4
 
-local selected = nil
+
+local map_sample = nil
 local timer = nil
 local formspec_send_timer = nil
 local votes = nil
@@ -11,8 +13,6 @@ ctf_modebase.map_vote = {}
 
 local function player_vote(name, mapID)
 	if not voted then return end
-
-    print("Player " .. name .. ' Vote' .. mapID)
 
 	if not voted[name] then
 		voters_count = voters_count - 1
@@ -29,25 +29,10 @@ end
 local function show_mapchoose_form(player)
     local elements = {}
 
-
-    -- local image_texture = "empty_map_screenshot.png"
-    -- --local image_texture = current_map_meta.dirname .. "_screenshot.png"
-	-- if ctf_core.file_exists(string.format"%s/textures/%s", minetest.get_modpath("ctf_map"), image_texture)) then
-    --     print("Exists image")
-    --     elements["map_1"] = {
-    --         type = "image",
-    --         pos = {x = 0, y = 0},
-    --         image_scale = -100,
-    --         z_index = 1001,
-    --         texture = image_texture
-    --         --texture = map.dirname.."_screenshot.png^[opacity:30",
-    --     }
-    -- end
-
     local i = 0.4
 
-    -- Create vote buttons dynamically
-    for idx, mapID in ipairs(selected) do
+    -- Create vote buttons
+    for idx, mapID in ipairs(map_sample) do
         elements["vote_button_" .. idx] = {
             type = "button",
             exit = true,
@@ -99,7 +84,7 @@ function ctf_modebase.map_vote.start_vote()
     voted = {}
     voters_count = 0
 
-    selected = ctf_modebase.map_catalog.sample_map_for_mode(ctf_modebase.current_mode, 3) --select three maps at random
+    map_sample = ctf_modebase.map_catalog.sample_map_for_mode(ctf_modebase.current_mode, NUM_MAPS_VOTE) --select three maps at random
 
     for _, player in pairs(minetest.get_connected_players()) do
 		--if ctf_teams.get(player) ~= nil or not ctf_modebase.current_mode then
@@ -139,14 +124,32 @@ function ctf_modebase.map_vote.end_vote()
 	votes = nil
 	voted = nil
 
-    local winning_mapID = nil
+    --find the maximum amount of votes
     local max_votes = 0
-    for mapID, count in pairs(vote_counts) do
+    for _, count in pairs(vote_counts) do
         if count > max_votes then
             max_votes = count
-            winning_mapID = mapID
         end
     end
+
+    --insert all the joint first in the table
+    local winning_mapIDs = {}
+    for mapID, count in pairs(vote_counts) do
+        if count == max_votes then
+            table.insert(winning_mapIDs, mapID)
+        end
+    end
+
+    local winning_mapID = nil
+    if #winning_mapIDs > 0 then
+        --determine winner randomly in case of a draw
+        local random_index = math.random(1, #winning_mapIDs)
+        winning_mapID = winning_mapIDs[random_index]
+    else
+        --if no votes were cast
+        winning_mapID = map_sample[1]
+    end
+
 
     local winner_name = ctf_modebase.map_catalog.map_names[winning_mapID] or tostring(winning_mapID)
     minetest.chat_send_all("Map voting is over. The next map will be " .. winner_name)
