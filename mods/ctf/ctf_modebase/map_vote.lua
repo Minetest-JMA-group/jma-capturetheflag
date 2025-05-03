@@ -1,5 +1,5 @@
 local VOTING_TIME = 20
-local NUM_MAPS_VOTE = 4
+local NUM_MAPS_VOTE = 3
 
 
 local map_sample = nil
@@ -28,38 +28,49 @@ end
 
 local function show_mapchoose_form(player)
     local elements = {}
-
-    local i = 0.4
+    local i = 1
 
     -- Create vote buttons
     for idx, mapID in ipairs(map_sample) do
+
+        local image_texture = ctf_modebase.map_catalog.maps[mapID].dirname .. "_screenshot.png"
+        local image_path = string.format("%s/textures/%s", minetest.get_modpath("ctf_map"), image_texture)
+
+        if ctf_core.file_exists(image_path) then
+            elements["map_image_" .. idx] = {
+                type = "image",
+                pos = {x = i, y = 1},
+                size = {x = 6, y = 4},
+                texture = image_texture,
+            }
+        end
+
         elements["vote_button_" .. idx] = {
             type = "button",
             exit = true,
             label = ctf_modebase.map_catalog.map_names[mapID],
-            pos = {x = "center", y = i},
+            pos = {x = i + 1, y = 6},
+            size = {x = 4, y = 1},
             func = function(playername, fields, field_name)
                 player_vote(playername, mapID)
             end,
         }
-        i = i + 1
+        i = i + 7
     end
     
     -- Add quit button
-    i = i + 1.2
     elements["quit_button"] = {
         type = "button",
         exit = true,
         label = "Exit Game",
-        pos = {x = "center", y = i},
+        pos = {x = "center", y = 8},
         func = function(playername, fields, field_name)
             minetest.kick_player(playername, "You clicked 'Exit Game' in the map vote formspec")
         end,
     }
-    i = i + (ctf_gui.ELEM_SIZE.y - 0.2)
     
     ctf_gui.old_show_formspec(player, "ctf_modebase:map_select", {
-        size = {x = 8, y = i + 3.5},
+        size = {x = i, y = 11},
         title = "Vote for the next map",
         description = "Please click on the map that you would like to play next!",
         header_height = 1.4,
