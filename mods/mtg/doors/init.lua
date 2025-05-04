@@ -139,8 +139,19 @@ ctf_settings.register("door_autoclose", {
 	default = true,
 })
 
+local usage_cooldown = 0.15
 function doors.door_toggle(pos, node, clicker)
 	local meta = minetest.get_meta(pos)
+
+	if clicker then
+		local clicker_name = clicker:get_player_name()
+		local current_time = minetest.get_us_time() / 1000000
+		if current_time - meta:get_float("last_used_" .. clicker_name) < usage_cooldown then
+			return
+		end
+		meta:set_float("last_used_" .. clicker_name, current_time)
+	end
+
 	node = node or minetest.get_node(pos)
 	local def = minetest.registered_nodes[node.name]
 	local name = def.door.name
