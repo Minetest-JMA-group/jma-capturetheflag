@@ -63,9 +63,21 @@ local function show_mapchoose_form(player)
         type = "button",
         exit = true,
         label = "Exit Game",
-        pos = {x = "center", y = 8},
+        pos = {x = (i / 2) + 0.5, y = 8},
+        size = {x = 3, y = 0.6},
         func = function(playername, fields, field_name)
             minetest.kick_player(playername, "You clicked 'Exit Game' in the map vote formspec")
+        end,
+    }
+
+    elements["abstain_button"] = {
+        type = "button",
+        exit = true,
+        label = "Abstain",
+        pos = {x = (i / 2) - 3.5, y = 8},
+        size = {x = 3, y = 0.6},
+        func = function(playername, fields, field_name)
+            player_vote(playername, nil)
         end,
     }
     
@@ -166,8 +178,10 @@ function ctf_modebase.map_vote.end_vote()
     minetest.chat_send_all("Map voting is over. The next map will be " .. winner_name)
 
     minetest.chat_send_all("Vote results:")
-    for mapID, count in pairs(vote_counts) do
+    for _, mapID in pairs(map_sample) do
         local map_name = ctf_modebase.map_catalog.map_names[mapID] or ("Unknown (" .. tostring(mapID) .. ")")
+        local count = vote_counts[mapID] or 0
+
         minetest.chat_send_all(count .." vote(s) for " .. map_name)
     end
 
