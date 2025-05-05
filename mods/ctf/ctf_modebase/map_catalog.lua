@@ -5,6 +5,7 @@ ctf_modebase.map_catalog = {
 	current_map = false,
 }
 
+local FULL_POOL = true
 local maps_pool = {}
 local used_maps = {}
 local used_maps_idx = 1
@@ -44,12 +45,12 @@ minetest.register_on_mods_loaded(function()
 	assert(#ctf_modebase.map_catalog.maps > 0 or ctf_core.settings.server_mode == "mapedit")
 end)
 
-function ctf_modebase.map_catalog.sample_maps(filter, full_pool, n)
+function ctf_modebase.map_catalog.sample_maps(filter, n)
 	local maps = {}
-	for _, pool in pairs({maps_pool, full_pool and used_maps}) do
+	for _, pool in pairs({maps_pool, FULL_POOL and used_maps}) do
 		for idx, map in ipairs(pool) do
 			if not filter or filter(ctf_modebase.map_catalog.maps[map]) then
-				table.insert(maps, full_pool and map or idx)
+				table.insert(maps, FULL_POOL and map or idx)
 			end
 		end
 	end
@@ -78,7 +79,7 @@ function ctf_modebase.map_catalog.select_map(selected)
 		selected = ctf_modebase.map_catalog.map_dirnames["plains"]
 	end
 
-	if full_pool then
+	if FULL_POOL then
 		ctf_modebase.map_catalog.current_map = selected
 	else
 		ctf_modebase.map_catalog.current_map = maps_pool[selected]
@@ -102,5 +103,5 @@ end
 function ctf_modebase.map_catalog.sample_map_for_mode(mode, n)
 	return ctf_modebase.map_catalog.sample_maps(function(map)
 		return not map.game_modes or table.indexof(map.game_modes, mode) ~= -1
-	end, nil, n)
+	end, n)
 end
