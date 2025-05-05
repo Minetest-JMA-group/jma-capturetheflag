@@ -72,6 +72,7 @@ local messages = {
     "Use /e to send emojis into the air",
     "You have problems exiting the game? Use /kickme to get disconnected from the server",
     "Check your connection latency to the server with /ping",
+    "Want to check match status? Type /match to see current mode, map details and teams info",
 }
 
 local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval")) or 120
