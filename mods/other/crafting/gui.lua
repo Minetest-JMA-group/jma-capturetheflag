@@ -151,6 +151,9 @@ function crafting.result_select_on_receive_results(player, context, fields)
 		context.crafting_page = (context.crafting_page or 1) + 1
 		return true
 	elseif fields.search or fields.key_enter_field == "query" then
+		if not fields.query then
+			return false
+		end
 		context.crafting_query = fields.query:trim():lower()
 		context.crafting_page  = 1
 		if context.crafting_query == "" then
