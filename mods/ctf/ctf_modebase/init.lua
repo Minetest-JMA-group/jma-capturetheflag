@@ -141,3 +141,40 @@ minetest.register_chatcommand("mode", {
 		)
 	end
 })
+
+minetest.register_chatcommand("match", {
+	description = "Shows current match information",
+	func = function(name)
+		local mode = ctf_modebase.current_mode
+		if not mode then
+			return false, "The game isn't running"
+		end
+
+		-- Current mode
+		local mode_str = string.format("Mode: %s (%d/%d matches)",
+			HumanReadable(mode),
+			ctf_modebase.current_mode_matches_played-1,
+			ctf_modebase.current_mode_matches
+		)
+
+		-- Current map
+		local map = ctf_map.current_map
+		local map_str = map and string.format("Map: %s by %s",
+			map.name, map.author) or "No map loaded"
+
+		-- Teams info
+		local team_str = ""
+		local total = 0
+		for _, team in ipairs(ctf_teams.current_team_list) do
+			local count = ctf_teams.online_players[team].count
+			team_str = team_str .. string.format("%s: %d, ", team, count)
+			total = total + count
+		end
+		team_str = string.format("Players (%d total): %s",
+			total, team_str:sub(1, -3)) -- Remove trailing ", "
+
+		local duration = string.format("Duration: %s", ctf_map.get_duration())
+		return true, string.format("%s\n%s\n%s\n%s",
+			mode_str, map_str, duration, team_str)
+	end
+})
