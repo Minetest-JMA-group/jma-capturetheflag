@@ -77,7 +77,8 @@ ctf_core.include_files(
 	"skip_vote.lua",
 	"recent_rankings.lua",
 	"bounty_algo.lua",
-	"features.lua"
+	"features.lua",
+	"map_vote.lua"
 )
 
 minetest.register_on_mods_loaded(function()
