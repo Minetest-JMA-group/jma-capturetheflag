@@ -56,6 +56,7 @@ local messages = {
     -- connection, fps, minetest issues
     "To ensure smooth gameplay, we recommend updating to the latest version of Minetest",
     "If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
+"You can find our Terms Of Service and the privacy policy on our GitHub page: https://github.com/Minetest-JMA-group/information/",
     "Having a stable internet connection is crucial as it minimizes lag, ensuring smoother multiplayer interactions",
     --translator usage tips
     "Overcoming a language barrier? Use a translator in the chat by adding %<language code> after your message, e.g, %en or %ен",
