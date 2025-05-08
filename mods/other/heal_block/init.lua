@@ -15,9 +15,10 @@ minetest.register_node("heal_block:heal", {
 	walkable = true,
 	tiles = {
 		{name = "heal_block_top.png", align_style = "repeat", scale = 1, position = {x = 0, y = 0, z = 0.5}}, -- top
-		{name = "default_snow.png"}
+		{name = "default_aspen_wood.png^[multiply:#ffc2a7:80"}
 	},
-	groups = {snappy=2,cracky=3,oddly_breakable_by_hand=3},
+	groups = {choppy = 1, oddly_breakable_by_hand = 1},
+	sounds = default.node_sound_wood_defaults(),
 	drop = "",
 
 	on_place = function(itemstack, placer, pointed_thing)
