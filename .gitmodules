@@ -4,9 +4,6 @@
 [submodule "mods/other/lib_chatcmdbuilder"]
 	path = mods/other/lib_chatcmdbuilder
 	url = https://github.com/rubenwardy/ChatCmdBuilder.git
-[submodule "mods/other/skybox"]
-	path = mods/other/skybox
-	url = https://github.com/MT-CTF/skybox.git
 [submodule "mods/extras"]
 	path = mods/extras
 	url = git@github.com:Minetest-JMA-group/jma-extras.git
