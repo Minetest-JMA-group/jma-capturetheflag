@@ -1030,22 +1030,24 @@ return {
 
 		local deny_pro = "You need to have more than 1.4 kills per death, "..
 						 "5 captures, and at least 8,000 score to access the pro section."
-		if rank then
-			local captures_needed = math.max(0, 5 - (rank.flag_captures or 0))
-			local score_needed = math.max(math.max(0, 8000 - (rank.score or 0)))
-			local current_kd = math.floor((rank.kills or 0) / (rank.deaths or 1) * 10)
-			current_kd = current_kd / 10
-			deny_pro = deny_pro .. " You still need " .. captures_needed
-					   .. " captures, " .. score_needed ..
-					   " score, and your kills per death is " ..
-					   current_kd .. "."
-
-			if is_pro(minetest.get_player_by_name(pname), rank) then
-				return true, true
-			elseif (rank.score or 0) >= 10 then
-				return true, deny_pro
-			end
+	if rank then
+		local captures_needed = math.max(0, 5 - (rank.flag_captures or 0))
+		local score_needed = math.max(0, 8000 - (rank.score or 0))
+		score_needed = math.floor(score_needed) -- <-- arrondi pour enlever la virgule
+		local current_kd = math.floor((rank.kills or 0) / (rank.deaths or 1) * 10)
+		current_kd = current_kd / 10
+		deny_pro = deny_pro .. " You still need " .. captures_needed
+				   .. " captures, " .. score_needed ..
+				   " score, and your kills per death is " ..
+				   current_kd .. "."
+	
+		if is_pro(minetest.get_player_by_name(pname), rank) then
+			return true, true
+		elseif (rank.score or 0) >= 10 then
+			return true, deny_pro
 		end
+	end
+
 
 
 		return "You need at least 10 score to access this chest", deny_pro
