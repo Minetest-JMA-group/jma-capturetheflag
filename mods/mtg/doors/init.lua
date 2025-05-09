@@ -132,11 +132,11 @@ local transform = {
 	},
 }
 
-ctf_settings.register("door_autoclose", {
+ctf_settings.register("doors:door_autoclose", {
 	type = "bool",
 	label = "Door Autoclose",
 	description = "Closes door automatically.",
-	default = true,
+	default = "true",
 })
 
 local usage_cooldown = 0.15
@@ -196,7 +196,7 @@ function doors.door_toggle(pos, node, clicker)
 	else
 		minetest.sound_play(def.door.sounds[2],
 			{pos = pos, gain = def.door.gains[2], max_hear_distance = 10}, true)
-		if clicker and ctf_settings.get(clicker, "door_autoclose") == "true" then
+		if clicker and ctf_settings.get(clicker, "doors:door_autoclose") == "true" then
 			minetest.after(1, function() --autoclose delay
 				local door_item_name = minetest.get_node(pos).name
 				if type(minetest.registered_nodes[door_item_name].door) ~= "table" then--is the door still there?
