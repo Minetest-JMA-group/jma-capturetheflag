@@ -56,12 +56,16 @@ local messages = {
     -- connection, fps, minetest issues
     "To ensure smooth gameplay, we recommend updating to the latest version of Minetest",
     "If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
-"You can find our Terms Of Service and the privacy policy on our GitHub page: https://github.com/Minetest-JMA-group/information/",
+	"You can find our Terms Of Service and the privacy policy on our GitHub page: https://github.com/Minetest-JMA-group/information/",
     "Having a stable internet connection is crucial as it minimizes lag, ensuring smoother multiplayer interactions",
+	"If you can't open chests, exit then rejoin the game",
+	"Your VPS service is being blocked? Contact our server staff so we can whitelist you",
+	"Check your connection latency to the server with /ping",
     --translator usage tips
     "Overcoming a language barrier? Use a translator in the chat by adding %<language code> after your message, e.g, %en or %ен",
     "Set your preferred language for in-game translator using /lang <lang code> . For example, use /lang en",
     "Use /b to translate the last message to your preferred language",
+	--other
     "Want to send a nice welcoming message with the 8 score gift? Use /wb <mode:technical modename> <playername>",
     "To report a player sending inappropriate private messages to you, use /report playername PM reason",
     "The chaos mode is active on weekends only.",
@@ -69,11 +73,9 @@ local messages = {
     "Keep the team door closed to stop enemies from getting in",
     "Use /rules to read the server rules",
     "You can claim the crown as a reward for joining our Discord server",
-    "Your VPS service is being blocked? Contact our server staff so we can whitelist you",
     "Use /e to send emojis into the air",
     "You have problems exiting the game? Use /kickme to get disconnected from the server",
-    "Check your connection latency to the server with /ping",
-    "Want to check match status? Type /match to see current mode, map details and teams info",
+    "Want to check match status? Type /match to see current mode, map details and teams info",	
 }
 
 local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval")) or 120
