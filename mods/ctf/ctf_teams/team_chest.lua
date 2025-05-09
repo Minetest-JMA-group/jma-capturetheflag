@@ -13,7 +13,8 @@ local item_value = {
 	["ctf_ranged:shotgun"             ] = 10,
 	["ctf_ranged:sniper_magnum_loaded"] = 10,
 	["ctf_ranged:sniper_magnum"       ] = 8,
-	["ctf_ranged:assault_rifle"       ] = 8,
+	["ctf_ranged:assault_rifle_loaded"] = 8,
+	["rocket_launcher:launcher"       ] = 8,
 	["default:sword_steel"            ] = 7,
 	["default:pick_diamond"           ] = 7,
 	["default:axe_diamond"            ] = 7,
@@ -310,9 +311,16 @@ for _, team in ipairs(ctf_teams.teamlist) do
 		dropteam and ctf_teams.get(pname) ~= dropteam and dropinfo and pinfo and dropinfo.address ~= pinfo.address then
 			local cur_mode = ctf_modebase:get_current_mode()
 			if pname and cur_mode then
-				local score = item_value[stack:get_name()] or 1
+				local item_name = stack:get_name()
+				local score = item_value[item_name] or 1
 
-				cur_mode.recent_rankings.add(pname, { score = score }, false)
+				local item_desc = stack:get_short_description()
+				if item_desc == "" then
+					item_desc = item_name
+				end
+
+				cur_mode.recent_rankings.add(pname, { score = score }, true)
+				cmsg.push_message_player(player, string.format("+ %s: %s", score, item_desc))
 			end
 		end
 		meta:set_string("dropped_by", "")
