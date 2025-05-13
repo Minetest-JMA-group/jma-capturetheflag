@@ -7,11 +7,10 @@ local TYPE_ENTITY = 1
 playertag = {
 	TYPE_BUILTIN = TYPE_BUILTIN,
 	TYPE_ENTITY  = TYPE_ENTITY,
+	no_entity_attach = {}
 }
 
 local function add_entity_tag(player, old_observers, readded)
-	local player_pos = player:get_pos()
-
 	local player_name = player:get_player_name()
 	-- Hide fixed nametag
 	player:set_nametag_attributes({
@@ -83,7 +82,7 @@ local function add_entity_tag(player, old_observers, readded)
 	end)
 end
 
-local function remove_entity_tag(player)
+function playertag.remove_entity_tag(player)
 	local tag = players[player:get_player_name()]
 	if tag and tag.entity then
 		tag.entity.object:remove()
@@ -128,7 +127,7 @@ local function update(player, settings)
 		settings.symbol_entity_observers = nil
 	end
 
-	remove_entity_tag(player)
+	playertag.remove_entity_tag(player)
 	players[pname] = settings
 
 	if settings.type == TYPE_BUILTIN then
@@ -142,6 +141,10 @@ local function update(player, settings)
 end
 
 function playertag.set(player, type, color, extra)
+	if playertag.no_entity_attach[player:get_player_name()] then
+		return
+	end
+
 	local oldset = players[player:get_player_name()]
 	if not oldset then return end
 
@@ -185,10 +188,14 @@ minetest.register_entity("playertag:tag", {
 })
 
 minetest.register_on_joinplayer(function(player)
-	players[player:get_player_name()] = {type = TYPE_BUILTIN, color = {a=255, r=255, g=255, b=255}}
+	local name = player:get_player_name()
+	if playertag.no_entity_attach[name] then
+		return
+	end
+	players[name] = {type = TYPE_BUILTIN, color = {a=255, r=255, g=255, b=255}}
 end)
 
 minetest.register_on_leaveplayer(function(player)
-	remove_entity_tag(player)
+	playertag.remove_entity_tag(player)
 	players[player:get_player_name()] = nil
 end)

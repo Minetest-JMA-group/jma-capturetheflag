@@ -1,4 +1,4 @@
-hpbar = {}
+hpbar = {no_entity_attach = {}}
 local max = {hp = 20}
 local players = {}
 
@@ -73,6 +73,9 @@ end
 
 local function update_entity(player, new_icon_texture)
 	local pname = player:get_player_name()
+	if hpbar.no_entity_attach[pname] then
+		return
+	end
 	local hp = scaleToDefault(player, "hp")
 
 

@@ -1,4 +1,5 @@
 server_cosmetics = {
+	no_entity_attach = {},
 	cosmetics = {
 		default_cosmetics = {
 			hair = {
@@ -67,7 +68,7 @@ server_cosmetics = {
 				["2023"] = {"server_cosmetics_santa_hat.png^(server_cosmetics_santa_hat_overlay.png^[multiply:purple)"},
 				["2024"] = {"server_cosmetics_santa_hat.png^(server_cosmetics_santa_hat_overlay.png^[multiply:blue)"},
 			},
-			
+
 			map_creator_helmet = {
 				_prefix = "Wear ",
 				_description = "Map creator helmet",
@@ -81,7 +82,7 @@ server_cosmetics = {
 				},
 				["normal"] = {"server_cosmetics_map_creator_helmet.png"},
 			},
-			
+
 			hallows_hat = {
 				_prefix = "Wear ",
 				_description = "Hallows Hat",
@@ -234,6 +235,9 @@ minetest.register_on_joinplayer(function(player)
 		player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
 	end
 
+	if server_cosmetics.no_entity_attach[player:get_player_name()] then
+		return
+	end
 	minetest.after(1, server_cosmetics.update_entity_cosmetics, player:get_player_name(), current)
 end)
 
@@ -249,10 +253,12 @@ ctf_api.register_on_new_match(function()
 	minetest.after(5, function()
 		for _, player in ipairs(minetest.get_connected_players()) do
 			local pname = player:get_player_name()
-			local hat = hatted[pname]
-			if hat and not hat:get_pos() then
-				server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
-				minetest.log("action", "server_cosmetics: Hat entity for player " .. player:get_player_name() .. " unloaded. Re-adding... (on new match)")
+			if not server_cosmetics.no_entity_attach[pname] then
+				local hat = hatted[pname]
+				if hat and not hat:get_pos() then
+					server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
+					minetest.log("action", "server_cosmetics: Hat entity for player " .. player:get_player_name() .. " unloaded. Re-adding... (on new match)")
+				end
 			end
 		end
 	end)

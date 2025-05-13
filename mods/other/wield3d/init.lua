@@ -1,3 +1,5 @@
+wield3d = {no_entity_attach = {}}
+
 local location = {
 	"Arm_Right",          -- default bone
 	{x=0, y=5.5, z=3},    -- default position
@@ -33,7 +35,11 @@ minetest.register_entity("wield3d:entity", {
 	end
 })
 
-local function add_wielditem(player)
+function wield3d.add_wielditem(player)
+	local player_name = player:get_player_name()
+	if wield3d.no_entity_attach[player_name] then
+		return
+	end
 	local entity = minetest.add_entity(player:get_pos(), "wield3d:entity")
 	if not entity then return end
 
@@ -45,14 +51,12 @@ local function add_wielditem(player)
 		setting == "false"
 	)
 
-	local player_name = player:get_player_name()
-
 	players[player_name] = {entity=entity, item="wield3d:hand"}
 
 	player:hud_set_flags({wielditem = (setting == "true")})
 end
 
-local function remove_wielditem(player)
+function wield3d.remove_wielditem(player)
 	local pname = player:get_player_name()
 	if players[pname] ~= nil then
 		players[pname].entity:remove()
@@ -76,7 +80,7 @@ local function update_entity(player)
 	if players[pname].entity:get_luaentity() then
 		players[pname].entity:set_properties({wield_item = item})
 	else
-		add_wielditem(player)
+		wield3d.add_wielditem(player)
 	end
 end
 
@@ -98,11 +102,11 @@ minetest.register_on_joinplayer(function(player)
 	local pname = player:get_player_name()
 	minetest.after(1.5, function()
 		if minetest.get_player_by_name(pname) then --checking if the player is still online
-			add_wielditem(player)
+			wield3d.add_wielditem(player)
 		end
 	end)
 end)
-minetest.register_on_leaveplayer(remove_wielditem)
+minetest.register_on_leaveplayer(wield3d.remove_wielditem)
 
 
 ctf_settings.register("wield3d:use_old_wielditem_display", {
@@ -113,6 +117,6 @@ ctf_settings.register("wield3d:use_old_wielditem_display", {
 		"This won't show custom animations, but might be less jarring",
 	on_change = function(player, new_value)
 		remove_wielditem(player)
-		add_wielditem(player)
+		wield3d.add_wielditem(player)
 	end,
 })
