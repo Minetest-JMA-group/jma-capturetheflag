@@ -48,7 +48,15 @@ function ctf_modebase.bounties.claim(player, killer)
 	end
 
 	local rewards = bounties[pteam].rewards
-	local bounty_kill_text = string.format("[Bounty] %s killed %s and got %s", killer, player, get_reward_str(rewards))
+	local reward_str = get_reward_str(rewards)
+	local messages = {
+		string.format("[Bounty] %s eliminated %s and earned %s", killer, player, reward_str),
+		string.format("[Bounty] %s took down %s and claimed %s", killer, player, reward_str),
+		string.format("[Bounty] %s got rid of %s and secured %s", killer, player, reward_str),
+		string.format("[Bounty] %s turned %s into loot and pocketed %s (nice!)", killer, player, reward_str), -- Humorous one
+	}
+	local bounty_kill_text = messages[math.random(1, #messages)]
+
 	minetest.chat_send_all(minetest.colorize(CHAT_COLOR, bounty_kill_text))
 	ctf_modebase.announce(bounty_kill_text)
 
