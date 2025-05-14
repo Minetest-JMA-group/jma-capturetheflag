@@ -116,7 +116,7 @@ ctf_settings.register("wield3d:use_old_wielditem_display", {
 	description = "Will use Minetest's default method of showing the wielded item.\n" ..
 		"This won't show custom animations, but might be less jarring",
 	on_change = function(player, new_value)
-		remove_wielditem(player)
+		wield3d.remove_wielditem(player)
 		wield3d.add_wielditem(player)
 	end,
 })
