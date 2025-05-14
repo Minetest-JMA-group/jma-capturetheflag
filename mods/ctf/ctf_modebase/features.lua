@@ -300,6 +300,7 @@ local damage_group_textures = {
 	black_hole_grenade = "ctf_mode_nade_fight_black_hole_grenade.png",
 	damage_cobble = "ctf_map_damage_cobble.png",
 	landmine = "ctf_landmine_landmine.png",
+	spike = "ctf_map_spike.png",
 }
 
 local function get_weapon_image(hitter, tool_capabilities)
