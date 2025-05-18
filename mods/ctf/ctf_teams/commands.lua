@@ -70,11 +70,11 @@ minetest.register_chatcommand("team", {
 			end
 
 			local tcolor = ctf_teams.team[pteam].color
-			return true, string.format("Player %s is in team %s", player, minetest.colorize(tcolor, pteam))
+			return true, string.format("%s is in the %s team", player, minetest.colorize(tcolor, pteam))
 		elseif param == "" then
 			local str = ""
 			for _, team in ipairs(ctf_teams.current_team_list) do
-				str = str .. get_team_players(team) .. "\n"
+				str = str .. "> " .. get_team_players(team) .. "\n"
 			end
 			return true, str:sub(1, -2)
 		else
@@ -82,7 +82,7 @@ minetest.register_chatcommand("team", {
 				return false, "No such team: " .. param
 			end
 
-			return true, get_team_players(param)
+			return true, "> " .. get_team_players(param)
 		end
 	end,
 })
