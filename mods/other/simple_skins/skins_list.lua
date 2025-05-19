@@ -120,4 +120,11 @@ return {
 		author = "leoleg",
 		texture = "character_silentripper.png",
 	},
+	-- 34 is taken by private skin
+	[35] = {
+		name = "Flagelite",
+		author = "i35",
+		licence = "CC BY-I 3.5", 
+		texture = "character_flagelite.png"
+	}
 }
