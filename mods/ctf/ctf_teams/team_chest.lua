@@ -7,21 +7,22 @@ local blacklist = {
 
 
 local item_value = {
-	["ctf_melee:sword_diamond"        ] = 16,
-	["ctf_melee:sword_mese"           ] = 13,
+	["ctf_melee:sword_diamond"        ] = 12,
 	["ctf_ranged:shotgun_loaded"      ] = 12,
+	["ctf_melee:sword_mese"           ] = 10,
 	["ctf_ranged:shotgun"             ] = 10,
 	["ctf_ranged:sniper_magnum_loaded"] = 10,
+	["default:axe_diamond"            ] = 8,
 	["ctf_ranged:sniper_magnum"       ] = 8,
 	["ctf_ranged:assault_rifle_loaded"] = 8,
 	["rocket_launcher:launcher"       ] = 8,
 	["default:sword_steel"            ] = 7,
-	["default:pick_diamond"           ] = 7,
-	["default:axe_diamond"            ] = 7,
+	["default:pick_diamond"           ] = 6,
+	["ctf_ranged:assault_rifle"       ] = 6,
 	["grenades:frag"                  ] = 6,
-	["default:pick_mese"              ] = 6,
 	["ctf_healing:medkit"             ] = 6,
-	["default:axe_mese"               ] = 6,
+	["default:pick_mese"              ] = 5,
+	["default:axe_mese"               ] = 5,
 	["grenades:poison"                ] = 5,
 	["ctf_ranged:rifle_loaded"        ] = 5,
 	["ctf_ranged:smg_loaded"          ] = 5,
@@ -29,14 +30,15 @@ local item_value = {
 	["ctf_ranged:smg"                 ] = 4,
 	["ctf_healing:bandage"            ] = 4,
 	["default:shovel_diamond"         ] = 4,
-	["default:pick_steel"             ] = 3,
-	["default:axe_steel"              ] = 3,
-	["default:shovel_mese"            ] = 3,
 	["grenades:smoke"                 ] = 2,
 	["ctf_ranged:pistol_loaded"       ] = 2,
 	["default:mese_crystal"           ] = 2,
 	["default:shovel_steel"           ] = 2,
+	["default:pick_steel"             ] = 1,
+	["default:axe_steel"              ] = 1,
+	["default:shovel_mese"            ] = 1,
 	["ctf_ranged:pistol"              ] = 1,
+
 }
 
 local S = minetest.get_translator(minetest.get_current_modname())
