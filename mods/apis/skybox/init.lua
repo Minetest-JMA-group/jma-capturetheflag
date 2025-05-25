@@ -40,7 +40,7 @@ skybox.set = function(player, number)
     else
         local sky = skies[number]
         if not sky then
-            minetest.log("error", "Invalid skybox number: " .. tostring(number))
+            core.log("error", "Invalid skybox number: " .. tostring(number))
             skybox.clear(player)
             return
         end
@@ -122,25 +122,25 @@ skybox.restore = function(player)
 		skybox.clear(player)
 	end
 end
-minetest.register_on_joinplayer(skybox.restore)
+core.register_on_joinplayer(skybox.restore)
 
-minetest.register_privilege("skybox", {
+core.register_privilege("skybox", {
 	description = "Change sky box for yourself",
 })
 
-minetest.register_chatcommand("skybox", {
+core.register_chatcommand("skybox", {
 	params = "<skybox> or <number> or \"off\" or empty to list skyboxes",
 	description = "Change your sky box set",
 	privs = "skybox",
 	func = function(name, param)
-		local player = minetest.get_player_by_name(name)
+		local player = core.get_player_by_name(name)
 		if not player then
 			return
 		end
 		if param == nil or param == "" then
-			minetest.chat_send_player(name, "Available sky boxes:")
+			core.chat_send_player(name, "Available sky boxes:")
 			for _, v in ipairs(skies) do
-				minetest.chat_send_player(name, v[1])
+				core.chat_send_player(name, v[1])
 			end
 			return
 		elseif tonumber(param) ~= nil and tonumber(param) >= 1 and tonumber(param) <= table.getn(skies) then
@@ -156,6 +156,6 @@ minetest.register_chatcommand("skybox", {
 				return
 			end
 		end
-		minetest.chat_send_player(name, "Could not find that sky box.")
+		core.chat_send_player(name, "Could not find that sky box.")
 	end
 })

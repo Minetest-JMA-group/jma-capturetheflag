@@ -24,7 +24,7 @@ local function init()
 				ctf_modebase.map_catalog.map_dirnames[map.dirname] = #ctf_modebase.map_catalog.maps
 			end
 		else
-			minetest.log("info", "Map " .. dirname .. " is invalid")
+			core.log("info", "Map " .. dirname .. " is invalid")
 			table.insert(to_remove, i)
 		end
 	end
@@ -40,7 +40,7 @@ local function init()
 	map_repeat_interval = math.floor(#ctf_modebase.map_catalog.maps / 2)
 end
 
-minetest.register_on_mods_loaded(function()
+core.register_on_mods_loaded(function()
 	init()
 	assert(#ctf_modebase.map_catalog.maps > 0 or ctf_core.settings.server_mode == "mapedit")
 end)

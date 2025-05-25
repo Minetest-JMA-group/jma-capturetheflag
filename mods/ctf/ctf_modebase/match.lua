@@ -34,8 +34,8 @@ function ctf_modebase.start_match_after_map_vote()
 	ctf_modebase.map_chosen(map)
 	ctf_map.place_map(map, function()
 		-- Set time and time_speed
-		minetest.set_timeofday(map.start_time/24000)
-		minetest.settings:set("time_speed", map.time_speed * 72)
+		core.set_timeofday(map.start_time/24000)
+		core.settings:set("time_speed", map.time_speed * 72)
 
 		ctf_map.announce_map(map)
 		ctf_modebase.announce(string.format("New match: %s map by %s, %s mode",
@@ -57,7 +57,7 @@ function ctf_modebase.start_match_after_map_vote()
 		if table.indexof(current_map.game_modes, current_mode) == -1 then
 			local concat = "The current mode is not in the list of modes supported by the current map."
 			local cmd_text = string.format("/ctf_next -f [mode:technical modename] %s", current_map.dirname)
-			minetest.chat_send_all(minetest.colorize(
+			core.chat_send_all(core.colorize(
 				"red", string.format("%s\nSupported mode(s): %s. To switch to a mode set for the map, do %s",
 				concat, table.concat(current_map.game_modes, ", "), cmd_text)))
 		end
@@ -88,18 +88,18 @@ end
 function ctf_modebase.start_new_match(delay)
 	ctf_modebase.match_started = false
 	if delay and delay > 0 then
-		minetest.after(delay, start_new_match)
+		core.after(delay, start_new_match)
 	else
 		start_new_match()
 	end
 end
 
-minetest.register_chatcommand("ctf_next", {
+core.register_chatcommand("ctf_next", {
 	description = "Set a new map and mode",
 	privs = {ctf_admin = true},
 	params = "[-f] [mode:technical modename] [technical mapname]",
 	func = function(name, param)
-		minetest.log("action", string.format("[ctf_admin] %s ran /ctf_next %s", name, param))
+		core.log("action", string.format("[ctf_admin] %s ran /ctf_next %s", name, param))
 
 		local force = param == "-f"
 		if force then
@@ -143,11 +143,11 @@ minetest.register_chatcommand("ctf_next", {
 	end,
 })
 
-minetest.register_chatcommand("ctf_skip", {
+core.register_chatcommand("ctf_skip", {
 	description = "Skip to a new match",
 	privs = {ctf_admin = true},
 	func = function(name, param)
-		minetest.log("action", string.format("[ctf_admin] %s ran /ctf_skip", name))
+		core.log("action", string.format("[ctf_admin] %s ran /ctf_skip", name))
 
 		if not ctf_modebase.in_game then
 			return false, "Map switching is in progress"

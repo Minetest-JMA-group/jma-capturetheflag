@@ -6,7 +6,7 @@ ctf_settings = {
 local FORMSIZE = {x = 8, y = 9.1}
 local SCROLLBAR_W = 0.4
 
-minetest.after(0, function()
+core.after(0, function()
 	table.sort(ctf_settings.settings_list, function(a, b) return a < b end)
 end)
 
@@ -60,7 +60,7 @@ local function make_scrollbaroptions_for_scroll_container(visible_l, total_l, sc
 	return ("scrollbaroptions[min=0;max=%f;thumbsize=%f]"):format(max / scroll_factor, thumb_size / scroll_factor)
 end
 
-minetest.register_on_mods_loaded(function()
+core.register_on_mods_loaded(function()
 	sfinv.register_page("ctf_settings:settings", {
 		title = "Settings",
 		get = function(self, player, context)
@@ -193,7 +193,7 @@ minetest.register_on_mods_loaded(function()
 							refresh = true
 						end
 					elseif setting.type == "bar" then
-						local scrollevent = minetest.explode_scrollbar_event(value)
+						local scrollevent = core.explode_scrollbar_event(value)
 
 						if scrollevent.value and context.setting[field] ~= tostring(scrollevent.value) then
 							context.setting[field] = tostring(scrollevent.value)
@@ -212,7 +212,7 @@ minetest.register_on_mods_loaded(function()
 			if not refresh then return end
 
 			if fields.settings_scrollbar then
-				local scrollevent = minetest.explode_scrollbar_event(fields.settings_scrollbar)
+				local scrollevent = core.explode_scrollbar_event(fields.settings_scrollbar)
 
 				if scrollevent.value then
 					context.settings_scrollbar = scrollevent.value

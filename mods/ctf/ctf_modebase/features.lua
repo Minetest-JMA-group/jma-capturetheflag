@@ -27,7 +27,7 @@ local loading_screen_time
 local old_announce = ctf_modebase.map_chosen
 function ctf_modebase.map_chosen(map, ...)
 	local found = false
-	for _, p in pairs(minetest.get_connected_players()) do
+	for _, p in pairs(core.get_connected_players()) do
 		if hud:exists(p, "loading_screen") then
 			found = true
 
@@ -47,7 +47,7 @@ function ctf_modebase.map_chosen(map, ...)
 
 	-- Reset loading screen timer
 	if found then
-		loading_screen_time = minetest.get_us_time()
+		loading_screen_time = core.get_us_time()
 	end
 
 	return old_announce(map, ...)
@@ -77,7 +77,7 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 	nametag_players[player:get_player_name()] = nil
 
 	for n in pairs(table.copy(nametag_players)) do
-		local setting = ctf_settings.get(minetest.get_player_by_name(n), "ctf_modebase:teammate_nametag_style")
+		local setting = ctf_settings.get(core.get_player_by_name(n), "ctf_modebase:teammate_nametag_style")
 
 		if setting == "3" then
 			nametag_players[n] = nil
@@ -87,7 +87,7 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 		end
 	end
 
-	for k, v in ipairs(minetest.get_connected_players()) do
+	for k, v in ipairs(core.get_connected_players()) do
 		local n = v:get_player_name()
 		if not nametag_players[n] then
 			entity_players[n] = true
@@ -104,9 +104,9 @@ local update_timer = false
 local function update_playertags(time)
 	if not update_timer and not tags_hidden then
 		update_timer = true
-		minetest.after(time or 1.2, function()
+		core.after(time or 1.2, function()
 			update_timer = false
-			for _, p in pairs(minetest.get_connected_players()) do
+			for _, p in pairs(core.get_connected_players()) do
 				local t = ctf_teams.get(p)
 				local playertag = playertag.get(p)
 
@@ -134,7 +134,7 @@ local function set_playertags_state(state)
 	elseif state == PLAYERTAGS_OFF and not tags_hidden then
 		tags_hidden = true
 
-		for _, p in pairs(minetest.get_connected_players()) do
+		for _, p in pairs(core.get_connected_players()) do
 			local playertag = playertag.get(p)
 
 			if ctf_teams.get(p) and playertag then
@@ -156,7 +156,7 @@ end
 
 function ctf_modebase.show_loading_screen()
 	set_playertags_state(PLAYERTAGS_OFF)
-	for _, p in pairs(minetest.get_connected_players()) do
+	for _, p in pairs(core.get_connected_players()) do
 		if ctf_teams.get(p) then
 			hud:add(p, "loading_screen", {
 				type = "image",
@@ -188,7 +188,7 @@ function ctf_modebase.show_loading_screen()
 		end
 	end
 
-	loading_screen_time = minetest.get_us_time()
+	loading_screen_time = core.get_us_time()
 end
 
 
@@ -269,7 +269,7 @@ ctf_settings.register("ctf_modebase:teammate_nametag_style", {
 	list = {"Minetest Nametag: Full", "Minetest Nametag: Symbol", "Entity Nametag"},
 	default = "1",
 	on_change = function(player, new_value)
-		minetest.log("action", "Player "..player:get_player_name().." changed their nametag setting")
+		core.log("action", "Player "..player:get_player_name().." changed their nametag setting")
 		update_playertags()
 	end
 })
@@ -339,7 +339,7 @@ local function get_suicide_image(reason)
 			return "default_lava.png"
 		end
 
-		local node_def = minetest.registered_nodes[node]
+		local node_def = core.registered_nodes[node]
 		if node_def then
 			local inv_image = node_def.inventory_image
 			if inv_image and inv_image ~= "" then
@@ -379,7 +379,7 @@ local function tp_player_near_flag(player)
 	while not is_position_suitable do
 		attempts = attempts + 1
 		if attempts >= 15 then
-			minetest.log("warning", "[ctf_modebase] Could not find a free spawn position")
+			core.log("warning", "[ctf_modebase] Could not find a free spawn position")
 			break
 		end
 
@@ -392,8 +392,8 @@ local function tp_player_near_flag(player)
 			is_position_suitable = true -- Assuming that the position is suitable
 
 			for y_off = 0, 1 do
-				local node = minetest.get_node({x = pos.x, y = pos.y + y_off, z = pos.z})
-				local node_def = minetest.registered_nodes[node.name]
+				local node = core.get_node({x = pos.x, y = pos.y + y_off, z = pos.z})
+				local node_def = core.registered_nodes[node.name]
 
 				if node.name ~= "air" and (node_def and not node_def.groups.liquid) then
 					is_position_suitable = false
@@ -414,7 +414,7 @@ local function tp_player_near_flag(player)
 	end
 
 	apply()
-	minetest.after(0.1, function() -- TODO remove after respawn bug will be fixed
+	core.after(0.1, function() -- TODO remove after respawn bug will be fixed
 		if player:is_player() then
 			apply()
 		end
@@ -424,20 +424,20 @@ local function tp_player_near_flag(player)
 end
 
 local function celebrate_team(teamname)
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		local pname = player:get_player_name()
 		local pteam = ctf_teams.get(pname)
 
 		local sound_volume = (tonumber(ctf_settings.get(player, "ctf_modebase:flag_sound_volume")) or 10.0) / 10
 
 		if pteam == teamname then
-			minetest.sound_play("ctf_modebase_trumpet_positive", {
+			core.sound_play("ctf_modebase_trumpet_positive", {
 				to_player = pname,
 				gain = sound_volume,
 				pitch = 1.0,
 			}, true)
 		else
-			minetest.sound_play("ctf_modebase_trumpet_negative", {
+			core.sound_play("ctf_modebase_trumpet_negative", {
 				to_player = pname,
 				gain = sound_volume,
 				pitch = 1.0,
@@ -447,19 +447,19 @@ local function celebrate_team(teamname)
 end
 
 local function drop_flag(teamname)
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		local pname = player:get_player_name()
 		local pteam = ctf_teams.get(pname)
 
 		if pteam then
 			if pteam == teamname then
-				minetest.sound_play("ctf_modebase_drop_flag_negative", {
+				core.sound_play("ctf_modebase_drop_flag_negative", {
 					to_player = pname,
 					gain = 0.2,
 					pitch = 1.0,
 				}, true)
 			else
-				minetest.sound_play("ctf_modebase_drop_flag_positive", {
+				core.sound_play("ctf_modebase_drop_flag_positive", {
 					to_player = pname,
 					gain = 0.2,
 					pitch = 1.0,
@@ -599,7 +599,7 @@ return {
 				"server_cosmetics:hat"
 			}
 
-			for _, obj in pairs(minetest.get_objects_in_area(p1, p2)) do
+			for _, obj in pairs(core.get_objects_in_area(p1, p2)) do
 				if not obj:is_player() then
 					local luaent = obj:get_luaentity()
 
@@ -609,7 +609,7 @@ return {
 				end
 			end
 
-			minetest.delete_area(p1, p2)
+			core.delete_area(p1, p2)
 
 			delete_queue = {}
 		end
@@ -640,14 +640,14 @@ return {
 		)
 
 		if loading_screen_time then
-			local total_time = (minetest.get_us_time() - loading_screen_time) / 1e6
+			local total_time = (core.get_us_time() - loading_screen_time) / 1e6
 
-			minetest.after(math.abs(LOADING_SCREEN_TARGET_TIME - total_time), function()
+			core.after(math.abs(LOADING_SCREEN_TARGET_TIME - total_time), function()
 				hud:clear_all()
 				set_playertags_state(PLAYERTAGS_ON)
 
-				for _, player in ipairs(minetest.get_connected_players()) do
-					minetest.close_formspec(player:get_player_name(), "ctf_modebase:summary")
+				for _, player in ipairs(core.get_connected_players()) do
+					core.close_formspec(player:get_player_name(), "ctf_modebase:summary")
 				end
 			end)
 		end
@@ -761,7 +761,7 @@ return {
 		)
 
 		if not success then
-			minetest.log("error", result)
+			core.log("error", result)
 			result = false
 		end
 
@@ -813,9 +813,9 @@ return {
 			{text = pname .. text, color = "light"}
 		)
 
-		minetest.chat_send_all(
-			minetest.colorize(tcolor, pname) ..
-			minetest.colorize(FLAG_MESSAGE_COLOR, text)
+		core.chat_send_all(
+			core.colorize(tcolor, pname) ..
+			core.colorize(FLAG_MESSAGE_COLOR, text)
 		)
 		ctf_modebase.announce(string.format("Player %s (team %s)%s", pname, pteam, text))
 
@@ -843,9 +843,9 @@ return {
 			{text = pname .. text, color = "light"}
 		)
 
-		minetest.chat_send_all(
-			minetest.colorize(tcolor, pname) ..
-			minetest.colorize(FLAG_MESSAGE_COLOR, text)
+		core.chat_send_all(
+			core.colorize(tcolor, pname) ..
+			core.colorize(FLAG_MESSAGE_COLOR, text)
 		)
 		ctf_modebase.announce(string.format("Player %s (team %s)%s", pname, pteam, text))
 
@@ -898,7 +898,7 @@ return {
 			{text = pname .. " has captured: " .. teamnames_readable .. flag_or_flags, color = "light"}
 		)
 
-		minetest.chat_send_all(minetest.colorize(tcolor, pname) .. minetest.colorize(FLAG_MESSAGE_COLOR, text))
+		core.chat_send_all(core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text))
 
 		ctf_modebase.announce(string.format("Player %s (team %s)%s", pname, pteam, text))
 
@@ -940,16 +940,16 @@ return {
 				capture_text = "Player %s captured the last flag"
 			end
 
-			ctf_modebase.summary.set_winner(string.format(capture_text, minetest.colorize(tcolor, pname)))
+			ctf_modebase.summary.set_winner(string.format(capture_text, core.colorize(tcolor, pname)))
 
 			local win_text = HumanReadable(pteam) .. " Team Wins!"
 
-			minetest.chat_send_all(minetest.colorize(pteam, win_text))
+			core.chat_send_all(core.colorize(pteam, win_text))
 
 			local match_rankings, special_rankings, rank_values, formdef = ctf_modebase.summary.get()
 			formdef.title = win_text
 
-			for _, p in ipairs(minetest.get_connected_players()) do
+			for _, p in ipairs(core.get_connected_players()) do
 				ctf_modebase.summary.show_gui(p:get_player_name(), match_rankings, special_rankings, rank_values, formdef)
 			end
 
@@ -1022,7 +1022,7 @@ return {
 	end,
 	player_is_pro = function(pname)
 		local rank = rankings:get(pname)
-		if is_pro(minetest.get_player_by_name(pname), rank) then
+		if is_pro(core.get_player_by_name(pname), rank) then
 			return true
 		end
 	end,
@@ -1041,7 +1041,7 @@ return {
 					   " score, and your kills per death is " ..
 					   current_kd .. "."
 
-			if is_pro(minetest.get_player_by_name(pname), rank) then
+			if is_pro(core.get_player_by_name(pname), rank) then
 				return true, true
 			elseif (rank.score or 0) >= 10 then
 				return true, deny_pro
@@ -1068,7 +1068,7 @@ return {
 
 			-- Turn player's camera to face the killer
 			local dir = vector.direction(player:get_pos(), hitter:get_pos())
-			player:set_look_horizontal(minetest.dir_to_yaw(dir))
+			player:set_look_horizontal(core.dir_to_yaw(dir))
 		elseif player:get_player_name() ~= hitter:get_player_name() then
 			ctf_combat_mode.add_hitter(player, hitter, weapon_image, 15)
 		end

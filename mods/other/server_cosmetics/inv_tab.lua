@@ -69,7 +69,7 @@ sfinv.register_page("server_cosmetics:customize", {
 
 							local selected_color = cosmetics[selected]
 							if not server_cosmetics.can_use(player, ctype, selected) then
-								minetest.log("warning", "Player "..pname.." is trying to exploit the cosmetic formspecs")
+								core.log("warning", "Player "..pname.." is trying to exploit the cosmetic formspecs")
 								return true
 							end
 							ctf_cosmetics.set_extra_clothing(player, { [ctype] = selected_color })
@@ -88,7 +88,7 @@ sfinv.register_page("server_cosmetics:customize", {
 
 						local selected_color = cosmetics[selected]
 						if not server_cosmetics.can_use(player, ctype, selected) then
-							minetest.log("warning", "Player "..pname.." is trying to exploit the cosmetic formspecs")
+							core.log("warning", "Player "..pname.." is trying to exploit the cosmetic formspecs")
 							return true
 						end
 
@@ -197,7 +197,7 @@ sfinv.register_page("server_cosmetics:customize", {
 		if not refresh then return end
 
 		if fields.cosmetics_scrollbar then
-			local scrollevent = minetest.explode_scrollbar_event(fields.cosmetics_scrollbar)
+			local scrollevent = core.explode_scrollbar_event(fields.cosmetics_scrollbar)
 
 			if scrollevent.value then
 				context.scrollbar = scrollevent.value

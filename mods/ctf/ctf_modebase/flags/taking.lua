@@ -74,14 +74,14 @@ local function drop_flags(player, pteam)
 
 		local fpos = vector.offset(ctf_map.current_map.teams[flagteam].flag_pos, 0, 1, 0)
 
-		minetest.load_area(fpos)
-		local node = minetest.get_node(fpos)
+		core.load_area(fpos)
+		local node = core.get_node(fpos)
 
 		if node.name == "ctf_modebase:flag_captured_top" then
 			node.name = "ctf_modebase:flag_top_" .. flagteam
-			minetest.set_node(fpos, node)
+			core.set_node(fpos, node)
 		else
-			minetest.log("error", string.format("[ctf_flags] Unable to return flag node=%s, pos=%s",
+			core.log("error", string.format("[ctf_flags] Unable to return flag node=%s, pos=%s",
 				node.name, vector.to_string(fpos))
 			)
 		end
@@ -188,9 +188,9 @@ function ctf_modebase.flag_on_punch(puncher, nodepos, node)
 			ctf_modebase.player_on_flag_attempt_streak[pname] = number_of_attempts
 
 			local color = get_streak_color(number_of_attempts)
-			minetest.chat_send_all(string.format("%s is on a %s attempt streak with %d attempts!",
-				minetest.colorize(ctf_teams.team[pteam].color, pname),
-				minetest.colorize(color, streak),
+			core.chat_send_all(string.format("%s is on a %s attempt streak with %d attempts!",
+				core.colorize(ctf_teams.team[pteam].color, pname),
+				core.colorize(color, streak),
 				number_of_attempts))
 		end
 
@@ -203,7 +203,7 @@ function ctf_modebase.flag_on_punch(puncher, nodepos, node)
 
 		RunCallbacks(ctf_api.registered_on_flag_take, puncher, target_team)
 
-		minetest.set_node(nodepos, {name = "ctf_modebase:flag_captured_top", param2 = node.param2})
+		core.set_node(nodepos, {name = "ctf_modebase:flag_captured_top", param2 = node.param2})
 	else
 		local flagteams = ctf_modebase.taken_flags[pname]
 		if not ctf_modebase.taken_flags[pname] then
@@ -232,7 +232,7 @@ end
 
 ctf_api.register_on_match_end(function()
 	for pname in pairs(ctf_modebase.taken_flags) do
-		player_api.set_texture(minetest.get_player_by_name(pname), 2, "blank.png")
+		player_api.set_texture(core.get_player_by_name(pname), 2, "blank.png")
 	end
 
 	ctf_modebase.taken_flags = {}
@@ -250,10 +250,10 @@ ctf_teams.register_on_allocplayer(function(player, new_team, old_team)
 	end
 end)
 
-minetest.register_on_dieplayer(function(player)
+core.register_on_dieplayer(function(player)
 	ctf_modebase.drop_flags(player)
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	ctf_modebase.drop_flags(player)
 end)

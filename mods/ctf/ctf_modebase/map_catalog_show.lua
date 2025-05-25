@@ -22,7 +22,7 @@ local function show_catalog(pname, current_map)
 				rows = ctf_modebase.map_catalog.map_names,
 				default_idx = current_map,
 				func = function(_, fields)
-					local evt = minetest.explode_table_event(fields.list)
+					local evt = core.explode_table_event(fields.list)
 					if evt.type == "CHG" then
 						show_catalog(pname, evt.row)
 					end
@@ -42,14 +42,14 @@ local function show_catalog(pname, current_map)
 		formspec.elements.author = {
 			type = "label",
 			pos = {7, y},
-			label = "By: " .. minetest.colorize("#cccccc", current_map_meta.author),
+			label = "By: " .. core.colorize("#cccccc", current_map_meta.author),
 		}
 		y = y + 0.5
 	end
 
 	-- "maps/{current_map}/screenshot.png" is copied to "textures/{current_map}_screenshot.png"
 	local image_texture = current_map_meta.dirname .. "_screenshot.png"
-	if ctf_core.file_exists(string.format("%s/textures/%s", minetest.get_modpath("ctf_map"), image_texture)) then
+	if ctf_core.file_exists(string.format("%s/textures/%s", core.get_modpath("ctf_map"), image_texture)) then
 		formspec.elements.image = {
 			type = "image",
 			pos = {7, y},
@@ -64,7 +64,7 @@ local function show_catalog(pname, current_map)
 			type = "textarea",
 			pos = {7, y},
 			size = {10, 1},
-			label = minetest.colorize("#ffff00", "HINT:"),
+			label = core.colorize("#ffff00", "HINT:"),
 			read_only = true,
 			default = current_map_meta.hint,
 		}
@@ -76,7 +76,7 @@ local function show_catalog(pname, current_map)
 			type = "textarea",
 			pos = {7, y},
 			size = {10, 1},
-			label = minetest.colorize("#ffff00", "LICENSE:"),
+			label = core.colorize("#ffff00", "LICENSE:"),
 			read_only = true,
 			default = current_map_meta.license,
 		}
@@ -88,7 +88,7 @@ local function show_catalog(pname, current_map)
 			type = "textarea",
 			pos = {7, y},
 			size = {10, 3},
-			label = minetest.colorize("#ffff00", "GAME MODES"),
+			label = core.colorize("#ffff00", "GAME MODES"),
 			read_only = true,
 			default = HumanReadable(current_map_meta.game_modes),
 		}
@@ -100,7 +100,7 @@ local function show_catalog(pname, current_map)
 			type = "textarea",
 			pos = {7, y},
 			size = {10, 3},
-			label = minetest.colorize("#ffff00", "MORE INFORMATION"),
+			label = core.colorize("#ffff00", "MORE INFORMATION"),
 			read_only = true,
 			default = current_map_meta.others,
 		}
@@ -130,7 +130,7 @@ local function show_catalog(pname, current_map)
 		}
 	end
 
-	if minetest.check_player_privs(pname, {ctf_admin=true}) then
+	if core.check_player_privs(pname, {ctf_admin=true}) then
 		formspec.elements.skip_to_map = {
 			type = "button",
 			exit = true,
@@ -139,7 +139,7 @@ local function show_catalog(pname, current_map)
 			size = {2.5, 1},
 			func = function()
 				local mapname = ctf_modebase.map_catalog.maps[current_map].dirname
-				minetest.log("action", string.format("[ctf_admin] %s skipped to new map %s", pname, mapname))
+				core.log("action", string.format("[ctf_admin] %s skipped to new map %s", pname, mapname))
 
 				ctf_modebase.map_on_next_match = mapname
 				ctf_modebase.start_new_match()
@@ -147,7 +147,7 @@ local function show_catalog(pname, current_map)
 		}
 	end
 
-	if minetest.check_player_privs(pname, {ctf_admin=true}) then
+	if core.check_player_privs(pname, {ctf_admin=true}) then
 		formspec.elements.set_as_next_map = {
 			type = "button",
 			label = "Set as next map",
@@ -155,7 +155,7 @@ local function show_catalog(pname, current_map)
 			size = {2.5, 1},
 			func = function()
 				local mapname = ctf_modebase.map_catalog.maps[current_map].dirname
-				minetest.log("action", string.format("[ctf_admin] %s set new map %s", pname, mapname))
+				core.log("action", string.format("[ctf_admin] %s set new map %s", pname, mapname))
 
 				ctf_modebase.map_on_next_match = mapname
 			end
@@ -165,7 +165,7 @@ local function show_catalog(pname, current_map)
 	ctf_gui.old_show_formspec(pname, "ctf_map:catalog", formspec)
 end
 
-minetest.register_chatcommand("maps", {
+core.register_chatcommand("maps", {
 	description = "Show the map catalog",
 	func = function(name)
 		show_catalog(name)

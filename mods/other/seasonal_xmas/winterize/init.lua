@@ -2,12 +2,12 @@ if os.date("%m") ~= "12" then return end
 
 winterize = {}
 
-local snowy_dirt_tiles = minetest.registered_nodes["default:dirt_with_snow"].tiles
-local snowy_dirt_sounds = minetest.registered_nodes["default:dirt_with_snow"].sounds
+local snowy_dirt_tiles = core.registered_nodes["default:dirt_with_snow"].tiles
+local snowy_dirt_sounds = core.registered_nodes["default:dirt_with_snow"].sounds
 local grasses = {"dry_grass", "grass", "coniferous_litter",}
 local leaves = {"leaves", "aspen_leaves", "jungleleaves", "bush_leaves",}
 
-minetest.register_node("winterize:ice", { -- breaks instantly, drops nothing
+core.register_node("winterize:ice", { -- breaks instantly, drops nothing
 	drawtype = "signlike",
 	description = "Ice",
 	tiles = {"winterize_ice_seethrough.png"},
@@ -33,7 +33,7 @@ minetest.register_node("winterize:ice", { -- breaks instantly, drops nothing
 	sounds = default.node_sound_glass_defaults(),
 })
 
-minetest.register_node("winterize:present", {
+core.register_node("winterize:present", {
 	description = "Present",
 	tiles = {
 		"winterize_present_top.png",  "winterize_present_bottom.png", "winterize_present_side.png",
@@ -61,26 +61,26 @@ ctf_api.register_on_new_match(function()
 	local vm = VoxelManip(ctf_map.current_map.pos1, ctf_map.current_map.pos2)
 	local o_pos1, o_pos2 = vm:get_emerged_area()
 
-	minetest.log("action", "Starting to winterize...")
-	minetest.handle_async(function(data, pos1, pos2, present_count)
+	core.log("action", "Starting to winterize...")
+	core.handle_async(function(data, pos1, pos2, present_count)
 		local outdata = {}
 		local present_positions = {}
 
 		local math_random = math.random
 		local math_min = math.min
 
-		local ID_AIR = minetest.CONTENT_AIR
-		local ID_IGNORE = minetest.get_content_id("ctf_map:ignore")
-		local ID_GLASS = minetest.get_content_id("ctf_map:ind_glass")
-		local ID_WATER = minetest.get_content_id("default:water_source")
+		local ID_AIR = core.CONTENT_AIR
+		local ID_IGNORE = core.get_content_id("ctf_map:ignore")
+		local ID_GLASS = core.get_content_id("ctf_map:ind_glass")
+		local ID_WATER = core.get_content_id("default:water_source")
 
 		local snow_place_blacklist = {
 			"ctf_map:", "default:snow", "doors:", "ctf_teams:", "default:fence",
 			"stairs:", "walls:", "default:mese_post", "xpanes:",
 		}
-		local SNOW_ID = minetest.get_content_id("default:snow")
-		local ICE_ID = minetest.get_content_id("winterize:ice")
-		local PRESENT_ID = minetest.get_content_id("winterize:present")
+		local SNOW_ID = core.get_content_id("default:snow")
+		local ICE_ID = core.get_content_id("winterize:ice")
+		local PRESENT_ID = core.get_content_id("winterize:present")
 
 		local Nx = pos2.x - pos1.x + 1
 		local Ny = pos2.y - pos1.y + 1
@@ -102,10 +102,10 @@ ctf_api.register_on_new_match(function()
 							outdata[vi] = {i = ICE_ID, b = vi_below}
 							count = count + 1
 						elseif data[pre + (mid + Nx) + post] == ID_AIR then -- id_above == AIR
-							local name = minetest.get_name_from_content_id(data[vi_below])
+							local name = core.get_name_from_content_id(data[vi_below])
 							local hit = false
 
-							if minetest.registered_nodes[name].walkable == false then
+							if core.registered_nodes[name].walkable == false then
 								hit = true
 							else
 								for _, pattern in pairs(snow_place_blacklist) do
@@ -162,18 +162,18 @@ ctf_api.register_on_new_match(function()
 	function(outdata, change_count)
 		if change_count <= 1000 then
 			snow.SPAWN_SNOW = false
-			minetest.log("action", "Done winterizing, skipped changes: "..change_count)
+			core.log("action", "Done winterizing, skipped changes: "..change_count)
 			return
 		else
 			snow.SPAWN_SNOW = true
-			minetest.log("action", "Done winterizing. Changes: "..change_count)
+			core.log("action", "Done winterizing. Changes: "..change_count)
 		end
 
 		local newvm = VoxelManip(o_pos1, o_pos2)
 		local data = newvm:get_data()
 
-		local ID_AIR = minetest.CONTENT_AIR
-		local ID_IGNORE = minetest.CONTENT_IGNORE
+		local ID_AIR = core.CONTENT_AIR
+		local ID_IGNORE = core.CONTENT_IGNORE
 		for i in pairs(data) do
 			if outdata[i] then
 				if data[i] == ID_AIR and data[outdata[i].b] ~= ID_AIR then
@@ -204,26 +204,26 @@ local function get_drop(original, rarity)
 end
 
 for _, leaftype in pairs(leaves) do
-	minetest.override_item("default:" .. leaftype, {
+	core.override_item("default:" .. leaftype, {
 		tiles = {"winterize_dead_leaves.png"},
 		special_tiles = {"winterize_dead_leaves.png"},
 	})
 
-	minetest.override_item("ctf_map:" .. leaftype, {
+	core.override_item("ctf_map:" .. leaftype, {
 		tiles = {"winterize_dead_leaves.png"},
 		special_tiles = {"winterize_dead_leaves.png"},
 	})
 end
 
 for _, grasstype in pairs(grasses) do
-	minetest.override_item("default:dirt_with_" .. grasstype, {
+	core.override_item("default:dirt_with_" .. grasstype, {
 		tiles = snowy_dirt_tiles,
 		sounds = snowy_dirt_sounds,
 		drop = get_drop("default:dirt", 3),
 	})
 
-	if minetest.registered_nodes["ctf_map:dirt_with_" .. grasstype] then
-		minetest.override_item("ctf_map:dirt_with_" .. grasstype, {
+	if core.registered_nodes["ctf_map:dirt_with_" .. grasstype] then
+		core.override_item("ctf_map:dirt_with_" .. grasstype, {
 			tiles = snowy_dirt_tiles,
 			sounds = snowy_dirt_sounds,
 		})
@@ -231,12 +231,12 @@ for _, grasstype in pairs(grasses) do
 end
 
 -- Remove flower and grass nodes
-for name, def in pairs(minetest.registered_nodes) do
+for name, def in pairs(core.registered_nodes) do
 	if name:find("default:grass") or name:find("flowers:") then
-		minetest.register_alias_force(name, "air")
+		core.register_alias_force(name, "air")
 	end
 end
 
-minetest.override_item("default:snowblock", {
+core.override_item("default:snowblock", {
 	drop = get_drop("default:snowblock", 2)
 })

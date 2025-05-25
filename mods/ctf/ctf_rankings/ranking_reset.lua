@@ -1,4 +1,4 @@
-local mods = minetest.get_mod_storage()
+local mods = core.get_mod_storage()
 --[[
 {
 	_reset_date = <os.time() output>, -- 0 if no reset is queued
@@ -26,13 +26,13 @@ local PLAYER_RANKING_PREFIX = "rank:"
 if ctf_rankings.do_reset then
 	local after_timer = 0
 
-	minetest.after(5, function()
+	core.after(5, function()
 		for mode, def in pairs(ctf_modebase.modes) do
 			local top = def.rankings.top
-			local time = minetest.get_us_time()
+			local time = core.get_us_time()
 			def.rankings.op_all(function(pname, value)
 				if value ~= "null" then
-					local rank = minetest.parse_json(value)
+					local rank = core.parse_json(value)
 
 					rank.place = top:get_place(pname)
 
@@ -47,55 +47,55 @@ if ctf_rankings.do_reset then
 					local current = mods:get_string(PLAYER_RANKING_PREFIX..pname)
 
 					if current and current ~= "" then
-						current = minetest.parse_json(current)
+						current = core.parse_json(current)
 
 						current._last_reset = os.date("%m/%Y")
 						current[os.date("%m/%Y")][mode] = rank
 
-						mods:set_string(PLAYER_RANKING_PREFIX..pname, minetest.write_json(current))
+						mods:set_string(PLAYER_RANKING_PREFIX..pname, core.write_json(current))
 					else
-						mods:set_string(PLAYER_RANKING_PREFIX..pname, minetest.write_json({
+						mods:set_string(PLAYER_RANKING_PREFIX..pname, core.write_json({
 							_last_reset = os.date("%m/%Y"),
 							[os.date("%m/%Y")] = {[mode] = rank},
 						}))
 					end
 
-					minetest.chat_send_all(string.format("[%s] %d: %s with %d score", mode, rank.place, pname, rank.score or 0))
+					core.chat_send_all(string.format("[%s] %d: %s with %d score", mode, rank.place, pname, rank.score or 0))
 				end
 			end)
 
-			after_timer = after_timer + ((minetest.get_us_time()-time) / 1e6)
-			time = ((minetest.get_us_time()-time) / 1e6).."s"
+			after_timer = after_timer + ((core.get_us_time()-time) / 1e6)
+			time = ((core.get_us_time()-time) / 1e6).."s"
 
-			minetest.chat_send_all("Saved old rankings for mode "..mode..". Took "..time)
-			minetest.log("action", "Saved old rankings for mode "..mode..". Took "..time)
+			core.chat_send_all("Saved old rankings for mode "..mode..". Took "..time)
+			core.log("action", "Saved old rankings for mode "..mode..". Took "..time)
 		end
 
 		for mode, def in pairs(ctf_modebase.modes) do
-			local time = minetest.get_us_time()
+			local time = core.get_us_time()
 			def.rankings.op_all(function(pname, value)
 				def.rankings:del(pname)
 
-				minetest.chat_send_all(string.format("[%s] Reset rankings of player %s", mode, pname))
+				core.chat_send_all(string.format("[%s] Reset rankings of player %s", mode, pname))
 			end)
 
-			after_timer = after_timer + ((minetest.get_us_time()-time) / 1e6)
-			time = ((minetest.get_us_time()-time) / 1e6).."s"
+			after_timer = after_timer + ((core.get_us_time()-time) / 1e6)
+			time = ((core.get_us_time()-time) / 1e6).."s"
 
-			minetest.chat_send_all("Reset rankings for mode "..mode..". Took "..time)
-			minetest.log("action", "Reset rankings for mode "..mode..". Took "..time)
+			core.chat_send_all("Reset rankings for mode "..mode..". Took "..time)
+			core.log("action", "Reset rankings for mode "..mode..". Took "..time)
 		end
 
 		mods:set_int("_do_reset", 0)
 		mods:set_int("_current_reset", mods:get_int("_current_reset") + 1)
-		minetest.request_shutdown("Ranking reset done. Thank you for your patience", true, after_timer + 5)
+		core.request_shutdown("Ranking reset done. Thank you for your patience", true, after_timer + 5)
 	end)
 end
 
 if mods:get_int("_reset_date") ~= 0 and os.date("*t", mods:get_int("_reset_date")).month == os.date("*t").month then
 	local CHECK_INTERVAL = 60 * 50 -- 50 minutes
 	local timer = CHECK_INTERVAL
-	minetest.register_globalstep(function(dtime)
+	core.register_globalstep(function(dtime)
 		timer = timer + dtime
 
 		if timer >= CHECK_INTERVAL and not ctf_rankings.do_reset then
@@ -115,7 +115,7 @@ if mods:get_int("_reset_date") ~= 0 and os.date("*t", mods:get_int("_reset_date"
 
 						CHECK_INTERVAL = (61 - current.min) * 60
 
-						minetest.chat_send_all(minetest.colorize("red",
+						core.chat_send_all(core.colorize("red",
 							"[RANKING RESET] There will be a ranking reset in " .. CHECK_INTERVAL ..
 							" minutes. The server will restart twice during the reset process"
 						))
@@ -125,7 +125,7 @@ if mods:get_int("_reset_date") ~= 0 and os.date("*t", mods:get_int("_reset_date"
 					mods:set_int("_reset_date", 0)
 					ctf_rankings.do_reset = true
 
-					minetest.registered_chatcommands["queue_restart"].func("[RANKING RESET]",
+					core.registered_chatcommands["queue_restart"].func("[RANKING RESET]",
 						"There will be another restart once the ranking reset is done."
 					)
 				end
@@ -135,7 +135,7 @@ if mods:get_int("_reset_date") ~= 0 and os.date("*t", mods:get_int("_reset_date"
 end
 
 local confirm = {}
-minetest.register_chatcommand("queue_ranking_reset", {
+core.register_chatcommand("queue_ranking_reset", {
 	description = "Queue a ranking reset. Will reset all rankings to 0",
 	params = "<day 1-31> <month 1-12> [year e.g 2042] [hour 0-23] | <yes|no|unqueue|status>",
 	privs = {server = true},
@@ -178,7 +178,7 @@ minetest.register_chatcommand("queue_ranking_reset", {
 			confirm[name] = os.time({day = day, month = month, year = year, hour = hour})
 
 			return true, "Please run " ..
-					minetest.colorize("cyan", "/queue_ranking_reset <yes|no>") ..
+					core.colorize("cyan", "/queue_ranking_reset <yes|no>") ..
 					" to confirm/deny the date: " ..
 					os.date("%a %d, %b %Y at %I:%M %p", confirm[name])
 		else

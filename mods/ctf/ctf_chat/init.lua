@@ -1,14 +1,14 @@
 ctf_chat = {}
 local callbacks = {}
-local colorize = minetest.colorize
+local colorize = core.colorize
 
-minetest.override_chatcommand("msg", {
+core.override_chatcommand("msg", {
 	func = function(name, param)
 		local sendto, message = param:match("^(%S+)%s(.+)$")
 		if not sendto then
 			return false, "Invalid usage, see /help msg."
 		end
-		if not minetest.get_player_by_name(sendto) then
+		if not core.get_player_by_name(sendto) then
 			return false, "The player " .. sendto .. " is not online."
 		end
 
@@ -19,7 +19,7 @@ minetest.override_chatcommand("msg", {
 		end
 
 		-- Message color
-		local color = minetest.settings:get("ctf_chat.message_color") or "#E043FF"
+		local color = core.settings:get("ctf_chat.message_color") or "#E043FF"
 		local pteam = ctf_teams.get(name)
 		local tcolor = pteam and ctf_teams.team[pteam].color or "#FFF"
 
@@ -27,21 +27,21 @@ minetest.override_chatcommand("msg", {
 		local str =  colorize(color, "PM from ")
 		str = str .. colorize(tcolor, name)
 		str = str .. colorize(color, ": " .. message)
-		minetest.chat_send_player(sendto, str)
+		core.chat_send_player(sendto, str)
 
 		-- Make the sender-side message
 		str = "Message sent to " .. sendto .. ": " .. message
 
-		minetest.log("action", string.format("[CHAT] PM from %s to %s: %s", name, sendto, message))
+		core.log("action", string.format("[CHAT] PM from %s to %s: %s", name, sendto, message))
 
 		-- Send the sender-side message
 		return true, str
 	end
 })
 
-minetest.override_chatcommand("me", {
+core.override_chatcommand("me", {
 	func = function(name, param)
-		minetest.log("action", string.format("[CHAT] ME from %s: %s", name, param))
+		core.log("action", string.format("[CHAT] ME from %s: %s", name, param))
 
 		local pteam = ctf_teams.get(name)
 		if pteam then
@@ -51,11 +51,11 @@ minetest.override_chatcommand("me", {
 			name = "* ".. name
 		end
 
-		minetest.chat_send_all(name .. " " .. param)
+		core.chat_send_all(name .. " " .. param)
 	end
 })
 
-minetest.register_chatcommand("t", {
+core.register_chatcommand("t", {
 	params = "msg",
 	description = "Send a message on the team channel",
 	privs = { interact = true, shout = true },
@@ -66,17 +66,17 @@ minetest.register_chatcommand("t", {
 
 		local tname = ctf_teams.get(name)
 		if tname then
-			minetest.log("action", string.format("[CHAT] team message from %s (team %s): %s", name, tname, param))
+			core.log("action", string.format("[CHAT] team message from %s (team %s): %s", name, tname, param))
 
 			local tcolor = ctf_teams.team[tname].color
 			for username in pairs(ctf_teams.online_players[tname].players) do
 				if not block_msgs or not block_msgs.is_chat_blocked(name, username) then
-					minetest.chat_send_player(username,
+					core.chat_send_player(username,
 							colorize(tcolor, "[TEAM] <" .. name .. "> ** " .. param .. " **"))
 				end
 			end
 		else
-			minetest.chat_send_player(name,
+			core.chat_send_player(name,
 					"You're not in a team, so you have no team to talk to.")
 		end
 	end
@@ -104,7 +104,7 @@ local function format_prefixes(name, pteam_color)
 end
 
 -- Formatting chat messages
-function minetest.format_chat_message(name, message)
+function core.format_chat_message(name, message)
 	if filter_caps then
 		message = filter_caps.parse(name, message)
 	end
@@ -120,7 +120,7 @@ function minetest.format_chat_message(name, message)
 	local formatted_msg = joinStrings(prefixes, "<" .. colorized_name .. ">:", message)
 
     if not formatted_msg or #formatted_msg == 0 then
-        minetest.log("error", "[ctf_chat]: Chat message formatting failed! Player: " .. name .. " Raw msg: " .. message)
+        core.log("error", "[ctf_chat]: Chat message formatting failed! Player: " .. name .. " Raw msg: " .. message)
 		return string.format("%s %s", name or "", message or "")
     end
 

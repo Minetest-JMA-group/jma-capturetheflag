@@ -6,7 +6,7 @@ arsdragonfly@gmail.com
 
 random_messages = {}
 
-if minetest.settings:get("random_messages_disabled") == "true" then return end
+if core.settings:get("random_messages_disabled") == "true" then return end
 
 local messages = {
     "To talk only with your team, start your messages with /t. For example, /t Hello team!",
@@ -78,18 +78,18 @@ local messages = {
     "Want to check match status? Type /match to see current mode, map details and teams info",	
 }
 
-local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval")) or 120
+local MESSAGE_INTERVAL = tonumber(core.settings:get("random_messages_interval")) or 120
 
 function random_messages.get_random_message()
 	return messages[math.random(1, #messages)]
 end
 
 local timer = 0
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
     timer = timer + dtime
     if timer > MESSAGE_INTERVAL then
-        if #minetest.get_connected_players() > 0 then
-			minetest.chat_send_all(minetest.colorize("#808080", random_messages.get_random_message()), "random_messages")
+        if #core.get_connected_players() > 0 then
+			core.chat_send_all(core.colorize("#808080", random_messages.get_random_message()), "random_messages")
         end
         timer = 0
     end

@@ -1,4 +1,4 @@
-minetest.register_entity("server_cosmetics:hat", {
+core.register_entity("server_cosmetics:hat", {
 	initial_properties = {
 		visual = "mesh",
 		textures = {},
@@ -48,7 +48,7 @@ minetest.register_entity("server_cosmetics:hat", {
 			end
 
 			if player and player:is_player() then
-				minetest.log("action", "server_cosmetics: Hat entity for player " .. player:get_player_name() .. " unloaded. Re-adding...")
+				core.log("action", "server_cosmetics: Hat entity for player " .. player:get_player_name() .. " unloaded. Re-adding...")
 				server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
 			end
 		end

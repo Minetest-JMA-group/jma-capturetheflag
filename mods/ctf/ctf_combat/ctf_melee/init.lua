@@ -4,26 +4,26 @@ ctf_melee = {
 
 local sword_mats = {
 	stone = {
-		description = minetest.registered_tools["default:sword_stone"].description,
-		inventory_image = minetest.registered_tools["default:sword_stone"].inventory_image,
+		description = core.registered_tools["default:sword_stone"].description,
+		inventory_image = core.registered_tools["default:sword_stone"].inventory_image,
 		damage_groups = {fleshy = 4},
 		full_punch_interval = 1.0
 	},
 	steel = {
-		description = minetest.registered_tools["default:sword_steel"].description,
-		inventory_image = minetest.registered_tools["default:sword_steel"].inventory_image,
+		description = core.registered_tools["default:sword_steel"].description,
+		inventory_image = core.registered_tools["default:sword_steel"].inventory_image,
 		damage_groups = {fleshy = 6},
 		full_punch_interval = 0.8,
 	},
 	mese = {
-		description = minetest.registered_tools["default:sword_mese"].description,
-		inventory_image = minetest.registered_tools["default:sword_mese"].inventory_image,
+		description = core.registered_tools["default:sword_mese"].description,
+		inventory_image = core.registered_tools["default:sword_mese"].inventory_image,
 		damage_groups = {fleshy = 7},
 		full_punch_interval = 0.7,
 	},
 	diamond = {
-		description = minetest.registered_tools["default:sword_diamond"].description,
-		inventory_image = minetest.registered_tools["default:sword_diamond"].inventory_image,
+		description = core.registered_tools["default:sword_diamond"].description,
+		inventory_image = core.registered_tools["default:sword_diamond"].inventory_image,
 		damage_groups = {fleshy = 8},
 		full_punch_interval = 0.6,
 	}
@@ -58,12 +58,12 @@ function ctf_melee.simple_register_sword(name, def)
 			local node
 
 			if pointed and pointed.under then
-				node = minetest.get_node(pointed.under)
-				pointed_def = minetest.registered_nodes[node.name]
+				node = core.get_node(pointed.under)
+				pointed_def = core.registered_nodes[node.name]
 			end
 
 			if pointed_def and pointed_def.on_rightclick then
-				return minetest.item_place(itemstack, user, pointed)
+				return core.item_place(itemstack, user, pointed)
 			else
 				return def.rightclick_func(itemstack, user, pointed, ...)
 			end
@@ -72,7 +72,7 @@ function ctf_melee.simple_register_sword(name, def)
 		base_def.on_secondary_use = def.rightclick_func
 	end
 
-	minetest.register_tool(name, base_def)
+	core.register_tool(name, base_def)
 	ctf_melee.registered_swords[name] = base_def
 end
 
@@ -94,7 +94,7 @@ local function dopunch(target, attacker, ignores, attack_capabilities, dir, atta
 
 		target.ref:punch(attacker, attack_interval, attack_capabilities, dir)
 
-		minetest.sound_play("player_damage", {
+		core.sound_play("player_damage", {
 			object = attacker,
 			exclude_player = target.ref:get_player_name(),
 			pitch = 0.8,
@@ -122,7 +122,7 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 			end
 
 			cooldown._on_end = function(self)
-				local player = minetest.get_player_by_name(uname)
+				local player = core.get_player_by_name(uname)
 
 				if not player then return end
 
@@ -144,7 +144,7 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 	attack_cooldown:set(uname, {
 		_time = attack_interval,
 		_on_end = function(self) -- Repeat attack if player is holding down the button
-			local player = minetest.get_player_by_name(uname)
+			local player = core.get_player_by_name(uname)
 
 			if not player then return end
 
@@ -199,7 +199,7 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 			(pointed ~= true) and dir or nil,
 		}
 
-		minetest.sound_play("ctf_melee_whoosh", {
+		core.sound_play("ctf_melee_whoosh", {
 			object = user,
 			pitch = 1.1,
 			gain = 1.2,
@@ -212,7 +212,7 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 			vector.rotate_around_axis(dir, axis,  section),
 		}
 
-		minetest.sound_play("ctf_melee_whoosh", {
+		core.sound_play("ctf_melee_whoosh", {
 			object = user,
 			gain = 1.1,
 			max_hear_distance = SWOOSH_SOUND_DISTANCE,
@@ -222,9 +222,9 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 	user_kb_dir.y = math.max(math.min(user_kb_dir.y, 0.4), 0)
 
 	for _, shootdir in ipairs(rays) do
-		local ray = minetest.raycast(startpos, startpos + (shootdir * 4), true, false)
+		local ray = core.raycast(startpos, startpos + (shootdir * 4), true, false)
 
-		minetest.add_particle({
+		core.add_particle({
 			pos = startpos,
 			velocity = shootdir * 44,
 			expirationtime = 0.1,
@@ -289,8 +289,8 @@ function ctf_melee.register_sword(name, def)
 					return
 				end
 			elseif pointed.type == "node" then
-				local node = minetest.get_node(pointed.under)
-				local node_on_punch = minetest.registered_nodes[node.name].on_punch
+				local node = core.get_node(pointed.under)
+				local node_on_punch = core.registered_nodes[node.name].on_punch
 
 				if node_on_punch then
 					node_on_punch(pointed.under, node, user, pointed)
@@ -306,12 +306,12 @@ function ctf_melee.register_sword(name, def)
 		local node
 
 		if pointed and pointed.under then
-			node = minetest.get_node(pointed.under)
-			pointed_def = minetest.registered_nodes[node.name]
+			node = core.get_node(pointed.under)
+			pointed_def = core.registered_nodes[node.name]
 		end
 
 		if pointed_def and pointed_def.on_rightclick then
-			return minetest.item_place(itemstack, user, pointed)
+			return core.item_place(itemstack, user, pointed)
 		else
 			return rightclick_func(itemstack, user, pointed, ...)
 		end
@@ -319,12 +319,12 @@ function ctf_melee.register_sword(name, def)
 
 	base_def.on_secondary_use = rightclick_func
 
-	minetest.register_tool(name, base_def)
+	core.register_tool(name, base_def)
 	ctf_melee.registered_swords[name] = base_def
 end
 
 for mat, def in pairs(sword_mats) do
 	ctf_melee.simple_register_sword("ctf_melee:sword_"..mat, def)
 
-	minetest.register_alias_force("default:sword_"..mat, "ctf_melee:sword_"..mat)
+	core.register_alias_force("default:sword_"..mat, "ctf_melee:sword_"..mat)
 end

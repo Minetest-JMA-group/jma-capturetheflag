@@ -1,4 +1,4 @@
-minetest.register_node("ctf_changes:lava_source", {
+core.register_node("ctf_changes:lava_source", {
 	description = "Lava Source",
 	drawtype = "liquid",
 	tiles = {
@@ -42,7 +42,7 @@ minetest.register_node("ctf_changes:lava_source", {
 	groups = {lava = 3, liquid = 2, igniter = 1},
 })
 
-minetest.register_node("ctf_changes:lava_flowing", {
+core.register_node("ctf_changes:lava_flowing", {
 	description = "Flowing Lava",
 	drawtype = "flowingliquid",
 	tiles = {"default_lava.png"},
@@ -89,28 +89,28 @@ minetest.register_node("ctf_changes:lava_flowing", {
 		not_in_creative_inventory = 1},
 })
 
--- minetest.register_alias("lava_flowing", "ctf_changes:lava_flowing")
--- minetest.register_alias("lava_source", "ctf_changes:lava_source")
+-- core.register_alias("lava_flowing", "ctf_changes:lava_flowing")
+-- core.register_alias("lava_source", "ctf_changes:lava_source")
 
 -- Cleanup lava in protected areas
-minetest.register_abm({
+core.register_abm({
 	nodenames = {"ctf_changes:lava_flowing"},
 	neighbors = {"air"},
 	interval = 5,
 	chance = 1,
 	action = function(pos)
-		if minetest.is_protected(pos, "") then
+		if core.is_protected(pos, "") then
 			local nodes_checked = 0
 			local source_removed = false
 			local can_go = function(on_pos)
 				if not source_removed and nodes_checked < 200 then
-					local nn = minetest.get_node(on_pos).name
+					local nn = core.get_node(on_pos).name
 					if nn == "ctf_changes:lava_flowing" then
-						minetest.set_node(on_pos, {name = "air"})
+						core.set_node(on_pos, {name = "air"})
 						nodes_checked = nodes_checked + 1
 						return true
 					elseif nn == "ctf_changes:lava_source" then
-						minetest.set_node(on_pos, {name = "air"})
+						core.set_node(on_pos, {name = "air"})
 						source_removed = true
 					end
 				end
@@ -121,7 +121,7 @@ minetest.register_abm({
 	end
 })
 
-minetest.register_abm({
+core.register_abm({
 	label = "Lava cooling",
 	nodenames = {"ctf_changes:lava_source", "ctf_changes:lava_flowing"},
 	neighbors = {"group:cools_lava", "group:water"},
@@ -142,7 +142,7 @@ bucket.register_liquid(
 	{tool = 1}
 )
 
-minetest.register_craft({
+core.register_craft({
 	type = "fuel",
 	recipe = "ctf_changes:bucket_lava",
 	burntime = 60,

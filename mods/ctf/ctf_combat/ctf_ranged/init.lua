@@ -8,7 +8,7 @@ ctf_ranged = {
 local scoped = ctf_ranged.scoped
 local scale_const = 6
 
-minetest.register_craftitem("ctf_ranged:ammo", {
+core.register_craftitem("ctf_ranged:ammo", {
 	description = "Ammo\nUsed to reload guns",
 	inventory_image = "ctf_ranged_ammo.png",
 })
@@ -25,20 +25,20 @@ local function process_ray(ray, user, look_dir, def)
 
 	if hitpoint then
 		if hitpoint.type == "node" then
-			local node = minetest.get_node(hitpoint.under)
-			local nodedef = minetest.registered_nodes[node.name]
+			local node = core.get_node(hitpoint.under)
+			local nodedef = core.registered_nodes[node.name]
 
 			if nodedef.on_ranged_shoot or nodedef.groups.snappy or (nodedef.groups.oddly_breakable_by_hand or 0) >= 3 then
-				if not minetest.is_protected(hitpoint.under, user:get_player_name()) then
+				if not core.is_protected(hitpoint.under, user:get_player_name()) then
 					if nodedef.on_ranged_shoot then
 						nodedef.on_ranged_shoot(hitpoint.under, node, user, def.type)
 					else
-						minetest.dig_node(hitpoint.under)
+						core.dig_node(hitpoint.under)
 					end
 				end
 			else
 				if nodedef.walkable and nodedef.pointable then
-					minetest.add_particle({
+					core.add_particle({
 						pos = vector.subtract(hitpoint.intersection_point, vector.multiply(look_dir, 0.04)),
 						velocity = vector.new(),
 						acceleration = {x=0, y=0, z=0},
@@ -48,9 +48,9 @@ local function process_ray(ray, user, look_dir, def)
 						texture = "ctf_ranged_bullethole.png",
 					})
 
-					minetest.sound_play("ctf_ranged_ricochet", {pos = hitpoint.intersection_point})
+					core.sound_play("ctf_ranged_ricochet", {pos = hitpoint.intersection_point})
 				elseif nodedef.groups.liquid then
-					minetest.add_particlespawner({
+					core.add_particlespawner({
 						amount = 10,
 						time = 0.1,
 						minpos = hitpoint.intersection_point,
@@ -82,7 +82,7 @@ local function process_ray(ray, user, look_dir, def)
 				damage_groups = {ranged = 1, [def.type] = 1, fleshy = def.damage}
 			}, look_dir)
 
-			minetest.sound_play("ctf_ranged_hit", {
+			core.sound_play("ctf_ranged_hit", {
 				to_player = user:get_player_name(),
 				pitch = 1.2,
 				gain = 0.9,
@@ -97,7 +97,7 @@ function ctf_ranged.can_use_gun(player, name)
 end
 
 function ctf_ranged.simple_register_gun(name, def)
-	minetest.register_tool(rawf.also_register_loaded_tool(name, {
+	core.register_tool(rawf.also_register_loaded_tool(name, {
 		description = def.description,
 		inventory_image = def.texture.."^[colorize:#F44:42",
 		ammo = def.ammo or "ctf_ranged:ammo",
@@ -106,16 +106,16 @@ function ctf_ranged.simple_register_gun(name, def)
 		groups = {ranged = 1, [def.type] = 1, tier = def.tier or 1, not_in_creative_inventory = 1},
 		on_use = function(itemstack, user)
 			if not ctf_ranged.can_use_gun(user, name) then
-				minetest.sound_play("ctf_ranged_click", {pos = user:get_pos()}, true)
+				core.sound_play("ctf_ranged_click", {pos = user:get_pos()}, true)
 				return
 			end
 
 			local result = rawf.load_weapon(itemstack, user:get_inventory())
 
 			if result:get_name() == itemstack:get_name() then
-				minetest.sound_play("ctf_ranged_click", {pos = user:get_pos()}, true)
+				core.sound_play("ctf_ranged_click", {pos = user:get_pos()}, true)
 			else
-				minetest.sound_play("ctf_ranged_reload", {pos = user:get_pos()}, true)
+				core.sound_play("ctf_ranged_reload", {pos = user:get_pos()}, true)
 			end
 
 			return result
@@ -130,7 +130,7 @@ function ctf_ranged.simple_register_gun(name, def)
 		loaded_def.on_secondary_use = def.on_secondary_use
 		loaded_def.on_use = function(itemstack, user)
 			if not ctf_ranged.can_use_gun(user, name) then
-				minetest.sound_play("ctf_ranged_click", {pos = user:get_pos()}, true)
+				core.sound_play("ctf_ranged_click", {pos = user:get_pos()}, true)
 				return
 			end
 
@@ -165,7 +165,7 @@ function ctf_ranged.simple_register_gun(name, def)
 				rays = rawf.spread_bulletcast(def.bullet, spawnpos, endpos, true, true)
 			end
 
-			minetest.sound_play(def.fire_sound, {pos = user:get_pos()}, true)
+			core.sound_play(def.fire_sound, {pos = user:get_pos()}, true)
 
 			for _, ray in pairs(rays) do
 				process_ray(ray, user, look_dir, def)
@@ -182,12 +182,12 @@ function ctf_ranged.simple_register_gun(name, def)
 				local node
 
 				if pointed and pointed.under then
-					node = minetest.get_node(pointed.under)
-					pointed_def = minetest.registered_nodes[node.name]
+					node = core.get_node(pointed.under)
+					pointed_def = core.registered_nodes[node.name]
 				end
 
 				if pointed_def and pointed_def.on_rightclick then
-					return minetest.item_place(itemstack, user, pointed)
+					return core.item_place(itemstack, user, pointed)
 				else
 					return def.rightclick_func(itemstack, user, pointed, ...)
 				end
@@ -198,12 +198,12 @@ function ctf_ranged.simple_register_gun(name, def)
 	end))
 end
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	scoped[player:get_player_name()] = nil
 end)
 
 function ctf_ranged.show_scope(name, item_name, fov_mult)
-	local player = minetest.get_player_by_name(name)
+	local player = core.get_player_by_name(name)
 	if not player then
 		return
 	end
@@ -230,7 +230,7 @@ function ctf_ranged.show_scope(name, item_name, fov_mult)
 end
 
 function ctf_ranged.show_shoulder_scope(name, item_name, fov_mult)
-    local player = minetest.get_player_by_name(name)
+    local player = core.get_player_by_name(name)
     if not player then
         return
     end
@@ -248,7 +248,7 @@ end
 
 
 function ctf_ranged.hide_scope(name)
-	local player = minetest.get_player_by_name(name)
+	local player = core.get_player_by_name(name)
 	if not player then
 		return
 	end
@@ -383,7 +383,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
 -- player wielded when scoping
 
 local time = 0
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	time = time + dtime
 	if time < 1 then
 		return
@@ -391,7 +391,7 @@ minetest.register_globalstep(function(dtime)
 
 	time = 0
 	for name, info in pairs(scoped) do
-		local player = minetest.get_player_by_name(name)
+		local player = core.get_player_by_name(name)
 		local wielded_item = player:get_wielded_item():get_name()
 		if wielded_item ~= info.item_name then
 			ctf_ranged.hide_scope(name)

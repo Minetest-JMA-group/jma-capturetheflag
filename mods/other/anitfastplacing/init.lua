@@ -4,16 +4,16 @@
 antifastplacing = {}
 
 local player_contexts = {}
-local mt_ustime = minetest.get_us_time
+local mt_ustime = core.get_us_time
 local abs = math.abs
-local storage = minetest.get_mod_storage()
+local storage = core.get_mod_storage()
 local callbacks = {}
 
 local allowed_interval = 0.1 * 1000000
 
 if storage:contains("interval") then
 	allowed_interval = storage:get_float("interval")
-	minetest.log("action", "Node placement interval is " .. allowed_interval)
+	core.log("action", "Node placement interval is " .. allowed_interval)
 end
 
 local log_cooldown = 1 * 1000000 -- log once per second
@@ -50,7 +50,7 @@ local function on_place_node(pos, newnode, oldnode, player)
 
 		if not last_log_time[name] or abs(current_time - last_log_time[name]) > log_cooldown then
 			last_log_time[name] = current_time
-			minetest.log("action",
+			core.log("action",
 			string.format("%s placing nodes too fast: %0.3f, triggered: %d times", name, diff_time / 1000000, context.triggered))
 		end
 
@@ -64,7 +64,7 @@ local function on_place_node(pos, newnode, oldnode, player)
 
 		-- Do default behaviour
 		if not is_handled then
-			minetest.set_node(pos, oldnode)
+			core.set_node(pos, oldnode)
 		end
 
 		return true
@@ -72,7 +72,7 @@ local function on_place_node(pos, newnode, oldnode, player)
 	context.last_placing_time = current_time
 end
 
-minetest.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack, pointed_thing)
+core.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack, pointed_thing)
 	if not placer or not placer:is_player() then
 		return
 	end
@@ -110,16 +110,16 @@ function antifastplacing.stop_tracking(name)
 	return true
 end
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	antifastplacing.start_tracking(player)
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local name = player:get_player_name()
 	antifastplacing.stop_tracking(name)
 end)
 
-minetest.register_chatcommand("afp_print",{
+core.register_chatcommand("afp_print",{
 	description = "Print AFP statistics",
 	privs = {dev = true},
 	params = "[target]",
@@ -135,7 +135,7 @@ minetest.register_chatcommand("afp_print",{
 		end
 
 		if target == "" then
-			for _, p in ipairs(minetest.get_connected_players()) do
+			for _, p in ipairs(core.get_connected_players()) do
 				local pn = p:get_player_name()
 				local context = player_contexts[pn]
 				if context then
@@ -154,7 +154,7 @@ minetest.register_chatcommand("afp_print",{
 	end
 })
 
-minetest.register_chatcommand("afp_interval",{
+core.register_chatcommand("afp_interval",{
 	description = "Set placement interval",
 	privs = {server = true},
 	params = "<get|set> [interval]",
@@ -175,14 +175,14 @@ minetest.register_chatcommand("afp_interval",{
 			allowed_interval = interval * 1000000 -- convert to microseconds
 			storage:set_float("interval", allowed_interval)
 
-			minetest.log("action", "[AFP]: " .. name .. " set node placement interval to " .. interval)
+			core.log("action", "[AFP]: " .. name .. " set node placement interval to " .. interval)
 			return true, "Interval set to " .. interval
 		end
 		return false, "Invalid usage"
 	end
 })
 
-minetest.register_chatcommand("afp_ignore",{
+core.register_chatcommand("afp_ignore",{
 	description = "",
 	privs = {server = true},
 	params = "<name> <add|remove>",
@@ -196,7 +196,7 @@ minetest.register_chatcommand("afp_ignore",{
 		if not operation then
 			return false, "Invalid usage"
 		end
-		if minetest.player_exists(target_name) then
+		if core.player_exists(target_name) then
 			if operation == "add" then
 				storage:set_int("ignore:" .. target_name, 1)
 				return true, "Player added"
@@ -211,7 +211,7 @@ minetest.register_chatcommand("afp_ignore",{
 	end
 })
 
-minetest.register_chatcommand("afp_temp_interval", {
+core.register_chatcommand("afp_temp_interval", {
 	description = "Set temporary placement interval for a player",
 	privs = {moderator = true},
 	params = "<name> <interval>",
@@ -222,7 +222,7 @@ minetest.register_chatcommand("afp_temp_interval", {
 		if not target_name or not interval then
 			return false, "Invalid usage. Use: /afp_temp_interval <name> <interval>"
 		end
-		if minetest.player_exists(target_name) then
+		if core.player_exists(target_name) then
 			local context = player_contexts[target_name]
 			if context then
 				context.interval = interval * 1000000 -- convert to microseconds

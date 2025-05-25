@@ -6,7 +6,7 @@ local function get_playerobj(player)
 	local type = type(player)
 
 	if type == "string" then
-		return minetest.get_player_by_name(player)
+		return core.get_player_by_name(player)
 	elseif type == "userdata" and player:is_player() then
 		return player
 	end
@@ -82,7 +82,7 @@ local function convert_def(def, type)
 		def.scale = def.scale or (def.image_scale and {x = def.image_scale})
 		def.image_scale = nil
 	else
-		minetest.log("error", "[MHUD] Hud type wasn't specified or is not supported")
+		core.log("error", "[MHUD] Hud type wasn't specified or is not supported")
 	end
 
 	if def.alignment then
@@ -198,8 +198,8 @@ function hud.remove_all(self)
 end
 hud.clear_all = hud.remove_all
 
-minetest.register_on_mods_loaded(function()
-	minetest.register_on_leaveplayer(function(player)
+core.register_on_mods_loaded(function()
+	core.register_on_leaveplayer(function(player)
 		hud:remove(player)
 	end)
 end)

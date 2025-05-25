@@ -9,7 +9,7 @@ ctf_rankings.register_on_rank_reset(function(pname, rank)
 	end
 end)
 
-minetest.register_on_shutdown(function()
+core.register_on_shutdown(function()
 	if queue_transfers then
 		server_cosmetics.save_transfer_queue()
 	end

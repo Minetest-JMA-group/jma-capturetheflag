@@ -18,8 +18,8 @@ function wielded_light.update_light(pos, light_level)
 	local light_pos
 	for _, around in ipairs(around_vector) do
 		light_pos = vector.add(pos, around)
-		local name = minetest.get_node(light_pos).name
-		if name == "air" and (minetest.get_node_light(light_pos) or 0) < light_level then
+		local name = core.get_node(light_pos).name
+		if name == "air" and (core.get_node_light(light_pos) or 0) < light_level then
 			do_update = true
 			break
 		elseif name:sub(1,16) == "dynamic_lighting" then -- Update existing light node and timer
@@ -28,7 +28,7 @@ function wielded_light.update_light(pos, light_level)
 			if light_level > old_value then
 				do_update = true
 			else
-				timer = minetest.get_node_timer(light_pos)
+				timer = core.get_node_timer(light_pos)
 				local elapsed = timer:get_elapsed()
 				if elapsed > (update_interval * 1.5) then
 					do_update = true
@@ -38,9 +38,9 @@ function wielded_light.update_light(pos, light_level)
 		end
 	end
 	if do_update then
-		timer = timer or minetest.get_node_timer(light_pos)
+		timer = timer or core.get_node_timer(light_pos)
 		if light_level ~= old_value then
-			minetest.swap_node(light_pos, {name = "dynamic_lighting:"..light_level})
+			core.swap_node(light_pos, {name = "dynamic_lighting:"..light_level})
 		end
 		timer:start(update_interval*3)
 	end
@@ -66,7 +66,7 @@ function wielded_light.update_light_by_item(item, pos)
 end
 
 for i=1, 14 do
-	minetest.register_node("dynamic_lighting:"..i, {
+	core.register_node("dynamic_lighting:"..i, {
 		drawtype = "airlike",
 		groups = {not_in_creative_inventory = 1},
 		walkable = false,
@@ -77,20 +77,20 @@ for i=1, 14 do
 		buildable_to = true,
 		drops = {},
 		on_timer = function(pos, elapsed)
-			minetest.swap_node(pos, {name = "air"})
+			core.swap_node(pos, {name = "air"})
 		end,
 	})
 end
 
 local timer = 0
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	timer = timer + dtime;
 	if timer < update_interval then
 		return
 	end
 	timer = 0
 
-	for _, player in pairs(minetest.get_connected_players()) do
+	for _, player in pairs(core.get_connected_players()) do
 		local pos = vector.add (
 			vector.add({x = 0, y = 1, z = 0}, vector.round(player:get_pos())),
 			vector.round(vector.multiply(player:get_velocity(), update_interval * 1.5))

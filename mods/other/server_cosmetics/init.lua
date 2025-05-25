@@ -126,7 +126,7 @@ if os.date("%m/%d") == "04/01" then
 	server_cosmetics.cosmetics.default_cosmetics.skin.smurf = "#0085e8"
 end
 
-minetest.after(0, function()
+core.after(0, function()
 	for category, contents in pairs(server_cosmetics.cosmetics) do
 		for ctype, cosmetics in pairs(contents) do
 			for name, info in pairs(cosmetics) do
@@ -153,7 +153,7 @@ minetest.after(0, function()
 end)
 
 local function include(file)
-	dofile(minetest.get_modpath(minetest.get_current_modname()).."/"..file)
+	dofile(core.get_modpath(core.get_current_modname()).."/"..file)
 end
 
 include("hat.lua")
@@ -177,7 +177,7 @@ function server_cosmetics.update_entity_cosmetics(player, current)
 	end
 
 	if hatname then
-		local hat = minetest.add_entity(player:get_pos(), "server_cosmetics:hat")
+		local hat = core.add_entity(player:get_pos(), "server_cosmetics:hat")
 
 		hat:set_attach(player, "Head", vector.new(0, 2, 0))
 		hat:set_properties({textures = current[hatname].color})
@@ -223,7 +223,7 @@ function ctf_cosmetics.get_clothing_texture(player, texture, ...)
 	return old_get_clothing_texture(player, texture, ...)
 end
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	local current = ctf_cosmetics.get_extra_clothing(player)
 
 	if current._unset then
@@ -238,10 +238,10 @@ minetest.register_on_joinplayer(function(player)
 	if server_cosmetics.no_entity_attach[player:get_player_name()] then
 		return
 	end
-	minetest.after(1, server_cosmetics.update_entity_cosmetics, player:get_player_name(), current)
+	core.after(1, server_cosmetics.update_entity_cosmetics, player:get_player_name(), current)
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local pname = player:get_player_name()
 	if hatted[pname] then
 		hatted[pname]:remove()
@@ -250,14 +250,14 @@ minetest.register_on_leaveplayer(function(player)
 end)
 
 ctf_api.register_on_new_match(function()
-	minetest.after(5, function()
-		for _, player in ipairs(minetest.get_connected_players()) do
+	core.after(5, function()
+		for _, player in ipairs(core.get_connected_players()) do
 			local pname = player:get_player_name()
 			if not server_cosmetics.no_entity_attach[pname] then
 				local hat = hatted[pname]
 				if hat and not hat:get_pos() then
 					server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
-					minetest.log("action", "server_cosmetics: Hat entity for player " .. player:get_player_name() .. " unloaded. Re-adding... (on new match)")
+					core.log("action", "server_cosmetics: Hat entity for player " .. player:get_player_name() .. " unloaded. Re-adding... (on new match)")
 				end
 			end
 		end
@@ -297,7 +297,7 @@ function ctf_cosmetics.get_extra_clothing(player, ...)
 	local meta = pmeta:get_string("ctf_cosmetics:extra_clothing")
 
 	if meta ~= "" then
-		meta = minetest.deserialize(meta)
+		meta = core.deserialize(meta)
 
 		if not meta then
 			pmeta:set_string("ctf_cosmetics:extra_clothing", "")
@@ -355,7 +355,7 @@ function ctf_cosmetics.get_extra_clothing(player, ...)
 			end
 		end
 
-		pmeta:set_string("ctf_cosmetics:extra_clothing", minetest.serialize(meta))
+		pmeta:set_string("ctf_cosmetics:extra_clothing", core.serialize(meta))
 	end
 
 	return old_get_extra_clothing(player, ...)

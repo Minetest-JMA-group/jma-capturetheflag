@@ -1,10 +1,10 @@
 -- carts/init.lua
 
 -- Load support for MT game translation.
-local S = minetest.get_translator("carts")
+local S = core.get_translator("carts")
 
 carts = {}
-carts.modpath = minetest.get_modpath("carts")
+carts.modpath = core.get_modpath("carts")
 carts.railparams = {}
 carts.get_translator = S
 
@@ -21,7 +21,7 @@ dofile(carts.modpath.."/rails.lua")
 dofile(carts.modpath.."/cart_entity.lua")
 
 -- Register rails as dungeon loot
-if minetest.global_exists("dungeon_loot") then
+if core.global_exists("dungeon_loot") then
 	dungeon_loot.register({
 		name = "carts:rail", chance = 0.35, count = {1, 6}
 	})
