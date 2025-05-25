@@ -35,22 +35,22 @@ local function rank(name, mode_name, mode_data, pname)
 	end
 
 	local return_str = string.format(
-		"\tRankings for player %s in mode %s:\n\t", minetest.colorize("#ffea00", pname), mode_name
+		"\tRankings for player %s in mode %s:\n\t", core.colorize("#ffea00", pname), mode_name
 	)
 
 	for _, irank in ipairs(mode_data.summary_ranks) do
 		return_str = string.format("%s%s: %s,\n\t",
 			return_str,
-			minetest.colorize("#63d437", HumanReadable(irank)),
-			minetest.colorize("#ffea00", math.round(prank[irank] or 0))
+			core.colorize("#63d437", HumanReadable(irank)),
+			core.colorize("#ffea00", math.round(prank[irank] or 0))
 		)
 	end
 
 	for _, pair in pairs({{"kills", "deaths"}, {"score", "kills"}}) do
 		return_str = string.format("%s%s: %s,\n\t",
 			return_str,
-			minetest.colorize("#63d437", HumanReadable(pair[1].."/"..pair[2])),
-			minetest.colorize("#ffea00", 0.1 * math.round(10 * (
+			core.colorize("#63d437", HumanReadable(pair[1].."/"..pair[2])),
+			core.colorize("#ffea00", 0.1 * math.round(10 * (
 						(prank[pair[1]] or 0   ) /
 				math.max(prank[pair[2]] or 0, 1)
 			)))
@@ -59,8 +59,8 @@ local function rank(name, mode_name, mode_data, pname)
 
 	return_str = string.format("%s%s: %s\n",
 		return_str,
-		minetest.colorize("#63d437", "Place"),
-		minetest.colorize("#ffea00", mode_data.rankings.top:get_place(pname))
+		core.colorize("#63d437", "Place"),
+		core.colorize("#ffea00", mode_data.rankings.top:get_place(pname))
 	)
 
 	return true, return_str
@@ -74,7 +74,7 @@ ctf_core.register_chatcommand_alias("rank", "r", {
 		if mode_name == "all" then
 			local return_str = string.format(
 				"Rankings for player %s in all modes:\n",
-				minetest.colorize("#ffea00", pname or name),
+				core.colorize("#ffea00", pname or name),
 				mode_name
 			)
 
@@ -95,7 +95,7 @@ ctf_api.register_on_match_end(function()
 	donate_timer = {}
 end)
 
-minetest.register_chatcommand("donate", {
+core.register_chatcommand("donate", {
 	description = "Donate your match score to your teammate\nCan be used only once in 10 minutes",
 	params = "<playername> <score> [message]",
 	func = function(name, param)
@@ -162,10 +162,10 @@ minetest.register_chatcommand("donate", {
 
 		donate_timer[name] = os.time()
 		local donate_text = string.format("%s donated %s score to %s%s", name, score, pname, dmessage)
-		minetest.chat_send_all(minetest.colorize("#00EEFF", donate_text))
+		core.chat_send_all(core.colorize("#00EEFF", donate_text))
 		ctf_modebase.announce(donate_text)
 
-		minetest.log("action", string.format(
+		core.log("action", string.format(
 			"Player '%s' donated %s score to player '%s'", name, score, pname
 		))
 		return true
@@ -173,8 +173,8 @@ minetest.register_chatcommand("donate", {
 })
 
 local allow_reset = {}
-minetest.register_chatcommand("reset_rankings", {
-	description = minetest.colorize("red", "Resets rankings of you or another player to nothing"),
+core.register_chatcommand("reset_rankings", {
+	description = core.colorize("red", "Resets rankings of you or another player to nothing"),
 	params = "[mode:technical modename] <playername>",
 	func = function(name, param)
 		local mode_name, mode_data, pname = get_gamemode(param)
@@ -183,10 +183,10 @@ minetest.register_chatcommand("reset_rankings", {
 		end
 
 		if pname then
-			if minetest.check_player_privs(name, {ctf_admin = true}) then
+			if core.check_player_privs(name, {ctf_admin = true}) then
 				mode_data.rankings:set(pname, {}, true)
 
-				minetest.log("action", string.format(
+				core.log("action", string.format(
 					"[ctf_admin] %s reset rankings for player '%s' in mode %s", name, pname, mode_name
 				))
 				return true, string.format("Rankings reset for player '%s' in mode %s", pname, mode_name)
@@ -198,7 +198,7 @@ minetest.register_chatcommand("reset_rankings", {
 			if not allow_reset[key] then
 				allow_reset[key] = true
 
-				minetest.after(30, function()
+				core.after(30, function()
 					allow_reset[key] = nil
 				end)
 
@@ -210,7 +210,7 @@ minetest.register_chatcommand("reset_rankings", {
 			mode_data.rankings:set(name, {}, true)
 			allow_reset[key] = nil
 
-			minetest.log("action", string.format(
+			core.log("action", string.format(
 				"Player '%s' reset their rankings in mode %s", name, mode_name
 			))
 			return true, "Your rankings have been reset"
@@ -218,7 +218,7 @@ minetest.register_chatcommand("reset_rankings", {
 	end
 })
 
-minetest.register_chatcommand("top50", {
+core.register_chatcommand("top50", {
 	description = "Show the top 50 players",
 	params = "[mode:technical modename]",
 	func = function(name, param)
@@ -252,7 +252,7 @@ minetest.register_chatcommand("top50", {
 	end,
 })
 
-minetest.register_chatcommand("make_pro", {
+core.register_chatcommand("make_pro", {
 	description = "Make yourself or another player a pro",
 	params = "[mode:technical modename] <playername>",
 	privs = {ctf_admin = true},
@@ -273,14 +273,14 @@ minetest.register_chatcommand("make_pro", {
 
 		mode_data.rankings:add(pname, {score = 8000, kills = 7, deaths = 5, flag_captures = 5})
 
-		minetest.log("action", string.format(
+		core.log("action", string.format(
 			"[ctf_admin] %s made player '%s' a pro in mode %s: %s", name, pname, mode_name, dump(old_ranks)
 		))
 		return true, string.format("Player '%s' is now a pro!", pname)
 	end
 })
 
-minetest.register_chatcommand("add_score", {
+core.register_chatcommand("add_score", {
 	description = "Add score to player",
 	params = "[mode:technical modename] <playername> <score>",
 	privs = {ctf_admin = true},
@@ -309,14 +309,14 @@ minetest.register_chatcommand("add_score", {
 		local old_score = old_ranks.score or 0
 		mode_data.rankings:set(pname, {score = old_score + score})
 
-		minetest.log("action", string.format(
+		core.log("action", string.format(
 			"[ctf_admin] %s added %s score to player '%s' in mode %s", name, score, pname, mode_name
 		))
 		return true, string.format("Added %s score to player '%s'", score, pname)
 	end
 })
 
-minetest.register_chatcommand("transfer_rankings", {
+core.register_chatcommand("transfer_rankings", {
 	description = "Transfer rankings of one player to another.",
 	params = "<src> <dest>",
 	privs = {ctf_admin = true},
@@ -368,7 +368,7 @@ minetest.register_chatcommand("transfer_rankings", {
 			mode.rankings:set(src, {}, true)
 		end
 
-		minetest.log("action", string.format(
+		core.log("action", string.format(
 			"[ctf_admin] %s transferred rankings from '%s' to '%s': %s -> %s",
 			name, src, dst, dump(src_rankings), dump(dst_rankings)
 		))

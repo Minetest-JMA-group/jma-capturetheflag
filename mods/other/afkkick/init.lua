@@ -14,35 +14,35 @@ local WARN_TIME = 150
 local players = {}
 local checkTimer = 0
 
-local S = minetest.get_translator(minetest.get_current_modname())
+local S = core.get_translator(core.get_current_modname())
 
-minetest.register_privilege("canafk", {
+core.register_privilege("canafk", {
     description = S("Allow to AFK without being kicked"),
 })
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	local playerName = player:get_player_name()
 	players[playerName] = {
-		lastAction = minetest.get_gametime()
+		lastAction = core.get_gametime()
 	}
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local playerName = player:get_player_name()
 	players[playerName] = nil
 end)
 
-minetest.register_on_chat_message(function(playerName, message)
+core.register_on_chat_message(function(playerName, message)
 	-- Verify that there is a player, and that the player is online
-	if not playerName or not minetest.get_player_by_name(playerName) then
+	if not playerName or not core.get_player_by_name(playerName) then
 		return
 	end
 
-	players[playerName]["lastAction"] = minetest.get_gametime()
+	players[playerName]["lastAction"] = core.get_gametime()
 end)
 
-minetest.register_globalstep(function(dtime)
-	local currGameTime = minetest.get_gametime()
+core.register_globalstep(function(dtime)
+	local currGameTime = core.get_gametime()
 
 	-- Check for inactivity once every CHECK_INTERVAL seconds
 	checkTimer = checkTimer + dtime
@@ -54,7 +54,7 @@ minetest.register_globalstep(function(dtime)
 
 	-- Loop through each player in players
 	for playerName, _ in pairs(players) do
-		local player = minetest.get_player_by_name(playerName)
+		local player = core.get_player_by_name(playerName)
 		if player then
 			-- Check if this player is doing an action
 			local control = player:get_player_control()
@@ -62,15 +62,15 @@ minetest.register_globalstep(function(dtime)
 				players[playerName]["lastAction"] = currGameTime
 			end
 
-			if checkNow and not minetest.check_player_privs(player, {canafk = true}) then
+			if checkNow and not core.check_player_privs(player, {canafk = true}) then
 				-- Kick player if he/she has been inactive for longer than MAX_INACTIVE_TIME seconds
 				if players[playerName]["lastAction"] + MAX_INACTIVE_TIME < currGameTime then
-					minetest.kick_player(playerName, "Kicked for inactivity")
+					core.kick_player(playerName, "Kicked for inactivity")
 				end
 
 				-- Warn player if he/she has less than WARN_TIME seconds to move or be kicked
 				if players[playerName]["lastAction"] + MAX_INACTIVE_TIME - WARN_TIME < currGameTime then
-					minetest.chat_send_player(playerName, minetest.colorize("#FF8C00",
+					core.chat_send_player(playerName, core.colorize("#FF8C00",
                         S("[Warning], you have @1 seconds to move or be kicked for inactivity",
                     tostring(players[playerName]["lastAction"] + MAX_INACTIVE_TIME - currGameTime + 1))))
 				end

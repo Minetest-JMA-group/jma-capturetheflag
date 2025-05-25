@@ -81,12 +81,12 @@ local function timer_func()
 		return
 	end
 
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		vote_timer_hud(player)
 	end
 
 	time_left = time_left - 1
-	timer = minetest.after(1, timer_func)
+	timer = core.after(1, timer_func)
 end
 
 function ctf_modebase.skip_vote.start_vote()
@@ -98,7 +98,7 @@ function ctf_modebase.skip_vote.start_vote()
 	votes = {}
 	voters_count = 0
 
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		add_vote_hud(player)
 		voters_count = voters_count + 1
 	end
@@ -118,14 +118,14 @@ function ctf_modebase.skip_vote.end_vote()
 	local yes, no, _ = count_votes()
 	votes = nil
 
-	local connected_players = #minetest.get_connected_players()
+	local connected_players = #core.get_connected_players()
 	if connected_players == 0 then
 		return
 	end
 
 	if voters_count < math.ceil(connected_players / 2) then
 		if yes > no then
-			minetest.chat_send_all(string.format(
+			core.chat_send_all(string.format(
 				"The vote to skip the match has passed! (%d yes vs %d no)", yes, no))
 
 			voted_skip = true
@@ -133,11 +133,11 @@ function ctf_modebase.skip_vote.end_vote()
 				ctf_modebase.start_new_match(5)
 			end
 		else
-			minetest.chat_send_all(string.format(
+			core.chat_send_all(string.format(
 				"The vote to skip the match has failed. (%d yes vs %d no)", yes, no))
 		end
 	else
-		minetest.chat_send_all(
+		core.chat_send_all(
 			"The vote to skip the match has failed due to not enough participation.")
 	end
 end
@@ -158,7 +158,7 @@ ctf_api.register_on_match_start(function()
 	flags_hold = 0
 
 
-	timer = minetest.after(SKIP_DELAY, ctf_modebase.skip_vote.start_vote)
+	timer = core.after(SKIP_DELAY, ctf_modebase.skip_vote.start_vote)
 	already_voted = false
 end)
 
@@ -192,18 +192,18 @@ function ctf_modebase.skip_vote.on_flag_capture(count)
 	flags_hold = flags_hold - count
 	if flags_hold <= 0 and voted_skip then
 		voted_skip = false
-		timer = minetest.after(30, ctf_modebase.skip_vote.start_vote)
+		timer = core.after(30, ctf_modebase.skip_vote.start_vote)
 	end
 end
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	if votes and not votes[player:get_player_name()] then
 		add_vote_hud(player)
 		voters_count = voters_count + 1
 	end
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	if votes and not votes[player:get_player_name()] then
 		voters_count = voters_count - 1
 
@@ -213,11 +213,11 @@ minetest.register_on_leaveplayer(function(player)
 	end
 end)
 
-minetest.register_chatcommand("vote_skip", {
+core.register_chatcommand("vote_skip", {
 	description = "Start a match skip vote",
 	privs = {ctf_admin = true},
 	func = function(name, param)
-		minetest.log("action", string.format("[ctf_admin] %s ran /vote_skip", name))
+		core.log("action", string.format("[ctf_admin] %s ran /vote_skip", name))
 
 		if not ctf_modebase.in_game then
 			return false, "Map switching is in progress"
@@ -236,12 +236,12 @@ minetest.register_chatcommand("vote_skip", {
 -- 	--start voting later, otherwise will start at loading
 
 
--- 	minetest.after(1, function()
+-- 	core.after(1, function()
 -- 		if not ctf_modebase.in_game or votes then
 -- 			return
 -- 		end
 
--- 		if #minetest.get_connected_players() > 1 then
+-- 		if #core.get_connected_players() > 1 then
 -- 			ctf_modebase.skip_vote.start_vote()
 -- 		end
 -- 	end)
@@ -255,7 +255,7 @@ local function player_vote(name, vote)
 
 		votes[name] = vote
 
-		local player = minetest.get_player_by_name(name)
+		local player = core.get_player_by_name(name)
 		if hud:exists(player, "skip_vote:vote") then
 			hud:change(player, "skip_vote:vote", {
 				text = string.format("[%s]", vote),
@@ -264,14 +264,14 @@ local function player_vote(name, vote)
 		end
 
 		-- Update vote information for all players
-		for _, p in ipairs(minetest.get_connected_players()) do
+		for _, p in ipairs(core.get_connected_players()) do
 			vote_timer_hud(p)
 		end
 	end
 
 	if not votes then
 		if not ctf_modebase.match_started then
-			if #minetest.get_connected_players() > 1 and not already_voted then
+			if #core.get_connected_players() > 1 and not already_voted then
 				ctf_modebase.skip_vote.start_vote()
 				if votes then
 					do_vote()
@@ -290,7 +290,7 @@ local function player_vote(name, vote)
 	return true
 end
 
-minetest.register_chatcommand("yes", {
+core.register_chatcommand("yes", {
 	description = "Vote yes",
 	privs = {interact = true},
 	func = function(name, params)
@@ -298,7 +298,7 @@ minetest.register_chatcommand("yes", {
 	end
 })
 
-minetest.register_chatcommand("no", {
+core.register_chatcommand("no", {
 	description = "Vote no",
 	privs = {interact = true},
 	func = function(name, params)
@@ -306,7 +306,7 @@ minetest.register_chatcommand("no", {
 	end
 })
 
-minetest.register_chatcommand("abs", {
+core.register_chatcommand("abs", {
 	description = "Vote third party",
 	privs = {interact = true},
 	func = function(name, params)

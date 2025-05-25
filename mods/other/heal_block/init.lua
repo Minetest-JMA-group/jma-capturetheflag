@@ -2,11 +2,11 @@
 -- Copyright (c) 2024 Ivan Shkatov (Maintainer_) ivanskatov672@gmail.com
 
 local break_reward = 20
-minetest.register_node("heal_block:heal", {
+core.register_node("heal_block:heal", {
 	description = "Healing Block\n"
 		.. "A block that heals players within a 3-block radius.\n"
 		.. "Place it on your team's territory to keep your allies healthy nearby.\n"
-		.. minetest.colorize("yellow", "Warning: breaking this block will result in its loss, so defend it wisely!"),
+		.. core.colorize("yellow", "Warning: breaking this block will result in its loss, so defend it wisely!"),
 	drawtype = "nodebox",
 	node_box = {
 		type = "fixed",
@@ -33,23 +33,23 @@ minetest.register_node("heal_block:heal", {
 				return
 			end
 		end
-		minetest.item_place(itemstack, placer, pointed_thing)
+		core.item_place(itemstack, placer, pointed_thing)
 		return itemstack
 	end,
 
 	after_place_node = function(pos, placer)
-		minetest.get_node_timer(pos):start(1)
+		core.get_node_timer(pos):start(1)
 		local pteam = ctf_teams.get(placer)
 		if pteam then
-			minetest.get_meta(pos):set_string("team", pteam)
+			core.get_meta(pos):set_string("team", pteam)
 		end
 	end,
 
 	on_timer = function(pos)
-		for _, player in ipairs(minetest.get_objects_inside_radius(pos, 3)) do
+		for _, player in ipairs(core.get_objects_inside_radius(pos, 3)) do
 			if player:is_player() then
 				local pteam = ctf_teams.get(player:get_player_name())
-				if pteam and pteam == minetest.get_meta(pos):get_string("team") then
+				if pteam and pteam == core.get_meta(pos):get_string("team") then
 					local hp = player:get_hp()
 					if hp < player:get_properties().hp_max then
 						player:set_hp(hp + 2)

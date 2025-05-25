@@ -45,17 +45,17 @@ ctf_api.register_on_match_end(function()
 end)
 
 local function spawn_giftbox(pos)
-	minetest.add_entity(pos, "random_gifts:gift")
+	core.add_entity(pos, "random_gifts:gift")
 end
 
 local function fireworks_boom(pos, firework_name)
-	minetest.sound_play("fireworks_explosion", {
+	core.sound_play("fireworks_explosion", {
 		pos = pos,
 		max_hear_distance = 70,
 		gain = math.random(5, 10)
 	})
 
-	minetest.add_particlespawner({
+	core.add_particlespawner({
 		amount = 150,
 		time = 0.001,
 		minpos = pos,
@@ -73,7 +73,7 @@ local function fireworks_boom(pos, firework_name)
 		glow = 8,
 		texture = "firework_sparks_"..firework_name..".png",
 	})
-	minetest.add_particlespawner({
+	core.add_particlespawner({
 		amount = 100,
 		time = 0.001,
 		minpos = pos,
@@ -95,7 +95,7 @@ local function fireworks_boom(pos, firework_name)
 end
 
 for _, i in pairs(fireworks.colors) do
-	minetest.register_node("fireworks:"..i[1], {
+	core.register_node("fireworks:"..i[1], {
 		description = i[2].." Fireworks",
 		tiles = {"firework_"..i[1]..".png"},
 		groups = {dig_immediate = 1},
@@ -108,13 +108,13 @@ for _, i in pairs(fireworks.colors) do
 		on_punch = function(pos, node, puncher, pointed_thing)
 			local wielded = puncher:get_wielded_item():get_name()
 			if wielded == "default:torch" or wielded == "fire:flint_and_steel" then
-				minetest.sound_play("fireworks_launch", {
+				core.sound_play("fireworks_launch", {
 					pos = pos,
 					max_hear_distance = 10,
 					gain = 8.0
 				})
 
-				minetest.add_particlespawner({
+				core.add_particlespawner({
 					amount = 5,
 					time = 0.001,
 					minpos = pos,
@@ -133,10 +133,10 @@ for _, i in pairs(fireworks.colors) do
 					texture = "random_gifts_spark.png^[multiply:yellow"
 				})
 
-				minetest.after(0.2, function()
-					if minetest.get_node(pos).name:sub(1, 9) == "fireworks" then
-						minetest.remove_node(pos)
-						local entity = minetest.add_entity(pos, "fireworks:rocket")
+				core.after(0.2, function()
+					if core.get_node(pos).name:sub(1, 9) == "fireworks" then
+						core.remove_node(pos)
+						local entity = core.add_entity(pos, "fireworks:rocket")
 						entity:set_properties({textures = {"firework_"..i[1]..".png"}})
 						local luaent = entity:get_luaentity()
 						luaent.firework_name = i[1]
@@ -146,14 +146,14 @@ for _, i in pairs(fireworks.colors) do
 				end)
 				return
 			end
-			return minetest.dig_node(pos, puncher)
+			return core.dig_node(pos, puncher)
 		end,
 		sounds = default.node_sound_stone_defaults(),
 	})
 end
 
 
-minetest.register_entity("fireworks:rocket", {
+core.register_entity("fireworks:rocket", {
 	initial_properties = {
 		armor_groups = {immortal = true},
 		physical = true,
@@ -174,7 +174,7 @@ minetest.register_entity("fireworks:rocket", {
 		local pos = self.object:get_pos()
 		if not pos then return end
 
-		minetest.add_particle({
+		core.add_particle({
 			pos = pos,
 			velocity = {x=math.random(-1,1),y=math.random(-1,1),z=math.random(-1,1)},
 			expirationtime = 1.9,
@@ -195,7 +195,7 @@ minetest.register_entity("fireworks:rocket", {
 		end
 
 		if self.timer > 0.1 then
-			local objs = minetest.get_objects_inside_radius({x = pos.x, y = pos.y - 1, z = pos.z}, 1.3)
+			local objs = core.get_objects_inside_radius({x = pos.x, y = pos.y - 1, z = pos.z}, 1.3)
 			for k, obj in pairs(objs) do
 				local prop = obj
 				if prop then
@@ -220,4 +220,4 @@ minetest.register_entity("fireworks:rocket", {
 })
 
 
-dofile(minetest.get_modpath("fireworks") .. "/delivery.lua")
+dofile(core.get_modpath("fireworks") .. "/delivery.lua")

@@ -2,7 +2,7 @@ local getpos_players = {}
 function ctf_map.get_pos_from_player(name, amount, donefunc)
 	getpos_players[name] = {amount = amount, func = donefunc, positions = {}}
 
-	if amount == 2 and minetest.get_modpath("worldedit") then
+	if amount == 2 and core.get_modpath("worldedit") then
 		worldedit.pos1[name] = nil
 		worldedit.pos2[name] = nil
 		worldedit.marker_update(name)
@@ -10,7 +10,7 @@ function ctf_map.get_pos_from_player(name, amount, donefunc)
 		getpos_players[name].place_markers = true
 	end
 
-	minetest.chat_send_player(name, minetest.colorize(ctf_map.CHAT_COLOR,
+	core.chat_send_player(name, core.colorize(ctf_map.CHAT_COLOR,
 			"Please punch a node or run `/ctf_map here` to supply coordinates"))
 end
 
@@ -18,8 +18,8 @@ local function add_position(player, pos)
 	pos = vector.round(pos)
 
 	table.insert(getpos_players[player].positions, pos)
-	minetest.chat_send_player(player, minetest.colorize(ctf_map.CHAT_COLOR,
-			"Got pos "..minetest.pos_to_string(pos, 1)))
+	core.chat_send_player(player, core.colorize(ctf_map.CHAT_COLOR,
+			"Got pos "..core.pos_to_string(pos, 1)))
 
 	if getpos_players[player].place_markers then
 		if #getpos_players[player].positions == 1 then
@@ -34,7 +34,7 @@ local function add_position(player, pos)
 	if getpos_players[player].amount > 1 then
 		getpos_players[player].amount = getpos_players[player].amount - 1
 	else
-		minetest.chat_send_player(player, minetest.colorize(ctf_map.CHAT_COLOR,
+		core.chat_send_player(player, core.colorize(ctf_map.CHAT_COLOR,
 				"Done getting positions!"))
 		getpos_players[player].func(player, getpos_players[player].positions)
 		getpos_players[player] = nil
@@ -54,7 +54,7 @@ ctf_map.register_map_command("here", function(name, params)
 	end
 end)
 
-minetest.register_on_punchnode(function(pos, _, puncher)
+core.register_on_punchnode(function(pos, _, puncher)
 	puncher = PlayerName(puncher)
 
 	if getpos_players[puncher] then
@@ -62,6 +62,6 @@ minetest.register_on_punchnode(function(pos, _, puncher)
 	end
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	getpos_players[PlayerName(player)] = nil
 end)

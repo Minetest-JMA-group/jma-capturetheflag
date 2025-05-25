@@ -1,7 +1,7 @@
 local default_radius = 3
 
 
-minetest.register_craftitem("rocket_launcher:rocket", {
+core.register_craftitem("rocket_launcher:rocket", {
 	wield_scale = {x=2,y=2,z=1.5},
 	stack_max = 16,
 	description = "Rocket",
@@ -9,7 +9,7 @@ minetest.register_craftitem("rocket_launcher:rocket", {
 })
 
 local WEAR_MAX = 65535
-minetest.register_tool("rocket_launcher:launcher", {
+core.register_tool("rocket_launcher:launcher", {
 	wield_scale = {x=2,y=2,z=2},
 	description = "Rocket Launcher\nUses rockets",
 	inventory_image = "rocket_launcher.png",
@@ -27,7 +27,7 @@ minetest.register_tool("rocket_launcher:launcher", {
 			if pos and dir then
 				pos.y = pos.y + 1.5
 				local ahead = vector.add(pos, vector.multiply(dir, 1))
-				local obj = minetest.add_entity(ahead, "rocket_launcher:rocket")
+				local obj = core.add_entity(ahead, "rocket_launcher:rocket")
 				if obj then
 					local ent = obj:get_luaentity()
 					ent.radius = default_radius
@@ -38,7 +38,7 @@ minetest.register_tool("rocket_launcher:launcher", {
 					obj:set_rotation({x=-pitch, y=0, z=0})
 				end
 			end
-			minetest.sound_play('fire_extinguish_flame',{to_player = name, gain = 0.5})
+			core.sound_play('fire_extinguish_flame',{to_player = name, gain = 0.5})
 			itemstack:set_wear(WEAR_MAX - 6000)
 			ctf_modebase.update_wear.start_update(user:get_player_name(), itemstack, WEAR_MAX/4, true)
 			return itemstack
@@ -64,8 +64,8 @@ local rocket = {
 }
 
 local function can_explode(pos, pname, radius)
-	if minetest.is_protected(pos, "") then
-		minetest.chat_send_player(pname, "You can't explode rocket on spawn")
+	if core.is_protected(pos, "") then
+		core.chat_send_player(pname, "You can't explode rocket on spawn")
 		return false
 	end
 
@@ -76,7 +76,7 @@ local function can_explode(pos, pname, radius)
 			if not ctf_modebase.flag_captured[flagteam] and team.flag_pos then
 				local distance_from_flag = vector.distance(pos, team.flag_pos)
 				if distance_from_flag <= 2 + radius then
-					minetest.chat_send_player(pname, "You can't explode rocket so close to a flag!")
+					core.chat_send_player(pname, "You can't explode rocket so close to a flag!")
 					return false
 				end
 			end
@@ -89,8 +89,8 @@ rocket.on_step = function(self, dtime, moveresult)
 	self.timer = self.timer + dtime
 	local pos = self.object:get_pos()
 	if not pos then return end
-	minetest.after(0.1,function()
-		minetest.add_particle({
+	core.after(0.1,function()
+		core.add_particle({
 			pos = pos,
 			velocity = {x=math.random(-1,1),y=math.random(-1,1),z=math.random(-1,1)},
 			expirationtime = 1.9,
@@ -105,7 +105,7 @@ rocket.on_step = function(self, dtime, moveresult)
 		self.object:remove()
 	end
 	if self.timer > 0.2 then
-		local objs = minetest.get_objects_inside_radius({x = pos.x, y = pos.y-1, z = pos.z}, 1.3)
+		local objs = core.get_objects_inside_radius({x = pos.x, y = pos.y-1, z = pos.z}, 1.3)
 		for k, obj in pairs(objs) do
 			local prop = obj and obj:get_properties()
 			if prop then
@@ -135,4 +135,4 @@ rocket.on_step = function(self, dtime, moveresult)
 end
 
 
-minetest.register_entity("rocket_launcher:rocket", rocket)
+core.register_entity("rocket_launcher:rocket", rocket)

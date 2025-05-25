@@ -1,5 +1,5 @@
 local players = {}
-local ATTACH_POSITION = minetest.rgba and {x=0, y=20, z=0} or {x=0, y=10, z=0}
+local ATTACH_POSITION = core.rgba and {x=0, y=20, z=0} or {x=0, y=10, z=0}
 
 local TYPE_BUILTIN = 0
 local TYPE_ENTITY = 1
@@ -17,13 +17,13 @@ local function add_entity_tag(player, old_observers, readded)
 		color = {a = 0, r = 0, g = 0, b = 0}
 	})
 
-	local ent = minetest.add_entity(player:get_pos(), "playertag:tag")
+	local ent = core.add_entity(player:get_pos(), "playertag:tag")
 	if not ent then return end
 	local ent2 = false
 	local ent3 = false
 
 	if ent.set_observers then
-		ent2 = minetest.add_entity(player:get_pos(), "playertag:tag")
+		ent2 = core.add_entity(player:get_pos(), "playertag:tag")
 		ent2:set_observers(old_observers.nametag_entity or {})
 		ent2:set_properties({
 			nametag = player_name,
@@ -31,7 +31,7 @@ local function add_entity_tag(player, old_observers, readded)
 			nametag_bgcolor = "#0000002D"
 		})
 
-		ent3 = minetest.add_entity(player:get_pos(), "playertag:tag")
+		ent3 = core.add_entity(player:get_pos(), "playertag:tag")
 		ent3:set_observers(old_observers.symbol_entity or {})
 		ent3:set_properties({
 			collisionbox = { 0, 0, 0, 0, 0, 0 },
@@ -72,10 +72,10 @@ local function add_entity_tag(player, old_observers, readded)
 	players[player_name].symbol_entity = ent3 and ent3:get_luaentity()
 
 	if readded then return end
-	players[player_name].timer = minetest.after(5, function()
-		if minetest.get_player_by_name(player_name) ~= nil then -- check if the player is still online
+	players[player_name].timer = core.after(5, function()
+		if core.get_player_by_name(player_name) ~= nil then -- check if the player is still online
 			if not ent:get_luaentity() or (ent.set_observers and not (ent2:get_luaentity() or ent3:get_luaentity())) then
-				minetest.log("warning", "playertag: respawning entity for " .. player_name)
+				core.log("warning", "playertag: respawning entity for " .. player_name)
 				add_entity_tag(player, old_observers, true)
 			end
 		end
@@ -166,7 +166,7 @@ function playertag.get_all()
 	return players
 end
 
-minetest.register_entity("playertag:tag", {
+core.register_entity("playertag:tag", {
 	initial_properties = {
 		visual = "sprite",
 		visual_size = {x=2.16, y=0.18, z=2.16}, --{x=1.44, y=0.12, z=1.44},
@@ -179,15 +179,15 @@ minetest.register_entity("playertag:tag", {
 		pointable = false,
 	},
 	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir, damage)
-		if minetest.is_player(puncher) then
+		if core.is_player(puncher) then
 			puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
-			minetest.log("warning", puncher:get_player_name() .. " is trying to damage non-pointable entity \"playertag:tag\".")
+			core.log("warning", puncher:get_player_name() .. " is trying to damage non-pointable entity \"playertag:tag\".")
 		end
 		return true
 	end
 })
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
 	if playertag.no_entity_attach[name] then
 		return
@@ -195,7 +195,7 @@ minetest.register_on_joinplayer(function(player)
 	players[name] = {type = TYPE_BUILTIN, color = {a=255, r=255, g=255, b=255}}
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	playertag.remove_entity_tag(player)
 	players[player:get_player_name()] = nil
 end)

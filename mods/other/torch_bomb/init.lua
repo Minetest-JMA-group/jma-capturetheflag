@@ -1,33 +1,33 @@
-local modname = minetest.get_current_modname()
-local modpath = minetest.get_modpath(modname)
-local tnt_modpath = minetest.get_modpath("tnt")
-local S = minetest.get_translator(modname)
+local modname = core.get_current_modname()
+local modpath = core.get_modpath(modname)
+local tnt_modpath = core.get_modpath("tnt")
+local S = core.get_translator(modname)
 
 local FakePlayer = dofile(modpath .. "/" .. "class_fakeplayer.lua")
 local fakeplayer = FakePlayer.create({x=0,y=0,z=0}, "torch_bomb")
 
 -- Default to enabled when in singleplayer
-local enable_tnt = minetest.settings:get_bool("enable_tnt")
+local enable_tnt = core.settings:get_bool("enable_tnt")
 if enable_tnt == nil then
-	enable_tnt = minetest.is_singleplayer()
+	enable_tnt = core.is_singleplayer()
 end
 
-local grenade_range = tonumber(minetest.settings:get("torch_bomb_grenade_range")) or 25
-local bomb_range = tonumber(minetest.settings:get("torch_bomb_range")) or 50
-local mega_bomb_range = tonumber(minetest.settings:get("torch_bomb_mega_range")) or 150
-local torch_item = minetest.settings:get("torch_bomb_torch_item") or "default:torch"
+local grenade_range = tonumber(core.settings:get("torch_bomb_grenade_range")) or 25
+local bomb_range = tonumber(core.settings:get("torch_bomb_range")) or 50
+local mega_bomb_range = tonumber(core.settings:get("torch_bomb_mega_range")) or 150
+local torch_item = core.settings:get("torch_bomb_torch_item") or "default:torch"
 
-local enable_rockets = minetest.settings:get_bool("torch_bomb_enable_rockets", true)
-local rocket_max_fuse = tonumber(minetest.settings:get("torch_bomb_max_fuse")) or 14 -- 14 seconds at 1 m/s^2 is 98 meters traveled
+local enable_rockets = core.settings:get_bool("torch_bomb_enable_rockets", true)
+local rocket_max_fuse = tonumber(core.settings:get("torch_bomb_max_fuse")) or 14 -- 14 seconds at 1 m/s^2 is 98 meters traveled
 local default_fuse = rocket_max_fuse/2 -- 7 seconds at 1 m/s^2 is 24.5 meters traveled
 
-local enable_grenade = minetest.settings:get_bool("torch_bomb_enable_grenades", true)
+local enable_grenade = core.settings:get_bool("torch_bomb_enable_grenades", true)
 
-local crossbow_range = tonumber(minetest.settings:get("torch_bomb_base_crossbow_range")) or 25
-local enable_crossbows = minetest.settings:get_bool("torch_bomb_enable_crossbows", true)
-local torch_bow_uses = tonumber(minetest.settings:get("torch_bomb_base_crossbow_uses")) or 30
+local crossbow_range = tonumber(core.settings:get("torch_bomb_base_crossbow_range")) or 25
+local enable_crossbows = core.settings:get_bool("torch_bomb_enable_crossbows", true)
+local torch_bow_uses = tonumber(core.settings:get("torch_bomb_base_crossbow_uses")) or 30
 
-minetest.register_chatcommand("torchbomb", {
+core.register_chatcommand("torchbomb", {
 	description = "Torch bomb configuration",
 	params = "<command> ...",
 	privs = { dev=true },
@@ -35,18 +35,18 @@ minetest.register_chatcommand("torchbomb", {
 		local iter = param:gmatch("%S+")
 		local command = iter()
 		if command == "help" then
-			minetest.chat_send_player(name, "List of possible commands:")
-			minetest.chat_send_player(name, "grenade_range: Set the range from explosion in which torches are placed")
+			core.chat_send_player(name, "List of possible commands:")
+			core.chat_send_player(name, "grenade_range: Set the range from explosion in which torches are placed")
 			return true
 		end
 		if command == "grenade_range" then
 			local numberString = iter()
 			if not numberString or numberString == "" or not tonumber(numberString) then
-				minetest.chat_send_player(name, "Current grenade_range value is: "..tostring(grenade_range))
+				core.chat_send_player(name, "Current grenade_range value is: "..tostring(grenade_range))
 				return false, "You have to enter valid grenade_range value to change it"
 			end
 			grenade_range = math.floor(tonumber(numberString))
-			minetest.settings:set("torch_bomb_grenade_range", grenade_range)
+			core.settings:set("torch_bomb_grenade_range", grenade_range)
 			return true, "grenade_range set to "..tostring(grenade_range)
 		end
 		return false, "Invalid command; Run /torchbomb help for available commands"
@@ -54,9 +54,9 @@ minetest.register_chatcommand("torchbomb", {
 })
 
 -- Detect creative mod
-local creative_mod = minetest.get_modpath("creative")
+local creative_mod = core.get_modpath("creative")
 -- Cache creative mode setting as fallback if creative mod not present
-local creative_mode_cache = minetest.settings:get_bool("creative_mode")
+local creative_mode_cache = core.settings:get_bool("creative_mode")
 
 
 -- 12 torches grenade
@@ -303,11 +303,11 @@ local function find_target(raycast)
 	local next_pointed = raycast:next()
 	while next_pointed do
 		local under_pos = next_pointed.under
-		local under_node = minetest.get_node(under_pos)
-		local under_def = minetest.registered_nodes[under_node.name]
+		local under_node = core.get_node(under_pos)
+		local under_def = core.registered_nodes[under_node.name]
 		local above_pos = next_pointed.above
-		local above_node = minetest.get_node(above_pos)
-		local above_def = minetest.registered_nodes[above_node.name]
+		local above_node = core.get_node(above_pos)
+		local above_def = core.registered_nodes[above_node.name]
 
 		if above_def.buildable_to and ((under_def and not under_def.buildable_to) or not under_def) then
 			return next_pointed
@@ -318,23 +318,23 @@ local function find_target(raycast)
 end
 
 local torch_def_on_place
-minetest.after(0, function()
-	torch_def_on_place = minetest.registered_nodes[torch_item].on_place
+core.after(0, function()
+	torch_def_on_place = core.registered_nodes[torch_item].on_place
 end)
 
 local function play_bolt_hit(pos)
-	minetest.sound_play("torch_bomb_bolt_hit", {pos=pos, gain=1, max_hear_distance=8})
+	core.sound_play("torch_bomb_bolt_hit", {pos=pos, gain=1, max_hear_distance=8})
 end
 
 local function embed_torch(target, placer, pos)
-	if minetest.get_item_group(minetest.get_node(target.above).name, "torch") ~= 0 then
+	if core.get_item_group(core.get_node(target.above).name, "torch") ~= 0 then
 		return
 	end
 	torch_def_on_place(ItemStack(torch_item), placer, target)
 	local target_pos = target.above
 	local dir_back = vector.normalize(vector.subtract(pos, target_pos))
 	local vel_back = vector.multiply(dir_back, 10)
-	minetest.add_particlespawner({
+	core.add_particlespawner({
 		amount = math.random(1,6),
 		time = 0.1,
 		minpos = target_pos,
@@ -351,14 +351,14 @@ local function embed_torch(target, placer, pos)
 		collision_removal = false,
 		texture = "torch_bomb_shard.png",
 	})
-	minetest.after(math.random()*0.1, play_bolt_hit, pos)
+	core.after(math.random()*0.1, play_bolt_hit, pos)
 end
 
 local function kerblam(pos, placer, dirs, min_range)
 	pos = vector.round(pos)
 	local targets = {}
 	for _, pos2 in ipairs(dirs) do
-		local raycast = minetest.raycast(pos, vector.add(pos, pos2), false, true)
+		local raycast = core.raycast(pos, vector.add(pos, pos2), false, true)
 		local target_pointed = find_target(raycast)
 		if target_pointed then
 			if vector.distance(pos, target_pointed.above) > min_range then
@@ -372,8 +372,8 @@ local function kerblam(pos, placer, dirs, min_range)
 		fakeplayer:update(pos, "torch_bomb")
 	end
 
-	minetest.log("action", placer:get_player_name() .. " detonated a torch bomb at " ..
-		minetest.pos_to_string(pos) .. " and placed " .. #targets .. " torches.")
+	core.log("action", placer:get_player_name() .. " detonated a torch bomb at " ..
+		core.pos_to_string(pos) .. " and placed " .. #targets .. " torches.")
 
 	for _, target in ipairs(targets) do
 		embed_torch(target, fakeplayer, pos)
@@ -391,7 +391,7 @@ local function rocket_formspec(fuse_length)
 end
 
 local function rocket_effects(obj, fuse)
-	minetest.add_particlespawner({
+	core.add_particlespawner({
 		amount = 100*fuse,
 		time = fuse,
 		minpos = {x=0, y=0, z=0},
@@ -413,7 +413,7 @@ local function rocket_effects(obj, fuse)
 end
 
 if enable_rockets then
-	minetest.register_on_player_receive_fields(function(player, formname, fields)
+	core.register_on_player_receive_fields(function(player, formname, fields)
 		if formname == "torch_bomb:torch_rocket" then
 			local player_name = player:get_player_name()
 			local pos = player_setting_fuse_at[player_name]
@@ -423,14 +423,14 @@ if enable_rockets then
 				player_setting_fuse_at[player_name] = nil
 				return
 			end
-			local node = minetest.get_node(pos)
-			if minetest.get_item_group(node.name, "torch_bomb_rocket") == 0 then
+			local node = core.get_node(pos)
+			if core.get_item_group(node.name, "torch_bomb_rocket") == 0 then
 				player_setting_fuse_at[player_name] = nil
 				return
 			end
 			player_setting_fuse_at[player_name] = nil
 			seconds = math.max(math.min(seconds, rocket_max_fuse), 1)
-			local meta = minetest.get_meta(pos)
+			local meta = core.get_meta(pos)
 			meta:set_string("fuse", seconds)
 		end
 	end)
@@ -440,7 +440,7 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 
 	local side_texture = "torch_bomb_side_base.png^"..texture
 
-	minetest.register_node("torch_bomb:" .. name, {
+	core.register_node("torch_bomb:" .. name, {
 		description = desc,
 		drawtype = "normal",
 		tiles = {"torch_bomb_top.png", "torch_bomb_bottom.png", side_texture},
@@ -451,19 +451,19 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 
 		on_punch = function(pos, node, puncher)
 			if puncher:get_wielded_item():get_name() == "default:torch" then
-				minetest.set_node(pos, {name = "torch_bomb:"..name.."_burning"})
-				minetest.get_meta(pos):set_string("torch_bomb_ignitor", puncher:get_player_name())
-				minetest.log("action", puncher:get_player_name() .. " ignites " .. node.name .. " at " ..
-					minetest.pos_to_string(pos))
+				core.set_node(pos, {name = "torch_bomb:"..name.."_burning"})
+				core.get_meta(pos):set_string("torch_bomb_ignitor", puncher:get_player_name())
+				core.log("action", puncher:get_player_name() .. " ignites " .. node.name .. " at " ..
+					core.pos_to_string(pos))
 			end
 		end,
 
 		on_ignite = function(pos) -- used by TNT mod
-			minetest.set_node(pos, {name = "torch_bomb:"..name.."_burning"})
+			core.set_node(pos, {name = "torch_bomb:"..name.."_burning"})
 		end,
 	})
 
-	minetest.register_node("torch_bomb:"..name.."_burning", {
+	core.register_node("torch_bomb:"..name.."_burning", {
 		description = desc,
 		drawtype = "normal",  -- See "Node drawtypes"
 		tiles = {{
@@ -485,19 +485,19 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 
 		on_construct = function(pos)
 			if tnt_modpath then
-				minetest.sound_play("tnt_ignite", {pos = pos, max_hear_distance = 8})
+				core.sound_play("tnt_ignite", {pos = pos, max_hear_distance = 8})
 			end
-			minetest.get_node_timer(pos):start(3)
-			minetest.check_for_falling(pos)
+			core.get_node_timer(pos):start(3)
+			core.check_for_falling(pos)
 		end,
 
 		on_timer = function(pos, elapsed)
-			local ignitor_name = minetest.get_meta(pos):get("torch_bomb_ignitor")
+			local ignitor_name = core.get_meta(pos):get("torch_bomb_ignitor")
 			local puncher
 			if ignitor_name then
-				puncher = minetest.get_player_by_name(ignitor_name)
+				puncher = core.get_player_by_name(ignitor_name)
 			end
-			minetest.set_node(pos, {name="air"})
+			core.set_node(pos, {name="air"})
 			local damage_rad = 0
 			if ctf_modebase:get_current_mode() == ctf_modebase.modes["nade_fight"] then
 				damage_rad = blast_radius+3
@@ -517,10 +517,10 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 	local rocket_side_texture = side_texture .. "^torch_bomb_rocket_side.png"
 
 	local function entity_detonate(player_name, target)
-		--minetest.chat_send_all("entity detonate " .. (player_name or "") .. " " .. minetest.pos_to_string(target))
+		--core.chat_send_all("entity detonate " .. (player_name or "") .. " " .. core.pos_to_string(target))
 		local player
 		if player_name then
-			player = minetest.get_player_by_name(player_name)
+			player = core.get_player_by_name(player_name)
 		end
 		local damage_rad = 0
 		if ctf_modebase:get_current_mode() == ctf_modebase.modes["nade_fight"] then
@@ -532,7 +532,7 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 		kerblam(target, player, dirs, min_range)
 	end
 
-	minetest.register_entity("torch_bomb:"..name.."_rocket_entity", {
+	core.register_entity("torch_bomb:"..name.."_rocket_entity", {
 		initial_properties = {
 			physical = false,
 			visual = "cube",
@@ -554,12 +554,12 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 			if target then
 				-- we're unloading an active rocket, skip ahead to detonation point
 				local pos = self.object:get_pos()
-				local raycast = minetest.raycast(pos, target, false, true)
+				local raycast = core.raycast(pos, target, false, true)
 				local target_pointed = find_target(raycast)
 				if target_pointed then
 					target = target_pointed.above
 				end
-				minetest.after(self.fuse, entity_detonate, self.player_name, target)
+				core.after(self.fuse, entity_detonate, self.player_name, target)
 				return "detonated"
 			end
 		end,
@@ -569,14 +569,14 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 			local lastpos = self.lastpos
 
 			local pos = object:get_pos()
-			local node = minetest.get_node(pos)
+			local node = core.get_node(pos)
 			local luaentity = object:get_luaentity()
 			local old_fuse = luaentity.fuse or -1
 			local new_fuse = old_fuse - dtime
 			luaentity.fuse = new_fuse
 			if math.floor(old_fuse) ~= math.floor(new_fuse) then
 				-- should happen once per second
-				minetest.sound_play({name="tnt_gunpowder_burning"}, {
+				core.sound_play({name="tnt_gunpowder_burning"}, {
 					object = object,
 					gain = 1.0,
 					max_hear_distance = 8,
@@ -593,7 +593,7 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 		end,
 	})
 
-	minetest.register_node("torch_bomb:"..name.."_rocket", {
+	core.register_node("torch_bomb:"..name.."_rocket", {
 		description = S("@1 Rocket", desc),
 		drawtype = "normal",
 		tiles = {"torch_bomb_top.png", rocket_bottom_texture, rocket_side_texture},
@@ -604,32 +604,32 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 
 		on_punch = function(pos, node, puncher)
 			if puncher:get_wielded_item():get_name() == "default:torch" then
-				local fuse = minetest.get_meta(pos):get("fuse")
-				minetest.set_node(pos, {name = "torch_bomb:"..name.."_rocket_burning"})
-				local meta = minetest.get_meta(pos)
+				local fuse = core.get_meta(pos):get("fuse")
+				core.set_node(pos, {name = "torch_bomb:"..name.."_rocket_burning"})
+				local meta = core.get_meta(pos)
 				meta:set_string("torch_bomb_ignitor", puncher:get_player_name())
 				meta:set_string("fuse", fuse)
-				minetest.log("action", puncher:get_player_name() .. " ignites " .. node.name .. " at " ..
-					minetest.pos_to_string(pos))
+				core.log("action", puncher:get_player_name() .. " ignites " .. node.name .. " at " ..
+					core.pos_to_string(pos))
 			end
 		end,
 
 		on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
-			local meta = minetest.get_meta(pos)
+			local meta = core.get_meta(pos)
 			local fuse_length = tonumber(meta:get_string("fuse")) or default_fuse
 			local player_name = clicker:get_player_name()
 			player_setting_fuse_at[player_name] = pos
-			minetest.show_formspec(player_name, "torch_bomb:torch_rocket", rocket_formspec(fuse_length))
+			core.show_formspec(player_name, "torch_bomb:torch_rocket", rocket_formspec(fuse_length))
 		end,
 
 		on_ignite = function(pos) -- used by TNT mod
-			local fuse = minetest.get_meta(pos):get("fuse")
-			minetest.set_node(pos, {name = "torch_bomb:"..name.."_rocket_burning"})
-			minetest.get_meta(pos):set_string("fuse", fuse)
+			local fuse = core.get_meta(pos):get("fuse")
+			core.set_node(pos, {name = "torch_bomb:"..name.."_rocket_burning"})
+			core.get_meta(pos):set_string("fuse", fuse)
 		end,
 	})
 
-	minetest.register_node("torch_bomb:"..name.."_rocket_burning", {
+	core.register_node("torch_bomb:"..name.."_rocket_burning", {
 		description = S("@1 Rocket", desc),
 		drawtype = "normal",
 		tiles = {{
@@ -651,19 +651,19 @@ local function register_torch_bomb(name, desc, dirs, min_range, blast_radius, te
 
 		on_construct = function(pos)
 			if tnt_modpath then
-				minetest.sound_play("tnt_ignite", {pos = pos, max_hear_distance = 8})
+				core.sound_play("tnt_ignite", {pos = pos, max_hear_distance = 8})
 			end
-			minetest.get_node_timer(pos):start(3)
-			minetest.check_for_falling(pos)
+			core.get_node_timer(pos):start(3)
+			core.check_for_falling(pos)
 		end,
 
 		on_timer = function(pos, elapsed)
-			local meta = minetest.get_meta(pos)
+			local meta = core.get_meta(pos)
 			local ignitor_name = meta:get("torch_bomb_ignitor")
 			local fuse = tonumber(meta:get_string("fuse")) or default_fuse
-			minetest.set_node(pos, {name="air"})
+			core.set_node(pos, {name="air"})
 
-			local obj = minetest.add_entity(pos, "torch_bomb:"..name.."_rocket_entity")
+			local obj = core.add_entity(pos, "torch_bomb:"..name.."_rocket_entity")
 			obj:set_acceleration({x=0, y=1, z=0})
 			local lua_entity = obj:get_luaentity()
 			lua_entity.player_name = ignitor_name
@@ -688,12 +688,12 @@ if enable_grenade then
 	local throw_velocity = 20
 	local gravity = {x=0, y=-9.81, z=0}
 
-	minetest.register_craftitem("torch_bomb:torch_grenade", {
+	core.register_craftitem("torch_bomb:torch_grenade", {
 		description = S("Torch Grenade"),
 		inventory_image = "torch_bomb_torch_grenade.png",
 		on_use = function(itemstack, user, pointed_thing)
 			local player_pos = user:get_pos()
-			local obj = minetest.add_entity({x = player_pos.x, y = player_pos.y + 1.5, z = player_pos.z}, "torch_bomb:torch_grenade_entity")
+			local obj = core.add_entity({x = player_pos.x, y = player_pos.y + 1.5, z = player_pos.z}, "torch_bomb:torch_grenade_entity")
 			local dir = user:get_look_dir()
 			obj:set_velocity(vector.multiply(dir, throw_velocity))
 			obj:set_acceleration(gravity)
@@ -701,7 +701,7 @@ if enable_grenade then
 			local lua_entity = obj:get_luaentity()
 			lua_entity.player_name = user:get_player_name()
 
-			minetest.sound_play({name="tnt_ignite"},
+			core.sound_play({name="tnt_ignite"},
 			{
 				object = object,
 				gain = 1.0,
@@ -717,7 +717,7 @@ if enable_grenade then
 		end
 	})
 
-	minetest.register_entity("torch_bomb:torch_grenade_entity", {
+	core.register_entity("torch_bomb:torch_grenade_entity", {
 		initial_properties = {
 			physical = false,
 			visual = "sprite",
@@ -739,7 +739,7 @@ if enable_grenade then
 			local lastpos = self.lastpos
 
 			local pos = object:get_pos()
-			local node = minetest.get_node(pos)
+			local node = core.get_node(pos)
 
 			if lastpos ~= nil and node.name ~= "air" then
 				lastpos = vector.round(lastpos)
@@ -747,7 +747,7 @@ if enable_grenade then
 				local player_name = luaentity.player_name
 				local player
 				if player_name then
-					player = minetest.get_player_by_name(player_name)
+					player = core.get_player_by_name(player_name)
 				end
 				object:remove()
 				local damage_rad = 0
@@ -768,7 +768,7 @@ end
 -- Torch crossbows
 
 local function register_torch_bow(name, desc, material, image, torch_bow_range, torch_bow_uses)
-    minetest.register_tool("torch_bomb:torch_crossbow_" .. name, {
+    core.register_tool("torch_bomb:torch_crossbow_" .. name, {
         description = S("@1 Torch Crossbow", desc),
         inventory_image = image,
         wield_scale = 1,
@@ -784,7 +784,7 @@ local function register_torch_bow(name, desc, material, image, torch_bow_range, 
 			playerpos.y = playerpos.y + 1.5
 
             if not inv:contains_item("main", {name=torch_item, count=1}) then
-                minetest.sound_play("torch_bomb_crossbow_reload", {pos=playerpos, gain=1, max_hear_distance=8}) --out of ammo sound
+                core.sound_play("torch_bomb_crossbow_reload", {pos=playerpos, gain=1, max_hear_distance=8}) --out of ammo sound
                 return
             end
 
@@ -798,20 +798,20 @@ local function register_torch_bow(name, desc, material, image, torch_bow_range, 
 
 			local target = vector.add(playerpos, vector.multiply(dir, torch_bow_range))
 
-			local raycast = minetest.raycast(playerpos, target, false, true)
+			local raycast = core.raycast(playerpos, target, false, true)
 			local target_pointed = find_target(raycast)
 			if target_pointed then
 				embed_torch(target_pointed, user, playerpos)
 			end
 
-            minetest.sound_play("torch_bomb_crossbow_fire", {pos=playerpos, gain=1, max_hear_distance=8})
+            core.sound_play("torch_bomb_crossbow_fire", {pos=playerpos, gain=1, max_hear_distance=8})
 
             return itemstack
         end,
     })
 
-	if minetest.get_modpath("farming") then
-		minetest.register_craft({
+	if core.get_modpath("farming") then
+		core.register_craft({
 			output = "torch_bomb:torch_crossbow_" .. name,
 			recipe = {
 				{material, torch_item, material},
@@ -820,7 +820,7 @@ local function register_torch_bow(name, desc, material, image, torch_bow_range, 
 			},
 		})
 	else
-		minetest.register_craft({
+		core.register_craft({
 			output = "torch_bomb:torch_crossbow_" .. name,
 			recipe = {
 				{material, torch_item, material},
@@ -843,7 +843,7 @@ end
 -- Crafting
 
 --if enable_tnt and tnt_modpath then
-	minetest.register_craft({
+	core.register_craft({
 		output = "torch_bomb:torch_grenade",
 		recipe = {
 			{'default:coalblock'},
@@ -852,7 +852,7 @@ end
 		},
 	})
 
-	minetest.register_craft({
+	core.register_craft({
 		output = "torch_bomb:torch_bomb",
 		recipe = {
 			{'default:coalblock', 'default:coalblock', 'default:coalblock'},
@@ -861,13 +861,13 @@ end
 		},
 	})
 
-	minetest.register_craft({
+	core.register_craft({
 		type = "shapeless",
 		output = "torch_bomb:mega_torch_bomb",
 		recipe = {"torch_bomb:torch_bomb", "torch_bomb:torch_bomb", "torch_bomb:torch_bomb"},
 	})
 
-	minetest.register_craft({
+	core.register_craft({
 		type = "shapeless",
 		output = "torch_bomb:torch_bomb 3",
 		recipe = {"torch_bomb:mega_torch_bomb"},
@@ -875,13 +875,13 @@ end
 
 	if enable_grenade then
 
-		minetest.register_craft({
+		core.register_craft({
 			type = "shapeless",
 			output = "torch_bomb:torch_bomb",
 			recipe = {"torch_bomb:torch_grenade", "torch_bomb:torch_grenade", "torch_bomb:torch_grenade"},
 		})
 
-		minetest.register_craft({
+		core.register_craft({
 			type = "shapeless",
 			output = "torch_bomb:torch_grenade 3",
 			recipe = {"torch_bomb:torch_bomb"},
@@ -889,13 +889,13 @@ end
 	end
 
 	if enable_rockets then
-		minetest.register_craft({
+		core.register_craft({
 			type = "shapeless",
 			output = "torch_bomb:torch_bomb_rocket",
 			recipe = {"torch_bomb:torch_bomb", "tnt:tnt"},
 		})
 
-		minetest.register_craft({
+		core.register_craft({
 			type = "shapeless",
 			output = "torch_bomb:mega_torch_bomb_rocket",
 			recipe = {"torch_bomb:mega_torch_bomb", "tnt:tnt"},

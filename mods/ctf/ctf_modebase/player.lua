@@ -95,7 +95,7 @@ function ctf_modebase.player.save_initial_stuff_positions(player, soft)
 	if ssp == "" then
 		ssp = {}
 	else
-		ssp = minetest.deserialize(ssp)
+		ssp = core.deserialize(ssp)
 	end
 
 	local done = {}
@@ -114,7 +114,7 @@ function ctf_modebase.player.save_initial_stuff_positions(player, soft)
 		end
 	end
 
-	meta:set_string("ctf_modebase:player:initial_stuff_positions:"..ctf_modebase.current_mode, minetest.serialize(ssp))
+	meta:set_string("ctf_modebase:player:initial_stuff_positions:"..ctf_modebase.current_mode, core.serialize(ssp))
 end
 
 -- Changes made to this function should also be made to is_initial_stuff() above
@@ -134,7 +134,7 @@ local function get_initial_stuff(player, f)
 end
 
 function ctf_modebase.player.give_initial_stuff(player)
-	minetest.log("action", "Giving initial stuff to player " .. player:get_player_name())
+	core.log("action", "Giving initial stuff to player " .. player:get_player_name())
 
 	local inv = player:get_inventory()
 	local meta = player:get_meta()
@@ -153,14 +153,14 @@ function ctf_modebase.player.give_initial_stuff(player)
 						if ilevel > item_level[itype].level then
 							-- remove the other lesser item unless it's a keeper
 							if not item_level[itype].keep then
-								-- minetest.log(dump(item_level[itype].item:get_name()).." r< "..dump(item:get_name()))
+								-- core.log(dump(item_level[itype].item:get_name()).." r< "..dump(item:get_name()))
 
 								inv:remove_item("main", item_level[itype].item)
 							end
 
 							item_level[itype] = {level = ilevel, item = item, keep = keep}
 						elseif not keep then
-							-- minetest.log(dump(item:get_name()).." s< "..dump(item_level[itype].item:get_name()))
+							-- core.log(dump(item:get_name()).." s< "..dump(item_level[itype].item:get_name()))
 
 							return -- skip addition, something better is present
 						end
@@ -188,7 +188,7 @@ function ctf_modebase.player.give_initial_stuff(player)
 	if saved_stuff_positions == "" then
 		saved_stuff_positions = {}
 	else
-		saved_stuff_positions = minetest.deserialize(saved_stuff_positions)
+		saved_stuff_positions = core.deserialize(saved_stuff_positions)
 	end
 
 	local new = {}
@@ -244,7 +244,7 @@ local function swap_tools(itemstack, picker, inv, inv_action, item_index)
 
 						if cprio and cprio < priority then
 							local item, typ = simplify_for_saved_stuff(compare:get_name())
-							-- minetest.log(dump(item)..dump(typ))
+							-- core.log(dump(item)..dump(typ))
 							inv:set_stack("main", i, itemstack)
 
 							if item == "sword" and typ == "stone" and
@@ -278,11 +278,11 @@ local function swap_tools(itemstack, picker, inv, inv_action, item_index)
 	end
 end
 
-minetest.register_on_item_pickup(function(itemstack, picker)
+core.register_on_item_pickup(function(itemstack, picker)
 	return swap_tools(itemstack, picker)
 end)
 
-minetest.register_on_player_inventory_action(function(player, action, inventory, inventory_info)
+core.register_on_player_inventory_action(function(player, action, inventory, inventory_info)
 	if action == "put" and inventory_info.listname == "main" then
 		local index = inventory_info.index
 		local stack = swap_tools(ItemStack(inventory_info.stack), player, inventory, true, index)
@@ -358,7 +358,7 @@ function ctf_modebase.player.is_playing(player)
 end
 
 ctf_api.register_on_new_match(function()
-	for _, player in pairs(minetest.get_connected_players()) do
+	for _, player in pairs(core.get_connected_players()) do
 		if ctf_modebase.player.is_playing(player) then
 			ctf_modebase.player.empty_inv(player)
 			ctf_modebase.player.update(player)
@@ -375,7 +375,7 @@ if ctf_core.settings.server_mode ~= "mapedit" then
 	end)
 end
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	player:set_hp(player:get_properties().hp_max)
 
 	local inv = player:get_inventory()

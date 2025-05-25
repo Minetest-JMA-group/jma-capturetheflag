@@ -1,17 +1,17 @@
 if not ctf_core.settings.server_mode or ctf_core.settings.server_mode == "play" then
 	assert(
-		minetest.get_mapgen_setting("mg_name") == "singlenode",
+		core.get_mapgen_setting("mg_name") == "singlenode",
 		"If you create a map, you must enable creative mode. If you want to play, you must use the singlenode mapgen."
 	)
 end
 
-minetest.register_alias("mapgen_singlenode", "ctf_map:ignore")
+core.register_alias("mapgen_singlenode", "ctf_map:ignore")
 
 ctf_map = {
 	DEFAULT_CHEST_AMOUNT = 42,
 	DEFAULT_START_TIME = 5900,
 	CHAT_COLOR = "orange",
-	maps_dir = minetest.get_modpath("ctf_map").."/maps/",
+	maps_dir = core.get_modpath("ctf_map").."/maps/",
 	skyboxes = {"none"},
 	current_map = false,
 	barrier_nodes = {}, -- populated in nodes.lua,
@@ -52,7 +52,7 @@ function ctf_map.register_maps_dir(path_to_folder)
 		path_to_folder = path_to_folder .. "/"
 	end
 
-	for _, mapdir in pairs(minetest.get_dir_list(path_to_folder, true)) do
+	for _, mapdir in pairs(core.get_dir_list(path_to_folder, true)) do
 		if mapdir:sub(1,1) ~= "." then
 			ctf_map.register_map(mapdir, path_to_folder)
 		end
@@ -66,7 +66,7 @@ ctf_api.register_on_match_start(function()
 end)
 
 ctf_api.register_on_match_end(function()
-	minetest.after(0, function()
+	core.after(0, function()
 		ctf_map.start_time = nil
 	end)
 end)
@@ -81,7 +81,7 @@ skybox.add = function(def, ...)
 	old_add_skies(def, ...)
 end
 
-minetest.register_tool("ctf_map:adminpick", {
+core.register_tool("ctf_map:adminpick", {
 	description = "Admin pickaxe used to break indestructible nodes.\nRightclick to remove non-indestructible nodes",
 	inventory_image = "default_tool_diamondpick.png^default_obsidian_shard.png",
 	range = 16,
@@ -95,12 +95,12 @@ minetest.register_tool("ctf_map:adminpick", {
 	},
 	on_place = function(itemstack, placer, pointed_thing)
 		if pointed_thing and pointed_thing.under then
-			minetest.remove_node(pointed_thing.under)
+			core.remove_node(pointed_thing.under)
 		end
 	end,
 })
 
-minetest.register_privilege("ctf_map_editor", {
+core.register_privilege("ctf_map_editor", {
 	description = "Allows use of map editing features",
 	give_to_singleplayer = false,
 	give_to_admin = false,
@@ -123,10 +123,10 @@ ctf_core.include_files(
 	"ctf_traps.lua"
 )
 
-local directory = minetest.get_modpath(minetest.get_current_modname()) .. "/maps/"
+local directory = core.get_modpath(core.get_current_modname()) .. "/maps/"
 
-for _, entry in ipairs(minetest.get_dir_list(directory, true)) do
-	for _, filename in ipairs(minetest.get_dir_list(directory .. "/" .. entry .. "/", false)) do
+for _, entry in ipairs(core.get_dir_list(directory, true)) do
+	for _, filename in ipairs(core.get_dir_list(directory .. "/" .. entry .. "/", false)) do
 		if filename == "init.lua" then
 			dofile(directory .. "/" .. entry .. "/"..filename)
 		end
@@ -134,7 +134,7 @@ for _, entry in ipairs(minetest.get_dir_list(directory, true)) do
 end
 
 
-minetest.register_chatcommand("ctf_map", {
+core.register_chatcommand("ctf_map", {
 	description = "Run map related commands",
 	privs = {ctf_map_editor = true},
 	params = "[editor | e] | "..table.concat(command_params, " | "),
@@ -153,8 +153,8 @@ minetest.register_chatcommand("ctf_map", {
 			end
 
 			if ctf_core.settings.server_mode ~= "mapedit" then
-				minetest.chat_send_player(name,
-						minetest.colorize("red", "It is not recommended to edit maps unless the server is in mapedit mode\n"..
+				core.chat_send_player(name,
+						core.colorize("red", "It is not recommended to edit maps unless the server is in mapedit mode\n"..
 							"To enable mapedit mode, enable creative mode."))
 			end
 
@@ -174,7 +174,7 @@ minetest.register_chatcommand("ctf_map", {
 	end
 })
 
-minetest.register_chatcommand("map", {
+core.register_chatcommand("map", {
 	description = "Prints the current map name and map author",
 	func = function()
 		local map = ctf_map.current_map
@@ -192,8 +192,8 @@ minetest.register_chatcommand("map", {
 })
 
 -- Attempt to restore user's time speed after server close
-local TIME_SPEED = minetest.settings:get("time_speed")
+local TIME_SPEED = core.settings:get("time_speed")
 
-minetest.register_on_shutdown(function()
-	minetest.settings:set("time_speed", TIME_SPEED)
+core.register_on_shutdown(function()
+	core.settings:set("time_speed", TIME_SPEED)
 end)

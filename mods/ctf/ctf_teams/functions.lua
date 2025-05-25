@@ -100,7 +100,7 @@ function ctf_teams.allocate_teams(teams)
 		table.insert(ctf_teams.current_team_list, teamname)
 	end
 
-	local players = minetest.get_connected_players()
+	local players = core.get_connected_players()
 	table.shuffle(players)
 	for _, player in ipairs(players) do
 		ctf_teams.allocate_player(player)
@@ -125,11 +125,11 @@ end
 
 ---@param teamname string Name of team
 ---@param message string message to send
---- Like `minetest.chat_send_player()` but sends to all members of the given team
+--- Like `core.chat_send_player()` but sends to all members of the given team
 function ctf_teams.chat_send_team(teamname, message)
 	assert(teamname and message, "Incorrect usage of chat_send_team()")
 
 	for player in pairs(ctf_teams.online_players[teamname].players) do
-		minetest.chat_send_player(player, message)
+		core.chat_send_player(player, message)
 	end
 end

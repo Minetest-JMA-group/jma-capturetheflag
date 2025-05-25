@@ -3,7 +3,7 @@ local AUTO_RESPAWN_TIME = 0.4
 local respawn_delay = {}
 local hud = mhud.init()
 
-minetest.register_entity("ctf_modebase:respawn_movement_freezer", {
+core.register_entity("ctf_modebase:respawn_movement_freezer", {
 	initial_properties = {
 		is_visible = false,
 		physical = false,
@@ -47,9 +47,9 @@ local function run_respawn_timer(pname)
 			text = string.format("Respawning in %ds", respawn_delay[pname].left)
 		})
 
-		respawn_delay[pname].timer = minetest.after(1, run_respawn_timer, pname)
+		respawn_delay[pname].timer = core.after(1, run_respawn_timer, pname)
 	else
-		local player = minetest.get_player_by_name(pname)
+		local player = core.get_player_by_name(pname)
 
 		finish_respawn(player)
 		respawn_delay[pname] = nil
@@ -85,9 +85,9 @@ local function trigger_respawn(pname)
 			respawn_delay[pname].autorespawn = nil
 		end
 
-		respawn(minetest.get_player_by_name(pname), RESPAWN_SECONDS)
+		respawn(core.get_player_by_name(pname), RESPAWN_SECONDS)
 	else
-		local player = minetest.get_player_by_name(pname)
+		local player = core.get_player_by_name(pname)
 
 		if player then
 			ctf_modebase.on_respawnplayer(player)
@@ -105,26 +105,26 @@ function ctf_modebase.prepare_respawn_delay(player)
 
 	physics.set(pname, "ctf_modebase:respawn_freeze", {speed = 0, jump = 0, gravity = 0})
 
-	local obj = minetest.add_entity(player:get_pos(), "ctf_modebase:respawn_movement_freezer")
+	local obj = core.add_entity(player:get_pos(), "ctf_modebase:respawn_movement_freezer")
 	if obj then
 		player:set_attach(obj)
 		respawn_delay[pname].obj = obj
 	end
 
-	respawn_delay[pname].autorespawn = minetest.after(AUTO_RESPAWN_TIME, function()
-		minetest.close_formspec(pname, "") -- This is the only way to close clientside formspecs
+	respawn_delay[pname].autorespawn = core.after(AUTO_RESPAWN_TIME, function()
+		core.close_formspec(pname, "") -- This is the only way to close clientside formspecs
 		trigger_respawn(pname)
 	end)
 end
 
 ctf_api.register_on_match_end(function()
 	for pname in pairs(respawn_delay) do
-		finish_respawn(minetest.get_player_by_name(pname))
+		finish_respawn(core.get_player_by_name(pname))
 	end
 	respawn_delay = {}
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local pname = player:get_player_name()
 
 	if respawn_delay[pname] then
@@ -141,7 +141,7 @@ minetest.register_on_leaveplayer(function(player)
 	player:set_hp(player:get_properties().hp_max)
 end)
 
-minetest.register_on_respawnplayer(function(player)
+core.register_on_respawnplayer(function(player)
 	local pname = player:get_player_name()
 
 	trigger_respawn(pname)

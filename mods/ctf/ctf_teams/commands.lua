@@ -7,7 +7,7 @@ local cmd = chatcmdbuilder.register("ctf_teams", {
 })
 
 cmd:sub("set :player:username :team", function(name, player, team)
-	if minetest.get_player_by_name(player) then
+	if core.get_player_by_name(player) then
 		if table.indexof(ctf_teams.current_team_list, team) == -1 then
 			return false, "No such team: " .. team
 		end
@@ -27,7 +27,7 @@ cmd:sub("rset :pattern :team", function(name, pattern, team)
 
 	local added = {}
 
-	for _, player in pairs(minetest.get_connected_players()) do
+	for _, player in pairs(core.get_connected_players()) do
 		local pname = player:get_player_name()
 
 		if pname:match(pattern) then
@@ -53,10 +53,10 @@ local function get_team_players(team)
 		str = str .. player .. ", "
 	end
 
-	return string.format("Team %s has %d players: %s", minetest.colorize(tcolor, team), count, str:sub(1, -3))
+	return string.format("Team %s has %d players: %s", core.colorize(tcolor, team), count, str:sub(1, -3))
 end
 
-minetest.register_chatcommand("team", {
+core.register_chatcommand("team", {
 	description = "Get team members for 'team' or on which team is 'player' in",
 	params = "<team> | player <player>",
 	func = function(name, param)
@@ -70,7 +70,7 @@ minetest.register_chatcommand("team", {
 			end
 
 			local tcolor = ctf_teams.team[pteam].color
-			return true, string.format("%s is in the %s team", player, minetest.colorize(tcolor, pteam))
+			return true, string.format("%s is in the %s team", player, core.colorize(tcolor, pteam))
 		elseif param == "" then
 			local str = ""
 			for _, team in ipairs(ctf_teams.current_team_list) do

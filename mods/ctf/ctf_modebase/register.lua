@@ -47,13 +47,13 @@ function ctf_modebase.on_respawnplayer(player)
 	current_mode.on_respawnplayer(player)
 end
 
-minetest.register_on_leaveplayer(function(...)
+core.register_on_leaveplayer(function(...)
 	local current_mode = ctf_modebase:get_current_mode()
 	if not current_mode then return end
 	current_mode.on_leaveplayer(...)
 end)
 
-minetest.register_on_dieplayer(function(...)
+core.register_on_dieplayer(function(...)
 	local current_mode = ctf_modebase:get_current_mode()
 	if not current_mode then return end
 	current_mode.on_dieplayer(...)
@@ -65,7 +65,7 @@ ctf_teams.register_on_allocplayer(function(...)
 	current_mode.on_allocplayer(...)
 end)
 
-minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
+core.register_on_punchplayer(function(player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
 	local current_mode = ctf_modebase:get_current_mode()
 	if not current_mode then return true end
 
@@ -80,7 +80,7 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 	if real_damage then
 		player:set_hp(player:get_hp() - real_damage, {type="punch"})
 
-		minetest.sound_play("ctf_modebase_punched", {
+		core.sound_play("ctf_modebase_punched", {
 			pos = player:get_pos(),
 			exclude_player = player:get_player_name(),
 			pitch = 1.2,
@@ -134,8 +134,8 @@ ctf_teams.team_allocator = function(...)
 	end
 end
 
-local default_calc_knockback = minetest.calculate_knockback
-minetest.calculate_knockback = function(...)
+local default_calc_knockback = core.calculate_knockback
+core.calculate_knockback = function(...)
 	local current_mode = ctf_modebase:get_current_mode()
 
 	if current_mode and current_mode.calculate_knockback then
@@ -148,8 +148,8 @@ end
 --
 --- can_drop_item()
 
-local default_item_drop = minetest.item_drop
-minetest.item_drop = function(itemstack, dropper, ...)
+local default_item_drop = core.item_drop
+core.item_drop = function(itemstack, dropper, ...)
 	local current_mode = ctf_modebase:get_current_mode()
 
 	if current_mode and current_mode.is_bound_item then
@@ -161,7 +161,7 @@ minetest.item_drop = function(itemstack, dropper, ...)
 	return default_item_drop(itemstack, dropper, ...)
 end
 
-minetest.register_allow_player_inventory_action(function(player, action, inventory, info)
+core.register_allow_player_inventory_action(function(player, action, inventory, info)
 	if player:get_hp() <= 0 then
 		return 0
 	end

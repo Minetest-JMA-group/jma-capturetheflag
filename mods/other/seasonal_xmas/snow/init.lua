@@ -44,7 +44,7 @@ local function spawn_particles(player)
 		local time = math.random(60, 90)
 
 		spawners[name] = {
-			id = minetest.add_particlespawner({
+			id = core.add_particlespawner({
 				amount = amount,
 				minpos = vector.new(-25, 10, -25),
 				maxpos = vector.new( 25, 25,  25),
@@ -64,7 +64,7 @@ local function spawn_particles(player)
 				attached = player,
 				glow = 2
 			}),
-			timer = minetest.after(time-1, function()
+			timer = core.after(time-1, function()
 				spawners[name] = nil
 			end)
 		}
@@ -74,13 +74,13 @@ local function spawn_particles(player)
 end
 
 local spawner_step = 50
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	if not snow.SPAWN_SNOW then return end
 
 	if spawner_step >= 60 then
 		spawner_step = 0
 
-		for _, player in pairs(minetest.get_connected_players()) do
+		for _, player in pairs(core.get_connected_players()) do
 			spawn_particles(player)
 		end
 	else
@@ -107,7 +107,7 @@ if ctf_settings then
 			local name = player:get_player_name()
 
 			if spawners[name] then
-				minetest.delete_particlespawner(spawners[name].id)
+				core.delete_particlespawner(spawners[name].id)
 				spawners[name].timer:cancel()
 			end
 

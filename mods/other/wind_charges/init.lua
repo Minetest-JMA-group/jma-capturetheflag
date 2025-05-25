@@ -8,15 +8,15 @@ local function is_solid_node_near(pos)
 		{x = 0, y = 0, z = radius}, {x = 0, y = 0, z = -radius}
 	}) do
 		local check_pos = vector.add(pos, offset)
-		local node = minetest.get_node_or_nil(check_pos)
-		if node and minetest.registered_nodes[node.name] and minetest.registered_nodes[node.name].walkable then
+		local node = core.get_node_or_nil(check_pos)
+		if node and core.registered_nodes[node.name] and core.registered_nodes[node.name].walkable then
 			return true
 		end
 	end
 	return false
 end
 
-minetest.register_entity("wind_charges:wind_projectile", {
+core.register_entity("wind_charges:wind_projectile", {
 	physical = false,
 	collisionbox = {0, 0, 0, 0, 0, 0},
 	visual = "sprite",
@@ -26,13 +26,13 @@ minetest.register_entity("wind_charges:wind_projectile", {
 	lifetime = 16,
 	explode = function(self)
 		local pos = self.object:get_pos()
-		minetest.sound_play("wind_charge_explode", {
+		core.sound_play("wind_charge_explode", {
 			pos = pos,
 			max_hear_distance = 8,
 			gain = 1.0
 		})
 
-        minetest.add_particlespawner({
+        core.add_particlespawner({
             amount = 8,
             time = 0.1,
             minpos = pos,
@@ -49,7 +49,7 @@ minetest.register_entity("wind_charges:wind_projectile", {
             glow = 5,
         })
 
-		local objs = minetest.get_objects_inside_radius(pos, 4)
+		local objs = core.get_objects_inside_radius(pos, 4)
 		for obj_index, obj in ipairs(objs) do
 			if obj:is_player() then
 				local player = obj
@@ -68,7 +68,7 @@ minetest.register_entity("wind_charges:wind_projectile", {
 				local ent = obj:get_luaentity()
 				if ent and ent.name == "__builtin:item" then
 					local owner_name = self.owner_name
-					local owner = minetest.get_player_by_name(owner_name)
+					local owner = core.get_player_by_name(owner_name)
 					if not owner then
 						goto continue
 					end
@@ -110,13 +110,13 @@ minetest.register_entity("wind_charges:wind_projectile", {
 
 local players_wind_charge_cooldown = {}
 
-minetest.register_craftitem("wind_charges:wind_charge", {
+core.register_craftitem("wind_charges:wind_charge", {
 	description = "Wind Charge",
 	inventory_image = "wind_charge.png",
 	on_use = function(itemstack, user, pointed_thing)
 		local user_name = user:get_player_name()
 
-		local current_time = minetest.get_gametime()
+		local current_time = core.get_gametime()
 		local last_used_time = players_wind_charge_cooldown[user_name] or 0
 		local cooldown_time = 0.02
 
@@ -134,14 +134,14 @@ minetest.register_craftitem("wind_charges:wind_charge", {
 		local dir = user:get_look_dir()
 		local player_velocity = user:get_velocity() or {x = 0, y = 0, z = 0}
 
-		local obj = minetest.add_entity(pos, "wind_charges:wind_projectile", "owner:" .. user_name)
+		local obj = core.add_entity(pos, "wind_charges:wind_projectile", "owner:" .. user_name)
 		if obj then
 			local base_speed = vector.multiply(dir, 18)
 			local total_velocity = vector.add(base_speed, player_velocity)
 			obj:set_velocity(total_velocity)
 			obj:set_acceleration(total_velocity)
 
-			minetest.sound_play("wind_charge_throw", {
+			core.sound_play("wind_charge_throw", {
 				pos = pos,
 				max_hear_distance = 8,
 				gain = 0.8
