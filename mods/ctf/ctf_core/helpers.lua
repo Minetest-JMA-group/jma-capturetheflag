@@ -164,6 +164,16 @@ do
 	end
 end
 
+function ctf_core.format_number(n)
+    if math.type and math.type(n) == "integer" then
+        return string.format("%d", n)
+    elseif n == math.floor(n) then
+        return string.format("%d", n)
+    else
+        return string.format("%.2f", n)
+    end
+end
+
 --
 ---Debug helpers
 --

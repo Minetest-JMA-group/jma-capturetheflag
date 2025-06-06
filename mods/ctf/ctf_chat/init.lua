@@ -1,5 +1,6 @@
 ctf_chat = {}
 local callbacks = {}
+local prefix_callbacks = {}
 local colorize = minetest.colorize
 
 minetest.override_chatcommand("msg", {
@@ -82,28 +83,33 @@ minetest.register_chatcommand("t", {
 	end
 })
 
+-- Register a function to format the chat message
 function ctf_chat.register_on_chat_message_format(func)
 	table.insert(callbacks, func)
 end
 
-local function format_prefixes(name, pteam_color)
-	local rank_prefix = ""
-	local pro_prefix = ""
-
-	local rank = ranks.get_player_prefix(name)
-	if rank then
-		rank_prefix = colorize(rank.color, rank.prefix)
-	end
-
-	local current_mode = ctf_modebase:get_current_mode()
-	if current_mode and current_mode.player_is_pro and current_mode.player_is_pro(name) == true then
-		pro_prefix = colorize(pteam_color, "[PRO]")
-	end
-
-	return joinStrings(pro_prefix, rank_prefix)
+-- Register a prefix with a priority (lower number = higher priority)
+function ctf_chat.register_prefix(priority, func)
+	table.insert(prefix_callbacks, {priority = priority, func = func})
+	table.sort(prefix_callbacks, function(a, b)
+		return a.priority < b.priority
+	end)
 end
 
--- Formatting chat messages
+local function format_prefixes(name, pteam_color)
+	local prefixes = {}
+
+	for _, cb in ipairs(prefix_callbacks) do
+		local prefix = cb.func(name, pteam_color)
+		if prefix and prefix ~= "" then
+			table.insert(prefixes, prefix)
+		end
+	end
+
+	return table.concat(prefixes, " ")
+end
+
+-- Main chat message formatting function
 function minetest.format_chat_message(name, message)
 	if filter_caps then
 		message = filter_caps.parse(name, message)
@@ -115,14 +121,14 @@ function minetest.format_chat_message(name, message)
 		pteam_color = ctf_teams.team[pteam].color
 	end
 
-	local colorized_name = colorize(pteam_color, name)
+	local colorized_name = minetest.colorize(pteam_color, name)
 	local prefixes = format_prefixes(name, pteam_color)
-	local formatted_msg = joinStrings(prefixes, "<" .. colorized_name .. ">:", message)
+	local formatted_msg = joinStrings(prefixes, "<" .. colorized_name .. ">:", " ", message)
 
-    if not formatted_msg or #formatted_msg == 0 then
-        minetest.log("error", "[ctf_chat]: Chat message formatting failed! Player: " .. name .. " Raw msg: " .. message)
-		return string.format("%s %s", name or "", message or "")
-    end
+	if not formatted_msg or #formatted_msg == 0 then
+		minetest.log("error", "[ctf_chat]: Chat message formatting failed! Player: " .. name .. " Raw msg: " .. message)
+		return string.format("<%s>: %s", name or "unknown", message or "")
+	end
 
 	local components = {
 		name = name,

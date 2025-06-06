@@ -59,6 +59,13 @@ function ranks.get_rank(name)
 	end
 end
 
+ctf_chat.register_prefix(0, function(name, tcolor)
+	local rank = ranks.get_player_prefix(name)
+	if rank then
+		return minetest.colorize(rank.color, rank.prefix)
+	end
+end)
+
 -- [function] Get rank definition
 function ranks.get_def(rank)
 	if not rank then
