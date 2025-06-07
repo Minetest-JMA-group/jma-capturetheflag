@@ -8,29 +8,31 @@ minetest.register_chatcommand("league", {
 			return false, "Player not found"
 		end
 
-		local current = ctf_jma_leagues.get_league(player_name)
-		local current_info = ctf_jma_leagues.leagues[current]
-		local current_display = current_info and current_info.display_name or "No League"
-
+		local league_info = ctf_jma_leagues.leagues[ctf_jma_leagues.get_league(player_name)]
+		if not league_info or league_info  == "none" then
+			return true, "Player has not reached any league yet"
+		end
 		local next_league = ctf_jma_leagues.get_next_league(player_name)
 		if not next_league then
+			ctf_jma_leagues.flush_cache(player_name)
 			return true, string.format("%s's current league: %s (max league reached)",
-				player_name, current_display)
+				player_name, minetest.colorize(league_info.color, league_info.display_name))
 		end
 
 		local next_league_info = ctf_jma_leagues.leagues[next_league]
 		local eval = ctf_jma_leagues.evaluate_progress(player_name, next_league_info)
 
 		local msg = string.format(
-			"%s's league: %s\nProgress towards %s: %d%% (%d/%d tasks complete)",
+			"%s is currently in %s\nProgress to %s: %d%% (%d/%d tasks completed)",
 			player_name,
-			current_display,
-			next_league_info.display_name,
+			minetest.colorize(league_info.color, league_info.display_name),
+			minetest.colorize(next_league_info.color, next_league_info.display_name),
 			math.floor(eval.total_percentage),
 			eval.tasks_completed,
 			eval.total_tasks
 		)
 
+		ctf_jma_leagues.flush_cache(player_name)
 		return true, msg
 	end
 })

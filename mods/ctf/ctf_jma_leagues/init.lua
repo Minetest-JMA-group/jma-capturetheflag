@@ -30,7 +30,7 @@ end
 
 function ctf_jma_leagues.check_requirements(player_name, league)
 	for _, req in ipairs(league.requirements or {}) do
-		local result = ctf_jma_leagues.evaluate_task(player_name, nil, req)
+		local result = ctf_jma_leagues.evaluate_task(player_name, req)
 		if not result.done then
 			return false
 		end
@@ -38,13 +38,19 @@ function ctf_jma_leagues.check_requirements(player_name, league)
 	return true
 end
 
-function ctf_jma_leagues.evaluate_task(player_name, new_ctx, req)
+function ctf_jma_leagues.evaluate_task(player_name, req)
 	local cb = ctf_jma_leagues.task_callbacks[req.task_type]
 	if not cb then
 		return {done = false, error = "Callback missing"}
 	end
 
-	local result = cb(player_name, new_ctx or player_ctx[player_name], req.params)
+	local pctx = player_ctx[player_name]
+	if not pctx then
+		pctx = {}
+		player_ctx[player_name] = pctx
+	end
+
+	local result = cb(player_name, pctx, req.params)
 	if type(result) == "boolean" then
 		result = {done = result, current = result and req.params.goal or 0, required = req.params.goal}
 	elseif type(result) ~= "table" or result.done == nil then
@@ -64,7 +70,7 @@ function ctf_jma_leagues.evaluate_progress(player_name, league)
     }
 
     for _, req in ipairs(league.requirements) do
-        local result = ctf_jma_leagues.evaluate_task(player_name, nil, req)
+        local result = ctf_jma_leagues.evaluate_task(player_name, req)
         table.insert(results.tasks, {
             requirement = req,
             result = result
@@ -147,11 +153,21 @@ function ctf_jma_leagues.reset_leaugue(player_name)
 	if player then
 		hpbar.set_icon(player, "")
 	end
+	player_ctx[player_name] = nil
 end
 
 function ctf_jma_leagues.reset_all()
 	modstorage:from_table({})
 	leagues_cache = {}
+	player_ctx = {}
+end
+
+function ctf_jma_leagues.flush_cache(player_name, force)
+	if force or not minetest.get_player_by_name(player_name) then
+		leagues_cache[player_name] = nil
+		player_ctx[player_name] = nil
+		print("Flushed cache for " .. player_name)
+	end
 end
 
 local function update_icon(player)
