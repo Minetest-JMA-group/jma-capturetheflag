@@ -55,7 +55,7 @@ return {
             {task_type = "playtime", params = {goal = 280}, description = "Play for 4 hours and 40 minutes"},
             {task_type = "score", params = {goal = 3300, mode_name = "total"}, description = "Reach 3300 score"},
             {task_type = "kd", params = {goal = 1.12, mode_name = "total"}, description = "Maintain a K/D ratio of at least 1.12"},
-            {task_type = "top_pos", params = {goal = 1000, range = 1200, mode_name = "classes"}, description = "Reach Top 1000 in Classes"},
+            {task_type = "top_pos", params = {goal = 1000, range = 1200, mode_name = "classes"}, description = "Reach Top 1000 (in Classes)"},
         }
     },
     ["steel"] = {
@@ -71,7 +71,7 @@ return {
             {task_type = "playtime", params = {goal = 370}, description = "Play for 6 hours and 10 minutes"},
             {task_type = "score", params = {goal = 5500, mode_name = "total"}, description = "Reach 5500 score"},
             {task_type = "kd", params = {goal = 1.19, mode_name = "total"}, description = "Maintain a K/D ratio of at least 1.19"},
-            {task_type = "top_pos", params = {goal = 700, range = 800, mode_name = "classes"}, description = "Reach Top 700 in Classes"},
+            {task_type = "top_pos", params = {goal = 700, range = 800, mode_name = "classes"}, description = "Reach Top 700 (in Classes)"},
         }
     },
     ["bronze"] = {
@@ -87,7 +87,7 @@ return {
             {task_type = "playtime", params = {goal = 550}, description = "Play for 9 hours and 10 minutes"},
             {task_type = "score", params = {goal = 7700, mode_name = "total"}, description = "Reach 7700 score"},
             {task_type = "kd", params = {goal = 1.27, mode_name = "total"}, description = "Maintain a K/D ratio of at least 1.27"},
-            {task_type = "top_pos", params = {goal = 500, range = 600, mode_name = "nade_fight"}, description = "Reach top 500 in Nades"},
+            {task_type = "top_pos", params = {goal = 500, range = 600, mode_name = "nade_fight"}, description = "Reach Top 500 (in Nades)"},
         }
     },
     ["gold"] = {
@@ -102,9 +102,9 @@ return {
             {task_type = "flag_captures", params = {goal = 70, mode_name = "total"}, description = "Capture 70 flags"},
             {task_type = "playtime", params = {goal = 690}, description = "Play for 11 hours and 30 minutes"},
             {task_type = "score", params = {goal = 9900, mode_name = "total"}, description = "Reach 9900 score"},
-            {task_type = "top_pos", params = {goal = 1000, range = 1200, mode_name = "classes"}, description = "Reach Top 1000 in Classes"},
+            {task_type = "top_pos", params = {goal = 1000, range = 1200, mode_name = "classes"}, description = "Reach Top 1000 (in Classes)"},
             {task_type = "kd", params = {goal = 1.55, mode_name = "total"}, description = "Maintain a K/D ratio of at least 1.55"},
-            {task_type = "top_pos", params = {goal = 500, range = 600, mode_name = "classic"}, description = "Reach top 500 in classic"},
+            {task_type = "top_pos", params = {goal = 500, range = 600, mode_name = "classic"}, description = "Reach Top 500 (in Classic)"},
 
         }
     },
@@ -121,7 +121,7 @@ return {
             {task_type = "playtime", params = {goal = 1070}, description = "Play for 17 hours and 50 minutes"},
             {task_type = "score", params = {goal = 13200, mode_name = "total"}, description = "Reach 13200 score"},
             {task_type = "kd", params = {goal = 2.20, mode_name = "total"}, description = "Maintain a K/D ratio of at least 2.20"},
-            {task_type = "top_pos", params = {goal = 300, range = 400, mode_name = "classes"}, description = "Reach top 200 in Classes"},
+            {task_type = "top_pos", params = {goal = 300, range = 400, mode_name = "classes"}, description = "Reach Top 200 (in Classes)"},
         }
     },
     ["diamond"] = {
@@ -137,8 +137,7 @@ return {
             {task_type = "playtime", params = {goal = 1240}, description = "Play for 20 hours and 40 minutes"},
             {task_type = "score", params = {goal = 22000, mode_name = "total"}, description = "Reach 22000 score"},
             {task_type = "kd", params = {goal = 2.34, mode_name = "total"}, description = "Maintain a K/D ratio of at least 2.34"},
-            {task_type = "kd", params = {goal = 4, mode_name = "chaos"}, description = "Maintain a K/D ratio of at least 4 in Chaos"},
-            {task_type = "top_pos", params = {goal = 100, range = 200, mode_name = "total"}, description = "Reach top 100 in any mode"},
+            {task_type = "top_pos", params = {goal = 100, range = 200, mode_name = "total"}, description = "Reach Top 100 (in Any Mode)"},
         }
     },
     ["flag_taker"] = {
@@ -154,9 +153,9 @@ return {
             {task_type = "playtime", params = {goal = 1800}, description = "Play for 30 hours"},
             {task_type = "score", params = {goal = 38000, mode_name = "total"}, description = "Reach 38000 score"},
             {task_type = "kd", params = {goal = 2.60, mode_name = "total"}, description = "Maintain a K/D ratio of at least 2.60"},
-			{task_type = "top_pos", params = {goal = 50, range = 100, mode_name = "classic"}, description = "Reach Top 50 in Classic"},
-            {task_type = "top_pos", params = {goal = 50, range = 100, mode_name = "classes"}, description = "Reach Top 50 in Classes"},
-            {task_type = "top_pos", params = {goal = 50, range = 100, mode_name = "nade_fight"}, description = "Reach Top 50 in Nades"},
+			{task_type = "top_pos", params = {goal = 50, range = 100, mode_name = "classic"}, description = "Reach Top 50 (in Classic)"},
+            {task_type = "top_pos", params = {goal = 50, range = 100, mode_name = "classes"}, description = "Reach Top 50 (in Classes)"},
+            {task_type = "top_pos", params = {goal = 50, range = 100, mode_name = "nade_fight"}, description = "Reach Top 50 (in Nades)"},
         }
     },
     ["flag_hunter"] = {
@@ -172,9 +171,9 @@ return {
             {task_type = "playtime", params = {goal = 2100}, description = "Play for 35 hours and 40 minutes"},
             {task_type = "score", params = {goal = 55500, mode_name = "total"}, description = "Reach 55500 score"},
             {task_type = "kd", params = {goal = 2.60, mode_name = "total"}, description = "Maintain a K/D ratio of at least 2.60"},
-			{task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "classic"}, description = "Reach Top 30 in Classic"},
-            {task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "classes"}, description = "Reach Top 30 in Classes"},
-            {task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "nade_fight"}, description = "Reach Top 30 in Nades"},
+			{task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "classic"}, description = "Reach Top 30 (in Classic)"},
+            {task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "classes"}, description = "Reach Top 30 (in Classes)"},
+            {task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "nade_fight"}, description = "Reach Top 30 (in Nades)"},
         }
     },
     ["legend"] = {
@@ -190,9 +189,9 @@ return {
             {task_type = "playtime", params = {goal = 3000}, description = "Play for 50 hours"},
             {task_type = "score", params = {goal = 85000, mode_name = "total"}, description = "Reach 85000 score"},
             {task_type = "kd", params = {goal = 3.33, mode_name = "total"}, description = "Maintain a K/D ratio of at least 3.33"},
-            {task_type = "top_pos", params = {goal = 10, range = 50, mode_name = "classic"}, description = "Reach Top 10 in Classic"},
-            {task_type = "top_pos", params = {goal = 10, range = 50, mode_name = "classes"}, description = "Reach Top 10 in Classes"},
-            {task_type = "top_pos", params = {goal = 10, range = 50, mode_name = "nade_fight"}, description = "Reach Top 10 in Nades"},
+            {task_type = "top_pos", params = {goal = 10, range = 50, mode_name = "classic"}, description = "Reach Top 10 (in Classic)"},
+            {task_type = "top_pos", params = {goal = 10, range = 50, mode_name = "classes"}, description = "Reach Top 10 (in Classes)"},
+            {task_type = "top_pos", params = {goal = 10, range = 50, mode_name = "nade_fight"}, description = "Reach Top 10 (in Nades)"},
         }
     },
 }

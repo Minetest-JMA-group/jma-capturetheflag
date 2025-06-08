@@ -3,10 +3,32 @@ local page_name = "ctf_jma_leagues:overview"
 local cooldowns = {}
 local cooldown = 2
 
+local info_text = [[
+<b><style size=18 color=#ffbb21>JMA CTF Leagues</style></b>
+• Each league presents cumulative challenges - complete all tasks to advance to the next.
+• When you complete all tasks for your current league, you will be automatically promoted to the next league after the current match ends.
+• You can always check your progress and see which tasks remain on the Leagues page.
+• If a task description contains a mode in parentheses (for example, <b>(in Classes)</b>), it is <b>mode-specific</b> - only progress in that mode will count. If no mode is mentioned, the task is global and progress is summed across all modes.
+• Use <b>/league playername</b> in chat to view another player's league progress.
+]]
+
+
 sfinv.register_page(page_name, {
 	title = "Leagues",
+	on_leave = function(self, player, context)
+		context.leagues_info_page = nil
+	end,
 	get = function(self, player, context)
 		local name = player:get_player_name()
+		if context.leagues_info_page then
+			local info_formspec =
+				"box[0,0;10.47,9.5;#222222]" ..
+				"hypertext[0.2,0.2;10.07,9.1;;" .. minetest.formspec_escape(info_text) .. "]" ..
+				"button[4.285,9.9;1.9,0.9;ok;OK]" ..
+				"image_button[9.97,10.85;0.5,0.5;ctf_map_trans.png;about;;false;false]" ..
+				"tooltip[about;Made with love by Nanowolf4\nJMA 2025]"
+			return sfinv.make_formspec_v7(player, context, info_formspec)
+		end
 
 		local current = ctf_jma_leagues.get_league(name)
 		local sorted_leagues = {}
@@ -91,8 +113,9 @@ sfinv.register_page(page_name, {
 			"box[0,0.35;10.47,4.6;#111111]" ..
 			"hypertext[0.15,0.35;10.17,4.6;;" .. minetest.formspec_escape(h) .. "]" ..
 			"hypertext[0.15,5.05;10.17,5.3;;" .. minetest.formspec_escape(t) .. "]" ..
-			"image_button[0.15,10.47;0.8,0.8;ctf_jma_leagues_refresh.png;refresh;;true;]" ..
-			"tooltip[refresh;Refresh the leagues overview]"
+			"image_button[0.15,10.47;0.8,0.8;ctf_jma_leagues_refresh.png;refresh;;false;]" ..
+			"tooltip[refresh;Refresh the leagues overview]" ..
+			"image_button[1.05,10.47;0.8,0.8;ctf_jma_leagues_question.png;show_info_page;;false;]"
 
 		-- if current == "none" then
 		-- 	local tip = "<style color=#aaaaaa>" ..
@@ -106,18 +129,30 @@ sfinv.register_page(page_name, {
 	end,
 
 	on_player_receive_fields = function(self, player, context, fields)
+		local name = player:get_player_name()
 		if fields.refresh then
-			local name = player:get_player_name()
 			local now = os.time()
 			local last_refresh = cooldowns[name] or 0
 
 			if now - last_refresh >= cooldown then
 				cooldowns[name] = now
-				sfinv.set_page(player, page_name)
+				return true, true
 			else
 				cmsg.push_message_player(player, "Please wait " .. (cooldown - (now - last_refresh)) .. " seconds before refreshing.")
 			end
+		elseif fields.show_info_page then
+			context.leagues_info_page = true
+			return true, true
+		elseif fields.ok then
+			context.leagues_info_page = nil
+			return true, true
+		elseif fields.about then
+			if math.random(1, 100) == 1 then
+				minetest.chat_send_player(name, "(.0_0.) ???")
+				minetest.get_inventory({type="player", name = name}):add_item("main", "default:sword_wood 1")
+			end
 		end
+		return true
 	end
 })
 
