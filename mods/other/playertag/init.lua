@@ -43,11 +43,19 @@ local function add_entity_tag(player, old_observers, readded)
 
 	-- Build name from font texture
 	local texture = "npcf_tag_bg.png"
-	local x = math.floor(134 - ((player_name:len() * 11) / 2))
+	local x = math.floor(134 - ((utf8_simple.len(player_name) * 11) / 2))
 	local i = 0
-	player_name:gsub(".", function(char)
+	local player_name_uppercase = algorithms.upper(player_name)
+	for idx, char, bidx in utf8_simple.chars(player_name) do
 		local n = "_"
-		if char:byte() > 96 and char:byte() < 123 or char:byte() > 47 and char:byte() < 58 or char == "-" then
+		if #char > 1 then
+			local upper_char = player_name_uppercase:sub(bidx, bidx + #char - 1)
+			if char == upper_char then
+				n = char
+			else
+				n = "U"..char
+			end
+		elseif char:byte() > 96 and char:byte() < 123 or char:byte() > 47 and char:byte() < 58 or char == "-" then
 			n = char
 		elseif char:byte() > 64 and char:byte() < 91 then
 			n = "U" .. char
@@ -55,7 +63,7 @@ local function add_entity_tag(player, old_observers, readded)
 		texture = texture.."^[combine:84x14:"..(x+i+1)..",1=(W_".. n ..".png\\^[multiply\\:#000):"..
 				(x+i)..",0=W_".. n ..".png"
 		i = i + 11
-	end)
+	end
 	ent:set_properties({ textures={texture} })
 
 	-- Attach to player
