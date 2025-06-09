@@ -32,6 +32,26 @@ minetest.register_chatcommand("league", {
 			eval.total_tasks
 		)
 
+		for _, task in ipairs(eval.tasks) do
+			local req = task.requirement
+			local result = task.result
+			local status, progress
+			if result.done then
+				status = minetest.colorize("#00ff00", "✓")
+				progress = string.format("%d/%d", result.required, result.required)
+			elseif result.current and result.required then
+				status = minetest.colorize("#ffff00", "•••")
+				progress = string.format("%d/%d", result.current, result.required)
+			elseif result.error then
+				status = minetest.colorize("#ff0000", "x")
+				progress = "Cannot be completed, please contact an admin"
+			else
+				status = minetest.colorize("#ff0000", "x")
+				progress = "0/" .. tostring(result.required or "?")
+			end
+			msg = msg .. string.format("\n  %s %s [%s]", status, req.description, progress)
+		end
+
 		ctf_jma_leagues.flush_cache(player_name)
 		return true, msg
 	end

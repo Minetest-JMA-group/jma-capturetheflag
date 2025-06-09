@@ -79,6 +79,9 @@ function ctf_jma_leagues.evaluate_progress(player_name, league)
         if result.done then
             results.tasks_completed = results.tasks_completed + 1
             results.total_progress = results.total_progress + 100
+        elseif result.get_progress then
+            local task_progress = result.get_progress(result, req)
+            results.total_progress = results.total_progress + math.floor(task_progress)
         elseif result.current and result.required then
             local task_progress = math.floor((result.current / result.required) * 100)
             results.total_progress = results.total_progress + task_progress
@@ -166,7 +169,6 @@ function ctf_jma_leagues.flush_cache(player_name, force)
 	if force or not minetest.get_player_by_name(player_name) then
 		leagues_cache[player_name] = nil
 		player_ctx[player_name] = nil
-		print("Flushed cache for " .. player_name)
 	end
 end
 

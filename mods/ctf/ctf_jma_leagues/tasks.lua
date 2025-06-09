@@ -58,52 +58,51 @@ for _, task_name in ipairs(tasks) do
 end
 
 ctf_jma_leagues.register_task("top_pos", function(player_name, ctx, params)
-	local now = os.time()
-
-	if not ctx.top or ctx.top.last_update < now - 60 then
-		ctx.top = {
-			best_position = math.huge,
-			last_update = now
-		}
-
-		local function find_best_pos(mode)
-			if mode then
-				local top_list = mode.rankings.top:get_top(params.range)
-				for i, entry_name in ipairs(top_list) do
-					if entry_name == player_name then
-						if i < ctx.top.best_position then
-							ctx.top.best_position = i
-						end
-						break
+	local best_position = math.huge
+	local function find_best_pos(mode)
+		if mode then
+			local top_list = mode.rankings.top:get_top(params.range)
+			for i, entry_name in ipairs(top_list) do
+				if entry_name == player_name then
+					if i < best_position then
+						best_position = i
 					end
+					break
 				end
 			end
 		end
-
-		if params.mode_name == "total" then
-			for _, mode in pairs(ctf_modebase.modes) do
-				find_best_pos(mode)
-			end
-		else
-			find_best_pos(ctf_modebase.modes[params.mode_name])
-		end
-
 	end
 
-	if ctx.top.best_position == math.huge then
+	if params.mode_name == "total" then
+		for _, mode in pairs(ctf_modebase.modes) do
+			find_best_pos(mode)
+		end
+	else
+		find_best_pos(ctf_modebase.modes[params.mode_name])
+	end
+
+	if best_position == math.huge then
 		return {
 			done = false,
 			current = nil,
 			required = params.goal,
-			left = nil
 		}
 	end
 
+	local function get_progress(result, req)
+		if result.current <= result.required then
+			return 100
+		end
+		local range = req.params.range
+		local required = result.required
+		return math.max(0, 1 - (math.min(result.current, range) - required) / (range - required)) * 100
+	end
+
 	return {
-		done = ctx.top.best_position <= params.goal,
-		current = ctx.top.best_position,
+		done = best_position <= params.goal,
+		current = best_position,
 		required = params.goal,
-		left = math.max(ctx.top.best_position - params.goal, 0)
+		get_progress = get_progress
 	}
 end)
 
