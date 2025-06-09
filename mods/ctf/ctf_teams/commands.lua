@@ -20,9 +20,10 @@ core.register_chatcommand("ctf_teams", {
 	},
 	func = function(name, param)
 		local iter = param:gmatch("%S+")
+		local cmd = iter()
 		local player = iter()
 		local team = iter()
-		if not player or not team then
+		if not player or not team or not cmd or not cmd == "set" then
 			return false, "Invalid command"
 		end
 		return do_set_team(name, player, team)
