@@ -90,8 +90,10 @@ sfinv.register_page(page_name, {
 						ctf_core.format_number(result.required),
 						ctf_core.format_number(math.abs(result.required - result.current))
 					))
+				elseif result.error then
+					table.insert(tasks_list, string.format("<style color=red>X %s Error: task cannot be completed (%s)</style>", req.description, result.error))
 				else
-					table.insert(tasks_list, string.format("<style color=red>X %s (Failed to get status... Please contact server staff) </style>", req.description))
+					table.insert(tasks_list, string.format("<style color=red>X %s</style>", req.description))
 				end
 			end
 
