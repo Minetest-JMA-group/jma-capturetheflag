@@ -11,7 +11,7 @@ playertag = {
 }
 
 local codepoint
-if core.global_exists(algorithms) and algorithms.codepoint then
+if core.global_exists("algorithms") and algorithms.codepoint then
 	codepoint = algorithms.codepoint
 end
 local function add_entity_tag(player, old_observers, readded)
