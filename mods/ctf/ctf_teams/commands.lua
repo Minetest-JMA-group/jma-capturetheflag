@@ -1,4 +1,4 @@
-local do_set_teams = function(name, player, team)
+local do_set_team = function(name, player, team)
 	if minetest.get_player_by_name(player) then
 		if table.indexof(ctf_teams.current_team_list, team) == -1 then
 			return false, "No such team: " .. team
