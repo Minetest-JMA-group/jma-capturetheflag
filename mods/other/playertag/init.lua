@@ -45,16 +45,11 @@ local function add_entity_tag(player, old_observers, readded)
 	local texture = "npcf_tag_bg.png"
 	local x = math.floor(134 - ((utf8_simple.len(player_name) * 11) / 2))
 	local i = 0
-	local player_name_uppercase = algorithms.upper(player_name)
 	for idx, char, bidx in utf8_simple.chars(player_name) do
 		local n = "_"
 		if #char > 1 then
-			local upper_char = player_name_uppercase:sub(bidx, bidx + #char - 1)
-			if char == upper_char then
-				n = char
-			else
-				n = "U"..char
-			end
+			local code = utf8_simple.codepoint(char)
+			n = "W_U-"..string.format("%04X", code)..".png"
 		elseif char:byte() > 96 and char:byte() < 123 or char:byte() > 47 and char:byte() < 58 or char == "-" then
 			n = char
 		elseif char:byte() > 64 and char:byte() < 91 then
