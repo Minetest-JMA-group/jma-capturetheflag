@@ -53,7 +53,7 @@ local function add_entity_tag(player, old_observers, readded)
 		local n = "_"
 		if #char > 1 and codepoint then
 			local code = codepoint(char)
-			n = "W_U-"..string.format("%04X", code)..".png"
+			n = "U-"..string.format("%04X", code)
 		elseif char:byte() > 96 and char:byte() < 123 or char:byte() > 47 and char:byte() < 58 or char == "-" then
 			n = char
 		elseif char:byte() > 64 and char:byte() < 91 then
