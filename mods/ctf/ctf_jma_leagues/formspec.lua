@@ -98,7 +98,7 @@ sfinv.register_page(page_name, {
 			end
 
 			if eval.tasks_completed >= #next_league.requirements then
-				table.insert(tasks_list, "<style color=lime><b>✓ All tasks complete! Next league incoming!</b></style>")
+				table.insert(tasks_list, "<style color=lime><b>✓ All tasks complete! You will be advanced to the next league after the current match ends.</b></style>")
 			end
 
 			bar_width = 10.47 * (eval.total_percentage / 100)
