@@ -15,7 +15,7 @@ return {
 		display_name = "Wood League",
 		icon_texture = "ctf_jma_leagues_wood.png",
 		order = 2,
-		color = "#977e69",
+		color = "#c47a3c",
 		requirements = {
 			{task_type = "kills", params = {goal = 60, mode_name = "total"}, description = "Reach 60 kills"},
 			{task_type = "playtime", params = {goal = 70}, description = "Play for 1 hour and 10 minutes"},
@@ -62,7 +62,7 @@ return {
 		display_name = "Steel League",
 		icon_texture = "ctf_jma_leagues_steel.png",
 		order = 5,
-		color = "#939393",
+		color = "#f2f2f2",
 		requirements = {
 			{task_type = "kills", params = {goal = 700, mode_name = "total"}, description = "Reach 700 kills"},
 			{task_type = "kill_assists", params = {goal = 300, mode_name = "total"}, description = "Reach 300 kill assists"},
