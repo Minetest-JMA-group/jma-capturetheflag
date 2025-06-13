@@ -8,10 +8,12 @@ minetest.register_chatcommand("league", {
 			return false, "Player not found"
 		end
 
-		local league_info = ctf_jma_leagues.leagues[ctf_jma_leagues.get_league(player_name)]
-		if not league_info or league_info  == "none" then
-			return true, "Player has not reached any league yet"
+		local current_league = ctf_jma_leagues.get_league(player_name)
+		if not current_league then
+			return true
 		end
+
+		local league_info = ctf_jma_leagues.leagues[current_league]
 		local next_league = ctf_jma_leagues.get_next_league(player_name)
 		if not next_league then
 			ctf_jma_leagues.flush_cache(player_name)
@@ -22,15 +24,27 @@ minetest.register_chatcommand("league", {
 		local next_league_info = ctf_jma_leagues.leagues[next_league]
 		local eval = ctf_jma_leagues.evaluate_progress(player_name, next_league_info)
 
-		local msg = string.format(
-			"%s is currently in %s\nProgress to %s: %d%% (%d/%d tasks completed)",
-			player_name,
-			minetest.colorize(league_info.color, league_info.display_name),
-			minetest.colorize(next_league_info.color, next_league_info.display_name),
-			math.floor(eval.total_percentage),
-			eval.tasks_completed,
-			eval.total_tasks
-		)
+		local msg = ""
+
+		if current_league == "none" then
+			msg = string.format("%s is on progress to %s: %d%% (%d/%d tasks completed)",
+				player_name,
+				minetest.colorize(next_league_info.color, next_league_info.display_name),
+				math.floor(eval.total_percentage),
+				eval.tasks_completed,
+				eval.total_tasks
+			)
+		else
+			msg = string.format(
+				"%s is currently in %s\nProgress to %s: %d%% (%d/%d tasks completed)",
+				player_name,
+				minetest.colorize(league_info.color, league_info.display_name),
+				minetest.colorize(next_league_info.color, next_league_info.display_name),
+				math.floor(eval.total_percentage),
+				eval.tasks_completed,
+				eval.total_tasks
+			)
+		end
 
 		for _, task in ipairs(eval.tasks) do
 			local req = task.requirement
@@ -38,18 +52,22 @@ minetest.register_chatcommand("league", {
 			local status, progress
 			if result.done then
 				status = minetest.colorize("#00ff00", "✓")
-				progress = string.format("%d/%d", result.required, result.required)
 			elseif result.current and result.required then
 				status = minetest.colorize("#ffff00", "•••")
-				progress = string.format("%d/%d", result.current, result.required)
+				progress = string.format("%s/%s", ctf_core.format_number(result.current), ctf_core.format_number(result.required))
 			elseif result.error then
 				status = minetest.colorize("#ff0000", "x")
 				progress = "Cannot be completed, please contact an admin"
 			else
 				status = minetest.colorize("#ff0000", "x")
-				progress = "0/" .. tostring(result.required or "?")
+				progress = "0/" .. tostring(ctf_core.format_number(req.required) or "?")
 			end
-			msg = msg .. string.format("\n  %s %s [%s]", status, req.description, progress)
+
+			if progress then
+				msg = msg .. string.format("\n  %s %s [%s]", status, req.description, progress)
+			else
+				msg = msg .. string.format("\n  %s %s", status, req.description)
+			end
 		end
 
 		ctf_jma_leagues.flush_cache(player_name)

@@ -1,7 +1,7 @@
 local page_name = "ctf_jma_leagues:overview"
 
 local cooldowns = {}
-local cooldown = 2
+local cooldown = 1
 
 local info_text = [[
 <b><style size=18 color=#ffbb21>JMA CTF Leagues</style></b>

@@ -164,13 +164,11 @@ do
 	end
 end
 
-function ctf_core.format_number(n)
-    if math.type and math.type(n) == "integer" then
-        return string.format("%d", n)
-    elseif n == math.floor(n) then
-        return string.format("%d", n)
+function ctf_core.format_number(n, d)
+    if n == math.floor(n) then -- math.type is misssing in luajit
+        return tostring(n)
     else
-        return string.format("%.2f", n)
+        return string.format("%." .. (d or "2") .. "f", n)
     end
 end
 
