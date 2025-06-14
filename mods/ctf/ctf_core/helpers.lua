@@ -165,6 +165,7 @@ do
 end
 
 function ctf_core.format_number(n, d)
+	if n == nil then return "0" end
     if n == math.floor(n) then -- math.type is misssing in luajit
         return tostring(n)
     else
