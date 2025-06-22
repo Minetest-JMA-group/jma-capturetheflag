@@ -2,6 +2,9 @@ local timer
 local spawn_interval = 40
 
 local function spawn_giftbox()
+	if not ctf_map.current_map then
+		timer = minetest.after(10, spawn_giftbox)
+	end
 	local spawn_amount = math.max(20, math.min(#minetest.get_connected_players(), 40))
 
 	local vm = VoxelManip()
