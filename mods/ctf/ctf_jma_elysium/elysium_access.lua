@@ -3,11 +3,9 @@ local storage = core.get_mod_storage()
 local ACCESS_KEY = "access_"
 local ACCESS_DURATION = 24 * 60 * 60
 local INACTIVITY_DURATION = 6 * 60 * 60
-local MIN_LEAGUE_ORDER = 2
 local cache = {}
 local invites = {}
 local elysium_locked = false
-
 
 local TASKS = {
 	{
@@ -145,15 +143,6 @@ ctf_api.register_on_match_end(function()
 	end
 end)
 
-local function is_min_league_reached(name)
-	local league = ctf_jma_leagues.get_league(name)
-	local info = ctf_jma_leagues.leagues[league]
-	if not info or info.order < MIN_LEAGUE_ORDER then
-		return false
-	end
-	return true
-end
-
 core.register_chatcommand("elysium", {
 	privs = {interact = true},
 	description = "Join Elysium (if you meet the requirements or were invited)",
@@ -181,10 +170,6 @@ core.register_chatcommand("elysium", {
 
 		if ctf_jma_elysium.on_joining[name] then
 			return false, "Don't spam the command, just wait a few seconds"
-		end
-
-		if not is_min_league_reached(name) then
-			return false, "You must reach at least [Wood League] to access Elysium"
 		end
 
 		local now = os.time()
@@ -240,10 +225,6 @@ core.register_chatcommand("eprogress", {
 	privs = {interact = true},
 	description = "Show your Elysium quest progress",
 	func = function(name)
-		if not is_min_league_reached(name) then
-			return false, "You must reach at least [Wood League] to access Elysium"
-		end
-
 		local status, t = has_access(name)
 		if status then
 			local seconds_left = t - os.time()
