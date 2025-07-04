@@ -69,8 +69,10 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 	local current_mode = ctf_modebase:get_current_mode()
 	if not current_mode then return true end
 
-	if ctf_jma_elysium.can_hit_player(player, hitter) then
-		return true
+	if ctf_teams.non_team_players[player:get_player_name()] then
+		if ctf_jma_elysium.can_hit_player(player, hitter) then
+			return true
+		end
 	end
 
 	local team1, team2 = ctf_teams.get(player), ctf_teams.get(hitter)
