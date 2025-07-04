@@ -126,8 +126,12 @@ ctf_api.register_on_match_end(function()
     item_pos_cache = {} -- Clear the cache on match end
 end)
 
-function ctf_modebase.update_wear.cancel_player_updates(pname)
+function ctf_modebase.update_wear.cancel_player_updates(pname, force)
 	pname = PlayerName(pname)
+
+	if not force and ctf_teams.non_team_players[pname] then
+		return
+	end
 
 	if wear_timers[pname] then
 		for item_id, timer in pairs(wear_timers[pname]) do
@@ -146,5 +150,5 @@ minetest.register_on_dieplayer(function(player)
 end)
 
 minetest.register_on_leaveplayer(function(player)
-	ctf_modebase.update_wear.cancel_player_updates(player)
+	ctf_modebase.update_wear.cancel_player_updates(player, true)
 end)
