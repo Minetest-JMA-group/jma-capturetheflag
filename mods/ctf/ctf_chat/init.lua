@@ -110,7 +110,7 @@ end
 
 local function elysium_format_chat_message(name, message)
 	-- 1 index is staff ranks
-	local prefix = prefix_callbacks[1].func(name, "white")
+	local prefix = prefix_callbacks[1].func(name, "white") or ""
 	return joinStrings(core.colorize("#5a6d93", "[Elysium]:"), prefix, "<" .. name .. ">:", " ", message)
 end
 

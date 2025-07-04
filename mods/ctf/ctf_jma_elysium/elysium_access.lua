@@ -3,7 +3,7 @@ local storage = core.get_mod_storage()
 local ACCESS_KEY = "access_"
 local ACCESS_DURATION = 24 * 60 * 60
 local INACTIVITY_DURATION = 6 * 60 * 60
-local MIN_LEAGUE_ORDER = 3
+local MIN_LEAGUE_ORDER = 2
 local cache = {}
 local invites = {}
 local elysium_locked = false
@@ -184,7 +184,7 @@ core.register_chatcommand("elysium", {
 		end
 
 		if not is_min_league_reached(name) then
-			return false, "You must reach at least Stone league to access Elysium"
+			return false, "You must reach at least [Wood League] to access Elysium"
 		end
 
 		local now = os.time()
@@ -241,7 +241,7 @@ core.register_chatcommand("eprogress", {
 	description = "Show your Elysium quest progress",
 	func = function(name)
 		if not is_min_league_reached(name) then
-			return false, "You must reach at least Stone league to access Elysium"
+			return false, "You must reach at least [Wood League] to access Elysium"
 		end
 
 		local status, t = has_access(name)
