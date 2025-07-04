@@ -69,6 +69,10 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 	local current_mode = ctf_modebase:get_current_mode()
 	if not current_mode then return true end
 
+	if ctf_jma_elysium.can_hit_player(player, hitter) then
+		return true
+	end
+
 	local team1, team2 = ctf_teams.get(player), ctf_teams.get(hitter)
 
 	if not team1 and not team2 then return end
@@ -152,6 +156,10 @@ local default_item_drop = minetest.item_drop
 minetest.item_drop = function(itemstack, dropper, ...)
 	local current_mode = ctf_modebase:get_current_mode()
 
+	if ctf_teams.non_team_players[dropper:get_player_name()] then
+		return default_item_drop(itemstack, dropper, ...)
+	end
+
 	if current_mode and current_mode.is_bound_item then
 		if current_mode.is_bound_item(dropper, itemstack:get_name()) then
 			return itemstack
@@ -166,6 +174,10 @@ minetest.register_allow_player_inventory_action(function(player, action, invento
 		return 0
 	end
 
+	if ctf_teams.non_team_players[player:get_player_name()] then
+		return
+	end
+
 	local current_mode = ctf_modebase:get_current_mode()
 
 	if current_mode and current_mode.is_bound_item and
@@ -175,6 +187,10 @@ minetest.register_allow_player_inventory_action(function(player, action, invento
 end)
 
 ctf_ranged.can_use_gun = function(player, name)
+	if ctf_teams.non_team_players[player:get_player_name()] then
+		return true
+	end
+
 	local current_mode = ctf_modebase:get_current_mode()
 
 	if current_mode and current_mode.is_restricted_item then

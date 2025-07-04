@@ -83,7 +83,6 @@ minetest.register_chatcommand("t", {
 	end
 })
 
--- Register a function to format the chat message
 function ctf_chat.register_on_chat_message_format(func)
 	table.insert(callbacks, func)
 end
@@ -108,6 +107,57 @@ local function format_prefixes(name, pteam_color)
 
 	return table.concat(prefixes, " ")
 end
+
+local function elysium_format_chat_message(name, message)
+	-- 1 index is staff ranks
+	local prefix = prefix_callbacks[1].func(name, "white")
+	return joinStrings(core.colorize("#5a6d93", "[Elysium]:"), prefix, "<" .. name .. ">:", " ", message)
+end
+
+core.register_on_chat_message(function(name, message)
+	local el_players = ctf_jma_elysium.players
+	if el_players[name] then
+		if filter and not filter.check_message(message) then
+			filter.on_violation(name, message)
+			core.chat_send_player(name, "Watch your language!")
+			return true
+		end
+
+		core.log("action", string.format("[Elysium Chat]: <%s>: %s", name, message))
+
+		local formatted_msg = elysium_format_chat_message(name, message)
+		for target, _ in pairs(el_players) do
+			core.chat_send_player(target, formatted_msg)
+		end
+
+		return true
+	end
+end)
+
+core.register_chatcommand("g", {
+	params = "msg",
+	description = "Send a message to the global chat",
+	privs = {interact = true, shout = true},
+	func = function(name, message)
+		if filter_caps then
+			message = filter_caps.parse(name, message)
+		end
+		if filter and not filter.check_message(message) then
+			filter.on_violation(name, message)
+			return false, "Watch your language!"
+		end
+
+		core.log("action", string.format("[Global Chat]: <%s>: %s", name, message))
+
+		if ctf_jma_elysium.players[name] then
+			core.chat_send_all(elysium_format_chat_message(name, message))
+			return true
+		end
+
+		core.chat_send_all(minetest.format_chat_message(name, message))
+		return true
+	end
+})
 
 -- Main chat message formatting function
 function minetest.format_chat_message(name, message)

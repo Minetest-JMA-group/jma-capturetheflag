@@ -33,22 +33,25 @@ local tasks = {
 	"deaths",
 	"bounty_kills",
 	"hp_healed",
-	"playtime",
 	"kill_assists"
 }
 
+local function get_cached_rankings(ctx, player_name)
+	local now = os.time()
+	if not ctx.rankings or ctx.rankings.last_update < now - 5 then
+		ctx.rankings = {
+			last_update = now,
+			data = collect(player_name)
+		}
+	end
+	return ctx.rankings.data
+end
+
 for _, task_name in ipairs(tasks) do
 	ctf_jma_leagues.register_task(task_name, function(player_name, ctx, params)
-		local now = os.time()
+		local data = get_cached_rankings(ctx, player_name)
+		local total_value = data[params.mode_name][task_name] or 0
 
-		if not ctx.rankings or ctx.rankings.last_update < now - 5 then
-			ctx.rankings = {
-				last_update = now,
-				data = collect(player_name)
-			}
-		end
-
-		local total_value = ctx.rankings.data[params.mode_name][task_name] or 0
 		return {
 			done = total_value >= params.goal,
 			current = total_value,

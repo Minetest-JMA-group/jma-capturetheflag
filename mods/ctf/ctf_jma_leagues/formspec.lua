@@ -75,7 +75,7 @@ sfinv.register_page(page_name, {
 		if next_league and next_league.requirements then
 			table.insert(tasks_list, "<style color=#aaaaaa><b>• " .. next_league.display_name .. "</b></style>")
 
-			local eval = ctf_jma_leagues.evaluate_progress(name, next_league)
+			local eval = ctf_jma_leagues.evaluate_progress(name, next_league.requirements)
 			for _, task in ipairs(eval.tasks) do
 				local req = task.requirement
 				local result = task.result

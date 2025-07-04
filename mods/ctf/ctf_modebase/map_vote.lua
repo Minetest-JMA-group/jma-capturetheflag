@@ -57,7 +57,7 @@ local function show_mapchoose_form(player)
         }
         i = i + 7
     end
-    
+
     -- Add quit button
     elements["quit_button"] = {
         type = "button",
@@ -80,7 +80,7 @@ local function show_mapchoose_form(player)
             player_vote(playername, nil)
         end,
     }
-    
+
     ctf_gui.old_show_formspec(player, "ctf_modebase:map_select", {
         size = {x = i, y = 11},
         title = "Vote for the next map",
@@ -88,7 +88,7 @@ local function show_mapchoose_form(player)
         header_height = 1.4,
         elements = elements,
     })
-    
+
 end
 
 local function send_formspec()
@@ -110,14 +110,14 @@ function ctf_modebase.map_vote.start_vote()
     map_sample = ctf_modebase.map_catalog.sample_map_for_mode(ctf_modebase.current_mode, NUM_MAPS_VOTE) --select three maps at random
 
     for _, player in pairs(minetest.get_connected_players()) do
-		--if ctf_teams.get(player) ~= nil or not ctf_modebase.current_mode then
 		local pname = player:get_player_name()
+        if not ctf_teams.non_team_players[pname] then
 
-		show_mapchoose_form(pname)
+            show_mapchoose_form(pname)
 
-		voted[pname] = false
-		voters_count = voters_count + 1
-		--end
+            voted[pname] = false
+            voters_count = voters_count + 1
+		end
 	end
 
     timer = minetest.after(VOTING_TIME, ctf_modebase.map_vote.end_vote)
@@ -138,7 +138,7 @@ function ctf_modebase.map_vote.end_vote()
     for _, player in pairs(minetest.get_connected_players()) do
 		minetest.close_formspec(player:get_player_name(), "ctf_modebase:map_select")
 	end
-    
+
     local vote_counts = {}
     for _, mapID in pairs(votes) do
         vote_counts[mapID] = (vote_counts[mapID] or 0) + 1

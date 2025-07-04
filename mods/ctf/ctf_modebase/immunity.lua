@@ -120,7 +120,9 @@ ctf_teams.register_on_allocplayer(function(player)
 end)
 
 ctf_api.register_on_respawnplayer(function(player)
-	ctf_modebase.give_immunity(player, RESPAWN_IMMUNITY_SECONDS)
+	if not ctf_teams.non_team_players[player:get_player_name()] then
+		ctf_modebase.give_immunity(player, RESPAWN_IMMUNITY_SECONDS)
+	end
 end)
 
 minetest.register_on_dieplayer(function(player)

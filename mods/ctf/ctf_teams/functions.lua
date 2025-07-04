@@ -19,12 +19,14 @@ end
 ---@param new_team string | nil
 ---@param force boolean
 function ctf_teams.set(player, new_team, force)
-	player = PlayerName(player)
+    player = PlayerName(player)
 
-	if not new_team then
-		ctf_teams.player_team[player] = nil
-		return
-	end
+    if not new_team then
+        ctf_teams.player_team[player] = nil
+        return
+    end
+
+    ctf_teams.non_team_players[player] = nil
 
 	assert(type(new_team) == "string")
 
@@ -103,7 +105,9 @@ function ctf_teams.allocate_teams(teams)
 	local players = minetest.get_connected_players()
 	table.shuffle(players)
 	for _, player in ipairs(players) do
-		ctf_teams.allocate_player(player)
+		if not ctf_teams.non_team_players[player:get_player_name()] then
+			ctf_teams.allocate_player(player, false)
+		end
 	end
 end
 

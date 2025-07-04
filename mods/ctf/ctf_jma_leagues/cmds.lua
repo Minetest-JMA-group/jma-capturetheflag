@@ -22,7 +22,7 @@ minetest.register_chatcommand("league", {
 		end
 
 		local next_league_info = ctf_jma_leagues.leagues[next_league]
-		local eval = ctf_jma_leagues.evaluate_progress(player_name, next_league_info)
+		local eval = ctf_jma_leagues.evaluate_progress(player_name, next_league_info.requirements)
 
 		local msg = ""
 

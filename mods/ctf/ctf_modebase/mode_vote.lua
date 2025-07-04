@@ -142,8 +142,8 @@ function ctf_modebase.mode_vote.start_vote()
 	until mode_def.on_prevote and mode_def.on_prevote() == true or not mode_def.on_prevote
 
 	for _, player in pairs(minetest.get_connected_players()) do
-		if ctf_teams.get(player) ~= nil or not ctf_modebase.current_mode then
-			local pname = player:get_player_name()
+		local pname = player:get_player_name()
+		if not ctf_teams.non_team_players[pname] and (ctf_teams.get(player) ~= nil or not ctf_modebase.current_mode) then
 
 			show_modechoose_form(pname)
 

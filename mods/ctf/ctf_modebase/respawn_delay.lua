@@ -78,14 +78,14 @@ local function respawn(player, time)
 	run_respawn_timer(pname)
 end
 
-local function trigger_respawn(pname)
+local function trigger_respawn(pname, new_delay)
 	if respawn_delay[pname] then
 		if respawn_delay[pname].autorespawn then
 			respawn_delay[pname].autorespawn:cancel()
 			respawn_delay[pname].autorespawn = nil
 		end
 
-		respawn(minetest.get_player_by_name(pname), RESPAWN_SECONDS)
+		respawn(minetest.get_player_by_name(pname), new_delay or RESPAWN_SECONDS)
 	else
 		local player = minetest.get_player_by_name(pname)
 
@@ -95,7 +95,7 @@ local function trigger_respawn(pname)
 	end
 end
 
-function ctf_modebase.prepare_respawn_delay(player)
+function ctf_modebase.prepare_respawn_delay(player, new_delay)
 	local pname = player:get_player_name()
 	if respawn_delay[pname] then return end
 
@@ -113,7 +113,7 @@ function ctf_modebase.prepare_respawn_delay(player)
 
 	respawn_delay[pname].autorespawn = minetest.after(AUTO_RESPAWN_TIME, function()
 		minetest.close_formspec(pname, "") -- This is the only way to close clientside formspecs
-		trigger_respawn(pname)
+		trigger_respawn(pname, new_delay)
 	end)
 end
 

@@ -61,15 +61,15 @@ function ctf_jma_leagues.evaluate_task(player_name, req)
 	return result
 end
 
-function ctf_jma_leagues.evaluate_progress(player_name, league)
+function ctf_jma_leagues.evaluate_progress(player_name, requirements)
     local results = {
         tasks = {},
         total_progress = 0,
         tasks_completed = 0,
-        total_tasks = #league.requirements
+        total_tasks = #requirements
     }
 
-    for _, req in ipairs(league.requirements) do
+    for _, req in ipairs(requirements) do
         local result = ctf_jma_leagues.evaluate_task(player_name, req)
         table.insert(results.tasks, {
             requirement = req,
@@ -172,9 +172,10 @@ function ctf_jma_leagues.flush_cache(player_name, force)
 	end
 end
 
-local function update_icon(player)
-	local info = ctf_jma_leagues.leagues[ctf_jma_leagues.get_league(player:get_player_name())]
-	if info and info.icon_texture then
+function ctf_jma_leagues.update_icon(player)
+	local name = player:get_player_name()
+	local info = ctf_jma_leagues.leagues[ctf_jma_leagues.get_league(name)]
+	if info and info.icon_texture and not ctf_jma_elysium.players[name] then
 		hpbar.set_icon(player, info.icon_texture)
 	end
 end
@@ -185,7 +186,7 @@ ctf_api.register_on_match_end(function()
 			local name = p:get_player_name()
 			player_ctx[name] = {}
 			ctf_jma_leagues.update_league(name)
-			update_icon(p)
+			ctf_jma_leagues.update_icon(p)
 		end
 	end)
 end)
@@ -202,7 +203,7 @@ minetest.register_on_joinplayer(function(player)
 	local player_name = player:get_player_name()
 	player_ctx[player_name] = {}
 	ctf_jma_leagues.update_league(player_name)
-	update_icon(player)
+	ctf_jma_leagues.update_icon(player)
 end)
 
 minetest.register_on_leaveplayer(function(player)

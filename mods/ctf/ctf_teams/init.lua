@@ -36,6 +36,7 @@ ctf_teams = {
 	player_team = {},
 	online_players = {},
 	current_team_list = {},
+	non_team_players = {}
 }
 
 for team, def in pairs(ctf_teams.team) do
