@@ -139,6 +139,10 @@ core.register_chatcommand("g", {
 	description = "Send a message to the global chat",
 	privs = {interact = true, shout = true},
 	func = function(name, message)
+		if message:trim() == "" then
+			return false, "You cannot send an empty message"
+		end
+
 		if filter_caps then
 			message = filter_caps.parse(name, message)
 		end
@@ -151,11 +155,11 @@ core.register_chatcommand("g", {
 
 		if ctf_jma_elysium.players[name] then
 			core.chat_send_all(elysium_format_chat_message(name, message))
-			return true
+			return true, "Message sent to the global chat."
 		end
 
 		core.chat_send_all(minetest.format_chat_message(name, message))
-		return true
+		return true, "Message sent to the global chat."
 	end
 })
 

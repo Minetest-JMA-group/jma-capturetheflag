@@ -949,8 +949,10 @@ return {
 			local match_rankings, special_rankings, rank_values, formdef = ctf_modebase.summary.get()
 			formdef.title = win_text
 
-			for _, p in ipairs(minetest.get_connected_players()) do
-				ctf_modebase.summary.show_gui(p:get_player_name(), match_rankings, special_rankings, rank_values, formdef)
+			for _, p in ipairs(ctf_teams.online_players) do
+				if ctf_teams.get(p) then
+					ctf_modebase.summary.show_gui(p:get_player_name(), match_rankings, special_rankings, rank_values, formdef)
+				end
 			end
 
 			ctf_modebase.start_new_match(5)

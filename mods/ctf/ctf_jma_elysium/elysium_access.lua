@@ -1,7 +1,7 @@
 local storage = core.get_mod_storage()
 
 local ACCESS_KEY = "access_"
-local ACCESS_DURATION = 24 * 60 * 60
+local ACCESS_DURATION = 4 * 24 * 60 * 60
 local INACTIVITY_DURATION = 6 * 60 * 60
 local cache = {}
 local invites = {}

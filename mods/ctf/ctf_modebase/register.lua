@@ -40,6 +40,10 @@ function ctf_modebase.on_match_end()
 end
 
 function ctf_modebase.on_respawnplayer(player)
+	if not ctf_teams.get(player) then
+		return
+	end
+
 	RunCallbacks(ctf_api.registered_on_respawnplayer, player)
 
 	local current_mode = ctf_modebase:get_current_mode()
@@ -48,12 +52,22 @@ function ctf_modebase.on_respawnplayer(player)
 end
 
 minetest.register_on_leaveplayer(function(...)
+	local player = select(1, ...)
+	if not ctf_teams.get(player) then
+		return
+	end
+
 	local current_mode = ctf_modebase:get_current_mode()
 	if not current_mode then return end
 	current_mode.on_leaveplayer(...)
 end)
 
 minetest.register_on_dieplayer(function(...)
+	local player = select(1, ...)
+	if not ctf_teams.get(player) then
+		return
+	end
+
 	local current_mode = ctf_modebase:get_current_mode()
 	if not current_mode then return end
 	current_mode.on_dieplayer(...)
@@ -69,7 +83,7 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 	local current_mode = ctf_modebase:get_current_mode()
 	if not current_mode then return true end
 
-	if ctf_teams.non_team_players[player:get_player_name()] then
+	if not ctf_teams.get(player) then
 		if ctf_jma_elysium.can_hit_player(player, hitter) then
 			return true
 		end
@@ -142,6 +156,12 @@ end
 
 local default_calc_knockback = minetest.calculate_knockback
 minetest.calculate_knockback = function(...)
+	local player = select(1, ...)
+	local hitter = select(2, ...)
+	if not ctf_teams.get(player) and not ctf_teams.get(hitter) then
+		return default_calc_knockback(...)
+	end
+
 	local current_mode = ctf_modebase:get_current_mode()
 
 	if current_mode and current_mode.calculate_knockback then
@@ -158,7 +178,7 @@ local default_item_drop = minetest.item_drop
 minetest.item_drop = function(itemstack, dropper, ...)
 	local current_mode = ctf_modebase:get_current_mode()
 
-	if ctf_teams.non_team_players[dropper:get_player_name()] then
+	if not ctf_teams.get(dropper) then
 		return default_item_drop(itemstack, dropper, ...)
 	end
 
@@ -176,7 +196,7 @@ minetest.register_allow_player_inventory_action(function(player, action, invento
 		return 0
 	end
 
-	if ctf_teams.non_team_players[player:get_player_name()] then
+	if not ctf_teams.get(player) then
 		return
 	end
 
@@ -189,7 +209,7 @@ minetest.register_allow_player_inventory_action(function(player, action, invento
 end)
 
 ctf_ranged.can_use_gun = function(player, name)
-	if ctf_teams.non_team_players[player:get_player_name()] then
+	if not ctf_teams.get(player) then
 		return true
 	end
 

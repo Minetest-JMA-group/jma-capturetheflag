@@ -11,14 +11,16 @@ minetest.register_globalstep(function(dtime)
 		timer = 0
 
 		for _, player in pairs(minetest.get_connected_players()) do
-			local oldhp = player:get_hp()
-			if not ctf_combat_mode.in_combat(player) and oldhp > 0 then
-				local newhp = oldhp + 2
-				if newhp > player:get_properties().hp_max then
-					newhp = player:get_properties().hp_max
-				end
-				if oldhp ~= newhp then
-					player:set_hp(newhp)
+			if ctf_teams.get(player) then --Temporary solution. Prevent hp regen for elysium players
+				local oldhp = player:get_hp()
+				if not ctf_combat_mode.in_combat(player) and oldhp > 0 then
+					local newhp = oldhp + 2
+					if newhp > player:get_properties().hp_max then
+						newhp = player:get_properties().hp_max
+					end
+					if oldhp ~= newhp then
+						player:set_hp(newhp)
+					end
 				end
 			end
 		end

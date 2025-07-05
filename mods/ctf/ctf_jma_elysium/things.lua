@@ -17,7 +17,6 @@ local pvp_switch_def = {
 		local msg = "PVP Mode "
 		if pvp_mode then
 			itemstack:set_name("ctf_jma_elysium:pvp_on")
-			ctf_jma_elysium.set_pvp_mode(player)
 			msg = msg .. "ON"
 		else
 			itemstack:set_name("ctf_jma_elysium:pvp_off")
@@ -26,7 +25,7 @@ local pvp_switch_def = {
 		cmsg.push_message_player(user, msg)
 		return itemstack
 	end,
-	on_drop = function(itemstack, dropper, pos)
+	on_drop = function()
 		return
 	end
 }
@@ -39,7 +38,6 @@ core.register_craftitem("ctf_jma_elysium:pvp_off", pvp_switch_def)
 core.register_allow_player_inventory_action(function(player, action, inventory, info)
 	if ctf_jma_elysium.players[player:get_player_name()] then
 		if action == "take" and info.stack:get_name():match("^ctf_jma_elysium") then
-			print("yes")
 			return 0
 		end
 	end
