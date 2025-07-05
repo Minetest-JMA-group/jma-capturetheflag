@@ -430,4 +430,8 @@ core.register_entity("itemshelf:item", {
 		end
 		return result
 	end,
+	on_punch = function()
+		-- Don't punch the shelf pls
+		return true
+	end
 })
