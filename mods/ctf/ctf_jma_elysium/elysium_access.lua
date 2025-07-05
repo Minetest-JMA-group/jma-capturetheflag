@@ -2,7 +2,7 @@ local storage = core.get_mod_storage()
 
 local ACCESS_KEY = "access_"
 local ACCESS_DURATION = 4 * 24 * 60 * 60
-local INACTIVITY_DURATION = 6 * 60 * 60
+local INACTIVITY_DURATION = 1 * 24 * 60 * 60
 local cache = {}
 local invites = {}
 local elysium_locked = false
@@ -138,7 +138,8 @@ ctf_api.register_on_match_end(function()
 
 		if is_done and not access then
 			storage:set_float(ACCESS_KEY .. name, now + ACCESS_DURATION)
-			core.chat_send_player(name, core.colorize("#00ff00", "[Elysium] Quest completed! You have earned a 24h access ticket. Use /elysium to enter."))
+			core.chat_send_player(name, core.colorize("#00ff00", "[Elysium] Quest completed! You have earned a " ..
+				"ticket to Elysium for " .. playtime.seconds_to_clock(ACCESS_DURATION)))
 		end
 	end
 end)
