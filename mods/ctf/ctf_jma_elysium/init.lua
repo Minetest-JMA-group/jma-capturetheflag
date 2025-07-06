@@ -34,6 +34,14 @@ function ctf_jma_elysium.get_player(name)
 	return ctf_jma_elysium.players[name]
 end
 
+function ctf_jma_elysium.get_player_list()
+	local list = {}
+	for name, _ in pairs(ctf_jma_elysium.players) do
+		table.insert(list, name)
+	end
+	return list
+end
+
 core.register_on_leaveplayer(function(player)
 	local name = player:get_player_name()
 	ctf_jma_elysium.players[name] = nil
@@ -218,6 +226,19 @@ ctf_jma_elysium.register_map("main", {
 		pos1 = {x = 5, y = 1, z = 5},
 		pos2 = {x = 15, y = 15, z = 15}
 	}
+})
+
+core.register_chatcommand("elist", {
+	description = "List all players in Elysium",
+	func = function()
+		local players = ctf_jma_elysium.get_player_list()
+		if #players == 0 then
+			return false, "No players in Elysium."
+		end
+
+		local msg = string .format("Players in Elysium (%d): %s", #players, table.concat(players, ", "))
+		return true, msg
+	end
 })
 
 ctf_core.include_files("things.lua", "map_utils.lua", "elysium_access.lua")
