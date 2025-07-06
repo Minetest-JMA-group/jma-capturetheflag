@@ -88,9 +88,13 @@ function ctf_jma_elysium.set_pvp_mode(player, mode)
 		end
 
 		local texture = "ctf_rankings_league_steel.png"
+		local pointable = false
 		if ctx.pvp == true then
+			pointable = true
 			texture = "ctf_jma_elysium_mini_sword.png"
 		end
+
+		player:set_properties({pointable = pointable,})
 		hpbar.set_icon(player, texture)
 		return ctx.pvp
 	end
@@ -129,7 +133,6 @@ function ctf_jma_elysium.join(player)
 
 		-- Just in case
 		player:set_properties({
-			pointable = true,
 			hp_max = 20,
 		})
 		player:set_armor_groups({fleshy = 100})
