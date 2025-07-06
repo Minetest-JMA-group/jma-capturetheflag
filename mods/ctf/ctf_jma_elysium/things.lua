@@ -61,8 +61,7 @@ local deny_items = {
 
 core.register_allow_player_inventory_action(function(player, action, inventory, info)
 	if ctf_jma_elysium.get_player(player:get_player_name()) then
-		local itemname = info.stack:get_name()
-		if action == "take" and deny_items[itemname] then
+		if action == "take" and info.stack and deny_items[info.stack:get_name()] then
 			return 0
 		end
 	end
