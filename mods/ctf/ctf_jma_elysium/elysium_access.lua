@@ -1,7 +1,7 @@
 local storage = core.get_mod_storage()
 
 local ACCESS_KEY = "access_"
-local ACCESS_DURATION = 4 * 24 * 60 * 60
+local ACCESS_DURATION = 1 * 24 * 60 * 60
 local INACTIVITY_DURATION = 1 * 24 * 60 * 60
 local cache = {}
 local invites = {}
@@ -26,7 +26,6 @@ local function get_mode_rankings(mode_name, player_name)
 end
 
 local function collect(player_name)
-	local res = {}
 	local total = {}
 
 	for mode_name in pairs(ctf_modebase.modes) do
@@ -185,7 +184,7 @@ core.register_chatcommand("elysium", {
 		-- Temporary ticket
 		if invites[name] then
 			ctf_jma_elysium.join(player)
-			core.chat_send_player(name, "You have entered Elysium with a temporary invite! Access ends when you leave or disconnect!")
+			core.chat_send_player(name, "You have joined Elysium with a temporary invite. Access ends when you leave or disconnect!")
 			invites[name] = nil
 			return true
 		end
@@ -198,7 +197,7 @@ core.register_chatcommand("elysium", {
 		reset_checkpoints(name)
 		storage:set_float(ACCESS_KEY .. name, now + ACCESS_DURATION)
 		ctf_jma_elysium.join(player)
-		core.chat_send_player(name, "You have joined Elysium! Ticket is valid for 24h.")
+		core.chat_send_player(name, "You have joined Elysium! Ticket is valid for: " .. playtime.seconds_to_clock(ACCESS_DURATION))
 		return true
 	end
 })

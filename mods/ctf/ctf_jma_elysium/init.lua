@@ -102,9 +102,9 @@ end
 
 function ctf_jma_elysium.chat_send_elysium(msg)
 	for pname, ctx in pairs(ctf_jma_elysium.players) do
-		if ctx.location == "main" then
+		-- if ctx.location == "main" then -- In plans is to send messages to a specified location or to everyone
 			core.chat_send_player(pname, msg)
-		end
+		-- end
 	end
 end
 
@@ -153,7 +153,7 @@ function ctf_jma_elysium.join(player)
 
 		local inv = player:get_inventory()
 		inv:set_list("main", {})
-		if not inv:contains_item("main", "ctf_jma_elysium:pvp_activator") then
+		if not inv:contains_item("main", "ctf_jma_elysium:pvp_off") then
 			inv:add_item("main", "ctf_jma_elysium:pvp_off")
 		end
 
