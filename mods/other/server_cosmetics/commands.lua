@@ -38,7 +38,7 @@ for name, data in pairs(server_cosmetics.cosmetics.headwear) do
 	end
 end
 
-minetest.log("action", "Loaded cosmetics: "..dump(cosmetic_keys))
+-- minetest.log("action", "Loaded cosmetics: "..dump(cosmetic_keys))
 
 -- Register the priv and its commmand
 
