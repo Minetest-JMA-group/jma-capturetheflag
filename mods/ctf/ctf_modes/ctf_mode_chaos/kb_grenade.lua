@@ -70,7 +70,9 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 			local player = minetest.get_player_by_name(name)
 
 			if player and v:is_player() and v:get_hp() > 0 and v:get_properties().pointable and
-			(vname == name or ctf_teams.get(vname) ~= ctf_teams.get(name)) then
+				(vname == name or ctf_teams.get(vname) ~= ctf_teams.get(name) or
+				ctf_jma_elysium.get_player(name) and ctf_jma_elysium.get_player(vname))
+			then
 				local footpos = vector.offset(v:get_pos(), 0, 0.1, 0)
 				local headpos = vector.offset(v:get_pos(), 0, v:get_properties().eye_height, 0)
 				local footdist = vector.distance(pos, footpos)
