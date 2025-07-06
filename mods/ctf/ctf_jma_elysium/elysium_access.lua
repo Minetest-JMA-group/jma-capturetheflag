@@ -350,3 +350,27 @@ core.register_chatcommand("el_give_access", {
         return true, "Access granted to " .. target .. " for " .. playtime.seconds_to_clock(seconds)
     end
 })
+
+core.register_chatcommand("el_kick", {
+	privs = {ctf_admin = true},
+	params = "<player>",
+	description = "Kick a player from Elysium",
+	func = function(name, target)
+		if not target or target == "" then
+			return false, "Usage: /el_kick <player>"
+		end
+
+		if not ctf_jma_elysium.get_player(target) then
+			return false, "This player is not in Elysium"
+		end
+
+		local player = core.get_player_by_name(target)
+		if not player then
+			return false, "Player is not online but is in Elysium... how?"
+		end
+
+		ctf_jma_elysium.leave(player)
+		core.chat_send_player(target, "[Elysium] You have been kicked by admin. Bye!")
+		return true, "Player " .. target .. " has been kicked from Elysium."
+	end
+})
