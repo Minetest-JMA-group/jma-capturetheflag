@@ -79,19 +79,30 @@ ctf_teams.register_on_allocplayer(function(...)
 	current_mode.on_allocplayer(...)
 end)
 
+local function punch_sound(player)
+	minetest.sound_play("ctf_modebase_punched", {
+		pos = player:get_pos(),
+		exclude_player = player:get_player_name(),
+		pitch = 1.2,
+		gain = 1.3,
+		max_hear_distance = 5,
+	}, true)
+end
+
 minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
-	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then return true end
-
-	if not ctf_teams.get(player) then
-		if ctf_jma_elysium.can_hit_player(player, hitter) then
-			return true
-		end
-	end
-
 	local team1, team2 = ctf_teams.get(player), ctf_teams.get(hitter)
 
-	if not team1 and not team2 then return end
+	if not team1 and not team2 then
+		if ctf_jma_elysium.can_hit_player(player, hitter) then
+			punch_sound(player)
+			return
+		end
+
+		return true
+	end
+
+	local current_mode = ctf_modebase:get_current_mode()
+	if not current_mode then return true end
 
 	local real_damage, error = current_mode.on_punchplayer(
 		player, hitter, damage, time_from_last_punch, tool_capabilities, dir
@@ -99,14 +110,7 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 
 	if real_damage then
 		player:set_hp(player:get_hp() - real_damage, {type="punch"})
-
-		minetest.sound_play("ctf_modebase_punched", {
-			pos = player:get_pos(),
-			exclude_player = player:get_player_name(),
-			pitch = 1.2,
-			gain = 1.3,
-			max_hear_distance = 6,
-		}, true)
+		punch_sound(player)
 	end
 
 	if error then

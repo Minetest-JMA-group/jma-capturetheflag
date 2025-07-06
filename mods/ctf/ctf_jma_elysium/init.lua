@@ -63,10 +63,10 @@ function ctf_jma_elysium.can_hit_player(target, hitter)
 		-- 	return false
 		-- end
 
-		return false
+		return true
 	end
 
-	return true
+	return false
 end
 
 function ctf_modebase.player.is_playing(player)
