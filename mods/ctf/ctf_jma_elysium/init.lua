@@ -27,6 +27,13 @@ function ctf_jma_elysium.register_map(name, def)
 	core.log("action", "[ctf_jma_elysium] Registered map: " .. name)
 end
 
+function ctf_jma_elysium.get_player(name)
+	if not name or not ctf_jma_elysium.players[name] then
+		return nil
+	end
+	return ctf_jma_elysium.players[name]
+end
+
 core.register_on_leaveplayer(function(player)
 	local name = player:get_player_name()
 	ctf_jma_elysium.players[name] = nil
