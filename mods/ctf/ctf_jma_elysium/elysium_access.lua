@@ -370,7 +370,7 @@ core.register_chatcommand("el_kick", {
 		end
 
 		ctf_jma_elysium.leave(player)
-		core.chat_send_player(target, "[Elysium] You have been kicked by admin. Bye!")
+		core.chat_send_player(target, "[Elysium] You have been kicked by an admin. Bye!")
 		return true, "Player " .. target .. " has been kicked from Elysium."
 	end
 })
