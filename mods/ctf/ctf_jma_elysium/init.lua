@@ -114,8 +114,14 @@ function ctf_jma_elysium.chat_send_elysium(msg)
 	end
 end
 
-function ctf_jma_elysium.join(player)
+function ctf_jma_elysium.join(player, joined_callback)
 	local name = player:get_player_name()
+
+	if player:get_attach() then
+		core.chat_send_player(name, "Don't try to breaks the game, please!")
+		return false
+	end
+
 	local map = ctf_jma_elysium.maps.main
 
 	local function handle_player()
@@ -176,6 +182,12 @@ function ctf_jma_elysium.join(player)
 		player:set_pos(map.spawn_abs)
 		core.after(0.2, tp)
 		ctf_jma_elysium.set_pvp_mode(player, false)
+
+		if joined_callback then
+			joined_callback(player, ctf_jma_elysium.players[name])
+		end
+
+		core.log("action", "[ctf_jma_elysium] Player " .. name .. " has joined Elysium.")
 	end
 
 	ctf_jma_elysium.on_joining[name] = true
@@ -186,17 +198,23 @@ function ctf_jma_elysium.join(player)
 			core.place_schematic(map.pos1, map.file, 0)
 			ctf_jma_elysium.loaded_maps.main = true
 			ctf_jma_elysium.restore_nodemeta("main")
-			handle_player()
+			core.after(1, handle_player)
 		end)
 
 		return true
 	end
 
-	core.after(1, handle_player)
+	core.after(3, handle_player)
 end
 
 function ctf_jma_elysium.leave(player)
 	local name = player:get_player_name()
+
+	if player:get_attach() then
+		core.chat_send_player(name, "Don't try to breaks the game, please!")
+		return false
+	end
+
 	ctf_jma_elysium.chat_send_elysium(name .. " has left Elysium.")
 
 	local inv = player:get_inventory()
@@ -207,9 +225,12 @@ function ctf_jma_elysium.leave(player)
 	ctf_teams.non_team_players[name] = nil
 	ctf_jma_elysium.players[name] = nil
 
-	ctf_teams.allocate_player(player, true)
 	ctf_modebase.player.update(player)
 	ctf_jma_leagues.update_icon(player)
+	ctf_teams.allocate_player(player, true)
+
+	core.log("action", "[ctf_jma_elysium] Player " .. name .. " has left Elysium.")
+	return true
 end
 
 ctf_jma_elysium.register_map("main", {

@@ -6,6 +6,11 @@ local INACTIVITY_DURATION = 1 * 24 * 60 * 60
 local cache = {}
 local invites = {}
 local elysium_locked = false
+local quick_help = "Welcome to JMA Elysium! %s: %s\n" ..
+	"To leave, type /leave or simply disconnect from the server.\n" ..
+    "Want to invite someone? Use /einvite <player>.\n" ..
+	"To talk in global chat, use /g <message>.\n" ..
+	"Note: JMA Elysium is currently under development and bugs may occur."
 
 local TASKS = {
 	{
@@ -160,7 +165,7 @@ core.register_chatcommand("elysium", {
 			return false, "The game isn't running."
 		end
 
-		if ctf_modebase.match_started then
+		if ctf_modebase.match_started or not ctf_modebase.in_game then
 			return false, "You can only join Elysium during build time"
 		end
 
@@ -175,17 +180,20 @@ core.register_chatcommand("elysium", {
 		local now = os.time()
 		local has_acc, ticket_time = has_access(name)
 		if has_acc then
-			ctf_jma_elysium.join(player)
-			core.chat_send_player(name, "Welcome to Elysium!\nTime left: " ..
-				playtime.seconds_to_clock(ticket_time - now))
+			ctf_jma_elysium.join(player, function()
+				core.chat_send_player(name,  quick_help:format("Time left", playtime.seconds_to_clock(ticket_time - now)))
+			end)
+
 			return true
 		end
 
 		-- Temporary ticket
 		if invites[name] then
-			ctf_jma_elysium.join(player)
-			core.chat_send_player(name, "You have joined Elysium with a temporary invite. Access ends when you leave or disconnect!")
-			invites[name] = nil
+			ctf_jma_elysium.join(player, function()
+				core.chat_send_player(name,  quick_help:format("[Invite]", "Ends after leaving Elysium or disconnecting"))
+				invites[name] = nil
+			end)
+
 			return true
 		end
 
@@ -196,8 +204,10 @@ core.register_chatcommand("elysium", {
 
 		reset_checkpoints(name)
 		storage:set_float(ACCESS_KEY .. name, now + ACCESS_DURATION)
-		ctf_jma_elysium.join(player)
-		core.chat_send_player(name, "You have joined Elysium! Ticket is valid for: " .. playtime.seconds_to_clock(ACCESS_DURATION))
+		ctf_jma_elysium.join(player, function()
+			core.chat_send_player(name, string.format(quick_help, "Time left", playtime.seconds_to_clock(ACCESS_DURATION)))
+		end)
+
 		return true
 	end
 })
@@ -210,14 +220,24 @@ core.register_chatcommand("leave", {
 		if not player then
 			return false, "You are offline."
 		end
+
 		if not ctf_modebase.current_mode then
 			return false, "The game isn't running."
 		end
-		if ctf_jma_elysium.players[name] then
-			ctf_jma_elysium.leave(player)
+
+		if not ctf_jma_elysium.get_player(name) then
+			return false, "You are not in Elysium."
+		end
+
+		if not ctf_modebase.in_game then
+			return false, "Please wait until the game starts to leave Elysium or disconnect from the server."
+		end
+
+		if ctf_jma_elysium.leave(player) then
 			return true, "You have left Elysium."
 		end
-		return false, "You are not in Elysium."
+
+		return false, "Something went wrong. Please contact Nanowolf4 (n4w@tutanota.com)"
 	end
 })
 
