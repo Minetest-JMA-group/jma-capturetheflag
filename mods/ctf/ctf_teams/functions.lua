@@ -137,3 +137,16 @@ function ctf_teams.chat_send_team(teamname, message)
 		minetest.chat_send_player(player, message)
 	end
 end
+
+-- Returns a list of all team-assigned online players
+function ctf_teams.get_all_team_players()
+	local result = {}
+
+	for _, t in pairs(ctf_teams.online_players) do
+		for pn in pairs(t.players) do
+			table.insert(result, pn)
+		end
+	end
+
+	return result
+end
