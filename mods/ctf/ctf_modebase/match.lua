@@ -57,9 +57,11 @@ function ctf_modebase.start_match_after_map_vote()
 		if table.indexof(current_map.game_modes, current_mode) == -1 then
 			local concat = "The current mode is not in the list of modes supported by the current map."
 			local cmd_text = string.format("/ctf_next -f [mode:technical modename] %s", current_map.dirname)
-			minetest.chat_send_all(minetest.colorize(
+			local msg = minetest.colorize(
 				"red", string.format("%s\nSupported mode(s): %s. To switch to a mode set for the map, do %s",
-				concat, table.concat(current_map.game_modes, ", "), cmd_text)))
+				concat, table.concat(current_map.game_modes, ", "), cmd_text))
+
+			chat_lib.send_message_to_privileged(msg, {"ctf_admin", "server"})
 		end
 	end)
 end
