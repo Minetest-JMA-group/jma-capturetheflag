@@ -190,21 +190,24 @@ function doors.door_toggle(pos, node, clicker)
 		return false
 	end
 
-	if state % 2 == 0 then
+	if state == 0 or state == 2 then
 		minetest.sound_play(def.door.sounds[1],
 			{pos = pos, gain = def.door.gains[1], max_hear_distance = 10}, true)
 	else
 		minetest.sound_play(def.door.sounds[2],
 			{pos = pos, gain = def.door.gains[2], max_hear_distance = 10}, true)
 		if clicker and ctf_settings.get(clicker, "doors:door_autoclose") == "true" then
+
 			minetest.after(1, function() --autoclose delay
 				local door_item_name = minetest.get_node(pos).name
 				if type(minetest.registered_nodes[door_item_name].door) ~= "table" then--is the door still there?
 					return
 				end
-				if string.sub(door_item_name, -#"_c") == "_c" ~= true then--is door open?
+
+				if not door_item_name:match("_c$") and not door_item_name:match("_d$") then --is door open?
 					return
 				end
+
 				doors.door_toggle(pos)
 			end)
 		end
