@@ -54,7 +54,11 @@ minetest.register_entity("wind_charges:wind_projectile", {
 		for _, obj in ipairs(objs) do
 			local ent = obj:get_luaentity()
 
-			if not obj:is_player() and (not ent or ent.name ~= "__builtin:item") then
+			if obj:is_player() then
+				if obj:get_properties().pointable == false then
+					goto continue
+				end
+			elseif not (ent and ent.name == "__builtin:item") then -- Not a player or item entity
 				goto continue
 			end
 
