@@ -92,7 +92,6 @@ local function show_user_formspec(name)
 	end
 
 	core.show_formspec(name, "itemshelf:shelf", fs)
-	-- sfse.open_formspec(name, "itemshelf:shelf", fs)
 end
 
 core.register_on_player_receive_fields(function(player, formname, fields)
@@ -102,6 +101,14 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 
 	local name = player:get_player_name()
 	local ctx = player_ctx[name]
+
+	if not ctf_jma_elysium.get_player(name) then
+		core.chat_send_player(name, "Mr hackerman, you are not in Elysium. You cannot use this shelf.")
+		ctx = nil
+		core.close_formspec(name, "itemshelf:shelf")
+		return true
+	end
+
 	for field, _ in pairs(fields) do
 		if field == "quit" then
 			ctx = nil
