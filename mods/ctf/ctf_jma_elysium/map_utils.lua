@@ -163,6 +163,7 @@ core.register_chatcommand("el_restore_meta", {
 })
 
 local export_path = core.get_worldpath() .. "/maps_meta/"
+minetest.mkdir(export_path) -- make sure the directory exists
 
 core.register_chatcommand("el_meta", {
 	params = "export|import <mapname>",
@@ -177,7 +178,7 @@ core.register_chatcommand("el_meta", {
 			return false, "Usage: /el_meta export|import <mapname>"
 		end
 
-		local path = export_path .. mapname
+		local path = export_path .. mapname .. ".meta"
 
 		if action == "export" then
 			local data = storage:get_string("meta_" .. mapname)
@@ -186,10 +187,11 @@ core.register_chatcommand("el_meta", {
 			end
 
 			local f = io.open(path, "w")
-			if not f then return false, "Cannot open file for writing" end
+			if not f then return false, "Cannot open file for writing: " .. path end
 			f:write(data)
 			f:close()
 			return true, "Exported metadata to " .. path
+
 		elseif action == "import" then
 			local f = io.open(path, "r")
 			if not f then return false, "File not found: " .. path end
@@ -204,11 +206,13 @@ core.register_chatcommand("el_meta", {
 			storage:set_string("meta_" .. mapname, contents)
 			ctf_jma_elysium.restore_nodemeta(mapname)
 			return true, "Imported metadata from " .. path
+
 		else
 			return false, "Unknown action. Available actions: import, export"
 		end
 	end
 })
+
 
 core.register_chatcommand("el_get_area", {
     params = "<mapname>",

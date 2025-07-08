@@ -119,7 +119,7 @@ core.register_on_joinplayer(function(player, last_login)
 
 	if not dropped then
 		local last_leave = playtime.get_last_leave(name)
-		if last_login and last_leave and last_login - last_leave > INACTIVITY_DURATION then
+		if os.time() - last_leave > INACTIVITY_DURATION then
 			storage:set_float(ACCESS_KEY .. name, 0)
 			reset_checkpoints(name)
 			core.log("action", string.format("Quest progress for %s has been reset due to inactivity.", name))
