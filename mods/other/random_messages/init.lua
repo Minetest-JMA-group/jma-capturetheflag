@@ -75,7 +75,8 @@ local messages = {
     "You can claim the crown as a reward for joining our Discord server",
     "Use /e to send emojis into the air",
     "You have problems exiting the game? Use /kickme to get disconnected from the server",
-    "Want to check match status? Type /match to see current mode, map details and teams info",	
+    "Want to check match status? Type /match to see current mode, map details and teams info",
+    "Want to enter Elysium? Heal 100 HP and capture 1 flag to unlock access for 24 hours! Check progress with /eprogress"
 }
 
 local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval")) or 120
