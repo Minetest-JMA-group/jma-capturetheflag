@@ -118,6 +118,13 @@ server_cosmetics = {
 				},
 				["anniversary"] = {"blank.png", "server_cosmetics_party_hat.png"},
 			},
+			straw_hat = {
+				_prefix = "Wear ",
+				_description = "Straw Hat",
+				_model = "server_cosmetics_straw_hat.obj",
+				-- _preview_rot = {350, 315},
+				["normal"] = {"server_cosmetics_straw_hat.png"},
+			},
 		}
 	}
 }
@@ -179,8 +186,9 @@ function server_cosmetics.update_entity_cosmetics(player, current)
 	if hatname then
 		local hat = minetest.add_entity(player:get_pos(), "server_cosmetics:hat")
 
+		local cdef = server_cosmetics.cosmetics.entity_cosmetics[hatname]
 		hat:set_attach(player, "Head", vector.new(0, 2, 0))
-		hat:set_properties({textures = current[hatname].color})
+		hat:set_properties({textures = current[hatname].color, mesh = cdef._model})
 		hat:get_luaentity().animr = server_cosmetics.cosmetics.entity_cosmetics[hatname]._anims
 
 		hatted[pname] = hat
