@@ -88,6 +88,7 @@ if ctf_rankings.do_reset then
 
 		mods:set_int("_do_reset", 0)
 		mods:set_int("_current_reset", mods:get_int("_current_reset") + 1)
+		ctf_jma_leagues.reset_all() -- RIP leagues
 		minetest.request_shutdown("Ranking reset done. Thank you for your patience", true, after_timer + 5)
 	end)
 end
