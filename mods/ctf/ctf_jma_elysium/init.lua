@@ -6,6 +6,8 @@ ctf_jma_elysium = {
 	on_joining = {}
 }
 
+local SPAWNTP_COOLDOWN = ctf_core.init_cooldowns()
+
 function ctf_jma_elysium.register_map(name, def)
 	ctf_jma_elysium.maps[name] = {
 		file = def.file,
@@ -268,6 +270,40 @@ core.register_chatcommand("elist", {
 
 		local msg = string .format("Players in Elysium (%d): %s", #players, table.concat(players, ", "))
 		return true, msg
+	end
+})
+
+core.register_chatcommand("espawn", {
+	description = "Teleport to Elysium spawn point",
+	privs = {interact = true},
+	func = function(name, param)
+		local player = core.get_player_by_name(name)
+		if not player then
+			return false, "You must be online to use this command."
+		end
+
+		local pctx = ctf_jma_elysium.get_player(player)
+		if not pctx then
+			return false, "You are not in Elysium."
+		end
+
+		if SPAWNTP_COOLDOWN:get(player) then
+			return false, "Not too fast!"
+		end
+
+		if player:get_hp() == 0 then
+			return false, "You cannot use this command while dead."
+		end
+
+		if player:get_attach() then
+			return false, "You cannot use this command right now."
+		end
+
+		local map = ctf_jma_elysium.maps.main
+
+		SPAWNTP_COOLDOWN:set(player, 30)
+		player:set_pos(map.spawn_abs)
+		return true, "Teleported."
 	end
 })
 

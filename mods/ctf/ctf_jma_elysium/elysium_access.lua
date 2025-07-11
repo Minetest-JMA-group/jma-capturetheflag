@@ -10,6 +10,7 @@ local quick_help = "Welcome to JMA Elysium! %s: %s\n" ..
 	"To leave, type /leave or simply disconnect from the server.\n" ..
     "Want to invite someone? Use /einvite <player>.\n" ..
 	"To talk in global chat, use /g <message>.\n" ..
+	"Use /espawn to return to Elysium's spawn point.\n" ..
 	"Note: JMA Elysium is currently under development and bugs may occur."
 
 local TASKS = {
