@@ -140,9 +140,9 @@ return {
 			{task_type = "top_pos", params = {goal = 100, range = 200, mode_name = "total"}, description = "Reach Top 100 (in Any Mode)"},
 		}
 	},
-	["flag_taker"] = {
-		display_name = "Flag Taker League",
-		icon_texture = "ctf_jma_leagues_flag_taker.png",
+	["platinum"] = {
+		display_name = "Platinum league",
+		icon_texture = "ctf_jma_leagues_flag_taker.png", -- TODO update icons
 		order = 10,
 		color = "#636dec",
 		requirements = {
@@ -158,9 +158,9 @@ return {
 			{task_type = "top_pos", params = {goal = 50, range = 100, mode_name = "nade_fight"}, description = "Reach Top 50 (in Nades)"},
 		}
 	},
-	["flag_hunter"] = {
-		display_name = "Flag Hunter League",
-		icon_texture = "ctf_jma_leagues_flag_hunter.png",
+	["titanium"] = {
+		display_name = "Titanium League",
+		icon_texture = "ctf_jma_leagues_flag_hunter.png", -- TODO update icons
 		order = 11,
 		color = "#ec566f",
 		requirements = {
