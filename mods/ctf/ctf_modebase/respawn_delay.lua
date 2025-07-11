@@ -35,6 +35,10 @@ local function finish_respawn(player)
 	if respawn_delay[pname].timer then
 		respawn_delay[pname].timer:cancel()
 	end
+
+	if respawn_delay[pname].finish_callback then
+		respawn_delay[pname].finish_callback(player)
+	end
 end
 
 local function run_respawn_timer(pname)
@@ -95,11 +99,11 @@ local function trigger_respawn(pname, new_delay)
 	end
 end
 
-function ctf_modebase.prepare_respawn_delay(player, new_delay)
+function ctf_modebase.prepare_respawn_delay(player, new_delay, finish_callback)
 	local pname = player:get_player_name()
 	if respawn_delay[pname] then return end
 
-	respawn_delay[pname] = {state = false, hp_max = player:get_properties().hp_max}
+	respawn_delay[pname] = {state = false, hp_max = player:get_properties().hp_max, finish_callback = finish_callback}
 
 	player:set_properties({hp_max = 0})
 

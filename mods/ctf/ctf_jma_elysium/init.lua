@@ -27,7 +27,8 @@ function ctf_jma_elysium.register_map(name, def)
 	core.log("action", "[ctf_jma_elysium] Registered map: " .. name)
 end
 
-function ctf_jma_elysium.get_player(name)
+function ctf_jma_elysium.get_player(player)
+	local name = PlayerName(player)
 	if not name then return nil end
 	return ctf_jma_elysium.players[name]
 end
@@ -46,12 +47,15 @@ core.register_on_leaveplayer(function(player)
 end)
 
 core.register_on_dieplayer(function(player)
-	local name = player:get_player_name()
-
-	if not player or not ctf_jma_elysium.players[name] then return end
-	local map = ctf_jma_elysium.maps.main
-	if map then
-		ctf_modebase.prepare_respawn_delay(player, 5)
+	local pctx = ctf_jma_elysium.get_player(player)
+	if pctx then
+		ctf_modebase.prepare_respawn_delay(player, 3, function()
+			ctf_modebase.give_immunity(player, 3, nil, function()
+				player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
+				player:set_properties({pointable = pctx.pvp})
+				player:set_armor_groups({fleshy = 100})
+			end)
+		end)
 	end
 end)
 
@@ -215,12 +219,19 @@ function ctf_jma_elysium.leave(player)
 		return false
 	end
 
+	if player:get_hp() == 0 then
+		core.chat_send_player(name, "You cannot leave Elysium while you are dead! Please wait until you respawn.")
+		return false
+	end
+
 	ctf_jma_elysium.chat_send_elysium(name .. " has left Elysium.")
 
 	local inv = player:get_inventory()
 	inv:set_list("main", {})
 
 	player:override_day_night_ratio(0)
+
+	ctf_modebase.remove_immunity(player)
 
 	ctf_teams.non_team_players[name] = nil
 	ctf_jma_elysium.players[name] = nil
@@ -240,7 +251,7 @@ ctf_jma_elysium.register_map("main", {
 		pos2 = {x = 101, y = 44, z = 120},
 	},
 	pos = {x = 0, y = 500, z = 0},
-	spawn = {x = 50, y = 3, z = 61},
+	spawn = {x = 50, y = 2.5, z = 61},
 	no_pvp_zone = {
 		pos1 = {x = 5, y = 1, z = 5},
 		pos2 = {x = 15, y = 15, z = 15}

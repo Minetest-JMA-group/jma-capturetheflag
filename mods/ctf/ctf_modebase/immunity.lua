@@ -15,7 +15,7 @@ ctf_cosmetics.get_skin = function(player, color)
 	end
 end
 
-function ctf_modebase.give_immunity(player, respawn_timer)
+function ctf_modebase.give_immunity(player, respawn_timer, apply_callback, finish_callback)
 	local pname = player:get_player_name()
 	local old = immune_players[pname]
 
@@ -63,10 +63,16 @@ function ctf_modebase.give_immunity(player, respawn_timer)
 		maxsize = 2,
 	})
 
+	immune_players[pname].finish_callback = finish_callback
+
 	if old == nil then
-		player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
-		player:set_properties({pointable = false})
-		player:set_armor_groups({fleshy = 0})
+		if not apply_callback then
+			player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
+			player:set_properties({pointable = false})
+			player:set_armor_groups({fleshy = 0})
+		else
+			apply_callback(player)
+		end
 	end
 end
 
@@ -84,7 +90,14 @@ function ctf_modebase.remove_immunity(player)
 		minetest.delete_particlespawner(old.particles)
 	end
 
+	local finish_callback = old.finish_callback
+
 	immune_players[pname] = nil
+
+	if finish_callback then
+		finish_callback(player)
+		return
+	end
 
 	player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
 
@@ -100,12 +113,18 @@ function ctf_modebase.remove_respawn_immunity(player)
 	if old == nil then return true end
 	if old.timer == false then return false end
 
+	local finish_callback = old.finish_callback
+
 	immune_players[pname] = nil
 
 	old.timer:cancel()
 
 	minetest.delete_particlespawner(old.particles, pname)
 
+	if finish_callback then
+		finish_callback(player)
+		return true
+	end
 
 	player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
 
