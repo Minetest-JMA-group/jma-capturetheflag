@@ -141,7 +141,7 @@ return {
 		}
 	},
 	["platinum"] = {
-		display_name = "Platinum league",
+		display_name = "Platinum League",
 		icon_texture = "ctf_jma_leagues_flag_taker.png", -- TODO update icons
 		order = 10,
 		color = "#636dec",
