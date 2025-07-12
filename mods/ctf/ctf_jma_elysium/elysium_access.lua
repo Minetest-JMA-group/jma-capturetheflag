@@ -55,7 +55,7 @@ local function get_cached_rankings(name)
 end
 
 local function get_checkpoint_key(stat_key, player_name)
-	return string.format("%s_checkpoint_%s", stat_key, player_name)
+	return string.format("checkpoint_%s_%s", stat_key, player_name)
 end
 
 local function reset_checkpoints(name)
@@ -87,6 +87,12 @@ local function get_quest_progress(name)
 		end
 
 		local checkpoint = storage:get_int(checkpoint_key)
+		-- Ensure that checkpoint is not greater than status
+		if checkpoint > stat then
+			checkpoint = stat
+			storage:set_int(checkpoint_key, stat)
+		end
+
 		local progress = stat - checkpoint
 		local done = progress >= quest.goal
 
