@@ -8,7 +8,7 @@ local invites = {}
 local elysium_locked = false
 local quick_help = "Welcome to JMA Elysium! %s: %s\n" ..
 	"To leave, type /leave or simply disconnect from the server.\n" ..
-    "Want to invite someone? Use /einvite <player>.\n" ..
+	"Want to invite someone? Use /einvite <player>.\n" ..
 	"To talk in global chat, use /g <message>.\n" ..
 	"Use /espawn to return to Elysium's spawn point.\n" ..
 	"Note: JMA Elysium is currently under development and bugs may occur."
@@ -155,6 +155,27 @@ ctf_api.register_on_match_end(function()
 	end
 end)
 
+function ctf_jma_elysium.grant_access(name, duration_seconds)
+	local now = os.time()
+	local current_access_time = storage:get_float(ACCESS_KEY .. name)
+	local new_access_time
+
+	if current_access_time > now then
+		new_access_time = current_access_time + duration_seconds
+	else
+		new_access_time = now + duration_seconds
+	end
+
+	storage:set_float(ACCESS_KEY .. name, new_access_time)
+
+	local player = core.get_player_by_name(name)
+	if player then
+		core.chat_send_player(name,
+			core.colorize("#00ff00", "[Elysium] You have been granted access for " ..
+			playtime.seconds_to_clock(duration_seconds) .. "!"))
+	end
+end
+
 core.register_chatcommand("elysium", {
 	privs = {interact = true},
 	description = "Join Elysium (if you meet the requirements or were invited)",
@@ -172,12 +193,12 @@ core.register_chatcommand("elysium", {
 			return false, "The game isn't running."
 		end
 
-		if ctf_modebase.match_started or not ctf_modebase.in_game then
-			return false, "You can only join Elysium during build time"
-		end
-
 		if ctf_jma_elysium.players[name] then
 			return false, "You're already joined Elysium. Use /leave to exit"
+		end
+
+		if ctf_modebase.match_started or not ctf_modebase.in_game then
+			return false, "You can only join Elysium during build time"
 		end
 
 		if ctf_jma_elysium.on_joining[name] then
@@ -284,15 +305,15 @@ core.register_chatcommand("einvite", {
 			return false, "Player must be online"
 		end
 
-        local invited_count = 0
-        for _, inviter in pairs(invites) do
-            if inviter == name then
-                invited_count = invited_count + 1
-            end
-        end
-        if invited_count >= 1 then
-            return false, "You have already invited someone."
-        end
+		local invited_count = 0
+		for _, inviter in pairs(invites) do
+			if inviter == name then
+				invited_count = invited_count + 1
+			end
+		end
+		if invited_count >= 1 then
+			return false, "You have already invited someone."
+		end
 
 		if invites[target] then
 			return false, "This player has already been invited."
@@ -353,29 +374,27 @@ core.register_chatcommand("el_lock", {
 })
 
 core.register_chatcommand("el_give_access", {
-    privs = {ctf_admin = true},
-    params = "<player> <minutes>",
-    description = "Give Elysium access to a player for a specified number of minutes",
-    func = function(name, param)
-        local args = param:split(" ")
-        local target = args[1]
-        local minutes = tonumber(args[2])
-        if not target or not minutes then
-            return false, "Usage: /el_give_access <player> <minutes>"
-        end
-        if minutes < 1 then
-            return false, "Invalid minutes value"
-        end
-        if not core.get_player_by_name(target) then
-            return false, "Player must be online"
-        end
+	privs = {ctf_admin = true},
+	params = "<player> <minutes>",
+	description = "Give Elysium access to a player for a specified number of minutes",
+	func = function(name, param)
+		local args = param:split(" ")
+		local target = args[1]
+		local minutes = tonumber(args[2])
+		if not target or not minutes then
+			return false, "Usage: /el_give_access <player> <minutes>"
+		end
+		if minutes < 1 then
+			return false, "Invalid minutes value"
+		end
+		if not core.get_player_by_name(target) then
+			return false, "Player must be online"
+		end
 
         local seconds = minutes * 60
-        local until_time = os.time() + seconds
-        storage:set_float(ACCESS_KEY .. target, until_time)
-        core.chat_send_player(target, "[Elysium] You have been granted access for " .. playtime.seconds_to_clock(seconds) .. " by admin.")
-        return true, "Access granted to " .. target .. " for " .. playtime.seconds_to_clock(seconds)
-    end
+		ctf_jma_elysium.grant_access(target, seconds)
+		return true, "Access granted to " .. target .. " for " .. playtime.seconds_to_clock(seconds)
+	end
 })
 
 core.register_chatcommand("el_kick", {
