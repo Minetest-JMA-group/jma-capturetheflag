@@ -5,7 +5,7 @@ ctf_jma_elysium = {
 	loaded_maps = {},
 	on_joining = {}
 }
-
+local storage = core.get_mod_storage()
 local SPAWNTP_COOLDOWN = ctf_core.init_cooldowns()
 
 function ctf_jma_elysium.register_map(name, def)
@@ -304,6 +304,24 @@ core.register_chatcommand("espawn", {
 		SPAWNTP_COOLDOWN:set(player, 30)
 		player:set_pos(map.spawn_abs)
 		return true, "Teleported."
+	end
+})
+
+local allow_reset = {}
+core.register_chatcommand("el_reset", {
+	description = "Reset Elysium modstorage (dangerous, admin only)",
+	privs = {ctf_admin = true, server = true},
+	func = function(name)
+		if not allow_reset[name] then
+			allow_reset[name] = true
+			minetest.after(30, function()
+				allow_reset[key] = nil
+			end)
+			return true, "Please re-run this command to confirm reset. This action cannot be undone."
+		end
+		storage:from_table({})
+		core.log("action", "[ctf_jma_elysium] Elysium modstorage has been reset by " .. name)
+		return true, "Elysium modstorage has been reset."
 	end
 })
 
