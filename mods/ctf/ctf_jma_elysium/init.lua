@@ -315,7 +315,7 @@ core.register_chatcommand("el_reset", {
 		if not allow_reset[name] then
 			allow_reset[name] = true
 			minetest.after(30, function()
-				allow_reset[key] = nil
+				allow_reset[name] = nil
 			end)
 			return true, "Please re-run this command to confirm reset. This action cannot be undone."
 		end
