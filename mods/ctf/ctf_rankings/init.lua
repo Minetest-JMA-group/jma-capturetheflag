@@ -34,4 +34,4 @@ function ctf_rankings.register_on_rank_reset(func)
 	table.insert(ctf_rankings.registered_on_rank_reset, func)
 end
 
-ctf_core.include_files("ranking_reset.lua")
+-- ctf_core.include_files("ranking_reset.lua")
