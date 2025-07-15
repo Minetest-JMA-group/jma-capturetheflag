@@ -69,7 +69,6 @@ function ctf_jma_elysium.restore_nodemeta(mapname)
 	return true
 end
 
-
 function ctf_jma_elysium.save_meta(mapname)
 	local mapdef = ctf_jma_elysium.maps[mapname]
 
@@ -101,7 +100,6 @@ function ctf_jma_elysium.save_meta(mapname)
 		if node_id ~= core.CONTENT_IGNORE and node_id ~= core.CONTENT_AIR and
 		node_id ~= core.CONTENT_UNKNOWN then
 
-			local node_name = core.get_name_from_content_id(node_id)
 			local cpos = area:position(index)
 			local meta = core.get_meta(cpos):to_table()
 			local node = core.get_node(cpos)
@@ -131,6 +129,59 @@ function ctf_jma_elysium.save_meta(mapname)
 
 	storage:set_string("meta_" .. mapname, core.serialize(to_save))
 	return true, count
+end
+
+-- Replaces default nodes with ctf_map: variants (if exist)
+-- For case of further editing of the map
+function ctf_jma_elysium.replace_nodes_with_ctf_map(mapname)
+	local mapdef = ctf_jma_elysium.maps[mapname]
+	local pos1 = mapdef.pos1
+	local pos2 = mapdef.pos2
+
+	local minp = vector.new(
+		math.min(pos1.x, pos2.x),
+		math.min(pos1.y, pos2.y),
+		math.min(pos1.z, pos2.z)
+	)
+	local maxp = vector.new(
+		math.max(pos1.x, pos2.x),
+		math.max(pos1.y, pos2.y),
+		math.max(pos1.z, pos2.z)
+	)
+
+	local vm = VoxelManip()
+	local emerged_min, emerged_max = vm:read_from_map(minp, maxp)
+	local data = vm:get_data()
+	local area = VoxelArea:new{MinEdge = emerged_min, MaxEdge = emerged_max}
+
+	local replaced_count = 0
+	local skipped_count = 0
+
+	for index in area:iterp(minp, maxp) do
+		local node_id = data[index]
+
+		if node_id ~= core.CONTENT_IGNORE and node_id ~= core.CONTENT_AIR and
+		   node_id ~= core.CONTENT_UNKNOWN then
+
+			local node_name = core.get_name_from_content_id(node_id)
+
+			if not string.match(node_name, "^ctf_map:") then
+				local ctf_map_name = "ctf_map:" .. node_name:gsub("^[^:]+:", "")
+
+				if core.registered_nodes[ctf_map_name] then
+					data[index] = core.get_content_id(ctf_map_name)
+					replaced_count = replaced_count + 1
+				else
+					skipped_count = skipped_count + 1
+				end
+			end
+		end
+	end
+
+	vm:set_data(data)
+	vm:write_to_map(true)
+
+	return replaced_count, skipped_count
 end
 
 core.register_chatcommand("el_save_meta", {
@@ -213,33 +264,44 @@ core.register_chatcommand("el_meta", {
 	end
 })
 
-
 core.register_chatcommand("el_get_area", {
-    params = "<mapname>",
-    description = "Show local coordinates of your WorldEdit selection for the given map",
-    privs = {server = true},
-    func = function(name, mapname)
-        if not mapname or mapname == "" then
-            return false, "Invalid map name"
-        end
-        local mapdef = ctf_jma_elysium.maps[mapname]
-        if not mapdef then
-            return false, "Map not found: " .. mapname
-        end
-        local we = worldedit.pos1[name] and worldedit.pos2[name] and worldedit
-        if not we then
-            return false, "You must select a region with WorldEdit first."
-        end
-        local pos1 = worldedit.pos1[name]
-        local pos2 = worldedit.pos2[name]
+	params = "<mapname>",
+	description = "Show local coordinates of your WorldEdit selection for the given map",
+	privs = {server = true},
+	func = function(name, mapname)
+		if not mapname or mapname == "" then
+			return false, "Invalid map name"
+		end
+		local mapdef = ctf_jma_elysium.maps[mapname]
+		if not mapdef then
+			return false, "Map not found: " .. mapname
+		end
+		local we = worldedit.pos1[name] and worldedit.pos2[name] and worldedit
+		if not we then
+			return false, "You must select a region with WorldEdit first."
+		end
+		local pos1 = worldedit.pos1[name]
+		local pos2 = worldedit.pos2[name]
 
-        local local_min = vector.subtract(pos1, mapdef.pos1)
-        local local_max = vector.subtract(pos2, mapdef.pos1)
-        return true, string.format(
-            "Local region: min (%d, %d, %d), max (%d, %d, %d)",
-            local_min.x, local_min.y, local_min.z,
-            local_max.x, local_max.y, local_max.z
-        )
-    end
+		local local_min = vector.subtract(pos1, mapdef.pos1)
+		local local_max = vector.subtract(pos2, mapdef.pos1)
+		return true, string.format(
+			"Local region: min (%d, %d, %d), max (%d, %d, %d)",
+			local_min.x, local_min.y, local_min.z,
+			local_max.x, local_max.y, local_max.z
+		)
+	end
 })
 
+core.register_chatcommand("el_replace_nodes", {
+	description = "Replace all nodes in the current map region with ctf_map variants",
+	privs = {server = true},
+	func = function(name, mapname)
+		if not ctf_jma_elysium.loaded_maps[mapname] then
+			return false, "The map does not exist or not loaded"
+		end
+
+		local replaced_count, skipped_count = ctf_jma_elysium.replace_nodes_with_ctf_map(mapname)
+		return true, "Nodes replacement completed. Replaced: " .. replaced_count .. ", Skipped: " .. skipped_count
+	end
+})

@@ -137,7 +137,7 @@ function ctf_jma_elysium.join(player, joined_callback)
 			pvp = false,
 			location = "main"
 		}
-		ctf_jma_elysium.chat_send_elysium(name .. " has joined Elysium.")
+		core.chat_send_all(name .. " has joined Elysium.")
 
 		ctf_teams.remove_online_player(player)
 		ctf_teams.player_team[name] = nil
@@ -226,7 +226,7 @@ function ctf_jma_elysium.leave(player)
 		return false
 	end
 
-	ctf_jma_elysium.chat_send_elysium(name .. " has left Elysium.")
+	core.chat_send_all(name .. " has left Elysium.")
 
 	local inv = player:get_inventory()
 	inv:set_list("main", {})
@@ -247,13 +247,13 @@ function ctf_jma_elysium.leave(player)
 end
 
 ctf_jma_elysium.register_map("main", {
-	file = ctf_jma_elysium.modpath .. "/maps/JMA_Elysium.mts",
+	file = ctf_jma_elysium.modpath .. "/maps/jma_elysium_hub.mts",
 	bounds = {
 		pos1 = {x = 0, y = 0, z = 0},
-		pos2 = {x = 101, y = 44, z = 120},
+		pos2 = {x = 226, y = 124, z = 222},
 	},
 	pos = {x = 0, y = 500, z = 0},
-	spawn = {x = 50, y = 2.5, z = 61},
+	spawn = {x = 115, y = 21, z = 111},
 	no_pvp_zone = {
 		pos1 = {x = 5, y = 1, z = 5},
 		pos2 = {x = 15, y = 15, z = 15}
@@ -301,7 +301,7 @@ core.register_chatcommand("espawn", {
 
 		local map = ctf_jma_elysium.maps.main
 
-		SPAWNTP_COOLDOWN:set(player, 30)
+		SPAWNTP_COOLDOWN:set(player, 3)
 		player:set_pos(map.spawn_abs)
 		return true, "Teleported."
 	end
