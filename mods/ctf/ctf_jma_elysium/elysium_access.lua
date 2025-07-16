@@ -1,8 +1,7 @@
 local storage = core.get_mod_storage()
-
 local ACCESS_KEY = "access_"
 local ACCESS_DURATION = 1 * 24 * 60 * 60
-local INACTIVITY_DURATION = 1 * 24 * 60 * 60
+local INACTIVITY_DURATION = 3 * 24 * 60 * 60
 local cache = {}
 local invites = {}
 local elysium_locked = false
@@ -12,6 +11,10 @@ local quick_help = "Welcome to JMA Elysium! %s: %s\n" ..
 	"To talk in global chat, use /g <message>.\n" ..
 	"Use /espawn to return to Elysium's spawn point.\n" ..
 	"Note: JMA Elysium is currently under development and bugs may occur."
+
+local REJOIN_COOLDOWN = ctf_core.init_cooldowns()
+local MAX_ELYSIUM_JOINS = 4
+local join_count = {}
 
 local TASKS = {
 	{
@@ -176,6 +179,17 @@ function ctf_jma_elysium.grant_access(name, duration_seconds)
 	end
 end
 
+ctf_api.register_on_match_end(function()
+	join_count = {}
+end)
+
+local function join(player, name, cb)
+	join_count[name] = (join_count[name] or 0) + 1
+	REJOIN_COOLDOWN:set(player, 60)
+
+	ctf_jma_elysium.join(player, cb)
+end
+
 core.register_chatcommand("elysium", {
 	privs = {interact = true},
 	description = "Join Elysium (if you meet the requirements or were invited)",
@@ -197,18 +211,26 @@ core.register_chatcommand("elysium", {
 			return false, "You're already joined Elysium. Use /leave to exit"
 		end
 
-		if ctf_modebase.match_started or not ctf_modebase.in_game then
-			return false, "You can only join Elysium during build time"
+		if join_count[name] and join_count[name] >= MAX_ELYSIUM_JOINS then
+			return false, "You cannot rejoin Elysium - maximum join attempts reached for the current match."
 		end
 
-		if ctf_jma_elysium.on_joining[name] then
-			return false, "Don't spam the command, just wait a few seconds"
+		if REJOIN_COOLDOWN:get(player) then
+			return false, "You're rejoining too quickly - please wait 1 minute before trying again."
+		end
+
+		if ctf_combat_mode.in_combat(player) then
+			return false, "You cannot join Elysium while in combat. Please wait until combat ends."
+		end
+
+		if ctf_modebase.taken_flags[name] then
+			return false, "You can't join Elysium if you're holding a flag(s)."
 		end
 
 		local now = os.time()
 		local has_acc, ticket_time = has_access(name)
 		if has_acc then
-			ctf_jma_elysium.join(player, function()
+			join(player, name, function()
 				core.chat_send_player(name,  quick_help:format("Time left", playtime.seconds_to_clock(ticket_time - now)))
 			end)
 
@@ -217,10 +239,10 @@ core.register_chatcommand("elysium", {
 
 		-- Temporary ticket
 		if invites[name] then
-			ctf_jma_elysium.join(player, function()
+			join(player, name, function()
 				core.chat_send_player(name,  quick_help:format("[Invite]", "Ends after leaving Elysium or disconnecting"))
-				invites[name] = nil
 			end)
+			invites[name] = nil
 
 			return true
 		end
@@ -232,7 +254,7 @@ core.register_chatcommand("elysium", {
 
 		reset_checkpoints(name)
 		storage:set_float(ACCESS_KEY .. name, now + ACCESS_DURATION)
-		ctf_jma_elysium.join(player, function()
+		join(player, name, function()
 			core.chat_send_player(name, string.format(quick_help, "Time left", playtime.seconds_to_clock(ACCESS_DURATION)))
 		end)
 

@@ -210,7 +210,10 @@ function ctf_jma_elysium.join(player, joined_callback)
 		return true
 	end
 
+	core.chat_send_player(name, "Please wait a moment...")
 	core.after(3, handle_player)
+
+	return true
 end
 
 function ctf_jma_elysium.leave(player)
