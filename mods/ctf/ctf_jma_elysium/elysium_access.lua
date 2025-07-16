@@ -184,10 +184,11 @@ ctf_api.register_on_match_end(function()
 end)
 
 local function join(player, name, cb)
-	join_count[name] = (join_count[name] or 0) + 1
-	REJOIN_COOLDOWN:set(player, 60)
-
-	ctf_jma_elysium.join(player, cb)
+	ctf_jma_elysium.join(player, function()
+		join_count[name] = (join_count[name] or 0) + 1
+		REJOIN_COOLDOWN:set(player, 60)
+		cb()
+	end)
 end
 
 core.register_chatcommand("elysium", {
@@ -241,8 +242,8 @@ core.register_chatcommand("elysium", {
 		if invites[name] then
 			join(player, name, function()
 				core.chat_send_player(name,  quick_help:format("[Invite]", "Ends after leaving Elysium or disconnecting"))
+				invites[name] = nil
 			end)
-			invites[name] = nil
 
 			return true
 		end
