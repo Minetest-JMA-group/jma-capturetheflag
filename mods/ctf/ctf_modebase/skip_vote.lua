@@ -248,45 +248,33 @@ minetest.register_chatcommand("vote_skip", {
 -- end)
 
 local function player_vote(name, vote)
-	local function do_vote()
-		if not votes[name] then
-			voters_count = voters_count - 1
-		end
-
-		votes[name] = vote
-
-		local player = minetest.get_player_by_name(name)
-		if hud:exists(player, "skip_vote:vote") then
-			hud:change(player, "skip_vote:vote", {
-				text = string.format("[%s]", vote),
-				style = 1
-			})
-		end
-
-		-- Update vote information for all players
-		for _, p in ipairs(minetest.get_connected_players()) do
-			vote_timer_hud(p)
-		end
+	if not ctf_modebase.match_started then
+		return false, "You can only vote during the match"
 	end
 
 	if not votes then
-		if not ctf_modebase.match_started then
-			if #minetest.get_connected_players() > 1 and not already_voted then
-				ctf_modebase.skip_vote.start_vote()
-				if votes then
-					do_vote()
-					already_voted = true
-					return true
-				end
-			end
-			return false, "Sorry, you can't vote right now"
-		else
-			return false, "You can't vote during the match"
-		end
-		return false, "There is no vote in progress"
+		return false, "Voting to skip a match is not available"
 	end
 
-	do_vote()
+	if not votes[name] then
+		voters_count = voters_count - 1
+	end
+
+	votes[name] = vote
+
+	local player = minetest.get_player_by_name(name)
+	if hud:exists(player, "skip_vote:vote") then
+		hud:change(player, "skip_vote:vote", {
+			text = string.format("[%s]", vote),
+			style = 1
+		})
+	end
+
+	-- Update vote information for all players
+	for _, p in ipairs(minetest.get_connected_players()) do
+		vote_timer_hud(p)
+	end
+
 	return true
 end
 
