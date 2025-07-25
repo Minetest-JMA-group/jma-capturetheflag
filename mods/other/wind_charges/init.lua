@@ -71,15 +71,17 @@ minetest.register_entity("wind_charges:wind_projectile", {
 				dir.y = 1
 			else
 				local owner_name = self.owner_name
-				local owner = minetest.get_player_by_name(owner_name)
-				if owner then
-					local owner_pos = owner:get_pos()
-					dir = vector.direction(pos, owner_pos)
-					power = dist * 3 + 2
-					obj:add_velocity({x = 0, y = 4, z = 0})
-					dir.y = 0
-				else
-					goto continue
+				if owner_name then
+					local owner = minetest.get_player_by_name(owner_name)
+					if owner then
+						local owner_pos = owner:get_pos()
+						dir = vector.direction(pos, owner_pos)
+						power = dist * 3 + 2
+						obj:add_velocity({x = 0, y = 4, z = 0})
+						dir.y = 0
+					else
+						goto continue
+					end
 				end
 			end
 			obj:add_velocity(vector.multiply(dir, power))
