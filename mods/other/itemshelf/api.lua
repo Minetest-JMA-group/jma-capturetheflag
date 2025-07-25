@@ -303,7 +303,6 @@ function itemshelf.register_shelf(name, def)
 		node_box = def.nodebox,
 		mesh = def.mesh,
 		groups = {choppy = 2, itemshelf = 1, itemshelf_shown_items = def.shown_items or 4},
-		use_texture_alpha = true,
 		on_construct = function(pos)
 			-- Initialize node inventory first
 			local meta = core.get_meta(pos)

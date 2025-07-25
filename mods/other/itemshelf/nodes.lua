@@ -197,7 +197,7 @@ register_node_and_recipe("stairs:slab_pine_wood", "pine", "Pine Wood", "default_
 register_node_and_recipe("stairs:slab_aspen_wood", "aspen", "Aspen Wood", "default_aspen_wood.png")
 register_node_and_recipe("stairs:slab_acacia_wood", "acacia", "Acacia Wood", "default_acacia_wood.png")
 register_node_and_recipe("stairs:slab_junglewood", "jungle", "Jungle Wood", "default_junglewood.png")
-register_node_and_recipe("stairs:slab_junglewood", "glass", "Glass", "default_glass.png")
+-- register_node_and_recipe("stairs:slab_junglewood", "glass", "Glass", "default_glass.png")
 
 itemshelf.register_shelf("fancy_small_shelf", {
 	description = "Fancywood Shelf (4)",
