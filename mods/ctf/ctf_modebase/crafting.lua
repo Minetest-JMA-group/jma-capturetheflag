@@ -175,12 +175,6 @@ crafting.register_recipe({
 })
 
 crafting.register_recipe({
-	output = "torch_bomb:torch_grenade",
-	items  = { "default:torch 4", "default:steel_ingot" },
-	always_known = true,
-})
-
-crafting.register_recipe({
 	output = "ctf_landmine:landmine",
 	items  = { "default:steel_ingot", "grenades:frag" },
 	always_known = false,

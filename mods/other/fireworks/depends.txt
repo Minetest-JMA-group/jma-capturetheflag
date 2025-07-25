@@ -1,5 +1,4 @@
 default
 dye
 random_gifts
-torch_bomb
 ctf_api

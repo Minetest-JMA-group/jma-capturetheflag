@@ -68,10 +68,6 @@ minetest.register_entity("fireworks:firework_static", {
 
         local item = "fireworks:" .. fireworks.colors[math.random(1, #fireworks.colors)][1]
 
-		if math.random(1, 8) == 1 then
-			item = "torch_bomb:mega_torch_bomb_rocket"
-		end
-
         self.object:set_properties({wield_item = item})
 	end,
 

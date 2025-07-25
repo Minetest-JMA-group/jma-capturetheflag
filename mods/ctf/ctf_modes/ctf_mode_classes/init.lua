@@ -68,7 +68,6 @@ ctf_modebase.register_mode("classes", {
 		["grenades:poison"] = {rarity = 0.1, max_stacks = 2},
 
 		["default:water_source"] = {rarity = 0.2, max_stacks = 1},
-		["torch_bomb:torch_grenade"] = {rarity = 0.07, max_stacks = 1, min_count = 1, max_count = 4},
 		["easter_egg:egg"] = {rarity = 0.03, max_stacks = 1},
 		["ctf_landmine:landmine"] = {min_count = 1, max_count =  8, max_stacks = 1, rarity = 0.2},
 		["boats:boat"] = {min_count = 1, max_count =  1, max_stacks = 1, rarity = 0.07},
