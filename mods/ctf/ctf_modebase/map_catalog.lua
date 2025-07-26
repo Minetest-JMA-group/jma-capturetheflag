@@ -49,20 +49,14 @@ function ctf_modebase.map_catalog.sample_maps(filter, n)
 	local maps = {}
 	for _, pool in pairs({maps_pool, FULL_POOL and used_maps}) do
 		for idx, map in ipairs(pool) do
-			if not filter or filter(ctf_modebase.map_catalog.maps[map]) then
+			if map ~= ctf_modebase.map_catalog.current_map and
+					(not filter or filter(ctf_modebase.map_catalog.maps[map])) then
 				table.insert(maps, FULL_POOL and map or idx)
 			end
 		end
 	end
 
-	--Sample the n maps randomly
-	local function shuffle(t)
-		for i = #t, 2, -1 do
-			local j = math.random(i)
-			t[i], t[j] = t[j], t[i]
-		end
-	end
-	shuffle(maps)
+	table.shuffle(maps)
 
 	local selected = {}
 	for i = 1, n do
