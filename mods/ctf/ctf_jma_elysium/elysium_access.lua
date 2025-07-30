@@ -4,7 +4,6 @@ local ACCESS_DURATION = 1 * 24 * 60 * 60
 local INACTIVITY_DURATION = 3 * 24 * 60 * 60
 local cache = {}
 local invites = {}
-local elysium_locked = false
 local quick_help = "Welcome to JMA Elysium! %s: %s\n" ..
 	"To leave, type /leave or simply disconnect from the server.\n" ..
 	"Want to invite someone? Use /einvite <player>.\n" ..
@@ -196,20 +195,10 @@ core.register_chatcommand("elysium", {
 	description = "Join Elysium (if you meet the requirements or were invited)",
 	func = function(name)
 		local player = core.get_player_by_name(name)
-		if not player then
-			return false, "You are offline."
-		end
 
-		if elysium_locked then
-			return false, "Elysium is currently locked by admin."
-		end
-
-		if not ctf_modebase.current_mode then
-			return false, "The game isn't running."
-		end
-
-		if ctf_jma_elysium.players[name] then
-			return false, "You're already joined Elysium. Use /leave to exit"
+		local can_join, reason = ctf_jma_elysium.can_player_join_elysium(name)
+		if not can_join then
+			return false, reason
 		end
 
 		if join_count[name] and join_count[name] >= MAX_ELYSIUM_JOINS then
@@ -218,14 +207,6 @@ core.register_chatcommand("elysium", {
 
 		if REJOIN_COOLDOWN:get(player) then
 			return false, "You're rejoining too quickly - please wait 1 minute before trying again."
-		end
-
-		if ctf_combat_mode.in_combat(player) then
-			return false, "You cannot join Elysium while in combat. Please wait until combat ends."
-		end
-
-		if ctf_modebase.taken_flags[name] then
-			return false, "You can't join Elysium if you're holding a flag(s)."
 		end
 
 		local now = os.time()
@@ -385,10 +366,10 @@ core.register_chatcommand("el_lock", {
 	func = function(name, param)
 		param = param and param:lower()
 		if param == "on" then
-			elysium_locked = true
+			ctf_jma_elysium.elysium_locked = true
 			return true, "Elysium is now locked for all players."
 		elseif param == "off" then
-			elysium_locked = false
+			ctf_jma_elysium.elysium_locked = false
 			return true, "Elysium is now unlocked."
 		else
 			return false, "Usage: /el_lock on|off"

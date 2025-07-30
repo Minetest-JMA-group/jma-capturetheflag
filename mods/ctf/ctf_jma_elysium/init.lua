@@ -3,10 +3,12 @@ ctf_jma_elysium = {
 	players = {},
 	maps = {},
 	loaded_maps = {},
-	on_joining = {}
+	on_joining = {},
+	elysium_locked = false,
 }
 local storage = core.get_mod_storage()
 local SPAWNTP_COOLDOWN = ctf_core.init_cooldowns()
+local FORMNAME_WAIT = "ctf_jma_elysium:wait"
 
 function ctf_jma_elysium.register_map(name, def)
 	ctf_jma_elysium.maps[name] = {
@@ -120,24 +122,68 @@ function ctf_jma_elysium.chat_send_elysium(msg)
 	end
 end
 
-function ctf_jma_elysium.join(player, joined_callback)
-	local name = player:get_player_name()
-
-	if player:get_attach() then
-		core.chat_send_player(name, "Don't try to breaks the game, please!")
-		return false
+function ctf_jma_elysium.can_player_join_elysium(name)
+	local player = PlayerObj(name)
+	if not player or not player:is_player() then
+		return false, ""
 	end
 
+	if ctf_jma_elysium.players[name] then
+		return false, "You're already joined Elysium. Use /leave to exit"
+	end
+
+	if ctf_jma_elysium.elysium_locked then
+		return false, "Elysium is currently locked by admin."
+	end
+
+	if player:get_hp() <= 0 then
+		return false, "You're a ghost, not a player! Can't join Elysium while dead."
+	end
+
+	if player:get_attach() then
+		return false, "You cannot join Elysium while attached."
+	end
+
+	if ctf_modebase.taken_flags[name] then
+		return false, "Dear hacker " .. name .. ", you cannot join Elysium while holding a flag(s)."
+	end
+
+	if ctf_combat_mode.in_combat(player) then
+		return false, "You cannot join Elysium while in combat. Please wait until combat ends."
+	end
+
+	return true
+end
+
+function ctf_jma_elysium.show_wait_formspec(player_name)
+	local fs = "formspec_version[7]"
+		.. "size[8,3]"
+		.. "no_prepend[]"
+		.. "hypertext[0,0;8,3;hypertext;<global valign=middle><center><b>%s</b></center>]"
+	core.show_formspec(player_name, FORMNAME_WAIT, string.format(fs, "Please wait..."))
+end
+
+function ctf_jma_elysium.join(player, joined_callback)
+	local name = player:get_player_name()
 	local map = ctf_jma_elysium.maps.main
 
-	local function handle_player()
-		ctf_jma_elysium.on_joining[name] = nil
-		if not core.get_player_by_name(name) then return end
-		ctf_jma_elysium.players[name] = {
+	local function handle_player(player)
+		local player_name = player:get_player_name()
+
+		local can_join, reason = ctf_jma_elysium.can_player_join_elysium(player_name)
+		if not can_join then
+			core.chat_send_player(player_name, reason)
+			ctf_jma_elysium.on_joining[player_name] = nil
+			return false
+		end
+
+		ctf_jma_elysium.on_joining[player_name] = nil
+		ctf_jma_elysium.players[player_name] = {
 			pvp = false,
 			location = "main"
 		}
-		core.chat_send_all(name .. " has joined Elysium.")
+		core.chat_send_all(player_name .. " has joined Elysium.")
+		core.close_formspec(player_name, FORMNAME_WAIT)
 
 		ctf_teams.remove_online_player(player)
 		ctf_teams.player_team[name] = nil
@@ -198,20 +244,20 @@ function ctf_jma_elysium.join(player, joined_callback)
 
 	ctf_jma_elysium.on_joining[name] = true
 	if not ctf_jma_elysium.loaded_maps.main then
-		core.chat_send_player(name, "Please wait a moment while we prepare the map...")
+		ctf_jma_elysium.show_wait_formspec(name)
 
 		ctf_map.emerge_with_callbacks(nil, map.pos1, map.pos2, function()
 			core.place_schematic(map.pos1, map.file, 0)
 			ctf_jma_elysium.loaded_maps.main = true
 			ctf_jma_elysium.restore_nodemeta("main")
-			core.after(1, handle_player)
+			core.after(3, handle_player, player)
 		end)
 
 		return true
 	end
 
-	core.chat_send_player(name, "Please wait a moment...")
-	core.after(3, handle_player)
+	ctf_jma_elysium.show_wait_formspec(name)
+	core.after(3, handle_player, player)
 
 	return true
 end
@@ -220,7 +266,7 @@ function ctf_jma_elysium.leave(player)
 	local name = player:get_player_name()
 
 	if player:get_attach() then
-		core.chat_send_player(name, "Don't try to breaks the game, please!")
+		core.chat_send_player(name, "You cannot leave Elysium while attached")
 		return false
 	end
 
