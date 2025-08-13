@@ -3,7 +3,7 @@ local cooldowns = {}
 local MAX_RANDOM_ATTEMPTS = 16
 local SEARCH_RADIUS = 8
 local TELEPORT_COOLDOWN = 1
-local PADDING = 5 -- some maps have ground out of barrier
+local PADDING = 5 -- Some maps have ground outside the barrier
 
 local play_sound = false
 local allow_teleport = true
