@@ -71,6 +71,7 @@ ctf_modebase.register_mode("classes", {
 		["easter_egg:egg"] = {rarity = 0.03, max_stacks = 1},
 		["ctf_landmine:landmine"] = {min_count = 1, max_count =  8, max_stacks = 1, rarity = 0.2},
 		["boats:boat"] = {min_count = 1, max_count =  1, max_stacks = 1, rarity = 0.07},
+		["more_liquids:enderium_source"] = {rarity = 0.2, max_stacks = 1}
 	},
 	crafts = {
 		"ctf_ranged:ammo", "default:axe_mese", "default:axe_diamond", "default:shovel_mese", "default:shovel_diamond",
