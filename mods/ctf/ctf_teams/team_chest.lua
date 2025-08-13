@@ -17,6 +17,7 @@ local item_value = {
 	["ctf_ranged:assault_rifle_loaded"] = 8,
 	["rocket_launcher:launcher"       ] = 8,
 	["default:sword_steel"            ] = 7,
+	["ctf_melee:sword_steel"          ] = 7,
 	["default:pick_diamond"           ] = 6,
 	["ctf_ranged:assault_rifle"       ] = 6,
 	["grenades:frag"                  ] = 6,
