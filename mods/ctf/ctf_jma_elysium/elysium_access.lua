@@ -391,9 +391,6 @@ core.register_chatcommand("el_give_access", {
 		if minutes < 1 then
 			return false, "Invalid minutes value"
 		end
-		if not core.get_player_by_name(target) then
-			return false, "Player must be online"
-		end
 
         local seconds = minutes * 60
 		ctf_jma_elysium.grant_access(target, seconds)
