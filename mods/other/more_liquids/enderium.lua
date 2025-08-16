@@ -144,7 +144,22 @@ local function find_teleport_position(pos)
     return nil
 end
 
+minetest.register_on_player_hpchange(function(player, hp_change, reason)
+    if reason.type == "fall" then
+        local pos = player:get_pos()
 
+        for dy = 0, 2 do
+            local check_pos = {x = pos.x, y = pos.y - dy, z = pos.z}
+
+            local node = minetest.get_node_or_nil(check_pos)
+            if node and (node.name == "more_liquids:enderium_source" or
+               node.name == "more_liquids:enderium_flowing") then
+                return 0
+            end
+        end
+    end
+    return hp_change
+end, true)
 
 local function teleport_player(player)
     local pname = player:get_player_name()
