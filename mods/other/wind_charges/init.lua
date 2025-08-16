@@ -121,7 +121,7 @@ minetest.register_craftitem("wind_charges:wind_charge", {
 
 		local current_time = minetest.get_gametime()
 		local last_used_time = players_wind_charge_cooldown[user_name] or 0
-		local cooldown_time = 0.02
+		local cooldown_time = 0.10
 
 		if current_time - last_used_time < cooldown_time then
 			return itemstack
