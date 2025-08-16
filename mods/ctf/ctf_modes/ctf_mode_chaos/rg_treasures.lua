@@ -69,6 +69,7 @@ return {
 
     {itemname = "grenades:smoke", chance = 20, amount = 1},
     {itemname = "grenades:poison", chance = 10, amount = 1},
+	{itemname = "more_liquids:enderium_source", chance = 20, amount = 1},
 	--functions
 	--things
 	-- {chance = 3, image = "random_gifts_santa_hat2023.png",
