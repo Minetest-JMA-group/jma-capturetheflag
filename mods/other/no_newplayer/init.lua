@@ -5,7 +5,7 @@ local no_new_players = modstorage:get_int("no_new_players") == 1
 
 minetest.register_on_prejoinplayer(function(name, ip)
 	if no_new_players and minetest.get_auth_handler().get_auth(name) == nil then
-		return "We aren't accepting new players right now becasue the server is in Lockdown! If u want to create an new user contact us please on discord: www.ctf.jma-sig.de or send an mail to loki@jma-sig.de "
+		return "We aren't accepting new players right now. If u want to create an new account contact us please on discord: www.ctf.jma-sig.de or send an e-mail to loki@jma-sig.de "
 	end
 end)
 
