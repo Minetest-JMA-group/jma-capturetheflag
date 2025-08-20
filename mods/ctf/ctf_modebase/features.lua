@@ -804,7 +804,7 @@ return {
 
 		celebrate_team(ctf_teams.get(pname))
 
-		recent_rankings.add(pname, {score = 30, flag_attempts = 1})
+		recent_rankings.add(pname, {score = 15, flag_attempts = 1})
 
 		ctf_modebase.flag_huds.track_capturer(pname, FLAG_CAPTURE_TIMER)
 	end,
