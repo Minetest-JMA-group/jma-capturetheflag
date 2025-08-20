@@ -253,7 +253,7 @@ minetest.register_node("more_liquids:enderium_source", {
 	liquidtype = "source",
     liquid_alternative_flowing = "more_liquids:enderium_flowing",
 	liquid_alternative_source = "more_liquids:enderium_source",
-	liquid_viscosity = 20,
+	liquid_viscosity = 1,
     liquid_range = 1,
     liquid_renewable = false,
     groups = {liquid = 2},
@@ -301,7 +301,7 @@ minetest.register_node("more_liquids:enderium_flowing", {
 	liquidtype = "flowing",
     liquid_alternative_flowing = "more_liquids:enderium_flowing",
 	liquid_alternative_source = "more_liquids:enderium_source",
-	liquid_viscosity = 20,
+	liquid_viscosity = 1,
     liquid_range = 1,
     liquid_renewable = false,
 
