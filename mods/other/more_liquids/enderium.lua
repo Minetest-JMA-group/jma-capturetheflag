@@ -2,7 +2,7 @@ local cooldowns = {}
 
 local MAX_RANDOM_ATTEMPTS = 16
 local SEARCH_RADIUS = 8
-local TELEPORT_COOLDOWN = 20
+local TELEPORT_COOLDOWN = 10
 local PADDING = 5 -- Some maps have ground outside the barrier
 
 local play_sound = false
@@ -215,7 +215,10 @@ else
 end
 
 minetest.register_node("more_liquids:enderium_source", {
-    description = "Enderium source",
+    description = "Enderium Source" ..
+            "\nTeleports player up to " .. tostring(SEARCH_RADIUS) .. " blocks in any direction." ..
+            "\nAfter teleporting, player won't be teleported for " ..
+            tostring(TELEPORT_COOLDOWN) .. ".",
     drawtype = "liquid",
     waving = 3,
     tiles = {
