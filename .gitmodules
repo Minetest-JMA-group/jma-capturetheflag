@@ -5,11 +5,11 @@
 	path = mods/other/lib_chatcmdbuilder
 	url = https://github.com/rubenwardy/ChatCmdBuilder.git
 [submodule "mods/extras"]
- 	path = mods/extras
- 	url = git@github.com:Minetest-JMA-group/jma-extras.git
+	path = mods/extras
+	url = git@github.com:Minetest-JMA-group/jma-extras.git
 [submodule "mods/shared"]
 	path = mods/shared
 	url = https://github.com/Minetest-JMA-group/jma-shared.git
 [submodule "mods/shared_private"]
- 	path = mods/shared_private
- 	url = git@github.com:Minetest-JMA-group/jma-shared-private.git
+	path = mods/shared_private
+	url = git@github.com:Minetest-JMA-group/jma-shared-private.git

@@ -49,7 +49,6 @@ ctf_modebase.register_mode("nade_fight", {
 		["default:water_source"] = {rarity = 0.2, max_stacks = 1},
 		["easter_egg:egg"] = {rarity = 0.03, max_stacks = 1},
 		["ctf_landmine:landmine"] = {min_count = 1, max_count =  2, max_stacks = 1, rarity = 0.1},
-		["more_liquids:enderium_source"] = {rarity = 0.2, max_stacks = 1},
 	},
 	crafts = {
 		"ctf_map:damage_cobble",
