@@ -2,7 +2,7 @@ local cooldowns = {}
 
 local MAX_RANDOM_ATTEMPTS = 16
 local SEARCH_RADIUS = 8
-local TELEPORT_COOLDOWN = 20
+local TELEPORT_COOLDOWN = 1
 local PADDING = 5 -- Some maps have ground outside the barrier
 
 local play_sound = false
@@ -249,12 +249,13 @@ minetest.register_node("more_liquids:enderium_source", {
     buildable_to = true,
     is_ground_content = false,
     drop = "",
+    damage_per_second = 1,
 	drowning = 1,
 	liquidtype = "source",
     liquid_alternative_flowing = "more_liquids:enderium_flowing",
 	liquid_alternative_source = "more_liquids:enderium_source",
 	liquid_viscosity = 1,
-    liquid_range = 1,
+    liquid_range = 4,
     liquid_renewable = false,
     groups = {liquid = 2},
     post_effect_color = {a = 180, r = 11, g = 77, b = 66},
@@ -297,12 +298,13 @@ minetest.register_node("more_liquids:enderium_flowing", {
 	buildable_to = true,
 	is_ground_content = false,
 	drop = "",
+    damage_per_second = 1,
 	drowning = 1,
 	liquidtype = "flowing",
     liquid_alternative_flowing = "more_liquids:enderium_flowing",
 	liquid_alternative_source = "more_liquids:enderium_source",
 	liquid_viscosity = 1,
-    liquid_range = 1,
+    liquid_range = 4,
     liquid_renewable = false,
 
     groups = {liquid = 2},
