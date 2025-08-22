@@ -27,7 +27,7 @@ ctf_modebase.flag_attempt_streaks = {
 	[150] = "ALGORITHM ANOMALY",
 	[200] = "QUANTUM HACKER",
 	[201] = "GALACTIC NUB",
-	[210] = "DONE THIS GAME! OFFICIALLY A HACKER!"
+	[210] = "DONE THIS GAME! OFFICIALLY A HACKER!",
 }
 
 local MAX_STREAK = 210
@@ -35,39 +35,41 @@ local MAX_STREAK = 210
 local function get_streak_color(attempts)
 	-- Light green to Dark green (1-15)
 	if attempts <= 5 then
-		return "#00FF00"      -- Light green
+		return "#00FF00" -- Light green
 	elseif attempts <= 10 then
-		return "#00DD00"      -- Medium green
+		return "#00DD00" -- Medium green
 	elseif attempts <= 15 then
-		return "#009900"      -- Dark green
+		return "#009900" -- Dark green
 	-- Yellow to Orange (16-50)
 	elseif attempts <= 25 then
-		return "#FFFF00"      -- Yellow
+		return "#FFFF00" -- Yellow
 	elseif attempts <= 35 then
-		return "#FFAA00"      -- Light orange
+		return "#FFAA00" -- Light orange
 	elseif attempts <= 50 then
-		return "#FF7700"      -- Dark orange
+		return "#FF7700" -- Dark orange
 	-- Bright orange to Red (51-100)
 	elseif attempts <= 70 then
-		return "#FF5500"      -- Bright orange
+		return "#FF5500" -- Bright orange
 	elseif attempts <= 85 then
-		return "#FF2200"      -- Orange-red
+		return "#FF2200" -- Orange-red
 	elseif attempts <= 100 then
-		return "#FF0000"      -- Pure red
+		return "#FF0000" -- Pure red
 	-- Light red to Purple (101-210)
 	elseif attempts <= 150 then
-		return "#FF0066"      -- Light red
+		return "#FF0066" -- Light red
 	elseif attempts <= 200 then
-		return "#FF0099"      -- Pink-red
+		return "#FF0099" -- Pink-red
 	else
-		return "#FF00FF"      -- Purple
+		return "#FF00FF" -- Purple
 	end
 end
 
 local function drop_flags(player, pteam)
 	local pname = player:get_player_name()
 	local flagteams = ctf_modebase.taken_flags[pname]
-	if not flagteams then return end
+	if not flagteams then
+		return
+	end
 
 	for _, flagteam in ipairs(flagteams) do
 		ctf_modebase.flag_taken[flagteam] = nil
@@ -81,8 +83,13 @@ local function drop_flags(player, pteam)
 			node.name = "ctf_modebase:flag_top_" .. flagteam
 			minetest.set_node(fpos, node)
 		else
-			minetest.log("error", string.format("[ctf_flags] Unable to return flag node=%s, pos=%s",
-				node.name, vector.to_string(fpos))
+			minetest.log(
+				"error",
+				string.format(
+					"[ctf_flags] Unable to return flag node=%s, pos=%s",
+					node.name,
+					vector.to_string(fpos)
+				)
 			)
 		end
 	end
@@ -92,7 +99,9 @@ local function drop_flags(player, pteam)
 	ctf_modebase.taken_flags[pname] = nil
 
 	ctf_modebase.skip_vote.on_flag_drop(#flagteams)
-	ctf_modebase:get_current_mode().on_flag_drop(player, flagteams, pteam)
+	ctf_modebase
+		:get_current_mode()
+		.on_flag_drop(player, flagteams, pteam, player:get_pos())
 end
 
 function ctf_modebase.drop_flags(player)
@@ -138,13 +147,15 @@ function ctf_modebase.flag_on_punch(puncher, nodepos, node)
 			return
 		end
 
-		if not ctf_modebase.match_started then return end
+		if not ctf_modebase.match_started then
+			return
+		end
 
 		if not ctf_modebase.taken_flags[pname] then
 			ctf_modebase.taken_flags[pname] = {}
 		end
 		table.insert(ctf_modebase.taken_flags[pname], target_team)
-		ctf_modebase.flag_taken[target_team] = {p=pname, t=pteam}
+		ctf_modebase.flag_taken[target_team] = { p = pname, t = pteam }
 
 		if ctf_modebase.flag_attempt_history[pname] == nil then
 			ctf_modebase.flag_attempt_history[pname] = {}
@@ -164,7 +175,7 @@ function ctf_modebase.flag_on_punch(puncher, nodepos, node)
 				prev_time = time
 			end
 
-			if total_time >= 60*10 then
+			if total_time >= 60 * 10 then
 				if not new then
 					new = table.copy(ctf_modebase.flag_attempt_history[pname])
 				end
@@ -188,14 +199,22 @@ function ctf_modebase.flag_on_punch(puncher, nodepos, node)
 			ctf_modebase.player_on_flag_attempt_streak[pname] = number_of_attempts
 
 			local color = get_streak_color(number_of_attempts)
-			minetest.chat_send_all(string.format("%s is on a %s attempt streak with %d attempts!",
-				minetest.colorize(ctf_teams.team[pteam].color, pname),
-				minetest.colorize(color, streak),
-				number_of_attempts))
+			minetest.chat_send_all(
+				string.format(
+					"%s is on a %s attempt streak with %d attempts!",
+					minetest.colorize(ctf_teams.team[pteam].color, pname),
+					minetest.colorize(color, streak),
+					number_of_attempts
+				)
+			)
 		end
 
-		player_api.set_texture(puncher, 2,
-			"default_wood.png^([combine:16x16:4,0=wool_white.png^[colorize:"..ctf_teams.team[target_team].color..":200)"
+		player_api.set_texture(
+			puncher,
+			2,
+			"default_wood.png^([combine:16x16:4,0=wool_white.png^[colorize:"
+				.. ctf_teams.team[target_team].color
+				.. ":200)"
 		)
 
 		ctf_modebase.skip_vote.on_flag_take()
@@ -203,7 +222,10 @@ function ctf_modebase.flag_on_punch(puncher, nodepos, node)
 
 		RunCallbacks(ctf_api.registered_on_flag_take, puncher, target_team)
 
-		minetest.set_node(nodepos, {name = "ctf_modebase:flag_captured_top", param2 = node.param2})
+		minetest.set_node(
+			nodepos,
+			{ name = "ctf_modebase:flag_captured_top", param2 = node.param2 }
+		)
 	else
 		local flagteams = ctf_modebase.taken_flags[pname]
 		if not ctf_modebase.taken_flags[pname] then
