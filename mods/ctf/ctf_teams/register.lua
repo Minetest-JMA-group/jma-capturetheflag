@@ -1,5 +1,7 @@
+--- @alias TeamsOnAllocCallback fun(player: string, team: TeamColour)
+--- @type TeamsOnAllocCallback[]
 ctf_teams.registered_on_allocplayer = {}
---- Params: player, team
+--- @param func TeamsOnAllocCallback
 function ctf_teams.register_on_allocplayer(func)
 	table.insert(ctf_teams.registered_on_allocplayer, func)
 end

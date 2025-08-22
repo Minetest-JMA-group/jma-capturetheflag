@@ -1,4 +1,13 @@
+--- @alias Team "red" | "green" | "blue" | "orange" | "yellow" | "purple"
+--- @alias HexColorStr string
+--- @alias HexColor number
+--- @alias PlayerName string
+--- @alias TeamDef { color: HexColorStr, color_hex: HexColor?, irc_color: number }
+--- @alias TeamsMap { [Team]: TeamDef }
+--- @alias PlayerTeamMap { [PlayerName]: Team }
+--- @alias TeamPlayerStatus { count: integer, players: { [PlayerName]: boolean? }}
 ctf_teams = {
+	--- @type TeamsMap
 	team = {
 		red = {
 			color = "#dc0f0f",
@@ -31,22 +40,28 @@ ctf_teams = {
 			irc_color = 6,
 		},
 	},
+	--- @type TeamDef[]
 	teamlist = {},
-
+	--- @type PlayerTeamMap
 	player_team = {},
+	--- @type { [Team]: TeamPlayerStatus }
 	online_players = {},
+	--- @type Team[]
 	current_team_list = {},
-	non_team_players = {}
+	--- @type PlayerName[]
+	non_team_players = {},
 }
+
+local S = core.get_translator(core.get_current_modname())
 
 for team, def in pairs(ctf_teams.team) do
 	table.insert(ctf_teams.teamlist, team)
 
-	ctf_teams.team[team].color_hex = tonumber("0x"..def.color:sub(2))
+	ctf_teams.team[team].color_hex = tonumber("0x" .. def.color:sub(2))
 end
 
-minetest.register_privilege("ctf_team_admin", {
-	description = "Allows advanced team management.",
+core.register_privilege("ctf_team_admin", {
+	description = S("Allows advanced team management"),
 	give_to_singleplayer = false,
 	give_to_admin = false,
 })
@@ -59,20 +74,20 @@ ctf_core.include_files(
 	"team_door.lua"
 )
 
-minetest.register_on_mods_loaded(function()
-	local old_join_func = minetest.send_join_message
-	local old_leave_func = minetest.send_leave_message
+core.register_on_mods_loaded(function()
+	local old_join_func = core.send_join_message
+	local old_leave_func = core.send_leave_message
 
 	local function empty_func() end
 
-	minetest.send_join_message = empty_func
-	minetest.send_leave_message = empty_func
+	core.send_join_message = empty_func
+	core.send_leave_message = empty_func
 
-	minetest.register_on_joinplayer(function(player, last_login)
+	core.register_on_joinplayer(function(player, last_login)
 		local name = player:get_player_name()
 
-		minetest.after(0.5, function()
-			player = minetest.get_player_by_name(name)
+		core.after(0.5, function()
+			player = core.get_player_by_name(name)
 
 			if not player then
 				old_join_func(name, last_login)
@@ -88,14 +103,14 @@ minetest.register_on_mods_loaded(function()
 			else
 				local tcolor = ctf_teams.team[pteam].color
 
-				minetest.chat_send_all(string.format("*** %s joined the game.",
-					minetest.colorize(tcolor, name))
+				core.chat_send_all(
+					S("*** @1 joined the game.", core.colorize(tcolor, name))
 				)
 			end
 		end)
 	end)
 
-	minetest.register_on_leaveplayer(function(player, timed_out, ...)
+	core.register_on_leaveplayer(function(player, timed_out, ...)
 		local pteam = ctf_teams.get(player)
 
 		if not pteam then
@@ -104,11 +119,20 @@ minetest.register_on_mods_loaded(function()
 			ctf_teams.remove_online_player(player)
 
 			local tcolor = ctf_teams.team[pteam].color
-
-			minetest.chat_send_all(string.format("*** %s left the game%s.",
-				minetest.colorize(tcolor, player:get_player_name()),
-				timed_out and " (timed out)" or ""
-			))
+			--- @type string
+			local msg
+			if timed_out then
+				msg = S(
+					"*** @1 left the game.",
+					core.colorize(tcolor, player:get_player_name())
+				)
+			else
+				msg = S(
+					"*** @1 left the game(timed out).",
+					core.colorize(tcolor, player:get_player_name())
+				)
+			end
+			core.chat_send_all(msg)
 		end
 	end)
 end)
