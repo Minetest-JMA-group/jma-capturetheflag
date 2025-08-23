@@ -320,10 +320,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local team_list
 	local teams_left
 
-	--- @param death_point Vec3
-	--- @param enemy_flag Vec3
 	--- @return number
-	local function calc_attempt_score_part1(death_point, enemy_flag)
+	local function calc_map_multiplier()
 		--- @type number | nil
 		local map_volume = ctf_map.current_map.map_volume
 		if map_volume == nil then
@@ -332,8 +330,14 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			map_volume = size.x * size.y * size.z
 		end
 		local volume_root = map_volume ^ (1 / 3)
-		local map_multiplier = volume_root / math.sqrt(volume_root)
+		return volume_root / math.sqrt(volume_root)
+	end
+	--- @param death_point Vec3
+	--- @param enemy_flag Vec3
+	--- @return number
+	local function calc_attempt_score_part1(death_point, enemy_flag)
 		local distance = vector.dist(death_point, enemy_flag)
+		local map_multiplier = calc_map_multiplier()
 		return map_multiplier * math.sqrt(math.max(0, distance - SPAWN_SIZE))
 	end
 
@@ -341,8 +345,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	--- @param enemy_team string
 	--- @param teamscores { [string]: table }
 	--- @return number
-	local function calc_attempt_score_part2(pname, enemy_team, teamscores)
-		local pteam = ctf_teams.get(pname)
+	local function calc_attempt_score_part2(enemy_team, teamscores)
 		local enemy_score = teamscores[enemy_team].score
 
 		return enemy_score / 8
@@ -362,7 +365,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			--- @type number
 			local reward_p1 = calc_attempt_score_part1(death_point, enemy_flag)
 			--- @type number
-			local reward_p2 = calc_attempt_score_part2(pname, tname, teamscores)
+			local reward_p2 = calc_attempt_score_part2(tname, teamscores)
 			reward = reward + math.sqrt(reward_p1 * reward_p2)
 		end
 		return reward
@@ -386,7 +389,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			score = math.max(10, math.min(900, score))
 			capture_reward = capture_reward + score
 		end
+		local map_multiplier = calc_map_multiplier()
 		local multiplier = calc_capture_multiplier(#lost_teams)
+		capture_reward = capture_reward * multiplier
+		local alt_cap_reward = capture_reward * map_multiplier
 		return capture_reward * multiplier
 	end
 
