@@ -377,6 +377,7 @@ ctf_core.register_chatcommand_alias("bounty", "bo", { -- /b is already registere
 	func = function(name, params)
 		--- @type string?, number?
 		local bname, amount = string.match(params, "([^%s]*) ([^%s]*)")
+		amount = tonumber(amount)
 		if not (amount and bname) then
 			return false, S("Missing argument(s)")
 		end
