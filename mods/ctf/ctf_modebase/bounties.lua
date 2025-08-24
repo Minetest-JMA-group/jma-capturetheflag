@@ -159,7 +159,7 @@ function ctf_modebase.bounties.claim(player, killer)
 	game_bounties[pteam] = nil
 
 	if contributed_bounties[player] then
-		local score = contributed_bounties[player].total
+		local score = calc_total_contributed_bounty(player)
 		if rewards == nil then
 			rewards = { bounty_kills = 0, score = 0 }
 		end
@@ -320,7 +320,7 @@ ctf_core.register_chatcommand_alias("list_bounties", "lb", {
 					"label[%d,0.1;%s: %s score]",
 					x,
 					pname,
-					core.colorize("cyan", bounty.total)
+					core.colorize("cyan", calc_total_contributed_bounty(pname))
 				)
 				table.insert(output, label)
 				--- @type string
