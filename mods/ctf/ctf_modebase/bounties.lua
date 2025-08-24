@@ -23,7 +23,10 @@ local function calc_total_contributed_bounty(pname)
 	--- @type number
 	local total = 0
 	for _, amount in pairs(contributed_bounties[pname].contributors) do
-		total = total + amount
+		-- Make sure that amount is positive
+		if amount > 0 then
+		    total = total + amount
+		end
 	end
 	return total
 end
@@ -31,6 +34,9 @@ end
 local function update_bounty_total(pname)
 	if contributed_bounties[pname] then
 		contributed_bounties[pname].total = calc_total_contributed_bounty(pname)
+		if contributed_bounties[pname].total <= 0 then
+			contributed_bounties[pname] = nil
+		end
 	end
 end
 
