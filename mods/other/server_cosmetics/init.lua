@@ -81,6 +81,7 @@ server_cosmetics = {
 
 				},
 				["normal"] = {"server_cosmetics_map_creator_helmet.png"},
+				["10maps"] = {"server_cosmetics_map_creator_helmet_10.png"},
 			},
 
 			hallows_hat = {
