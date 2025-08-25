@@ -1,5 +1,5 @@
 --- @alias Reward { bounty_kills: integer, score: number }
---- @alias ContributedBounty { contributors: { [string]: number }, total: number }
+--- @alias ContributedBounty { contributors: { [string]: number } }
 --- @alias GameBounty { name: string, rewards: Reward, msg: string }
 --- @type "orange"
 local CHAT_COLOR = "orange"
@@ -9,6 +9,10 @@ local timer = nil
 local game_bounties = {} -- bounties assigned by the game
 --- @type { [string]: ContributedBounty }-- bounties contributed by the players
 local contributed_bounties = {}
+--- @type number
+local PLAYER_BOUNTY_CAP = 100
+--- @type number
+local PLAYER_BOUNTY_MIN = 1
 
 local S = core.get_translator(core.get_current_modname())
 
@@ -25,19 +29,10 @@ local function calc_total_contributed_bounty(pname)
 	for _, amount in pairs(contributed_bounties[pname].contributors) do
 		-- Make sure that amount is positive
 		if amount > 0 then
-		    total = total + amount
+			total = total + amount
 		end
 	end
 	return total
-end
-
-local function update_bounty_total(pname)
-	if contributed_bounties[pname] then
-		contributed_bounties[pname].total = calc_total_contributed_bounty(pname)
-		if contributed_bounties[pname].total <= 0 then
-			contributed_bounties[pname] = nil
-		end
-	end
 end
 
 -- Whenever players change team, e.g. in many team maps or on rejoin
@@ -48,31 +43,62 @@ ctf_teams.register_on_allocplayer(function()
 		for contributor, amount in pairs(bounties2.contributors) do
 			if ctf_teams.get(target_name) == ctf_teams.get(contributor) then
 				cur_mode.recent_rankings.add(contributor, { score = amount }, true)
-				game_bounties[contributor] = nil
+				bounties2.contributors[contributor] = nil
 			end
 		end
 	end
 end)
 
+--- Clean ups
+--- @return nil
+local function cleanup_contributed_bounty()
+	for bname, contributors in pairs(contributed_bounties) do
+		local has_contributor = false
+		for contributor, score in pairs(contributors) do
+			has_contributor = true
+			if score <= 0 then
+				contributors[contributor] = nil
+				has_contributor = false
+			end
+		end
+		if not has_contributor then
+			contributed_bounties[bname] = nil
+		end
+	end
+end
+
 --- Get a list of contributors for some player if any
 --- @param name string Player name
 --- @return string | nil A human readable comma separated list of bounties
-local function get_contributors(name)
+local function get_contributors_str(name)
 	local bounty = contributed_bounties[name]
 	if not bounty then
-		return ""
-	else
-		local list = ""
-		local first = true
-		for contributor, score in pairs(bounty.contributors) do
-			if first then
-				list = list .. contributor
-				first = false
-			else
-				list = "," .. list .. contributor
-			end
+		return nil
+	end
+	--- @type string[]
+	local contributors = {}
+	for contributor, _ in pairs(contributed_bounties[name]) do
+		table.insert(contributors, contributor)
+	end
+	if #contributors == 1 then
+		return contributors[1]
+	end
+	if #contributors == 2 then
+		return S("@1 and @2", contributors[1], contributors[2])
+	end
+	--- @type string
+	local return_string = ""
+	for i = 1, #contributors do
+		local current = contributors[i]
+		if i == #contributors then
+			return_string = return_string .. S(" and @1", current)
+		else
+			return_string = return_string .. S(", @1", current)
+			-- ^ We need to wrap it in S() cuz in
+			-- some languages, they use different comma
+			-- characters. One example is Persian.
+			-- -- Farooq <fkz on riseup dot net>
 		end
-		return list
 	end
 end
 
@@ -138,6 +164,7 @@ function ctf_modebase.bounties.claim(player, killer)
 		return
 	end
 
+	--- @type Reward | nil
 	local rewards = nil
 	if got_game_bounty then
 		rewards = game_bounties[pteam].rewards
@@ -149,7 +176,12 @@ function ctf_modebase.bounties.claim(player, killer)
 			S("[Bounty] @1 eliminated @2 and earned @3", killer, player, reward_str),
 			S("[Bounty] @1 took down @2 and claimed @3", killer, player, reward_str),
 			S("[Bounty] @1 got rid of @2 and secured @3", killer, player, reward_str),
-			S("[Bounty] @1 turned @2 into loot and pocketed @3 (nice!)", killer, player, reward_str), -- Humorous one
+			S(
+				"[Bounty] @1 turned @2 into loot and pocketed @3 (nice!)",
+				killer,
+				player,
+				reward_str
+			), -- Humorous one
 		}
 		--- @type string
 		local bounty_kill_text = messages[math.random(1, #messages)]
@@ -163,18 +195,18 @@ function ctf_modebase.bounties.claim(player, killer)
 		if rewards == nil then
 			rewards = { bounty_kills = 0, score = 0 }
 		end
+		local contributors = contributed_bounties[player].contributors
 		rewards.score = rewards.score + score
-		rewards.bounty_kills = #contributed_bounties[player].contributors
-			+ rewards.bounty_kills
-		local bounty_kill_text = S(
-			"[Player bounty] @1 killed @2 and got @3 from @4!",
+		rewards.bounty_kills = #contributors + rewards.bounty_kills
+		local player_bounty_text = S(
+			"[Player bounty] @1 killed @2 and got @3 from @4.",
 			killer,
 			player,
 			score,
-			get_contributors(player)
+			get_contributors_str(player)
 		)
-		core.chat_send_all(core.colorize(CHAT_COLOR, bounty_kill_text))
-		ctf_modebase.announce(bounty_kill_text)
+		core.chat_send_all(core.colorize(CHAT_COLOR, player_bounty_text))
+		ctf_modebase.announce(player_bounty_text)
 		contributed_bounties[player] = nil
 	end
 
@@ -359,108 +391,100 @@ ctf_core.register_chatcommand_alias("put_bounty", "pb", {
 		--- @type number
 		local amount = ctf_core.to_number(amount_s)
 		set(player, pteam, { bounty_kills = 1, score = amount })
-		return true,
-			S("Successfully placed a bounty of @1 on @2!", amount, player)
+		return true, S("Successfully placed a bounty of @1 on @2!", amount, player)
 	end,
 })
 
-ctf_core.register_chatcommand_alias("bounty", "bo", { -- /b is already registered in babelfish mod
-	description = S(
-		"Place a bounty on someone using your match score.\n"
-			.. "The score is returned to you if the match ends and nobody kills.\n"
-			.. "Use negative score to revoke a bounty"
-	),
-	params = "<player> <score>",
-	--- @param name string The player calling this
-	--- @param params string Passed parameters
-	--- @return boolean, string
-	func = function(name, params)
-		--- @type string?, number?
-		local bname, amount = string.match(params, "([^%s]*) ([^%s]*)")
-		amount = tonumber(amount)
-		if not (amount and bname) then
-			return false, S("Missing argument(s)")
-		end
-		amount = math.floor(amount)
-		local bteam = ctf_teams.get(bname)
-		if not bteam then
-			return false, S("This player isn't online or isn't in a team")
-		end
-		if bteam == ctf_teams.get(name) then
-			return false, S("You cannot place a bounty on your teammate!")
-		end
-		local current_mode = ctf_modebase:get_current_mode()
+ctf_core.register_chatcommand_alias(
+	"bounty",
+	"bo",
+	{ -- /b is already registered in babelfish mod in JMA
+		description = S(
+			"Place a bounty on someone using your match score.\n"
+				.. "The score is returned to you if the match ends and nobody kills.\n"
+				.. "Use negative score to revoke a bounty"
+		),
+		params = "<player> <score>",
+		--- @param name string The player calling this
+		--- @param params string Passed parameters
+		--- @return boolean, string
+		func = function(name, params)
+			--- @type string?, number?
+			local bname, amount = string.match(params, "([^%s]*) ([^%s]*)")
+			amount = tonumber(amount)
+			if not (amount and bname) then
+				return false, S("Missing argument(s)")
+			end
+			amount = math.floor(amount)
+			local bteam = ctf_teams.get(bname)
+			if not bteam then
+				return false, S("This player isn't online or isn't in a team")
+			end
+			if bteam == ctf_teams.get(name) then
+				return false, S("You cannot place a bounty on your teammate!")
+			end
+			local current_mode = ctf_modebase:get_current_mode()
 
-		if not current_mode or not ctf_modebase.match_started then
-			return false, S("Match has not started yet.")
-		end
-
-		if amount <= 0 then
-			if not contributed_bounties[bname] or not contributed_bounties[bname].contributors[name] then
-				return false, S("You don't have any bounty on this player to revoke")
+			if not current_mode or not ctf_modebase.match_started then
+				return false, S("Match has not started yet.")
 			end
 
-			local my_contribution = contributed_bounties[bname].contributors[name]
-			local revoke_amount = math.min(math.abs(amount), my_contribution)
-
-			contributed_bounties[bname].contributors[name] = my_contribution - revoke_amount
-
-			if contributed_bounties[bname].contributors[name] <= 0 then
-				contributed_bounties[bname].contributors[name] = nil
-
-				local has_contributors = false
-				for _ in pairs(contributed_bounties[bname].contributors) do
-					has_contributors = true
-					break
+			if amount <= 0 then
+				if
+					not contributed_bounties[bname]
+					or not contributed_bounties[bname].contributors[name]
+				then
+					return false, S("You don't have any bounty on this player to revoke")
 				end
 
-				if not has_contributors then
-					contributed_bounties[bname] = nil
+				local my_contribution = contributed_bounties[bname].contributors[name]
+				local revoke_amount = math.min(math.abs(amount), my_contribution)
+
+				contributed_bounties[bname].contributors[name] = my_contribution
+					- revoke_amount
+				cleanup_contributed_bounty()
+				current_mode.recent_rankings.add(name, { score = revoke_amount }, true)
+				return true, S("@1 points returned to you.", revoke_amount)
+			end
+
+			if amount < PLAYER_BOUNTY_MIN then
+				return false, S("Your bounty needs to be of at least 5 points")
+			end
+			if amount > PLAYER_BOUNTY_CAP then
+				return false, S("Your bounty cannot be of more than 100 points")
+			end
+			local cur_score = current_mode.recent_rankings.get(name).score or 0
+			if amount > cur_score then
+				return false, S("You haven't got enough points")
+			end
+			current_mode.recent_rankings.add(name, { score = -amount }, true)
+			if not contributed_bounties[bname] then
+				local contributors = {}
+				contributors[name] = amount
+				contributed_bounties[bname] = { contributors = contributors }
+			else
+				--- @type ContributedBounty
+				local c_bounty = contributed_bounties[bname]
+				if not c_bounty.contributors[name] then
+					c_bounty.contributors[name] = amount
 				else
-					update_bounty_total(bname)
+					c_bounty.contributors[name] = c_bounty.contributors[name] + amount
 				end
-			else
-				update_bounty_total(bname)
 			end
-
-			current_mode.recent_rankings.add(name, { score = revoke_amount }, true)
-			return true, S("@1 points returned to you.", revoke_amount)
-		end
-
-		if amount < 5 then
-			return false, S("Your bounty needs to be of at least 5 points")
-		end
-		if amount > 100 then
-			return false, S("Your bounty cannot be of more than 100 points")
-		end
-		local cur_score = current_mode.recent_rankings.get(name).score or 0
-		if amount > cur_score then
-			return false, S("You haven't got enough points")
-		end
-		current_mode.recent_rankings.add(name, { score = -amount }, true)
-		if not contributed_bounties[bname] then
-			local contributors = {}
-			contributors[name] = amount
-			contributed_bounties[bname] = { contributors = contributors, total = amount }
-		else
-			--- @type ContributedBounty
-			local c_bounty = contributed_bounties[bname]
-			if not c_bounty.contributors[name] then
-				c_bounty.contributors[name] = amount
-			else
-				c_bounty.contributors[name] = c_bounty.contributors[name] + amount
-			end
-			update_bounty_total(bname)
-		end
-		local total = calc_total_contributed_bounty(bname)
-		core.chat_send_all(
-			core.colorize(
-				CHAT_COLOR,
-				S("@1 placed @2 bounty on @3!", get_contributors(bname), total, bname)
+			local total = calc_total_contributed_bounty(bname)
+			local msg = S(
+				"@1 placed @2 bounty on @3! Now there is a total of @4 for @5",
+				name,
+				amount,
+				bname,
+				total,
+				bname
 			)
-		)
-	end,
-})
+			core.chat_send_all(core.colorize(CHAT_COLOR, msg))
+			return true, S("Bounty placed!")
+		end,
+	}
+)
 
 ctf_api.register_on_match_end(function()
 	-- there might be some unclaimed player bounties, here we return
