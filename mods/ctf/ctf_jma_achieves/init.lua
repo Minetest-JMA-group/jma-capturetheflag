@@ -128,11 +128,8 @@ sfinv.register_page("ctf_jma_achieves:list", {
 			local adef = ctf_jma_achieves.registered_achievements[aname]
 			local j = i - 1
 			
-			local bgcolor = "#aaaaaa44"
-			-- Make the individual achievements more visible by alternating colors
-			if j % 2 == 1 then
-				bgcolor = "#77777744"
-			end
+			local bgcolors = {bronze = {"#bf795855", "#a05b5355", }, silver = {"#cfc6b855", "#a0938e55"}, gold = {"#f4b41b33", "#d2920933"}}
+			local bgcolor = bgcolors[adef.type][j % 2 + 1]
 			
 			-- A number for to simplify the code
 			local has_icon = adef.icon and 1.25 or 0.125
@@ -146,7 +143,7 @@ sfinv.register_page("ctf_jma_achieves:list", {
 				table.insert(achievementform, string.format("image[0.125,%s;1,1;%s]", j*1.25 + 0.125, adef.icon))
 			end
 			if not has_ach then
-				table.insert(achievementform, string.format("box[0,%s;9.345,1.25;#00000055]", j*1.25))
+				table.insert(achievementform, string.format("box[0,%s;9.345,1.25;#00000066]", j*1.25))
 			end
 		end
 		
