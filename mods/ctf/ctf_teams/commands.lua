@@ -84,7 +84,7 @@ minetest.register_chatcommand("team", {
 			return true, str:sub(1, -2)
 		else
 			if table.indexof(ctf_teams.current_team_list, param) == -1 then
-				return false, S("No such team: @2", param)
+				return false, S("No such team: @1", param)
 			end
 
 			return true, "> " .. get_team_players(param)
