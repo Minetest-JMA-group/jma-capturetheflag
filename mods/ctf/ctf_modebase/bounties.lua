@@ -52,16 +52,15 @@ end)
 --- Clean ups
 --- @return nil
 local function cleanup_contributed_bounty()
-	for bname, contributors in pairs(contributed_bounties) do
-		local has_contributor = false
-		for contributor, score in pairs(contributors) do
-			has_contributor = true
+	for bname, bounty_data in pairs(contributed_bounties) do
+		for contributor, score in pairs(bounty_data.contributors) do
 			if score <= 0 then
-				contributors[contributor] = nil
-				has_contributor = false
+				bounty_data.contributors[contributor] = nil
 			end
 		end
-		if not has_contributor then
+
+		-- are there any contributors left?
+		if next(bounty_data.contributors) == nil then
 			contributed_bounties[bname] = nil
 		end
 	end
