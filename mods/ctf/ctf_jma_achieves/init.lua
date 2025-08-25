@@ -69,10 +69,10 @@ function ctf_jma_achieves.register_achievement(id, def)
 	table.insert(ctf_jma_achieves.registered_achievement_list, id)
 end
 
-function ctf_jma_achieves.register_on_grant_achievement(function(f)
+function ctf_jma_achieves.register_on_grant_achievement(f)
 	assert(f, "Please provide a function!")
 	table.insert(ctf_jma_achieves.registered_on_grant_achievements, f)
-end)
+end
 
 function ctf_jma_achieves.grant_achievement(name, id)
 	if type(id) == "string" then
@@ -83,7 +83,7 @@ function ctf_jma_achieves.grant_achievement(name, id)
 			return
 		end
 		
-		core.chat_send_player(name, core.colorize("orange", S("[!] You unlocked an achievement@2 @1"), {"!", "!!", "!!!"}[def.type]}, def.name))
+		core.chat_send_player(name, core.colorize("orange", S("[!] You unlocked an achievement@2 @1", ({"!", "!!", "!!!"})[def.type], def.name)))
 		player_achievements_cache[name][id] = true
 		local na = player_str_cache[name]..id..","
 		player_str_cache[name] = na
