@@ -473,11 +473,12 @@ ctf_core.register_chatcommand_alias(
 			end
 			local total = calc_total_contributed_bounty(bname)
 			local msg = S(
-				"@1 placed @2 bounty on @3! Now there is a total of @4 for @3",
+				"@1 placed @2 bounty on @3! Now there is a total of @4 for @5",
 				name,
 				amount,
 				bname,
-				total
+				total,
+				bname
 			)
 			core.chat_send_all(core.colorize(CHAT_COLOR, msg))
 			return true, S("Bounty placed!")
