@@ -31,7 +31,7 @@ ctf_jma_achieves.register_achievement("cja:cap2", {
 	icon = "ctf_jma_achieves_captures_2.png",
 	type = "silver"
 })
-ctf_jma_achieves.register_achievement("cja:spdr", {
+ctf_jma_achieves.register_achievement("cja:spdrn", {
 	name = S("Speedrun"),
 	description = S("Capture the last flag and end the match in less than 3 minutes"),
 	icon = "ctf_jma_achieves_speedrun.png",
@@ -97,10 +97,11 @@ end
 local function check_caps(name)
 	if unlocked(name, "cja:cap4") then return end
 	
-	local caps = collect(name).total.flag_captures
-	if caps >= 1 and not unlocked(name, "cja:cap1") then grant(name, "cja:cap1") end
-	if caps >= 10 and not unlocked(name, "cja:cap2") then grant(name, "cja:cap2") end
-	if caps >= 100 and not unlocked(name, "cja:cap3") then grant(name, "cja:cap3") end
+	local caps = collect(name).total.flag_captures or 0
+	
+	if caps >= 1 then grant(name, "cja:cap1") end
+	if caps >= 10 then grant(name, "cja:cap2") end
+	if caps >= 100 then grant(name, "cja:cap3") end
 	if caps >= 500 then grant(name, "cja:cap4") end
 end
 
@@ -120,6 +121,31 @@ ctf_api.register_on_flag_capture(function(plr, flags)
 			check_caps(name)
 			if #flags > 1 then
 				grant(plr:get_player_name(), "cja:mcapt")
+			end
+		end
+		
+		-- HACK: Check the map teams and the captured flags to see which one isn't captured
+		local uncaptured_teams = {}
+		for _, team in ipairs(ctf_teams.current_team_list) do
+			if not ctf_modebase.flag_captured[team] then
+				table.insert(uncaptured_teams, team)
+			end
+		end
+		
+		core.debug(dump(uncaptured_teams))
+		core.debug(dump(ctf_teams.current_team_list))
+		core.debug(dump(ctf_modebase.flag_captured))
+		
+		if #uncaptured_teams == 1 then -- If this is not the case then it's likely the match was cut short abnormally
+			local winning_team = uncaptured_teams[1]
+			for name, _ in pairs(ctf_teams.online_players[winning_team].players) do
+				grant(name, "cja:vct")
+			end
+			
+			-- Check for speedrun as well because we're here
+			-- The player to capture the last flag is always on the winning team, so no need to check that
+			if os.time() - ctf_map.start_time < 3*60 then
+				grant(name, "cja:spdrn")
 			end
 		end
 	end)

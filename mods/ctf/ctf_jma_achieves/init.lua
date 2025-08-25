@@ -79,11 +79,11 @@ function ctf_jma_achieves.grant_achievement(name, id)
 		local def = assert(ctf_jma_achieves.registered_achievements[id], "Tried to grant an unknown achievement!")
 		
 		if ctf_jma_achieves.get_achievement_unlocked(name, id) then
-			core.log("warning", "[ctf_jma_achieves] Tried to re-grant achievement "..id.." to player "..name)
+			core.log("info", "[ctf_jma_achieves] Tried to grant achievement "..id.." to player "..name..", but they already had it")
 			return
 		end
 		
-		core.chat_send_player(name, core.colorize("orange", S("[!] You unlocked an achievement@2 @1", ({"!", "!!", "!!!"})[def.type], def.name)))
+		core.chat_send_player(name, core.colorize("orange", S("[!] You unlocked an achievement@1 @2", ({bronze = "!", silver = "!!", gold = "!!!"})[def.type], def.name)))
 		player_achievements_cache[name][id] = true
 		local na = player_str_cache[name]..id..","
 		player_str_cache[name] = na
