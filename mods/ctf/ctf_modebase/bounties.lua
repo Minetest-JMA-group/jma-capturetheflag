@@ -49,6 +49,24 @@ ctf_teams.register_on_allocplayer(function()
 	end
 end)
 
+--- Clean ups
+--- @return nil
+local function cleanup_contributed_bounty()
+	for bname, contributors in pairs(contributed_bounties) do
+		local has_contributor = false
+		for contributor, score in pairs(contributors) do
+			has_contributor = true
+			if score <= 0 then
+				contributors[contributor] = nil
+				has_contributor = false
+			end
+		end
+		if not has_contributor then
+			contributed_bounties[bname] = nil
+		end
+	end
+end
+
 --- Get a list of contributors for some player if any
 --- @param name string Player name
 --- @return string | nil A human readable comma separated list of bounties
@@ -424,21 +442,7 @@ ctf_core.register_chatcommand_alias(
 
 				contributed_bounties[bname].contributors[name] = my_contribution
 					- revoke_amount
-
-				if contributed_bounties[bname].contributors[name] <= 0 then
-					contributed_bounties[bname].contributors[name] = nil
-
-					local has_contributors = false
-					for _ in pairs(contributed_bounties[bname].contributors) do
-						has_contributors = true
-						break
-					end
-
-					if not has_contributors then
-						contributed_bounties[bname] = nil
-					end
-				end
-
+				cleanup_contributed_bounty()
 				current_mode.recent_rankings.add(name, { score = revoke_amount }, true)
 				return true, S("@1 points returned to you.", revoke_amount)
 			end
