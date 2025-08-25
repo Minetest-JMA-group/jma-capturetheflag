@@ -1,7 +1,10 @@
 ctf_jma_achieves = {
 		registered_achievements = {},
 		registered_achievement_list = {},
+		registered_on_grant_achievements = {},
 }
+
+local S = minetest.get_translator("ctf_jma_achieves")
 
 local modstorage = core.get_mod_storage()
 local storage_prefix = "achievements_"
@@ -60,10 +63,16 @@ function ctf_jma_achieves.register_achievement(id, def)
 	assert(not string.find(id, ","), "Commas are not allowed in achievement names!")
 	def = def or {}
 	def.name = def.name or id
+	def.description = def.description or ""
 	def.type = def.type or "bronze"
 	ctf_jma_achieves.registered_achievements[id] = def
 	table.insert(ctf_jma_achieves.registered_achievement_list, id)
 end
+
+function ctf_jma_achieves.register_on_grant_achievement(function(f)
+	assert(f, "Please provide a function!")
+	table.insert(ctf_jma_achieves.registered_on_grant_achievements, f)
+end)
 
 function ctf_jma_achieves.grant_achievement(name, id)
 	if type(id) == "string" then
@@ -73,12 +82,16 @@ function ctf_jma_achieves.grant_achievement(name, id)
 			core.log("warning", "[ctf_jma_achieves] Tried to re-grant achievement "..id.." to player "..name)
 			return
 		end
-		-- TODO: add translation
-		core.chat_send_player(name, core.colorize("seagreen", "!!! Achievement unlocked! ")..def.name)
+		
+		core.chat_send_player(name, core.colorize("orange", S("[!] You unlocked an achievement@2 @1"), {"!", "!!", "!!!"}[def.type]}, def.name))
 		player_achievements_cache[name][id] = true
 		local na = player_str_cache[name]..id..","
 		player_str_cache[name] = na
 		modstorage:set_string(storage_prefix..name, na)
+		
+		for _, f in ipairs(ctf_jma_achieves.registered_on_grant_achievements) do
+			f(name, id)
+		end
 		
 		core.log("action", "[ctf_jma_achieves] Achievement "..id.." granted to player "..name)
 	else

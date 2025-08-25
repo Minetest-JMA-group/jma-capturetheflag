@@ -3,56 +3,58 @@
 
 -- The order is in the order of registration
 
+local S = minetest.get_translator("ctf_jma_achieves")
+
 ctf_jma_achieves.register_achievement("cja:vct", {
-	name = "Victory!",
-	description = "Win a match by being on the last team",
+	name = S("Victory!"),
+	description = S("Win a match by being on the last team"),
 	icon = "ctf_jma_achieves_victory.png",
 	type = "bronze"
 })
 ctf_jma_achieves.register_achievement("cja:unt", {
-	name = "Unintended",
-	description = "Kill a player without using a sword/gun/explosion",
+	name = S("Unintended"),
+	description = S("Kill a player without using a sword/gun/explosion"),
 	type = "bronze"
 })
 
 
 
 ctf_jma_achieves.register_achievement("cja:cap1", {
-	name = "Capturing Newbie",
-	description = "Capture your first flag",
+	name = S("Capturing Newbie"),
+	description = S("Capture your first flag"),
 	icon = "ctf_jma_achieves_captures_1.png",
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:cap2", {
-	name = "Capturing Enthusiast",
-	description = "Capture 10 flags",
+	name = S("Capturing Enthusiast"),
+	description = S("Capture 10 flags"),
 	icon = "ctf_jma_achieves_captures_2.png",
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:spdr", {
-	name = "Speedrun",
-	description = "Capture the last flag and end the match in less than 3 minutes",
+	name = S("Speedrun"),
+	description = S("Capture the last flag and end the match in less than 3 minutes"),
 	icon = "ctf_jma_achieves_speedrun.png",
 	type = "silver"
 })
 
 
 ctf_jma_achieves.register_achievement("cja:cap3", {
-	name = "Capturing Hobbyist",
-	description = "Capture 100 flags",
+	name = S("Capturing Hobbyist"),
+	description = S("Capture 100 flags"),
 	icon = "ctf_jma_achieves_captures_3.png",
 	type = "gold"
 })
 ctf_jma_achieves.register_achievement("cja:mcapt", {
-	name = "Multicapture",
-	description = "Capture 2 or more flags at once",
+	name = S("Multicapture"),
+	description = S("Capture 2 or more flags at once"),
 	icon = "ctf_jma_achieves_multicap.png",
 	type = "gold"
 })
 
 ctf_jma_achieves.register_achievement("cja:cap4", {
-	name = "Capturing Connoiseur",
-	description = "Capture 500 flags",
+	name = S("Capturing Connoiseur"),
+	description = S("Capture 500 flags"),
 	icon = "ctf_jma_achieves_captures_4.png",
 	type = "gold"
 })
