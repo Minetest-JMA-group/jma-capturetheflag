@@ -123,12 +123,12 @@ core.register_on_mods_loaded(function()
 			local msg
 			if timed_out then
 				msg = S(
-					"*** @1 left the game.",
+					"*** @1 left the game (timed out).",
 					core.colorize(tcolor, player:get_player_name())
 				)
 			else
 				msg = S(
-					"*** @1 left the game(timed out).",
+					"*** @1 left the game.",
 					core.colorize(tcolor, player:get_player_name())
 				)
 			end
