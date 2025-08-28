@@ -399,14 +399,18 @@ local last_bounty_use = {}
 ctf_core.register_chatcommand_alias(
 	"bounty",
 	"bo",
-	{
+	{  -- /b is already registered in babelfish mod in JMA
 		description = S(
 			"Place a bounty on someone using your match score.\n"
 				.. "The score is returned to you if the match ends and nobody kills.\n"
 				.. "Use negative score to revoke a bounty"
 		),
 		params = "<player> <score>",
+		--- @param name string The player calling this
+		--- @param params string Passed parameters
+		--- @return boolean, string
 		func = function(name, params)
+			--- @type string?, number?
 			local now = minetest.get_gametime()
 			if last_bounty_use[name] and now - last_bounty_use[name] < 5 then
 				local remaining = 5 - (now - last_bounty_use[name])
@@ -467,6 +471,7 @@ ctf_core.register_chatcommand_alias(
 				contributors[name] = amount
 				contributed_bounties[bname] = { contributors = contributors }
 			else
+				--- @type ContributedBounty
 				local c_bounty = contributed_bounties[bname]
 				if not c_bounty.contributors[name] then
 					c_bounty.contributors[name] = amount
