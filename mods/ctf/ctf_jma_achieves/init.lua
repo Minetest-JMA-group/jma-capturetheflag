@@ -83,7 +83,7 @@ function ctf_jma_achieves.grant_achievement(name, id)
 			return
 		end
 		
-		core.chat_send_player(name, core.colorize("orange", S("[!] You unlocked an achievement@1 @2", ({bronze = "!", silver = "!!", gold = "!!!"})[def.type], def.name)))
+		core.chat_send_player(name, core.colorize("orange", S("   Achievement unlocked@1 @2", ({bronze = "!", silver = "!!", gold = "!!!"})[def.type], def.name)))
 		player_achievements_cache[name][id] = true
 		local na = player_str_cache[name]..id..","
 		player_str_cache[name] = na
@@ -166,3 +166,17 @@ sfinv.register_page("ctf_jma_achieves:list", {
 				table.concat(formspec, ""), false)
 	end
 })
+
+ctf_jma_achieves.register_on_grant_achievement(function(name)
+    local player = minetest.get_player_by_name(name)
+    if not player then
+        return
+    end
+
+    local context = sfinv.get_or_create_context(player)
+    if context.page ~= "ctf_jma_achieves:list" then
+        return
+    end
+
+    sfinv.set_player_inventory_formspec(player, context)
+end)

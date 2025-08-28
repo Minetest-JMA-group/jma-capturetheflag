@@ -132,10 +132,6 @@ ctf_api.register_on_flag_capture(function(plr, flags)
 			end
 		end
 		
-		core.debug(dump(uncaptured_teams))
-		core.debug(dump(ctf_teams.current_team_list))
-		core.debug(dump(ctf_modebase.flag_captured))
-		
 		if #uncaptured_teams == 1 then -- If this is not the case then it's likely the match was cut short abnormally
 			local winning_team = uncaptured_teams[1]
 			for name, _ in pairs(ctf_teams.online_players[winning_team].players) do
