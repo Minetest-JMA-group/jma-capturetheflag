@@ -33,7 +33,7 @@ ctf_jma_achieves.register_achievement("cja:cap2", {
 })
 ctf_jma_achieves.register_achievement("cja:spdrn", {
 	name = S("Speedrun"),
-	description = S("Capture the last flag and end the match in less than 3 minutes"),
+	description = S("Capture the last flag in less than 3 minutes"),
 	icon = "ctf_jma_achieves_speedrun.png",
 	type = "silver"
 })
@@ -56,6 +56,12 @@ ctf_jma_achieves.register_achievement("cja:cap4", {
 	name = S("Capturing Connoiseur"),
 	description = S("Capture 500 flags"),
 	icon = "ctf_jma_achieves_captures_4.png",
+	type = "gold"
+})
+ctf_jma_achieves.register_achievement("cja:slwrn", {
+	name = S("Slowrun"),
+	description = S("Capture the last flag in more than 45 minutes"),
+	icon = "ctf_jma_achieves_speedrun.png",
 	type = "gold"
 })
 
@@ -99,7 +105,7 @@ local function check_caps(name)
 	
 	local caps = collect(name).total.flag_captures or 0
 	
-	if caps >= 1 then grant(name, "cja:cap1") end
+	if caps >= 1 then grant(name, "cja:cap1"); grant(name, "cja:vct") end
 	if caps >= 10 then grant(name, "cja:cap2") end
 	if caps >= 100 then grant(name, "cja:cap3") end
 	if caps >= 500 then grant(name, "cja:cap4") end
@@ -132,7 +138,7 @@ ctf_api.register_on_flag_capture(function(plr, flags)
 			end
 		end
 		
-		if #uncaptured_teams == 1 then -- If this is not the case then it's likely the match was cut short abnormally
+		if #uncaptured_teams == 1 then -- If this is not the case then it's likely the match has not ended
 			local winning_team = uncaptured_teams[1]
 			for name, _ in pairs(ctf_teams.online_players[winning_team].players) do
 				grant(name, "cja:vct")
@@ -140,8 +146,11 @@ ctf_api.register_on_flag_capture(function(plr, flags)
 			
 			-- Check for speedrun as well because we're here
 			-- The player to capture the last flag is always on the winning team, so no need to check that
-			if os.time() - ctf_map.start_time < 3*60 then
+			local time = os.time() - ctf_map.start_time
+			if time < 3*60 then
 				grant(name, "cja:spdrn")
+			elseif time > 45*60 then
+				grant(name, "cja:slwrn")
 			end
 		end
 	end)
