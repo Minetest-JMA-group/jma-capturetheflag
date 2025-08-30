@@ -60,7 +60,6 @@ core.register_on_joinplayer(function(player)
 		pmeta:set_int("counted_in_achievement_totalplayers", 1)
 		totalplayers = totalplayers + 1
 		modstorage:set_string(total_players_storage_name, totalplayers)
-		core.debug(totalplayers)
 	end
 end)
 core.register_on_leaveplayer(function(player)
@@ -101,7 +100,11 @@ function ctf_jma_achieves.grant_achievement(name, id)
 			return
 		end
 		
-		core.chat_send_player(name, S("You unlocked an achievement@1 @2", ({bronze = "!  ", silver = "!! ", gold = "!!!"})[def.type], core.colorize("lightgreen", "["..def.name.."]")))
+		if def.type == "gold" then
+			core.chat_send_player(name, S("@1 unlocked the @2 achievement!!!", name, core.colorize("lightgreen", "["..def.name.."]")))
+		else
+			core.chat_send_player(name, S("You unlocked an achievement@1 @2", ({bronze = "!  ", silver = "!! ", gold = "!!!"})[def.type], core.colorize("lightgreen", "["..def.name.."]")))
+		end
 		player_achievements_cache[name][id] = true
 		local na = player_str_cache[name]..id..","
 		player_str_cache[name] = na
@@ -110,7 +113,7 @@ function ctf_jma_achieves.grant_achievement(name, id)
 		local c = achievement_complete_percent_cache[id].completed
 		modstorage:set_int(players_with_achvmnt_prefix .. id, c+1)
 		achievement_complete_percent_cache[id].completed = c+1
-		achievement_complete_percent_cache[id].formatted = format_complete_percent(c)
+		achievement_complete_percent_cache[id].formatted = format_complete_percent(c+1)
 		
 		for _, f in ipairs(ctf_jma_achieves.registered_on_grant_achievements) do
 			f(name, id)
@@ -137,7 +140,7 @@ function ctf_jma_achieves.revoke_achievement(name, id)
 		local c = achievement_complete_percent_cache[id].completed
 		modstorage:set_int(players_with_achvmnt_prefix .. id, c-1)
 		achievement_complete_percent_cache[id].completed = c-1
-		achievement_complete_percent_cache[id].formatted = format_complete_percent(c)
+		achievement_complete_percent_cache[id].formatted = format_complete_percent(c-1)
 		
 		core.log("action", "[ctf_jma_achieves] Achievement "..id.." revoked from player "..name)
 	else
@@ -171,12 +174,32 @@ end)
 
 dofile(minetest.get_modpath("ctf_jma_achieves") .. "/achievements.lua")
 
+
+
+-- This Function MIT by Rubenwardy
+--- Creates a scrollbaroptions for a scroll_container
+--
+-- @param visible_l the length of the scroll_container and scrollbar
+-- @param total_l length of the scrollable area
+-- @param scroll_factor as passed to scroll_container
+local function make_scrollbaroptions_for_scroll_container(visible_l, total_l, scroll_factor)
+
+	assert(total_l >= visible_l)
+
+	local thumb_size = (visible_l / total_l) * (total_l - visible_l)
+
+	local max = total_l - visible_l
+
+	return ("scrollbaroptions[min=0;max=%f;thumbsize=%f]"):format(max / scroll_factor, thumb_size / scroll_factor)
+end
+
 sfinv.register_page("ctf_jma_achieves:list", {
 	title = "Achieves", -- This is called "Achieves" because "Achievements" is too long
 	get = function(self, player, context)
 		local name = player:get_player_name()
 		local acf  = {}
 		
+		local scroll_len = 0
 		for i, aname in ipairs(ctf_jma_achieves.registered_achievement_list) do
 			local adef = ctf_jma_achieves.registered_achievements[aname]
 			local j = i - 1
@@ -199,13 +222,15 @@ sfinv.register_page("ctf_jma_achieves:list", {
 			if not has_ach then
 				table.insert(acf, string.format("box[0,%s;9.345,1.25;#00000066]", j*1.25))
 			end
+			scroll_len = j*1.25
 		end
+		scroll_len = scroll_len + 1.35
 		
 		local plr_trophies = ctf_jma_achieves.count_trophies(name)
 		local formspec = {
 			"box[0.25,0.25;9.345,10.1;#11111155]",
 			"scroll_container[0.25,0.25;9.345,10.1;achievlist;vertical]",
-			"scrollbaroptions[]",
+			make_scrollbaroptions_for_scroll_container(10.1, math.max(10.1, scroll_len), 0.1),
 			table.concat(acf, ""),
 			"scroll_container_end[]",
 			"scrollbar[9.72,0.25;0.5,10.1;vertical;achievlist;0]",
