@@ -44,7 +44,7 @@ local function show_formspec(player)
 		"formspec_version[7]" ..
 		"size[10,5]" ..
 		"no_prepend[]" ..
-		"background[0,0;10,5;random_gifts_background.png]"..
+		-- "background[0,0;10,5;random_gifts_background.png]"..
 		"button_exit[9.3,0;0.7,0.7;;X]" ..
 		"style_type[image_button;bgcolor=black]" ..
 		"style_type[item_image_button;bgcolor=black]"
