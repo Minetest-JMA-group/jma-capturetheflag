@@ -37,6 +37,18 @@ ctf_jma_achieves.register_achievement("cja:spdrn", {
 	icon = "ctf_jma_achieves_speedrun.png",
 	type = "silver"
 })
+ctf_jma_achieves.register_achievement("cja:wntd", {
+	name = S("Wanted"),
+	description = S("Become bountied"),
+	icon = "ctf_jma_achieves_wanted.png",
+	type = "silver"
+})
+ctf_jma_achieves.register_achievement("cja:ndd", {
+	name = S("Needed"),
+	description = S("Claim a bounty"),
+	icon = "ctf_jma_achieves_gold_bars.png",
+	type = "silver"
+})
 
 
 ctf_jma_achieves.register_achievement("cja:cap3", {
@@ -45,13 +57,18 @@ ctf_jma_achieves.register_achievement("cja:cap3", {
 	icon = "ctf_jma_achieves_captures_3.png",
 	type = "gold"
 })
+ctf_jma_achieves.register_achievement("cja:atl", {
+	name = S("Above The Law"),
+	description = S("Get a bounty of 100 score or more"),
+	icon = "ctf_jma_achieves_wanted.png",
+	type = "gold"
+})
 ctf_jma_achieves.register_achievement("cja:mcapt", {
 	name = S("Multicapture"),
 	description = S("Capture 2 or more flags at once"),
 	icon = "ctf_jma_achieves_multicap.png",
 	type = "gold"
 })
-
 ctf_jma_achieves.register_achievement("cja:cap4", {
 	name = S("Capturing Connoiseur"),
 	description = S("Capture 500 flags"),

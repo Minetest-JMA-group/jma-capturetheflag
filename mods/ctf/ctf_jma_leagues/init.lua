@@ -130,7 +130,7 @@ function ctf_jma_leagues.update_league(player_name)
             minetest.chat_send_all(
                 minetest.colorize("#FFA500", "[Leagues]") ..
                 minetest.colorize("#00FF00", string.format(
-                    ": %s advanced the %s!",
+                    ": %s advanced to the %s league!",
                     player_name,
                     info.display_name
                 ))
