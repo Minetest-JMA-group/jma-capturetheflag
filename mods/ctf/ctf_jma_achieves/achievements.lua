@@ -11,12 +11,26 @@ ctf_jma_achieves.register_achievement("cja:vct", {
 	icon = "ctf_jma_achieves_victory.png",
 	type = "bronze"
 })
-ctf_jma_achieves.register_achievement("cja:unt", {
-	name = S("Unintended"),
-	description = S("Kill a player without using a sword/gun/explosion"),
+ctf_jma_achieves.register_achievement("cja:tbs", {
+	name = S("'Tis But A Scratch"),
+	description = S("Heal 10HP or more at once with a medkit"),
+	icon = "ctf_jma_achieves_medkit.png",
 	type = "bronze"
 })
-
+ctf_jma_achieves.register_achievement("cja:ff", {
+	name = S("Fistfight"),
+	description = S("Kill someone by punching with your hand"),
+	icon = "ctf_jma_achieves_fist.png",
+	hint = S("Don't try to kill them by only using your hand.").."\n"..S("Try to get them to 1HP and then hit them."),
+	type = "bronze"
+})
+ctf_jma_achieves.register_achievement("cja:ew", {
+	name = S("Emoji Wizard"),
+	description = S("Create a secret emoji icon"),
+	hint = S("Okay. You want a hint? Pickle."),
+	icon = "ctf_jma_achieves_emoji.png",
+	type = "bronze"
+})
 
 
 ctf_jma_achieves.register_achievement("cja:cap1", {
@@ -25,16 +39,18 @@ ctf_jma_achieves.register_achievement("cja:cap1", {
 	icon = "ctf_jma_achieves_captures_1.png",
 	type = "silver"
 })
-ctf_jma_achieves.register_achievement("cja:cap2", {
-	name = S("Capturing Enthusiast"),
-	description = S("Capture 10 flags"),
-	icon = "ctf_jma_achieves_captures_2.png",
+ctf_jma_achieves.register_achievement("cja:btg", {
+	name = S("Beyond the Grave"),
+	description = S("Kill someone while dead"),
+	hint = S("Try trapping enemies, with spikes, lava, or whatever else."),
+	icon = "ctf_jma_achieves_grave.png",
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:spdrn", {
 	name = S("Speedrun"),
 	description = S("Capture the last flag in less than 3 minutes"),
 	icon = "ctf_jma_achieves_speedrun.png",
+	hint = S("Watch out for angry players!"),
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:wntd", {
@@ -49,7 +65,26 @@ ctf_jma_achieves.register_achievement("cja:ndd", {
 	icon = "ctf_jma_achieves_gold_bars.png",
 	type = "silver"
 })
-
+ctf_jma_achieves.register_achievement("cja:cap2", {
+	name = S("Capturing Enthusiast"),
+	description = S("Capture 10 flags"),
+	icon = "ctf_jma_achieves_captures_2.png",
+	type = "silver"
+})
+ctf_jma_achieves.register_achievement("cja:pro", {
+	name = S("Professional"),
+	description = S("Have access to the pro chest in any mode"),
+	hint = S("This achievement is only granted when a match ends/you rejoin."),
+	icon = "ctf_jma_achieves_pro.png",
+	type = "silver"
+})
+ctf_jma_achieves.register_achievement("cja:0_0", {
+	name = "(.0_0.)",
+	description = "???",
+	icon = "ctf_jma_achieves_0_0.png",
+	hint = S("Well, about your eyes... they would need to be in the highest league to spot THIS!"),
+	type = "silver"
+})
 
 ctf_jma_achieves.register_achievement("cja:cap3", {
 	name = S("Capturing Hobbyist"),
@@ -67,6 +102,7 @@ ctf_jma_achieves.register_achievement("cja:mcapt", {
 	name = S("Multicapture"),
 	description = S("Capture 2 or more flags at once"),
 	icon = "ctf_jma_achieves_multicap.png",
+	hint = S("If you can't do it on one map, try it again on another."),
 	type = "gold"
 })
 ctf_jma_achieves.register_achievement("cja:cap4", {
@@ -78,12 +114,9 @@ ctf_jma_achieves.register_achievement("cja:cap4", {
 ctf_jma_achieves.register_achievement("cja:slwrn", {
 	name = S("Slowrun"),
 	description = S("Capture the last flag in more than 45 minutes"),
-	icon = "ctf_jma_achieves_speedrun.png",
+	icon = "ctf_jma_achieves_speedrun.png",			
 	type = "gold"
 })
-
-
-
 
 ---[[ ACHIEVEMENT GRANTING LOGIC ]]---
 local unlocked = ctf_jma_achieves.get_achievement_unlocked
@@ -116,29 +149,60 @@ local function collect(player_name)
 	return res
 end
 
+core.register_on_punchplayer(function(player, hitter, _, _, _, damage)
+	if not hitter:is_player() or player:get_hp() <= 0 then return false end
+	if player:get_hp() <= damage then
+		local hname = hitter:get_player_name()
+		
+		if hitter:get_hp() == 0 then
+			grant(hname, "cja:btg")
+		end
+		
+		if hitter:get_wielded_item():get_name() == "" then
+			grant(hname, "cja:ff")
+		end
+	end
+end)
 
 local function check_caps(name)
 	if unlocked(name, "cja:cap4") then return end
 	
 	local caps = collect(name).total.flag_captures or 0
 	
-	if caps >= 1 then grant(name, "cja:cap1"); grant(name, "cja:vct") end
+	if caps >= 1 then grant(name, "cja:cap1") end
 	if caps >= 10 then grant(name, "cja:cap2") end
 	if caps >= 100 then grant(name, "cja:cap3") end
 	if caps >= 500 then grant(name, "cja:cap4") end
 end
+local function check_pro(name)
+	for mode_name, def in pairs(ctf_modebase.modes) do
+		if def.player_is_pro(name) then
+			grant(name, "cja:pro")
+		end
+	end
+end
 
 core.register_on_joinplayer(function(player)
-	core.after(1, function()
+	core.after(2, function()
 		local name = player:get_player_name()
 		if name and name ~= "" then
 			check_caps(name)
+			check_pro(name)
+		end
+	end)
+end)
+
+ctf_api.register_on_match_end(function()
+	core.after(2, function()
+		for _, plr in pairs(core.get_connected_players()) do
+			local name = plr:get_player_name()
+			check_pro(name)
 		end
 	end)
 end)
 
 ctf_api.register_on_flag_capture(function(plr, flags)
-	core.after(1, function()
+	core.after(2, function()
 		local name = plr:get_player_name()
 		if name and name ~= "" then
 			check_caps(name)

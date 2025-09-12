@@ -62,9 +62,13 @@ local function medkit_heal(playername)
 
 		local max_hp = player:get_properties().hp_max
 		local new_hp = math.min(player:get_hp() + REGEN_PER_SEC, max_hp)
-
+		
+		if ctf_jma_achieves and new_hp - healing_players[playername].hp >= 10 then
+			ctf_jma_achieves.grant_achievement(playername, "cja:tbs")
+		end
+		
 		player:set_hp(new_hp)
-
+		
 		local new_wear = wielded_item:get_wear() + WEAR_PER_SEC
 		wielded_item:set_wear(new_wear)
 		player:set_wielded_item(wielded_item)

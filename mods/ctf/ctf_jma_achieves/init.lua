@@ -100,16 +100,66 @@ function ctf_jma_achieves.grant_achievement(name, id)
 			return
 		end
 		
-		if def.type == "gold" then
-			core.chat_send_player(name, S("@1 unlocked the @2 achievement!!!", name, core.colorize("lightgreen", "["..def.name.."]")))
-		else
-			core.chat_send_player(name, S("You unlocked an achievement@1 @2", ({bronze = "!  ", silver = "!! ", gold = "!!!"})[def.type], core.colorize("lightgreen", "["..def.name.."]")))
+		-- Visual stuff
+		local pref = core.get_player_by_name(name)
+		if pref then
+			-- Send chat message
+			if def.type == "gold" then
+				core.chat_send_player(name, S("@1 unlocked the @2 achievement!!!", name, core.colorize("lightgreen", "["..def.name.."]")))
+			else
+				core.chat_send_player(name, S("You unlocked an achievement@1 @2", ({bronze = "! ", silver = "!!"})[def.type], core.colorize("lightgreen", "["..def.name.."]")))
+			end
+			-- Create particles
+			amount = ({bronze = 50, silver = 100, gold = 150})[def.type]
+			for _=1,amount do
+				core.add_particle({
+					expirationtime = math.random() + 1.2,
+					pos = pref:get_pos() + vector.new(0, 1.5, 0),
+					velocity = vector.random_direction() * 6,
+					drag = {x = 3, y = 3, z = 3},
+					acceleration = {x = 0, y = -1, z = 0},
+					glow = 4,
+					texture = {
+						name = ("ctf_jma_achieves_trophy_%s.png"):format(def.type),
+						alpha_tween = {1, 0.5},
+						scale_tween = {5, 0}}
+				})
+			end
+			if def.icon then
+				for _=1,amount do
+					core.add_particle({
+						expirationtime = math.random() + 1.2,
+						pos = pref:get_pos() + vector.new(0, 1.5, 0),
+						velocity = vector.random_direction() * 6,
+						drag = {x = 3, y = 3, z = 3},
+						acceleration = {x = 0, y = -1, z = 0},
+						glow = 3,
+						texture = {
+							name = def.icon,
+							alpha_tween = {1, 0.5},
+							scale_tween = {4, 0}}
+					})
+				end
+			end
+			core.add_particle({
+				expirationtime = 0.3,
+					pos = pref:get_pos() + vector.new(0, 1.5, 0),
+					glow = 8,
+					texture = {
+						blend = "add",
+						name = "ctf_jma_achieves_flash.png",
+						alpha_tween = {0.6, 0},
+						scale = 32}
+			})
 		end
+		
+		-- Set cache and write to storage
 		player_achievements_cache[name][id] = true
 		local na = player_str_cache[name]..id..","
 		player_str_cache[name] = na
 		modstorage:set_string(storage_prefix..name, na)
 		
+		-- Update completion percentages
 		local c = achievement_complete_percent_cache[id].completed
 		modstorage:set_int(players_with_achvmnt_prefix .. id, c+1)
 		achievement_complete_percent_cache[id].completed = c+1
@@ -133,10 +183,14 @@ function ctf_jma_achieves.revoke_achievement(name, id)
 			return
 		end
 		
+		-- Chat message
 		core.chat_send_player(name, S("The achievement @1 has been revoked from you.", core.colorize("lightgreen", "["..def.name.."]")))
+		
+		-- Set cache and write to storage
 		player_achievements_cache[name][id] = nil
 		modstorage:set_string(storage_prefix..name, string.gsub(player_str_cache[name], id..",", ""))
 		
+		-- Update completion percentages
 		local c = achievement_complete_percent_cache[id].completed
 		modstorage:set_int(players_with_achvmnt_prefix .. id, c-1)
 		achievement_complete_percent_cache[id].completed = c-1
@@ -172,10 +226,7 @@ core.register_on_mods_loaded(function()
 	end
 end)
 
-dofile(minetest.get_modpath("ctf_jma_achieves") .. "/achievements.lua")
-
-
-
+ctf_core.include_files("achievements.lua")
 -- This Function MIT by Rubenwardy
 --- Creates a scrollbaroptions for a scroll_container
 --
@@ -211,16 +262,20 @@ sfinv.register_page("ctf_jma_achieves:list", {
 			local has_icon = adef.icon and 1.25 or 0.125
 			local has_ach = ctf_jma_achieves.get_achievement_unlocked(name, aname)
 			
-			table.insert(acf, string.format("box[0,%s;9.345,1.25;%s]", j*1.25, bgcolor))
-			table.insert(acf, string.format("tooltip[0,%s;9.345,1.25;%s]", j*1.25, F(achievement_complete_percent_cache[aname].formatted)))
-			table.insert(acf, string.format("hypertext[%s,%s;8,0.5;acv_title_text_%s;<b>%s</b>]", has_icon, j*1.25 + 0.25, i, F(adef.name)))
-			table.insert(acf, string.format("hypertext[%s,%s;8,0.5;acv_desc_text_%s;%s]", has_icon, j*1.25 + 0.6, i, F(adef.description)))
-			table.insert(acf, string.format("image[8.72,%s;0.5,0.5;ctf_jma_achieves_trophy_%s.png]", j*1.25 + 0.625, adef.type))
+			local tooltip = adef.hint and adef.hint .. "\n\n" or ""
+			tooltip = tooltip .. F(achievement_complete_percent_cache[aname].formatted)
+			table.insert(acf, ("box[0,%s;9.345,1.25;%s]"):format(j*1.25, bgcolor))
+			table.insert(acf, ("tooltip[0,%s;9.345,1.25;%s]"):format(j*1.25, tooltip))
+			
+			table.insert(acf, ("hypertext[%s,%s;8,0.5;acv_title_text_%s;<b>%s</b>]"):format(has_icon, j*1.25 + 0.25, i, F(adef.name)))
+			table.insert(acf, ("hypertext[%s,%s;8,0.5;acv_desc_text_%s;%s]"):format(has_icon, j*1.25 + 0.6, i, F(adef.description)))
+			
+			table.insert(acf, ("image[8.72,%s;0.5,0.5;ctf_jma_achieves_trophy_%s.png]"):format(j*1.25 + 0.625, adef.type))
 			if adef.icon then
-				table.insert(acf, string.format("image[0.125,%s;1,1;%s]", j*1.25 + 0.125, adef.icon))
+				table.insert(acf, ("image[0.125,%s;1,1;%s]"):format(j*1.25 + 0.125, adef.icon))
 			end
 			if not has_ach then
-				table.insert(acf, string.format("box[0,%s;9.345,1.25;#00000066]", j*1.25))
+				table.insert(acf, ("box[0,%s;9.345,1.25;#00000066]"):format(j*1.25))
 			end
 			scroll_len = j*1.25
 		end
@@ -235,11 +290,11 @@ sfinv.register_page("ctf_jma_achieves:list", {
 			"scroll_container_end[]",
 			"scrollbar[9.72,0.25;0.5,10.1;vertical;achievlist;0]",
 			"image[0.25,10.6;0.5,0.5;ctf_jma_achieves_trophy_bronze.png]",
-			"label[0.875,10.85;"..F(plr_trophies.bronze..core.colorize("#999999", "/"..total_trophies.bronze)).."]",
+			("label[0.875,10.85;%s]"):format(F(plr_trophies.bronze..core.colorize("#999999", "/"..total_trophies.bronze))),
 			"image[1.5,10.6;0.5,0.5;ctf_jma_achieves_trophy_silver.png]",
-			"label[2.125,10.85;"..F(plr_trophies.silver..core.colorize("#999999", "/"..total_trophies.silver)).."]",
+			("label[2.125,10.85;%s]"):format(F(plr_trophies.silver..core.colorize("#999999", "/"..total_trophies.silver))),
 			"image[2.75,10.6;0.5,0.5;ctf_jma_achieves_trophy_gold.png]",
-			"label[3.375,10.85;"..F(plr_trophies.gold..core.colorize("#999999", "/"..total_trophies.gold)).."]",
+			("label[3.375,10.85;%s]"):format(F(plr_trophies.gold..core.colorize("#999999", "/"..total_trophies.gold))),
 		}
 		return sfinv.make_formspec_v7(player, context,
 				table.concat(formspec, ""), false)
@@ -299,8 +354,10 @@ core.register_chatcommand("revoke_achievement", {
 	end,
 })
 
+-- Note: The inventory does not refresh when an achievement
+-- is revoked but I think it's rare enough to not be an issue
 ctf_jma_achieves.register_on_grant_achievement(function(name)
-    local player = minetest.get_player_by_name(name)
+    local player = core.get_player_by_name(name)
     if not player then
         return
     end
