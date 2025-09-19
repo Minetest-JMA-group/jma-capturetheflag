@@ -5,59 +5,53 @@ local blacklist = {
 	"default:pick_stone",
 }
 
+
 local item_value = {
-	["ctf_melee:sword_diamond"] = 12,
-	["ctf_ranged:shotgun_loaded"] = 12,
-	["ctf_melee:sword_mese"] = 11,
-	["ctf_ranged:shotgun"] = 10,
+	["ctf_melee:sword_diamond"        ] = 12,
+	["ctf_ranged:shotgun_loaded"      ] = 12,
+	["ctf_melee:sword_mese"           ] = 11,
+	["ctf_ranged:shotgun"             ] = 10,
 	["ctf_ranged:sniper_magnum_loaded"] = 12,
-	["default:axe_diamond"] = 8,
-	["ctf_ranged:sniper_magnum"] = 10,
+	["default:axe_diamond"            ] = 8,
+	["ctf_ranged:sniper_magnum"       ] = 10,
 	["ctf_ranged:assault_rifle_loaded"] = 8,
-	["rocket_launcher:launcher"] = 8,
-	["default:sword_steel"] = 7,
-	["ctf_melee:sword_steel"] = 7,
-	["default:pick_diamond"] = 6,
-	["ctf_ranged:assault_rifle"] = 6,
-	["grenades:frag"] = 6,
-	["ctf_healing:medkit"] = 6,
-	["default:pick_mese"] = 5,
-	["default:axe_mese"] = 5,
-	["grenades:poison"] = 5,
-	["ctf_ranged:rifle_loaded"] = 5,
-	["ctf_ranged:smg_loaded"] = 5,
-	["ctf_ranged:rifle"] = 4,
-	["ctf_ranged:smg"] = 4,
-	["ctf_healing:bandage"] = 4,
-	["default:shovel_diamond"] = 4,
-	["grenades:smoke"] = 2,
-	["ctf_ranged:pistol_loaded"] = 2,
-	["default:shovel_steel"] = 2,
-	["default:pick_steel"] = 1,
-	["default:axe_steel"] = 1,
-	["default:shovel_mese"] = 1,
-	["ctf_ranged:pistol"] = 1,
+	["rocket_launcher:launcher"       ] = 8,
+	["default:sword_steel"            ] = 7,
+	["ctf_melee:sword_steel"          ] = 7,
+	["default:pick_diamond"           ] = 6,
+	["ctf_ranged:assault_rifle"       ] = 6,
+	["grenades:frag"                  ] = 6,
+	["ctf_healing:medkit"             ] = 6,
+	["default:axe_mese"               ] = 6,
+	["default:pick_mese"              ] = 5,
+	["grenades:poison"                ] = 5,
+	["ctf_ranged:rifle_loaded"        ] = 5,
+	["ctf_ranged:smg_loaded"          ] = 5,
+	["default:sword_wood"             ] = 5,
+	["ctf_ranged:rifle"               ] = 4,
+	["ctf_ranged:smg"                 ] = 4,
+	["ctf_healing:bandage"            ] = 4,
+	["default:shovel_diamond"         ] = 4,
+	["grenades:smoke"                 ] = 2,
+	["ctf_ranged:pistol_loaded"       ] = 2,
+	["default:shovel_mese"            ] = 2,
+	["default:shovel_steel"           ] = 1,
+	["default:pick_steel"             ] = 1,
+	["default:axe_steel"              ] = 1,
+	["ctf_ranged:pistol"              ] = 1,
+
 }
 
-local S = core.get_translator(minetest.get_current_modname())
+local S = minetest.get_translator(minetest.get_current_modname())
 
---- Does the player have access to the chest?
---- Example usage: `has_normal, has_pro = get_chest_access(name)`
---- @param name PlayerName
---- @return boolean, boolean
 local function get_chest_access(name)
 	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then
-		return false, false
-	end
+	if not current_mode then return false, false end
 
 	return current_mode.get_chest_access(name)
 end
 
---- @param listname string | "helper"
---- @param stack Stack
---- @return boolean
-function ctf_teams.is_allowed_in_team_chest(listname, stack)
+function ctf_teams.is_allowed_in_team_chest(listname, stack, player)
 	if listname == "helper" then
 		return false
 	end
@@ -76,12 +70,12 @@ for _, team in ipairs(ctf_teams.teamlist) do
 		local chestcolor = ctf_teams.team[team].color
 		local function get_chest_texture(chest_side, color, mask, extra)
 			return string.format(
-				"(default_chest_%s.png"
-					.. "^[colorize:%s:130)"
-					.. "^(default_chest_%s.png"
-					.. "^[mask:ctf_teams_chest_%s_mask.png"
-					.. "^[colorize:%s:60)"
-					.. "%s",
+				"(default_chest_%s.png" ..
+				"^[colorize:%s:130)" ..
+				"^(default_chest_%s.png" ..
+				"^[mask:ctf_teams_chest_%s_mask.png" ..
+				"^[colorize:%s:60)" ..
+				"%s",
 				chest_side,
 				color,
 				chest_side,
@@ -92,7 +86,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 		end
 
 		local def = {
-			description = S("@1 Team's chest", HumanReadable(team)),
+			description = HumanReadable(team).." Team's Chest",
 			tiles = {
 				get_chest_texture("top", chestcolor, "top"),
 				get_chest_texture("top", chestcolor, "top"),
@@ -102,14 +96,14 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				get_chest_texture("front", chestcolor, "side", "^ctf_teams_lock.png"),
 			},
 			paramtype2 = "facedir",
-			groups = { immortal = 1, team_chest = 1 },
+			groups = {immortal = 1, team_chest=1},
 			legacy_facedir_simple = true,
 			is_ground_content = false,
 			sounds = default.node_sound_wood_defaults(),
 		}
 
 		function def.on_construct(pos)
-			local meta = core.get_meta(pos)
+			local meta = minetest.get_meta(pos)
 			meta:set_string("infotext", S("@1 Team's Chest", HumanReadable(team)))
 
 			local inv = meta:get_inventory()
@@ -129,7 +123,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			if not flag_captured and team ~= ctf_teams.get(name) then
 				hud_events.new(player, {
 					quick = true,
-					text = S("You're not on team @1", HumanReadable(team)),
+					text = S("You're not on team") .. " " .. team,
 					color = "warning",
 				})
 				return
@@ -137,7 +131,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 
 			local formspec = table.concat({
 				"size[10,12]",
-				default.get_hotbar_bg(1, 7.85),
+				default.get_hotbar_bg(1,7.85),
 				"list[current_player;main;1,7.85;8,1;]",
 				"list[current_player;main;1,9.08;8,3;8]",
 			}, "")
@@ -150,73 +144,46 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			end
 
 			if reg_access ~= true then
-				formspec = formspec
-					.. "label[0.75,3;"
-					.. core.formspec_escape(
-						core.wrap_text(
-							reg_access or S("You aren't allowed to access the team chest"),
-							60
-						)
-					)
-					.. "]"
+				formspec = formspec .. "label[0.75,3;" ..
+					minetest.formspec_escape(minetest.wrap_text(
+						reg_access or S("You aren't allowed to access the team chest"),
+						60
+					)) ..
+				"]"
 
-				core.show_formspec(name, "ctf_teams:no_access", formspec)
+				minetest.show_formspec(name, "ctf_teams:no_access", formspec)
 				return
 			end
 
 			local chestinv = "nodemeta:" .. pos.x .. "," .. pos.y .. "," .. pos.z
 
-			formspec = formspec
-				.. "list["
-				.. chestinv
-				.. ";main;0,0.3;6,7;]"
-				.. "background[6,-0.2;4.15,7.7;ctf_map_pro_section.png;false]"
+			formspec = formspec .. "list[" .. chestinv .. ";main;0,0.3;6,7;]" ..
+				"background[6,-0.2;4.15,7.7;ctf_map_pro_section.png;false]"
 
 			if pro_access == true then
-				formspec = formspec
-					.. "list["
-					.. chestinv
-					.. ";pro;6,0.3;4,7;]"
-					.. "listring["
-					.. chestinv
-					.. ";pro]"
-					.. "listring["
-					.. chestinv
-					.. ";helper]"
-					.. "label[7,-0.2;"
-					.. core.formspec_escape(S("Pro players only"))
-					.. "]"
+				formspec = formspec .. "list[" .. chestinv .. ";pro;6,0.3;4,7;]" ..
+					"listring[" .. chestinv ..";pro]" ..
+					"listring[" .. chestinv .. ";helper]" ..
+					"label[7,-0.2;" ..
+					minetest.formspec_escape(S("Pro players only")) .. "]"
 			else
-				formspec = formspec
-					.. "label[6.5,2;"
-					.. core.formspec_escape(
-						core.wrap_text(
-							pro_access
-								or S("You aren't allowed to access the pro section"),
-							20
-						)
-					)
-					.. "]"
+				formspec = formspec .. "label[6.5,2;" ..
+					minetest.formspec_escape(minetest.wrap_text(
+						pro_access or S("You aren't allowed to access the pro section"),
+						20
+					)) ..
+				"]"
 			end
 
-			formspec = formspec
-				.. "listring["
-				.. chestinv
-				.. ";main]"
-				.. "listring[current_player;main]"
+			formspec = formspec ..
+				"listring[" .. chestinv ..";main]" ..
+				"listring[current_player;main]"
 
-			core.show_formspec(name, "ctf_teams:chest", formspec)
+			minetest.show_formspec(name, "ctf_teams:chest",  formspec)
 		end
 
-		function def.allow_metadata_inventory_move(
-			pos,
-			from_list,
-			from_index,
-			to_list,
-			to_index,
-			count,
-			player
-		)
+		function def.allow_metadata_inventory_move(pos, from_list, from_index,
+				to_list, to_index, count, player)
 			local name = player:get_player_name()
 
 			if team ~= ctf_teams.get(name) then
@@ -234,13 +201,10 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				reg_access, pro_access = true, true
 			end
 
-			if
-				reg_access == true
-				and (pro_access == true or from_list ~= "pro" and to_list ~= "pro")
-			then
+			if reg_access == true and (pro_access == true or from_list ~= "pro" and to_list ~= "pro") then
 				if to_list == "helper" then
 					-- handle move & overflow
-					local chestinv = core.get_inventory({ type = "node", pos = pos })
+					local chestinv = minetest.get_inventory({type = "node", pos = pos})
 					local playerinv = player:get_inventory()
 					local stack = chestinv:get_stack(from_list, from_index)
 					local leftover = playerinv:add_item("main", stack)
@@ -282,7 +246,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			end
 
 			if reg_access == true and (pro_access == true or listname ~= "pro") then
-				local chestinv = core.get_inventory({ type = "node", pos = pos })
+				local chestinv = minetest.get_inventory({type = "node", pos = pos})
 				if chestinv:room_for_item("pro", stack) then
 					return stack:get_count()
 				else
@@ -333,67 +297,54 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			end
 		end
 
-		function def.on_metadata_inventory_put(pos, listname, index, stack, player)
-			core.log(
-				"action",
-				string.format(
-					"%s puts %s to team chest at %s",
-					player:get_player_name(),
-					stack:to_string(),
-					core.pos_to_string(pos)
-				)
-			)
-			local meta = stack:get_meta()
-			local dropped_by = meta:get_string("dropped_by")
-			local dropteam = ctf_teams.get(dropped_by)
-			local dropinfo = core.get_player_information(dropped_by)
-			local pname = player:get_player_name()
-			local pinfo = core.get_player_information(pname)
-			if
-				dropped_by ~= pname
-				and dropped_by ~= ""
-				and dropteam
-				and ctf_teams.get(pname) ~= dropteam
-				and dropinfo
-				and pinfo
-				and dropinfo.address ~= pinfo.address
-			then
-				local cur_mode = ctf_modebase:get_current_mode()
-				if pname and cur_mode then
-					local item_name = stack:get_name()
-					local score = item_value[item_name] or 1
 
-					local item_desc = stack:get_short_description()
-					if item_desc == "" then
-						item_desc = item_name
-					end
+	function def.on_metadata_inventory_put(pos, listname, index, stack, player)
+		minetest.log("action", string.format("%s puts %s to team chest at %s",
+			player:get_player_name(),
+			stack:to_string(),
+			minetest.pos_to_string(pos)
+		))
+		local meta = stack:get_meta()
+		local dropped_by = meta:get_string("dropped_by")
+		local dropteam = ctf_teams.get(dropped_by)
+		local dropinfo = core.get_player_information(dropped_by)
+		local pname = player:get_player_name()
+		local pinfo = core.get_player_information(pname)
+		if dropped_by ~= pname and dropped_by ~= "" and
+		dropteam and ctf_teams.get(pname) ~= dropteam and dropinfo and pinfo and dropinfo.address ~= pinfo.address then
+			local cur_mode = ctf_modebase:get_current_mode()
+			if pname and cur_mode then
+				local item_name = stack:get_name()
+				local score = item_value[item_name] or 1
 
-					cur_mode.recent_rankings.add(pname, { score = score }, true)
-					cmsg.push_message_player(
-						player,
-						string.format("+ %s: %s", score, item_desc)
-					)
+				local item_desc = stack:get_short_description()
+				if item_desc == "" then
+					item_desc = item_name
 				end
+
+				if ctf_jma_achieves then
+					ctf_jma_achieves.grant_achievement(pname, "cja:sic")
+				end
+
+				cur_mode.recent_rankings.add(pname, { score = score }, true)
+				cmsg.push_message_player(player, string.format("+ %s: %s", score, item_desc))
 			end
-			meta:set_string("dropped_by", "")
-			local inv = core.get_inventory({ type = "node", pos = pos })
-			local stack_ = inv:get_stack(listname, index)
-			stack_:get_meta():set_string("dropped_by", "")
-			inv:set_stack(listname, index, stack_)
 		end
+		meta:set_string("dropped_by", "")
+		local inv = minetest.get_inventory({ type="node", pos=pos })
+		local stack_ = inv:get_stack(listname,index)
+		stack_:get_meta():set_string("dropped_by", "")
+		inv:set_stack(listname, index, stack_)
+	end
 
 		function def.on_metadata_inventory_take(pos, listname, index, stack, player)
-			core.log(
-				"action",
-				string.format(
-					"%s takes %s from team chest at %s",
-					player:get_player_name(),
-					stack:to_string(),
-					core.pos_to_string(pos)
-				)
-			)
+			minetest.log("action", string.format("%s takes %s from team chest at %s",
+				player:get_player_name(),
+				stack:to_string(),
+				minetest.pos_to_string(pos)
+			))
 		end
 
-		core.register_node("ctf_teams:chest_" .. team, def)
+		minetest.register_node("ctf_teams:chest_" .. team, def)
 	end
 end

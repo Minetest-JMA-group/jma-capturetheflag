@@ -9,26 +9,40 @@ ctf_jma_achieves.register_achievement("cja:vct", {
 	name = S("Victory!"),
 	description = S("Win a match by being on the last team"),
 	icon = "ctf_jma_achieves_victory.png",
+	hint = S("Congratulations! Now do it again."),
+	order = 0,
+	type = "bronze"
+})
+ctf_jma_achieves.register_achievement("cja:sic", {
+	name = S("Sharing is Caring"),
+	description = S("Put an item in the team chest and get points"),
+	icon = "ctf_jma_achieves_chest.png",
+	hint = S("Steel tools for all!...wait, they're useless."),
+	order = 1,
 	type = "bronze"
 })
 ctf_jma_achieves.register_achievement("cja:tbs", {
 	name = S("'Tis But A Scratch"),
-	description = S("Heal 10HP or more at once with a medkit"),
+	description = S("Heal <mono>10</mono>HP or more at once with a medkit"),
+	hint = S("Depending on your condition, it could still be more than a scratch."),
 	icon = "ctf_jma_achieves_medkit.png",
+	order = 2,
 	type = "bronze"
 })
 ctf_jma_achieves.register_achievement("cja:ff", {
 	name = S("Fistfight"),
 	description = S("Kill someone by punching with your hand"),
 	icon = "ctf_jma_achieves_fist.png",
-	hint = S("Don't try to kill them by only using your hand.").."\n"..S("Try to get them to 1HP and then hit them."),
+	hint = S("...You don't have to only use your hand, you know?"),
+	order = 3,
 	type = "bronze"
 })
 ctf_jma_achieves.register_achievement("cja:ew", {
 	name = S("Emoji Wizard"),
 	description = S("Create a secret emoji icon"),
-	hint = S("Okay. You want a hint? Pickle."),
+	hint = S("Wow, what now? You want a hint? Pickle."),
 	icon = "ctf_jma_achieves_emoji.png",
+	order = 4,
 	type = "bronze"
 })
 
@@ -37,45 +51,56 @@ ctf_jma_achieves.register_achievement("cja:cap1", {
 	name = S("Capturing Newbie"),
 	description = S("Capture your first flag"),
 	icon = "ctf_jma_achieves_captures_1.png",
+	hint = S("Keep going!"),
+	order = 5,
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:btg", {
 	name = S("Beyond the Grave"),
 	description = S("Kill someone while dead"),
-	hint = S("Try trapping enemies, with spikes, lava, or whatever else."),
+	hint = S("Kamikaze!"),
 	icon = "ctf_jma_achieves_grave.png",
+	order = 6,
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:spdrn", {
 	name = S("Speedrun"),
-	description = S("Capture the last flag in less than 3 minutes"),
+	description = S("Capture the last flag in less than <mono>3</mono> minutes"),
 	icon = "ctf_jma_achieves_speedrun.png",
-	hint = S("Watch out for angry players!"),
+	hint = S("The worst is when they drag you into an empty corner and spawnkill you again and again."),
+	order = 7,
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:wntd", {
 	name = S("Wanted"),
 	description = S("Become bountied"),
 	icon = "ctf_jma_achieves_wanted.png",
+	hint = S("Killing and killing with no deaths in sight."),
+	order = 8,
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:ndd", {
 	name = S("Needed"),
 	description = S("Claim a bounty"),
 	icon = "ctf_jma_achieves_gold_bars.png",
+	hint = S("You could also call this \"Bounty Hunter\" ;)"),
+	order = 9,
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:cap2", {
 	name = S("Capturing Enthusiast"),
 	description = S("Capture 10 flags"),
 	icon = "ctf_jma_achieves_captures_2.png",
+	hint = S("Getting into the capturing groove!"),
+	order = 10,
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:pro", {
 	name = S("Professional"),
 	description = S("Have access to the pro chest in any mode"),
-	hint = S("This achievement is only granted when a match ends/you rejoin."),
+	hint = S("The R is slightly thinner than the other letters. Have a good day."),
 	icon = "ctf_jma_achieves_pro.png",
+	order = 11,
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:0_0", {
@@ -83,38 +108,48 @@ ctf_jma_achieves.register_achievement("cja:0_0", {
 	description = "???",
 	icon = "ctf_jma_achieves_0_0.png",
 	hint = S("Well, about your eyes... they would need to be in the highest league to spot THIS!"),
+	order = 12,
 	type = "silver"
 })
 
 ctf_jma_achieves.register_achievement("cja:cap3", {
 	name = S("Capturing Hobbyist"),
-	description = S("Capture 100 flags"),
+	description = S("Capture <mono>100</mono> flags"),
+	hint = S("You could make an EPIC CAPTURE compilation with these."),
 	icon = "ctf_jma_achieves_captures_3.png",
+	order = 13,
 	type = "gold"
 })
 ctf_jma_achieves.register_achievement("cja:atl", {
 	name = S("Above The Law"),
-	description = S("Get a bounty of 100 score or more"),
+	description = S("Get a bounty of <mono>100</mono> score or more"),
+	hint = S("Someone abused their shotty today."),
 	icon = "ctf_jma_achieves_wanted.png",
+	order = 14,
 	type = "gold"
 })
 ctf_jma_achieves.register_achievement("cja:mcapt", {
 	name = S("Multicapture"),
-	description = S("Capture 2 or more flags at once"),
+	description = S("Capture <mono>2</mono> or more flags at once"),
 	icon = "ctf_jma_achieves_multicap.png",
-	hint = S("If you can't do it on one map, try it again on another."),
+	hint = S("GET 2X AS MANY CAPTURES WITH THIS SIMPLE TRICK PROS DON'T WANT YOU TO KNOW ABOUT!"),
+	order = 15,
 	type = "gold"
 })
 ctf_jma_achieves.register_achievement("cja:cap4", {
 	name = S("Capturing Connoiseur"),
-	description = S("Capture 500 flags"),
+	description = S("Capture <mono>500</mono> flags"),
 	icon = "ctf_jma_achieves_captures_4.png",
+	hint = S("I think you're an expert in this field now."),
+	order = 16,
 	type = "gold"
 })
 ctf_jma_achieves.register_achievement("cja:slwrn", {
 	name = S("Slowrun"),
-	description = S("Capture the last flag in more than 45 minutes"),
-	icon = "ctf_jma_achieves_speedrun.png",			
+	description = S("Capture the last flag in more than <mono>45</mono> minutes"),
+	icon = "ctf_jma_achieves_speedrun.png",
+	hint = S("Gotta go slow."),
+	order = 17,
 	type = "gold"
 })
 
@@ -150,8 +185,8 @@ local function collect(player_name)
 end
 
 core.register_on_punchplayer(function(player, hitter, _, _, _, damage)
-	if not hitter:is_player() or player:get_hp() <= 0 then return false end
-	if player:get_hp() <= damage then
+	if not hitter:is_player() then return false end
+	if player:get_hp() <= 0 then
 		local hname = hitter:get_player_name()
 		
 		if hitter:get_hp() == 0 then
