@@ -185,10 +185,9 @@ local function collect(player_name)
 end
 
 core.register_on_punchplayer(function(player, hitter, _, _, _, damage)
-	if not hitter:is_player() then return false end
+	local hname = hitter:get_player_name()
+	if not hitter:is_player() or hname == player:get_player_name() then return false end
 	if player:get_hp() <= 0 then
-		local hname = hitter:get_player_name()
-		
 		if hitter:get_hp() == 0 then
 			grant(hname, "cja:btg")
 		end
