@@ -26,6 +26,9 @@ minetest.register_node("ctf_map:unwalkable_cobble", {
 --- Spike Trap
 --
 
+--- @type { [string]: boolean }
+SPIKES_POINTABILITIES = { ["ctf_map:spike"] = true }
+
 minetest.register_node("ctf_map:spike", {
 	description = "Spike\n7 DPS\nDamages enemies that walk on it",
 	drawtype = "plantlike",
@@ -37,6 +40,7 @@ minetest.register_node("ctf_map:spike", {
 	sunlight_propagates = true,
 	walkable = false,
 	damage_per_second = 5,
+	pointable = false,
 	groups = { cracky = 1, level = 2 },
 	selection_box = {
 		type = "fixed",
@@ -81,6 +85,7 @@ minetest.register_node("ctf_map:spike", {
 
 for _, team in ipairs(ctf_teams.teamlist) do
 	local spikecolor = ctf_teams.team[team].color
+	SPIKES_POINTABILITIES["ctf_map:spike_" .. team] = true
 
 	minetest.register_node("ctf_map:spike_" .. team, {
 		description = HumanReadable(team) .. " Team Spike",
@@ -90,6 +95,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 		use_texture_alpha = "clip",
 		paramtype = "light",
 		paramtype2 = "meshoptions",
+		pointable = false,
 		sunlight_propagates = true,
 		walkable = false,
 		damage_per_second = 5,
