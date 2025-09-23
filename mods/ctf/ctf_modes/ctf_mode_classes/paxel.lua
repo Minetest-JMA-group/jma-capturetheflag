@@ -11,15 +11,13 @@ local dig_timers = {}
 
 local function is_diggable(node)
 	local name = node.name
-	return name:find("default:") and (
-		name:find("cobble") or name:find("wood" ) or
-		name:find("leaves") or name:find("dirt" ) or
-		name:find("gravel") or name:find("sand" ) or
-		name:find("tree"  ) or name:find("brick") or
-		name:find("glass" ) or name:find("ice"  ) or
-		name:find("snow"  )
-	)
-	or name:find("stairs:")
+	return name:find("default:")
+			and (name:find("cobble") or name:find("wood") or name:find("leaves") or name:find(
+				"dirt"
+			) or name:find("gravel") or name:find("sand") or name:find("tree") or name:find(
+				"brick"
+			) or name:find("glass") or name:find("ice") or name:find("snow"))
+		or name:find("stairs:")
 end
 
 local function dig(pname, ppos, power, retry)
@@ -39,7 +37,8 @@ local function dig(pname, ppos, power, retry)
 		if node.name ~= "air" then
 			if is_diggable(node) then
 				minetest.dig_node(pos)
-				dig_timers[pname] = minetest.after(DIG_SPEED, dig, pname, pos, power - 1, PAXEL_RETRY)
+				dig_timers[pname] =
+					minetest.after(DIG_SPEED, dig, pname, pos, power - 1, PAXEL_RETRY)
 			else
 				hud_events.new(pname, {
 					quick = true,
@@ -74,15 +73,18 @@ minetest.register_tool("ctf_mode_classes:support_paxel", {
 		full_punch_interval = 1.0,
 		max_drop_level = 1,
 		groupcaps = {
-			cracky = {times={[1]=4.00, [2]=1.60, [3]=0.80}, uses=0, maxlevel=2},
-			crumbly = {times={[1]=1.50, [2]=0.90, [3]=0.40}, uses=0, maxlevel=2},
-			choppy = {times={[1]=2.50, [2]=1.40, [3]=1.00}, uses=0, maxlevel=2},
+			cracky = { times = { [1] = 4.00, [2] = 1.60, [3] = 0.80 }, uses = 0, maxlevel = 2 },
+			crumbly = { times = { [1] = 1.50, [2] = 0.90, [3] = 0.40 }, uses = 0, maxlevel = 2 },
+			choppy = { times = { [1] = 2.50, [2] = 1.40, [3] = 1.00 }, uses = 0, maxlevel = 2 },
 		},
-		damage_groups = {fleshy=4},
+		damage_groups = { fleshy = 4 },
 		punch_attack_uses = 0,
 	},
-	groups = {pickaxe = 1, tier = 10},
-	sound = {breaks = "default_tool_breaks"},
+	groups = { pickaxe = 1, tier = 10 },
+	sound = { breaks = "default_tool_breaks" },
+	pointabilities = {
+		nodes = SPIKES_POINTABILITIES,
+	},
 
 	on_place = function(itemstack, user, pointed_thing)
 		if pointed_thing and itemstack:get_wear() == 0 then
@@ -105,7 +107,8 @@ minetest.register_tool("ctf_mode_classes:support_paxel", {
 					dig_timers[pname]:cancel()
 				end
 
-				dig_timers[pname] = minetest.after(DIG_SPEED, dig, pname, pos, PAXEL_POWER, PAXEL_RETRY)
+				dig_timers[pname] =
+					minetest.after(DIG_SPEED, dig, pname, pos, PAXEL_POWER, PAXEL_RETRY)
 
 				local dstep = math.floor(65534 / PAXEL_COOLDOWN_TIME)
 				ctf_modebase.update_wear.start_update(pname, itemstack, dstep, true)
