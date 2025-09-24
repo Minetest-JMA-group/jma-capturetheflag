@@ -41,19 +41,6 @@ local item_value = {
 
 local S = core.get_translator(minetest.get_current_modname())
 
---- Does the player have access to the chest?
---- Example usage: `has_normal, has_pro = get_chest_access(name)`
---- @param name PlayerName
---- @return boolean, boolean
-local function get_chest_access(name)
-	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then
-		return false, false
-	end
-
-	return current_mode.get_chest_access(name)
-end
-
 --- @param listname string | "helper"
 --- @param stack Stack
 --- @return boolean
@@ -123,13 +110,13 @@ for _, team in ipairs(ctf_teams.teamlist) do
 		end
 
 		function def.on_rightclick(pos, node, player)
-			local name = player:get_player_name()
-
-			local flag_captured = ctf_modebase.flag_captured[team]
-			if not flag_captured and team ~= ctf_teams.get(name) then
+			local pname = player:get_player_name()
+			local reg_access, pro_access, deny_reason =
+				ctf_modebase.current_mode.team_chest_access(team, pname)
+			if not reg_access then
 				hud_events.new(player, {
 					quick = true,
-					text = S("You're not on team @1", HumanReadable(team)),
+					text = deny_reason or S("You can't access this teamchest"),
 					color = "warning",
 				})
 				return
@@ -142,25 +129,18 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				"list[current_player;main;1,9.08;8,3;8]",
 			}, "")
 
-			local reg_access, pro_access
-			if not flag_captured and ctf_rankings.backend ~= "dummy" then
-				reg_access, pro_access = get_chest_access(name)
-			else
-				reg_access, pro_access = true, true
-			end
-
-			if reg_access ~= true then
+			if not reg_access then
 				formspec = formspec
 					.. "label[0.75,3;"
 					.. core.formspec_escape(
 						core.wrap_text(
-							reg_access or S("You aren't allowed to access the team chest"),
+							deny_reason or S("You can't access this teamchest"),
 							60
 						)
 					)
 					.. "]"
 
-				core.show_formspec(name, "ctf_teams:no_access", formspec)
+				core.show_formspec(pname, "ctf_teams:no_access", formspec)
 				return
 			end
 
@@ -217,21 +197,16 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			count,
 			player
 		)
-			local name = player:get_player_name()
-
-			if team ~= ctf_teams.get(name) then
+			local pname = player:get_player_name()
+			local reg_access, pro_access, deny_reason =
+				ctf_modbase.current_mode.team_chest_access(team, pname)
+			if not reg_access then
 				hud_events.new(player, {
 					quick = true,
-					text = S("You're not on team") .. " " .. team,
+					text = deny_reason,
 					color = "warning",
 				})
 				return 0
-			end
-
-			local reg_access, pro_access = get_chest_access(name)
-
-			if ctf_rankings.backend == "dummy" then
-				reg_access, pro_access = true, true
 			end
 
 			if
@@ -260,12 +235,13 @@ for _, team in ipairs(ctf_teams.teamlist) do
 		end
 
 		function def.allow_metadata_inventory_put(pos, listname, index, stack, player)
-			local name = player:get_player_name()
-
-			if team ~= ctf_teams.get(name) then
+			local pname = player:get_player_name()
+			local reg_access, pro_access, deny_reason =
+				ctf_modbase.current_mode.team_chest_access(team, pname)
+			if not reg_access then
 				hud_events.new(player, {
 					quick = true,
-					text = S("You're not on team") .. " " .. team,
+					text = deny_reason,
 					color = "warning",
 				})
 				return 0
@@ -274,13 +250,6 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			if not ctf_teams.is_allowed_in_team_chest(listname, stack, player) then
 				return 0
 			end
-
-			local reg_access, pro_access = get_chest_access(name)
-
-			if ctf_rankings.backend == "dummy" then
-				reg_access, pro_access = true, true
-			end
-
 			if reg_access == true and (pro_access == true or listname ~= "pro") then
 				local chestinv = core.get_inventory({ type = "node", pos = pos })
 				if chestinv:room_for_item("pro", stack) then
@@ -304,31 +273,22 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			if listname == "helper" then
 				return 0
 			end
+			local pname = player:get_player_name()
+			local reg_access, pro_access, deny_reason =
+				ctf_modebase.current_mode.team_chest_access(team, pname)
 
-			if ctf_modebase.flag_captured[team] then
-				return stack:get_count()
-			end
-
-			local name = player:get_player_name()
-
-			if team ~= ctf_teams.get(name) then
+			if reg_access then
+				if (listname == "pro" and pro_access) or listname ~= "pro" then
+					return stack:get_count()
+				else
+					return 0
+				end
+			else
 				hud_events.new(player, {
 					quick = true,
-					text = S("You're not on team") .. " " .. team,
+					text = deny_reason,
 					color = "warning",
 				})
-				return 0
-			end
-
-			local reg_access, pro_access = get_chest_access(name)
-
-			if ctf_rankings.backend == "dummy" then
-				reg_access, pro_access = true, true
-			end
-
-			if reg_access == true and (pro_access == true or listname ~= "pro") then
-				return stack:get_count()
-			else
 				return 0
 			end
 		end
