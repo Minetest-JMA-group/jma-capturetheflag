@@ -71,11 +71,10 @@ ctf_ranged.simple_register_gun(shotgun_name, {
 		meta:set_int("shotgun_wear", itemstack:get_wear())
 		itemstack:set_wear(meta:get_int("grenade_launcher_wear"))
 		return itemstack
-	end
+	end,
 })
 
-local shotgun_wield_scale = {x=1.5,y=1.5,z=2}
-
+local shotgun_wield_scale = { x = 1.5, y = 1.5, z = 2 }
 
 -- Shotgun unloaded
 minetest.override_item(shotgun_name, {
@@ -131,18 +130,17 @@ end
 
 local radius = 2
 
-
 local shot_types = {
 	normal = {
 		speed = 18,
 		radius = 2,
-		wear = WEAR_MAX / 5
+		wear = WEAR_MAX / 5,
 	},
 	powered = {
 		speed = 30,
 		radius = 4,
-		wear = WEAR_MAX / 3
-	}
+		wear = WEAR_MAX / 3,
+	},
 }
 
 minetest.register_craftitem("ctf_mode_chaos:power_charge", {
@@ -153,7 +151,7 @@ minetest.register_craftitem("ctf_mode_chaos:power_charge", {
 
 minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 	description = "Grenade Launcher",
-	wield_scale = {x=2.0,y=2.0,z=2.5},
+	wield_scale = { x = 2.0, y = 2.0, z = 2.5 },
 	inventory_image = "ctf_mode_chaos_grenade_launcher.png",
 	inventory_overlay = "ctf_modebase_special_item.png",
 	wield_image = "ctf_mode_chaos_grenade_launcher.png",
@@ -210,7 +208,9 @@ minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 						attached = obj,
 					})
 					obj:set_properties({
-						textures = {"ctf_mode_chaos_grenade_powered.png^[multiply:red:100"}
+						textures = {
+							"ctf_mode_chaos_grenade_powered.png^[multiply:red:100",
+						},
 					})
 				end
 
@@ -222,7 +222,7 @@ minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 		minetest.sound_play("ctf_mode_chaos_grenade_launcher_plop", {
 			to_player = name,
 			gain = 0.5,
-			pitch = shot_type == "powered" and 0.5 or 1.1
+			pitch = shot_type == "powered" and 0.5 or 1.1,
 		})
 
 		local new_wear = itemstack:get_wear() + stats.wear
@@ -255,7 +255,7 @@ minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 		itemstack:set_wear(meta:get_int("shotgun_wear"))
 
 		return itemstack
-	end
+	end,
 })
 
 local function can_explode(pos, pname, radius)
@@ -271,7 +271,10 @@ local function can_explode(pos, pname, radius)
 			if not ctf_modebase.flag_captured[flagteam] and team.flag_pos then
 				local distance_from_flag = vector.distance(pos, team.flag_pos)
 				if distance_from_flag <= radius then
-					minetest.chat_send_player(pname, "You can't explode grenade so close to a flag!")
+					minetest.chat_send_player(
+						pname,
+						"You can't explode grenade so close to a flag!"
+					)
 					return false
 				end
 			end
@@ -283,15 +286,15 @@ end
 minetest.register_entity("ctf_mode_chaos:grenade", {
 	initial_properties = {
 		visual = "sprite",
-		visual_size = {x = 1, y = 1},
-		textures = {"ctf_mode_chaos_grenade.png^[multiply:black:100"},
+		visual_size = { x = 1, y = 1 },
+		textures = { "ctf_mode_chaos_grenade.png^[multiply:black:100" },
 		physical = true,
 		makes_footstep_sound = false,
 		backface_culling = false,
 		static_save = false,
 		pointable = false,
 		collide_with_objects = true,
-		collisionbox = {-0.2, -0.2, -0.2, 0.2, 0.2, 0.2}
+		collisionbox = { -0.2, -0.2, -0.2, 0.2, 0.2, 0.2 },
 	},
 	timer = 0,
 	on_activate = function(self)
@@ -299,12 +302,12 @@ minetest.register_entity("ctf_mode_chaos:grenade", {
 			attached = self.object,
 			amount = 5,
 			time = 1,
-			minpos = {x = 0, y = -0.5, z = 0}, -- Offset to middle of player
-			maxpos = {x = 0, y = 0.5, z = 0},
-			minvel = {x = 0, y = 0, z = 0},
+			minpos = { x = 0, y = -0.5, z = 0 }, -- Offset to middle of player
+			maxpos = { x = 0, y = 0.5, z = 0 },
+			minvel = { x = 0, y = 0, z = 0 },
 			maxvel = self.object:get_velocity(),
-			minacc = {x = 0, y = 5, z = 0},
-			maxacc = {x = 0, y = 7, z = 0},
+			minacc = { x = 0, y = 5, z = 0 },
+			maxacc = { x = 0, y = 7, z = 0 },
 			minexptime = 1.5,
 			maxexptime = 3.0,
 			minsize = 2,
@@ -323,7 +326,9 @@ minetest.register_entity("ctf_mode_chaos:grenade", {
 		end
 
 		local pos = self.object:get_pos()
-		if not pos then return end
+		if not pos then
+			return
+		end
 
 		if moveresult.collides then
 			local rad = self.radius or radius
@@ -344,5 +349,5 @@ minetest.register_entity("ctf_mode_chaos:grenade", {
 			vel.y = vel.y - gravity * dtime
 			self.object:set_velocity(vel)
 		end
-	end
+	end,
 })

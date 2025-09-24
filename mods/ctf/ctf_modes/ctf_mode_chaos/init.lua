@@ -28,20 +28,31 @@ ctf_modebase.register_mode("chaos", {
 		"ctf_map:spike",
 		"ctf_map:reinforced_cobble 2",
 	},
-	physics = {sneak_glitch = true, new_move = true},
+	physics = { sneak_glitch = true, new_move = true },
 
 	team_chest_items = {
-		"default:cobble 80", "default:wood 80", "ctf_map:damage_cobble 20", "ctf_map:reinforced_cobble 20",
-		"default:torch 30", "ctf_teams:door_steel 2", "default:obsidian 35", "bucket:bucket_water 1",
-		"rocket_launcher:launcher", "rocket_launcher:rocket 5", "heal_block:heal",
+		"default:cobble 80",
+		"default:wood 80",
+		"ctf_map:damage_cobble 20",
+		"ctf_map:reinforced_cobble 20",
+		"default:torch 30",
+		"ctf_teams:door_steel 2",
+		"default:obsidian 35",
+		"bucket:bucket_water 1",
+		"rocket_launcher:launcher",
+		"rocket_launcher:rocket 5",
+		"heal_block:heal",
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,
 	summary_ranks = {
 		_sort = "score",
 		"score",
-		"flag_captures", "flag_attempts",
-		"kills", "kill_assists", "bounty_kills",
+		"flag_captures",
+		"flag_attempts",
+		"kills",
+		"kill_assists",
+		"bounty_kills",
 		"deaths",
 	},
 	build_timer = 25,
@@ -57,13 +68,15 @@ ctf_modebase.register_mode("chaos", {
 			"ctf_mode_chaos:knockback_grenade_tool",
 			"default:pick_steel",
 			"default:axe_steel",
-			"default:wood 60"
+			"default:wood 60",
 		}
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
 	on_mode_start = function()
-		ctf_modebase.bounties.bounty_reward_func = ctf_modebase.bounty_algo.kd.bounty_reward_func
-		ctf_modebase.bounties.get_next_bounty = ctf_modebase.bounty_algo.kd.get_next_bounty
+		ctf_modebase.bounties.bounty_reward_func =
+			ctf_modebase.bounty_algo.kd.bounty_reward_func
+		ctf_modebase.bounties.get_next_bounty =
+			ctf_modebase.bounty_algo.kd.get_next_bounty
 
 		random_gifts.set_items(rg_treasures)
 		random_gifts.run_spawn_timer()
@@ -91,10 +104,25 @@ ctf_modebase.register_mode("chaos", {
 	player_is_pro = features.player_is_pro,
 	can_punchplayer = features.can_punchplayer,
 	on_punchplayer = function(player, hitter, damage, unneeded, tool_capabilities, ...)
-		return features.on_punchplayer(player, hitter, damage, unneeded, tool_capabilities, ...)
+		return features.on_punchplayer(
+			player,
+			hitter,
+			damage,
+			unneeded,
+			tool_capabilities,
+			...
+		)
 	end,
 	on_healplayer = features.on_healplayer,
-	calculate_knockback = function(player, hitter, time_from_last_punch, tool_capabilities, dir, distance, damage)
+	calculate_knockback = function(
+		player,
+		hitter,
+		time_from_last_punch,
+		tool_capabilities,
+		dir,
+		distance,
+		damage
+	)
 		if features.can_punchplayer(player, hitter) then
 			return 4 * (tool_capabilities.damage_groups.knockback or 1)
 		else
@@ -105,9 +133,9 @@ ctf_modebase.register_mode("chaos", {
 
 minetest.register_chatcommand("wannachaos", {
 	description = "Allow chaos mode once",
-	privs = {dev = true},
+	privs = { dev = true },
 	func = function()
 		allow_once = true
 		return true, "Chaos mode enabled for one-time"
-	end
+	end,
 })

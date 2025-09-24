@@ -6,59 +6,118 @@ local old_bounty_reward_func = ctf_modebase.bounties.bounty_reward_func
 local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 ctf_modebase.register_mode("classic", {
 	treasures = {
-		["default:ladder_wood" ] = {                max_count = 20, rarity = 0.3, max_stacks = 5},
-		["default:torch"       ] = {                max_count = 20, rarity = 0.3, max_stacks = 5},
+		["default:ladder_wood"] = {
+			max_count = 20,
+			rarity = 0.3,
+			max_stacks = 5,
+		},
+		["default:torch"] = {
+			max_count = 20,
+			rarity = 0.3,
+			max_stacks = 5,
+		},
 
-		["default:cobble"      ] = {min_count = 20, max_count = 99, rarity = 0.3, max_stacks = 2},
-		["default:wood"        ] = {min_count = 20, max_count = 99, rarity = 0.2, max_stacks = 2},
+		["default:cobble"] = {
+			min_count = 20,
+			max_count = 99,
+			rarity = 0.3,
+			max_stacks = 2,
+		},
+		["default:wood"] = {
+			min_count = 20,
+			max_count = 99,
+			rarity = 0.2,
+			max_stacks = 2,
+		},
 
-		["ctf_teams:door_steel"] = {rarity = 0.2, max_stacks = 3},
+		["ctf_teams:door_steel"] = { rarity = 0.2, max_stacks = 3 },
 
-		["wind_charges:wind_charge" ] = {min_count = 4, max_count = 8, rarity = 0.4 , max_stacks = 1},
+		["wind_charges:wind_charge"] = {
+			min_count = 4,
+			max_count = 8,
+			rarity = 0.4,
+			max_stacks = 1,
+		},
 
-		["default:pick_steel"  ] = {rarity = 0.4, max_stacks = 3},
-		["default:shovel_steel"] = {rarity = 0.4, max_stacks = 2},
-		["default:axe_steel"   ] = {rarity = 0.4, max_stacks = 2},
+		["default:pick_steel"] = { rarity = 0.4, max_stacks = 3 },
+		["default:shovel_steel"] = { rarity = 0.4, max_stacks = 2 },
+		["default:axe_steel"] = { rarity = 0.4, max_stacks = 2 },
 
-		["ctf_melee:sword_steel"  ] = {rarity = 0.2  , max_stacks = 2},
+		["ctf_melee:sword_steel"] = { rarity = 0.2, max_stacks = 2 },
 
-		["ctf_ranged:pistol_loaded" ] = {rarity = 0.2 , max_stacks = 2},
-		["ctf_ranged:rifle_loaded"  ] = {rarity = 0.2                 },
-		["ctf_ranged:shotgun_loaded"] = {rarity = 0.05                },
-		["ctf_ranged:assault_rifle_loaded"    ] = {rarity = 0.05                },
+		["ctf_ranged:pistol_loaded"] = { rarity = 0.2, max_stacks = 2 },
+		["ctf_ranged:rifle_loaded"] = { rarity = 0.2 },
+		["ctf_ranged:shotgun_loaded"] = { rarity = 0.05 },
+		["ctf_ranged:assault_rifle_loaded"] = { rarity = 0.05 },
 
-		["ctf_ranged:ammo" ] = {min_count = 3, max_count = 10, rarity = 0.3 , max_stacks = 2},
-		["default:apple"   ] = {min_count = 6, max_count = 18, rarity = 0.2 , max_stacks = 2},
+		["ctf_ranged:ammo"] = {
+			min_count = 3,
+			max_count = 10,
+			rarity = 0.3,
+			max_stacks = 2,
+		},
+		["default:apple"] = {
+			min_count = 6,
+			max_count = 18,
+			rarity = 0.2,
+			max_stacks = 2,
+		},
 
-		["grenades:frag" ] = {rarity = 0.1, max_stacks = 1},
-		["grenades:smoke"] = {rarity = 0.2, max_stacks = 2},
+		["grenades:frag"] = { rarity = 0.1, max_stacks = 1 },
+		["grenades:smoke"] = { rarity = 0.2, max_stacks = 2 },
 
-		["default:water_source"] = {rarity = 0.2, max_stacks = 1},
-		["easter_egg:egg"] = {rarity = 0.03, max_stacks = 1},
-		["ctf_landmine:landmine"] = {min_count = 1, max_count =  10, max_stacks = 1, rarity = 0.3},
-		["boats:boat"] = {min_count = 1, max_count =  1, max_stacks = 1, rarity = 0.09},
+		["default:water_source"] = { rarity = 0.2, max_stacks = 1 },
+		["easter_egg:egg"] = { rarity = 0.03, max_stacks = 1 },
+		["ctf_landmine:landmine"] = {
+			min_count = 1,
+			max_count = 10,
+			max_stacks = 1,
+			rarity = 0.3,
+		},
+		["boats:boat"] = { min_count = 1, max_count = 1, max_stacks = 1, rarity = 0.09 },
 	},
-	crafts = {"ctf_ranged:ammo", "ctf_melee:sword_steel", "ctf_melee:sword_mese", "ctf_melee:sword_diamond"},
-	physics = {sneak_glitch = true, new_move = false},
-	team_chest_items = {"default:cobble 99", "default:wood 99", "default:torch 30", "ctf_teams:door_steel 2","heal_block:heal",},
+	crafts = {
+		"ctf_ranged:ammo",
+		"ctf_melee:sword_steel",
+		"ctf_melee:sword_mese",
+		"ctf_melee:sword_diamond",
+	},
+	physics = { sneak_glitch = true, new_move = false },
+	team_chest_items = {
+		"default:cobble 99",
+		"default:wood 99",
+		"default:torch 30",
+		"ctf_teams:door_steel 2",
+		"heal_block:heal",
+	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,
 	summary_ranks = {
 		_sort = "score",
 		"score",
-		"flag_captures", "flag_attempts",
-		"kills", "kill_assists", "bounty_kills",
+		"flag_captures",
+		"flag_attempts",
+		"kills",
+		"kill_assists",
+		"bounty_kills",
 		"deaths",
-		"hp_healed"
+		"hp_healed",
 	},
 
 	stuff_provider = function()
-		return {"default:sword_stone", "default:pick_stone", "default:torch 15", "default:stick 5"}
+		return {
+			"default:sword_stone",
+			"default:pick_stone",
+			"default:torch 15",
+			"default:stick 5",
+		}
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
 	on_mode_start = function()
-		ctf_modebase.bounties.bounty_reward_func = ctf_modebase.bounty_algo.kd.bounty_reward_func
-		ctf_modebase.bounties.get_next_bounty = ctf_modebase.bounty_algo.kd.get_next_bounty
+		ctf_modebase.bounties.bounty_reward_func =
+			ctf_modebase.bounty_algo.kd.bounty_reward_func
+		ctf_modebase.bounties.get_next_bounty =
+			ctf_modebase.bounty_algo.kd.get_next_bounty
 	end,
 	on_mode_end = function()
 		ctf_modebase.bounties.bounty_reward_func = old_bounty_reward_func
