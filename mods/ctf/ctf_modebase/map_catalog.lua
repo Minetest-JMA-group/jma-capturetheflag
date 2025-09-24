@@ -21,7 +21,8 @@ local function init()
 			if map.map_version and map.enabled then
 				table.insert(ctf_modebase.map_catalog.maps, map)
 				table.insert(ctf_modebase.map_catalog.map_names, map.name)
-				ctf_modebase.map_catalog.map_dirnames[map.dirname] = #ctf_modebase.map_catalog.maps
+				ctf_modebase.map_catalog.map_dirnames[map.dirname] =
+					#ctf_modebase.map_catalog.maps
 			end
 		else
 			minetest.log("info", "Map " .. dirname .. " is invalid")
@@ -42,15 +43,19 @@ end
 
 minetest.register_on_mods_loaded(function()
 	init()
-	assert(#ctf_modebase.map_catalog.maps > 0 or ctf_core.settings.server_mode == "mapedit")
+	assert(
+		#ctf_modebase.map_catalog.maps > 0 or ctf_core.settings.server_mode == "mapedit"
+	)
 end)
 
 function ctf_modebase.map_catalog.sample_maps(filter, n)
 	local maps = {}
-	for _, pool in pairs({maps_pool, FULL_POOL and used_maps}) do
+	for _, pool in pairs({ maps_pool, FULL_POOL and used_maps }) do
 		for idx, map in ipairs(pool) do
-			if map ~= ctf_modebase.map_catalog.current_map and
-					(not filter or filter(ctf_modebase.map_catalog.maps[map])) then
+			if
+				map ~= ctf_modebase.map_catalog.current_map
+				and (not filter or filter(ctf_modebase.map_catalog.maps[map]))
+			then
 				table.insert(maps, FULL_POOL and map or idx)
 			end
 		end
@@ -63,10 +68,8 @@ function ctf_modebase.map_catalog.sample_maps(filter, n)
 		table.insert(selected, maps[i])
 	end
 
-
 	return selected
 end
-
 
 function ctf_modebase.map_catalog.select_map(selected)
 	if not selected then
@@ -84,7 +87,8 @@ function ctf_modebase.map_catalog.select_map(selected)
 				maps_pool[selected] = maps_pool[#maps_pool]
 				maps_pool[#maps_pool] = nil
 			else
-				used_maps[used_maps_idx], maps_pool[selected] = maps_pool[selected], used_maps[used_maps_idx]
+				used_maps[used_maps_idx], maps_pool[selected] =
+					maps_pool[selected], used_maps[used_maps_idx]
 				used_maps_idx = used_maps_idx + 1
 				if used_maps_idx > #used_maps then
 					used_maps_idx = 1

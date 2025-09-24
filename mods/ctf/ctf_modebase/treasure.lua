@@ -17,16 +17,20 @@ end
 
 -- name ; min_count ; max_count ; max_stacks ; rarity ;;
 function ctf_map.treasure.treasure_from_string(str)
-	if not str then return {} end
+	if not str then
+		return {}
+	end
 
 	local out = {}
 
-	for name, min_count, max_count, max_stacks, rarity in str:gmatch("([^%;]+);(%d*);(%d*);(%d*);([%d.]*);%d;") do
+	for name, min_count, max_count, max_stacks, rarity in
+		str:gmatch("([^%;]+);(%d*);(%d*);(%d*);([%d.]*);%d;")
+	do
 		out[name] = {
-			min_count  = tonumber(min_count)  or 1,
-			max_count  = tonumber(max_count)  or 1,
+			min_count = tonumber(min_count) or 1,
+			max_count = tonumber(max_count) or 1,
 			max_stacks = tonumber(max_stacks) or 1,
-			rarity     = tonumber(rarity)     or 0.5,
+			rarity = tonumber(rarity) or 0.5,
 			TREASURE_VERSION,
 		}
 	end
@@ -35,13 +39,17 @@ function ctf_map.treasure.treasure_from_string(str)
 end
 
 function ctf_map.treasure.treasure_to_string(treasures)
-	if not treasures then return "" end
+	if not treasures then
+		return ""
+	end
 
 	local out = ""
 
 	for name, t in pairs(treasures) do
-		out = string.format("%s%s;%s;%s;%s;%s;%d;",
-			out, name,
+		out = string.format(
+			"%s%s;%s;%s;%s;%s;%d;",
+			out,
+			name,
 			t.min_count or 1,
 			t.max_count or 1,
 			t.max_stacks or 1,

@@ -5,7 +5,9 @@ end
 
 function ctf_modebase.on_mode_end()
 	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then return end
+	if not current_mode then
+		return
+	end
 	current_mode.on_mode_end()
 end
 
@@ -13,7 +15,9 @@ function ctf_modebase.on_mode_start()
 	RunCallbacks(ctf_api.registered_on_mode_start)
 
 	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then return end
+	if not current_mode then
+		return
+	end
 	current_mode.on_mode_start()
 end
 
@@ -21,7 +25,9 @@ function ctf_modebase.on_new_match()
 	RunCallbacks(ctf_api.registered_on_new_match)
 
 	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then return end
+	if not current_mode then
+		return
+	end
 	current_mode.on_new_match()
 end
 
@@ -35,7 +41,9 @@ function ctf_modebase.on_match_end()
 	RunCallbacks(ctf_api.registered_on_match_end)
 
 	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then return end
+	if not current_mode then
+		return
+	end
 	current_mode.on_match_end()
 end
 
@@ -47,7 +55,9 @@ function ctf_modebase.on_respawnplayer(player)
 	RunCallbacks(ctf_api.registered_on_respawnplayer, player)
 
 	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then return end
+	if not current_mode then
+		return
+	end
 	current_mode.on_respawnplayer(player)
 end
 
@@ -58,7 +68,9 @@ minetest.register_on_leaveplayer(function(...)
 	end
 
 	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then return end
+	if not current_mode then
+		return
+	end
 	current_mode.on_leaveplayer(...)
 end)
 
@@ -69,13 +81,17 @@ minetest.register_on_dieplayer(function(...)
 	end
 
 	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then return end
+	if not current_mode then
+		return
+	end
 	current_mode.on_dieplayer(...)
 end)
 
 ctf_teams.register_on_allocplayer(function(...)
 	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then return true end
+	if not current_mode then
+		return true
+	end
 	current_mode.on_allocplayer(...)
 end)
 
@@ -89,47 +105,60 @@ local function punch_sound(player)
 	}, true)
 end
 
-minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
-	local team1, team2 = ctf_teams.get(player), ctf_teams.get(hitter)
+minetest.register_on_punchplayer(
+	function(player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
+		local team1, team2 = ctf_teams.get(player), ctf_teams.get(hitter)
 
-	if not team1 and not team2 then
-		if ctf_jma_elysium.can_hit_player(player, hitter) then
+		if not team1 and not team2 then
+			if ctf_jma_elysium.can_hit_player(player, hitter) then
+				punch_sound(player)
+				return
+			end
+
+			return true
+		end
+
+		local current_mode = ctf_modebase:get_current_mode()
+		if not current_mode then
+			return true
+		end
+
+		local real_damage, error = current_mode.on_punchplayer(
+			player,
+			hitter,
+			damage,
+			time_from_last_punch,
+			tool_capabilities,
+			dir
+		)
+
+		if real_damage then
+			player:set_hp(player:get_hp() - real_damage, { type = "punch" })
 			punch_sound(player)
-			return
+		end
+
+		if error then
+			hud_events.new(hitter, {
+				quick = true,
+				text = error,
+				color = "warning",
+			})
 		end
 
 		return true
 	end
-
-	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then return true end
-
-	local real_damage, error = current_mode.on_punchplayer(
-		player, hitter, damage, time_from_last_punch, tool_capabilities, dir
-	)
-
-	if real_damage then
-		player:set_hp(player:get_hp() - real_damage, {type="punch"})
-		punch_sound(player)
-	end
-
-	if error then
-		hud_events.new(hitter, {
-			quick = true,
-			text = error,
-			color = "warning",
-		})
-	end
-
-	return true
-end)
+)
 
 ctf_healing.register_on_heal(function(player, patient, ...)
 	local current_mode = ctf_modebase:get_current_mode()
-	if not current_mode then return true end
+	if not current_mode then
+		return true
+	end
 	local team1, team2 = ctf_teams.get(player), ctf_teams.get(patient)
 
-	if not team1 and not team2 then return end
+	if not team1 and not team2 then
+		return
+	end
 
 	return current_mode.on_healplayer(player, patient, ...)
 end)
@@ -145,11 +174,15 @@ function ctf_modebase.on_flag_capture(capturer, flagteams)
 end
 
 ctf_teams.team_allocator = function(...)
-	if not ctf_modebase.in_game then return end
+	if not ctf_modebase.in_game then
+		return
+	end
 
 	local current_mode = ctf_modebase:get_current_mode()
 
-	if not current_mode or #ctf_teams.current_team_list <= 0 then return end
+	if not current_mode or #ctf_teams.current_team_list <= 0 then
+		return
+	end
 
 	if current_mode.team_allocator then
 		return current_mode.team_allocator(...)
@@ -206,8 +239,12 @@ minetest.register_allow_player_inventory_action(function(player, action, invento
 
 	local current_mode = ctf_modebase:get_current_mode()
 
-	if current_mode and current_mode.is_bound_item and
-	action == "take" and current_mode.is_bound_item(player, info.stack:get_name()) then
+	if
+		current_mode
+		and current_mode.is_bound_item
+		and action == "take"
+		and current_mode.is_bound_item(player, info.stack:get_name())
+	then
 		return 0
 	end
 end)
