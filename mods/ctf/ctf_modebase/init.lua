@@ -48,6 +48,7 @@ ctf_modebase = {
 
 ctf_gui.old_init()
 
+local S = core.get_translator(core.get_current_modname())
 -- Can be added to by other mods, like irc
 function ctf_modebase.announce(msg)
 	minetest.log("action", msg)
@@ -118,8 +119,16 @@ minetest.register_on_mods_loaded(function()
 	for _, name in pairs(ctf_modebase.modelist) do
 		ctf_settings.register("ctf_modebase:default_vote_" .. name, {
 			type = "list",
-			description = "Match count vote for the mode '" .. HumanReadable(name) .. "'",
-			list = { HumanReadable(name) .. " - Ask", "0", "1", "2", "3", "4", "5" },
+			description = S("Match count vote for the mode '@1'", HumanReadable(name)),
+			list = {
+				S("@1 - Ask", HumanReadable(name)),
+				S("0"),
+				S("1"),
+				S("2"),
+				S("3"),
+				S("4"),
+				S("5"),
+			},
 			_list_map = { "ask", 0, 1, 2, 3, 4, 5 },
 			default = "1", -- "Ask"
 		})
@@ -131,16 +140,16 @@ minetest.override_chatcommand("pulverize", {
 })
 
 minetest.register_chatcommand("mode", {
-	description = "Prints the current mode and matches played",
+	description = S("Prints the current mode and matches played"),
 	func = function(name)
 		local mode = ctf_modebase.current_mode
 		if not mode then
-			return false, "The game isn't running"
+			return false, S("The game isn't running")
 		end
 
 		return true,
-			string.format(
-				"The current mode is %s. Matches finished: %d/%d",
+			S(
+				"The current mode is @1. Matches finished: @2/@3",
 				HumanReadable(ctf_modebase.current_mode),
 				ctf_modebase.current_mode_matches_played - 1,
 				ctf_modebase.current_mode_matches
@@ -149,16 +158,16 @@ minetest.register_chatcommand("mode", {
 })
 
 minetest.register_chatcommand("match", {
-	description = "Shows current match information",
+	description = S("Shows current match information"),
 	func = function(name)
 		local mode = ctf_modebase.current_mode
 		if not mode then
-			return false, "The game isn't running"
+			return false, S("The game isn't running")
 		end
 
 		-- Current mode
-		local mode_str = string.format(
-			"Mode: %s (%d/%d matches)",
+		local mode_str = S(
+			"Mode: @1 (@2/@3 matches)",
 			HumanReadable(mode),
 			ctf_modebase.current_mode_matches_played - 1,
 			ctf_modebase.current_mode_matches
@@ -166,8 +175,8 @@ minetest.register_chatcommand("match", {
 
 		-- Current map
 		local map = ctf_map.current_map
-		local map_str = map and string.format("Map: %s by %s", map.name, map.author)
-			or "No map loaded"
+		local map_str = map and S("Map: @1 by @2", map.name, map.author)
+			or S("No map loaded")
 
 		-- Teams info
 		local team_str = ""
@@ -177,9 +186,9 @@ minetest.register_chatcommand("match", {
 			team_str = team_str .. string.format("%s: %d, ", team, count)
 			total = total + count
 		end
-		team_str = string.format("Players (%d total): %s", total, team_str:sub(1, -3)) -- Remove trailing ", "
+		team_str = S("Players (@1 total): @2", total, team_str:sub(1, -3)) -- Remove trailing ", "
 
-		local duration = string.format("Duration: %s", ctf_map.get_duration())
+		local duration = S("Duration: @1", ctf_map.get_duration())
 		return true,
 			string.format("%s\n%s\n%s\n%s", mode_str, map_str, duration, team_str)
 	end,
