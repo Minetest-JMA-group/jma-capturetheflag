@@ -8,6 +8,7 @@ local votes = nil
 local voted = nil
 local voters_count = nil
 
+local S = core.get_translator(core.get_current_modname())
 ctf_modebase.map_vote = {}
 
 local function player_vote(name, mapID)
@@ -67,13 +68,13 @@ local function show_mapchoose_form(player)
 	elements["quit_button"] = {
 		type = "button",
 		exit = true,
-		label = "Exit Game",
+		label = S("Exit Game"),
 		pos = { x = (i / 2) + 0.5, y = 8 },
 		size = { x = 3, y = 0.6 },
 		func = function(playername, fields, field_name)
 			minetest.kick_player(
 				playername,
-				"You clicked 'Exit Game' in the map vote formspec"
+				S("You clicked 'Exit Game' in the map vote formspec")
 			)
 		end,
 	}
@@ -81,7 +82,7 @@ local function show_mapchoose_form(player)
 	elements["abstain_button"] = {
 		type = "button",
 		exit = true,
-		label = "Abstain",
+		label = S("Abstain"),
 		pos = { x = (i / 2) - 3.5, y = 8 },
 		size = { x = 3, y = 0.6 },
 		func = function(playername, fields, field_name)
@@ -91,8 +92,8 @@ local function show_mapchoose_form(player)
 
 	ctf_gui.old_show_formspec(player, "ctf_modebase:map_select", {
 		size = { x = i, y = 11 },
-		title = "Vote for the next map",
-		description = "Please click on the map that you would like to play next!",
+		title = S("Vote for the next map"),
+		description = S("Please click on the map that you would like to play next!"),
 		header_height = 1.4,
 		elements = elements,
 	})
@@ -184,15 +185,20 @@ function ctf_modebase.map_vote.end_vote()
 
 	local winner_name = ctf_modebase.map_catalog.map_names[winning_mapID]
 		or tostring(winning_mapID)
-	minetest.chat_send_all("Map voting is over. The next map will be " .. winner_name)
+	minetest.chat_send_all(S("Map voting is over. The next map will be @1", winner_name))
 
-	minetest.chat_send_all("Vote results:")
+	minetest.chat_send_all(S("Vote results:"))
 	for _, mapID in pairs(map_sample) do
 		local map_name = ctf_modebase.map_catalog.map_names[mapID]
 			or ("Unknown (" .. tostring(mapID) .. ")")
 		local count = vote_counts[mapID] or 0
-
-		minetest.chat_send_all(count .. " vote(s) for " .. map_name)
+		if count == 1 then
+			core.chat_send_all(S("A vote for @1", map_name))
+		elseif count == 0 then
+			core.chat_send_all(S("No vote for @1", map_name))
+		else
+			core.chat_send_all(S("@1 votes for @2", count, map_name))
+		end
 	end
 
 	ctf_modebase.map_catalog.select_map(winning_mapID)
@@ -224,4 +230,3 @@ minetest.register_on_leaveplayer(function(player)
 		voted[pname] = nil
 	end
 end)
-
