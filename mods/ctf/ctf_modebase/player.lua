@@ -1,5 +1,7 @@
 ctf_modebase.player = {}
 
+local S = minetest.get_translator(minetest.get_current_modname())
+
 ctf_settings.register("ctf_modebase:auto_trash_stone_swords", {
 	type = "bool",
 	label = "Auto-trash stone swords when you pick up a better sword",
@@ -21,6 +23,19 @@ ctf_settings.register("ctf_modebase:flag_sound_volume", {
 	min = 0,
 	max = 20,
 	step = 1,
+})
+
+local DEFAULT_VOLUMETRIC_LIGHTING = 10
+ctf_settings.register("ctf_modebase:volumetric_lighting", {
+	type = "bar",
+	label = S("Volumetric Lighting(Godray) Strength"),
+	default = tostring(DEFAULT_VOLUMETRIC_LIGHTING),
+	min = 0,
+	max = 50,
+	step = 1,
+	on_change = function(player)
+		ctf_modebase.player.update(player)
+	end,
 })
 
 local simplify_for_saved_stuff = function(iname)
@@ -371,7 +386,16 @@ function ctf_modebase.player.update(player)
 
 		skybox.set(player, table.indexof(ctf_map.skyboxes, map.skybox) - 1)
 
-		player:set_lighting({ shadows = { intensity = map.enable_shadows } })
+		player:set_lighting({
+			shadows = {
+				intensity = map.enable_shadows,
+			},
+			volumetric_light = {
+				strength = (tonumber(
+					ctf_settings.get(player, "ctf_modebase:volumetric_lighting")
+				) or DEFAULT_VOLUMETRIC_LIGHTING) / 100,
+			},
+		})
 
 		physics.set(player:get_player_name(), "ctf_modebase:map_physics", {
 			speed = map.phys_speed,
