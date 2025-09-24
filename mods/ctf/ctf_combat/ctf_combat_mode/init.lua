@@ -18,14 +18,14 @@ local function update(player)
 
 	if hud:exists(player, "combat_indicator") then
 		hud:change(player, "combat_indicator", {
-			text = hud_message
+			text = hud_message,
 		})
 	else
 		hud:add(player, "combat_indicator", {
 			type = "text",
-			position = {x = 1, y = 0.2},
-			alignment = {x = "left", y = "down"},
-			offset = {x = -6, y = 0},
+			position = { x = 1, y = 0.2 },
+			alignment = { x = "left", y = "down" },
+			offset = { x = -6, y = 0 },
 			text = hud_message,
 			color = 0xF00000,
 		})
@@ -36,7 +36,8 @@ local function update(player)
 
 	if node.groups.real_suffocation then -- From real_suffocation mod
 		combat.time = combat.time + 0.5
-		combat.suffocation_message = "You are inside blocks. Move out to stop your combat timer from increasing."
+		combat.suffocation_message =
+			"You are inside blocks. Move out to stop your combat timer from increasing."
 	else
 		combat.time = combat.time - 1
 		combat.suffocation_message = ""
@@ -50,7 +51,7 @@ function ctf_combat_mode.add_hitter(player, hitter, weapon_image, time)
 	hitter = PlayerName(hitter)
 
 	if not hitters[player] then
-		hitters[player] = {hitters={}, time=time}
+		hitters[player] = { hitters = {}, time = time }
 	end
 
 	local combat = hitters[player]
@@ -70,9 +71,12 @@ function ctf_combat_mode.add_healer(player, healer, time)
 	healer = PlayerName(healer)
 
 	if not healers[player] then
-		healers[player] = {healers={}, timer=minetest.after(time, function()
-			healers[player] = nil
-		end)}
+		healers[player] = {
+			healers = {},
+			timer = minetest.after(time, function()
+				healers[player] = nil
+			end),
+		}
 	end
 
 	healers[player].healers[healer] = true
@@ -101,7 +105,6 @@ function ctf_combat_mode.get_other_hitters(player, last_hitter)
 
 	return ret
 end
-
 
 function ctf_combat_mode.get_healers(player)
 	player = PlayerName(player)

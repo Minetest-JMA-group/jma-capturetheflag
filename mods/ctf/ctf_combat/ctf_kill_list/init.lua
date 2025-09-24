@@ -12,22 +12,22 @@ local HUDNAME_FORMAT = "kill_list:%d,%d"
 local HUD_DEFINITIONS = {
 	{
 		type = "text",
-		position = {x = 0, y = 0.8},
-		offset = {x = MAX_NAME_LENGTH*10, y = 0},
-		alignment = {x = "left", y = "center"},
+		position = { x = 0, y = 0.8 },
+		offset = { x = MAX_NAME_LENGTH * 10, y = 0 },
+		alignment = { x = "left", y = "center" },
 		color = 0xFFFFFF,
 	},
 	{
 		type = "image",
-		position = {x = 0, y = 0.8},
-		offset = {x = (MAX_NAME_LENGTH*10) + 28, y = 0},
-		alignment = {x = "center", y = "center"},
+		position = { x = 0, y = 0.8 },
+		offset = { x = (MAX_NAME_LENGTH * 10) + 28, y = 0 },
+		alignment = { x = "center", y = "center" },
 	},
 	{
 		type = "text",
-		position = {x = 0, y = 0.8},
-		offset = {x = (MAX_NAME_LENGTH*10) + 54, y = 0},
-		alignment = {x = "right", y = "center"},
+		position = { x = 0, y = 0.8 },
+		offset = { x = (MAX_NAME_LENGTH * 10) + 54, y = 0 },
+		alignment = { x = "right", y = "center" },
 		color = 0xFFFFFF,
 	},
 }
@@ -38,16 +38,18 @@ local image_scale_map = ctf_settings.settings["ctf_kill_list:tp_size"].image_sca
 local function update_kill_list_hud(player)
 	local player_name = PlayerName(player)
 	local ps = player_settings[player_name]
-	if not ps then return end
+	if not ps then
+		return
+	end
 	for idx = 1, ps.history_size, 1 do
 		local new = kill_list[idx]
-		idx = ps.history_size - (idx-1)
+		idx = ps.history_size - (idx - 1)
 
 		local img_scale = ps.image_scale
 
 		img_scale = image_scale_map[img_scale] * 2
 
-		for i=1, 3, 1 do
+		for i = 1, 3, 1 do
 			local hname = string.format(HUDNAME_FORMAT, idx, i)
 			local phud = hud:get(player, hname)
 
@@ -56,12 +58,12 @@ local function update_kill_list_hud(player)
 					hud:change(player, hname, {
 						text = (new[i].text or new[i].image),
 						image_scale = img_scale,
-						color = new[i].color or 0xFFFFFF
+						color = new[i].color or 0xFFFFFF,
 					})
 				else
 					local newhud = table.copy(HUD_DEFINITIONS[i])
 
-					newhud.offset.y = -(idx-1)*HUD_LINE_HEIGHT
+					newhud.offset.y = -(idx - 1) * HUD_LINE_HEIGHT
 					newhud.text = new[i].text or new[i].image
 					newhud.image_scale = img_scale
 					newhud.color = new[i].color or 0xFFFFFF
@@ -69,7 +71,7 @@ local function update_kill_list_hud(player)
 				end
 			elseif phud then
 				hud:change(player, hname, {
-					text = ""
+					text = "",
 				})
 			end
 		end
@@ -79,7 +81,8 @@ end
 function ctf_kill_list.apply_settings(player, update_hud)
 	local player_name = PlayerName(player)
 	local ps = {}
-	ps.history_size = tonumber(ctf_settings.get(player, "ctf_kill_list:history_size")) or HUD_LINES
+	ps.history_size = tonumber(ctf_settings.get(player, "ctf_kill_list:history_size"))
+		or HUD_LINES
 	ps.image_scale = tonumber(ctf_settings.get(player, "ctf_kill_list:tp_size")) or 2
 
 	player_settings[player_name] = ps
@@ -96,7 +99,7 @@ end
 
 local globalstep_timer = 0
 local function add_kill(x, y, z)
-	table.insert(kill_list, 1, {x, y, z})
+	table.insert(kill_list, 1, { x, y, z })
 
 	if #kill_list > HUD_LINES then
 		table.remove(kill_list)
@@ -151,8 +154,8 @@ function ctf_kill_list.add(killer, victim, weapon_image, comment)
 	end
 
 	add_kill(
-		{text = killer, color = k_teamcolor or 0xFFFFFF},
-		{image = weapon_image or "ctf_kill_list_punch.png"},
-		{text = victim .. (comment or ""), color = v_teamcolor or 0xFFFFFF}
+		{ text = killer, color = k_teamcolor or 0xFFFFFF },
+		{ image = weapon_image or "ctf_kill_list_punch.png" },
+		{ text = victim .. (comment or ""), color = v_teamcolor or 0xFFFFFF }
 	)
 end

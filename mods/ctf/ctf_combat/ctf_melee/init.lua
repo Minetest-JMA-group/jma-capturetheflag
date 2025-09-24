@@ -6,27 +6,27 @@ local sword_mats = {
 	stone = {
 		description = minetest.registered_tools["default:sword_stone"].description,
 		inventory_image = minetest.registered_tools["default:sword_stone"].inventory_image,
-		damage_groups = {fleshy = 4},
-		full_punch_interval = 1.0
+		damage_groups = { fleshy = 4 },
+		full_punch_interval = 1.0,
 	},
 	steel = {
 		description = minetest.registered_tools["default:sword_steel"].description,
 		inventory_image = minetest.registered_tools["default:sword_steel"].inventory_image,
-		damage_groups = {fleshy = 6},
+		damage_groups = { fleshy = 6 },
 		full_punch_interval = 0.8,
 	},
 	mese = {
 		description = minetest.registered_tools["default:sword_mese"].description,
 		inventory_image = minetest.registered_tools["default:sword_mese"].inventory_image,
-		damage_groups = {fleshy = 7},
+		damage_groups = { fleshy = 7 },
 		full_punch_interval = 0.7,
 	},
 	diamond = {
 		description = minetest.registered_tools["default:sword_diamond"].description,
 		inventory_image = minetest.registered_tools["default:sword_diamond"].inventory_image,
-		damage_groups = {fleshy = 8},
+		damage_groups = { fleshy = 8 },
 		full_punch_interval = 0.6,
-	}
+	},
 }
 
 local attack_cooldown = ctf_core.init_cooldowns()
@@ -39,14 +39,14 @@ function ctf_melee.simple_register_sword(name, def)
 		wield_image = def.wield_image,
 		tool_capabilities = {
 			full_punch_interval = def.full_punch_interval,
-			max_drop_level=1,
-			groupcaps={
-				snappy={times={[1]=2.5, [2]=1.20, [3]=0.35}, uses=0, maxlevel=3},
+			max_drop_level = 1,
+			groupcaps = {
+				snappy = { times = { [1] = 2.5, [2] = 1.20, [3] = 0.35 }, uses = 0, maxlevel = 3 },
 			},
 			damage_groups = def.damage_groups,
 			punch_attack_uses = 0,
 		},
-		sound = {breaks = "default_tool_breaks"},
+		sound = { breaks = "default_tool_breaks" },
 		groups = def.groups or {},
 	}
 
@@ -84,12 +84,22 @@ local EXTRA_ANIM_LENGTH = {
 
 local SWOOSH_SOUND_DISTANCE = 8
 local COMBAT_SOUND_DISTANCE = 16
-local KNOCKBACK = {slash = 6, stab = 0}
+local KNOCKBACK = { slash = 6, stab = 0 }
 local HIT_BOOST = 9
 
-local function dopunch(target, attacker, ignores, attack_capabilities, dir, attack_interval)
-	if target.ref:is_player() and not ignores[target.ref] and
-	ctf_modebase:get_current_mode().can_punchplayer(attacker, target.ref) then
+local function dopunch(
+	target,
+	attacker,
+	ignores,
+	attack_capabilities,
+	dir,
+	attack_interval
+)
+	if
+		target.ref:is_player()
+		and not ignores[target.ref]
+		and ctf_modebase:get_current_mode().can_punchplayer(attacker, target.ref)
+	then
 		ignores[target.ref] = true -- add to the table we were passed
 
 		target.ref:punch(attacker, attack_interval, attack_capabilities, dir)
@@ -115,7 +125,10 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 
 	if cooldown then
 		-- if the cooldown has <= 0.3 seconds left then let them queue another stab
-		if anim == "stab" and cooldown._time - (os.clock() - cooldown.start_time) <= 0.3 then
+		if
+			anim == "stab"
+			and cooldown._time - (os.clock() - cooldown.start_time) <= 0.3
+		then
 			-- Don't queue a miss
 			if not pointed or pointed.type ~= "object" then
 				return
@@ -124,11 +137,15 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 			cooldown._on_end = function(self)
 				local player = minetest.get_player_by_name(uname)
 
-				if not player then return end
+				if not player then
+					return
+				end
 
 				local wielded = player:get_wielded_item()
 
-				if wielded:get_name() ~= itemstack:get_name() then return end
+				if wielded:get_name() ~= itemstack:get_name() then
+					return
+				end
 
 				slash_stab_sword_func(keypress, wielded, user, pointed)
 			end
@@ -146,12 +163,17 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 		_on_end = function(self) -- Repeat attack if player is holding down the button
 			local player = minetest.get_player_by_name(uname)
 
-			if not player then return end
+			if not player then
+				return
+			end
 
 			local controls = player:get_player_control()
 			local wielded = player:get_wielded_item()
 
-			if wielded:get_name() == itemstack:get_name() and (controls.LMB or controls.RMB) then
+			if
+				wielded:get_name() == itemstack:get_name()
+				and (controls.LMB or controls.RMB)
+			then
 				if not controls[keypress] then
 					keypress = (keypress == "LMB") and "RMB" or "LMB"
 				end
@@ -169,8 +191,8 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 	local dir = user:get_look_dir()
 	local user_kb_dir = vector.new(dir)
 
-	local ignores = {[user] = true}
-	local section = math.pi/12
+	local ignores = { [user] = true }
+	local section = math.pi / 12
 	local hit_player = false
 	local axis
 	local rays
@@ -180,7 +202,14 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 	axis = vector.cross(vector.new(dir.z, 0, -dir.x), dir)
 
 	if pointed and pointed.type == "object" then
-		hit_player = dopunch(pointed, user, ignores, attack_capabilities, dir, attack_interval) or hit_player
+		hit_player = dopunch(
+			pointed,
+			user,
+			ignores,
+			attack_capabilities,
+			dir,
+			attack_interval
+		) or hit_player
 
 		pointed = true
 	end
@@ -188,13 +217,13 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 	if anim == "slash" then
 		user_kb_dir = -user_kb_dir
 		rays = {
-			vector.rotate_around_axis(dir, axis,  section * 3),
-			vector.rotate_around_axis(dir, axis,  section * 2),
-			vector.rotate_around_axis(dir, axis,  section    ),
+			vector.rotate_around_axis(dir, axis, section * 3),
+			vector.rotate_around_axis(dir, axis, section * 2),
+			vector.rotate_around_axis(dir, axis, section),
 
 			vector.rotate_around_axis(dir, axis, -section * 3),
 			vector.rotate_around_axis(dir, axis, -section * 2),
-			vector.rotate_around_axis(dir, axis, -section    ),
+			vector.rotate_around_axis(dir, axis, -section),
 
 			(pointed ~= true) and dir or nil,
 		}
@@ -209,7 +238,7 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 		rays = {
 			(pointed ~= true) and dir or nil,
 			vector.rotate_around_axis(dir, axis, -section),
-			vector.rotate_around_axis(dir, axis,  section),
+			vector.rotate_around_axis(dir, axis, section),
 		}
 
 		minetest.sound_play("ctf_melee_whoosh", {
@@ -237,9 +266,18 @@ local function slash_stab_sword_func(keypress, itemstack, user, pointed)
 		})
 
 		for hit in ray do
-			if hit.type ~= "object" then break end
+			if hit.type ~= "object" then
+				break
+			end
 
-			hit_player = dopunch(hit, user, ignores, attack_capabilities, shootdir, attack_interval) or hit_player
+			hit_player = dopunch(
+				hit,
+				user,
+				ignores,
+				attack_capabilities,
+				shootdir,
+				attack_interval
+			) or hit_player
 		end
 	end
 
@@ -258,13 +296,13 @@ function ctf_melee.register_sword(name, def)
 		disable_mine_anim = true,
 		tool_capabilities = {
 			full_punch_interval = slash_stab_anim_length,
-			max_drop_level=1,
-			groupcaps={
-				snappy={times={[1]=2.5, [2]=1.20, [3]=0.35}, uses=0, maxlevel=3},
+			max_drop_level = 1,
+			groupcaps = {
+				snappy = { times = { [1] = 2.5, [2] = 1.20, [3] = 0.35 }, uses = 0, maxlevel = 3 },
 			},
 			punch_attack_uses = 0,
 		},
-		sound = {breaks = "default_tool_breaks"},
+		sound = { breaks = "default_tool_breaks" },
 		groups = def.groups or {},
 	}
 
@@ -285,7 +323,12 @@ function ctf_melee.register_sword(name, def)
 		if pointed then
 			if pointed.type == "object" then
 				if not pointed.ref:is_player() then
-					pointed.ref:punch(user, slash_stab_anim_length, damage_capabilities, vector.new())
+					pointed.ref:punch(
+						user,
+						slash_stab_anim_length,
+						damage_capabilities,
+						vector.new()
+					)
 					return
 				end
 			elseif pointed.type == "node" then
@@ -324,7 +367,7 @@ function ctf_melee.register_sword(name, def)
 end
 
 for mat, def in pairs(sword_mats) do
-	ctf_melee.simple_register_sword("ctf_melee:sword_"..mat, def)
+	ctf_melee.simple_register_sword("ctf_melee:sword_" .. mat, def)
 
-	minetest.register_alias_force("default:sword_"..mat, "ctf_melee:sword_"..mat)
+	minetest.register_alias_force("default:sword_" .. mat, "ctf_melee:sword_" .. mat)
 end

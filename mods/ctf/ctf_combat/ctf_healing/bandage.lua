@@ -11,12 +11,16 @@ function ctf_healing.register_bandage(name, def)
 		on_use = function(itemstack, player, pointed_thing)
 			if pointed_thing.type == "object" then
 				local object = pointed_thing.ref
-				if not object:is_player() then return end
+				if not object:is_player() then
+					return
+				end
 
 				local pname = object:get_player_name()
 				local uname = player:get_player_name()
 
-				if pname == uname then return end
+				if pname == uname then
+					return
+				end
 
 				if ctf_teams.get(pname) ~= ctf_teams.get(uname) then
 					hud_events.new(uname, {
@@ -57,7 +61,8 @@ function ctf_healing.register_bandage(name, def)
 					hp = hp + hp_add
 				end
 
-				local result = RunCallbacks(ctf_healing.registered_on_heal, player, object, hp_add)
+				local result =
+					RunCallbacks(ctf_healing.registered_on_heal, player, object, hp_add)
 
 				if not result then
 					object:set_hp(hp)
@@ -68,7 +73,7 @@ function ctf_healing.register_bandage(name, def)
 					})
 					hud_events.new(uname, {
 						quick = true,
-						text = "You healed "..pname.."!",
+						text = "You healed " .. pname .. "!",
 						color = 0xC1FF44,
 					})
 				elseif type(result) == "string" then
@@ -83,10 +88,20 @@ function ctf_healing.register_bandage(name, def)
 				local node_above = minetest.get_node(pointed_thing.under:offset(0, 1, 0))
 				if node_pointed.name ~= "ctf_modebase:flag_captured_top" then
 					if node_pointed.name:find("ctf_modebase:flag_") then
-						ctf_modebase.flag_on_punch(player, pointed_thing.under, node_pointed)
-					elseif node_above.name:find("ctf_modebase:flag_") and
-						node_above.name ~= "ctf_modebase:flag_captured_top" then
-						ctf_modebase.flag_on_punch(player, pointed_thing.under:offset(0, 1, 0), node_above)
+						ctf_modebase.flag_on_punch(
+							player,
+							pointed_thing.under,
+							node_pointed
+						)
+					elseif
+						node_above.name:find("ctf_modebase:flag_")
+						and node_above.name ~= "ctf_modebase:flag_captured_top"
+					then
+						ctf_modebase.flag_on_punch(
+							player,
+							pointed_thing.under:offset(0, 1, 0),
+							node_above
+						)
 					end
 				end
 			end
@@ -118,8 +133,9 @@ end
 
 local HEAL_PERCENT = 0.75
 ctf_healing.register_bandage("ctf_healing:bandage", {
-	description = "Bandage\nHeals teammates for 3-4 HP until target's HP is equal to " ..
-			HEAL_PERCENT * 100 .. "% of their maximum HP",
+	description = "Bandage\nHeals teammates for 3-4 HP until target's HP is equal to "
+		.. HEAL_PERCENT * 100
+		.. "% of their maximum HP",
 	inventory_image = "ctf_healing_bandage.png",
 	heal_percent = HEAL_PERCENT,
 })
