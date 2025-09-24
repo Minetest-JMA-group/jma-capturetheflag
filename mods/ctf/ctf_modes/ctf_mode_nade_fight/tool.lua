@@ -5,21 +5,18 @@ local function check_hit(pos1, pos2, obj)
 	-- Skip over non-normal nodes like ladders, water, doors, glass, leaves, etc
 	-- Also skip over all objects that aren't the target
 	-- Any collisions within a 1 node distance from the target don't stop the grenade
-	while hit and (
-		(
-		 hit.type == "node"
-		 and
-		 (
-			hit.intersection_point:distance(pos2) <= 1
-			or
-			not minetest.registered_nodes[minetest.get_node(hit.under).name].walkable
-		 )
+	while
+		hit
+		and (
+			(
+				hit.type == "node"
+				and (
+					hit.intersection_point:distance(pos2) <= 1
+					or not minetest.registered_nodes[minetest.get_node(hit.under).name].walkable
+				)
+			) or (hit.type == "object" and hit.ref ~= obj)
 		)
-		or
-		(
-		 hit.type == "object" and hit.ref ~= obj
-		)
-	) do
+	do
 		hit = ray:next()
 	end
 
@@ -52,13 +49,13 @@ end
 
 grenades.register_grenade("ctf_mode_nade_fight:small_frag", fragdef_small)
 
-local tool = {holed = {}}
+local tool = { holed = {} }
 local sounds = {}
 
 local black_hole_radius = 4.5
 grenades.register_grenade("ctf_mode_nade_fight:black_hole_grenade", {
-	description = "Void Present, sucks players in and freezes them temporarily."..
-			"\nGrenades thrown while sucked in will instantly explode. All damage recieved is doubled",
+	description = "Void Present, sucks players in and freezes them temporarily."
+		.. "\nGrenades thrown while sucked in will instantly explode. All damage recieved is doubled",
 	image = "ctf_mode_nade_fight_black_hole_grenade.png",
 	clock = 1.8,
 	on_collide = function(def, obj)
@@ -67,7 +64,9 @@ grenades.register_grenade("ctf_mode_nade_fight:black_hole_grenade", {
 	on_explode = function(def, obj, pos, name)
 		local player = minetest.get_player_by_name(name or "")
 
-		if not player then return end
+		if not player then
+			return
+		end
 
 		pos = vector.round(pos)
 
@@ -86,7 +85,7 @@ grenades.register_grenade("ctf_mode_nade_fight:black_hole_grenade", {
 
 		local black_hole = minetest.add_entity(pos, "ctf_mode_nade_fight:black_hole")
 
-		local corners = {-black_hole_radius, black_hole_radius}
+		local corners = { -black_hole_radius, black_hole_radius }
 		for _, x in pairs(corners) do
 			for _, y in pairs(corners) do
 				for _, z in pairs(corners) do
@@ -99,8 +98,8 @@ grenades.register_grenade("ctf_mode_nade_fight:black_hole_grenade", {
 						maxpos = v,
 						minvel = vector.multiply(d, 5),
 						maxvel = vector.multiply(d, 7),
-						minacc = {x = 0, y = 0, z = 0},
-						maxacc = {x = 0, y = 0, z = 0},
+						minacc = { x = 0, y = 0, z = 0 },
+						maxacc = { x = 0, y = 0, z = 0 },
 						minexptime = 0.3,
 						maxexptime = 0.5,
 						minsize = 1.4,
@@ -137,13 +136,17 @@ grenades.register_grenade("ctf_mode_nade_fight:black_hole_grenade", {
 			local vname = v:get_player_name()
 
 			if
-				v:is_player() and v:get_hp() > 0 and v:get_properties().pointable and
-				(vname == name or ctf_teams.get(vname) ~= ctf_teams.get(name) or
-				ctf_jma_elysium.get_player(vname) and ctf_jma_elysium.get_player(name))
+				v:is_player()
+				and v:get_hp() > 0
+				and v:get_properties().pointable
+				and (vname == name or ctf_teams.get(vname) ~= ctf_teams.get(name) or ctf_jma_elysium.get_player(
+					vname
+				) and ctf_jma_elysium.get_player(name))
 				and tool.holed[vname] == nil
 			then
 				local footpos = vector.offset(v:get_pos(), 0, 0.1, 0)
-				local headpos = vector.offset(v:get_pos(), 0, v:get_properties().eye_height, 0)
+				local headpos =
+					vector.offset(v:get_pos(), 0, v:get_properties().eye_height, 0)
 				local footdist = vector.distance(pos, footpos)
 				local headdist = vector.distance(pos, headpos)
 				local target_head = false
@@ -162,13 +165,18 @@ grenades.register_grenade("ctf_mode_nade_fight:black_hole_grenade", {
 							damage_groups = {
 								fleshy = 2,
 								black_hole_grenade = 1,
-							}
+							},
 						}, nil)
 					end
 
-					local vel = vector.multiply(vector.direction(footpos, pos), vector.distance(footpos, pos) * 9)
+					local vel = vector.multiply(
+						vector.direction(footpos, pos),
+						vector.distance(footpos, pos) * 9
+					)
 
-					if vel.y < -2 then vel.y = -2 end
+					if vel.y < -2 then
+						vel.y = -2
+					end
 					v:add_velocity(vel)
 
 					tool.holed[vname] = false
@@ -210,7 +218,9 @@ minetest.register_entity("ctf_mode_nade_fight:black_hole", {
 	static_save = false,
 	pointable = false,
 	glow = 5,
-	on_punch = function() return true end,
+	on_punch = function()
+		return true
+	end,
 })
 
 local KNOCKBACK_AMOUNT = 40
@@ -226,8 +236,8 @@ grenades.register_grenade("ctf_mode_nade_fight:knockback_grenade", {
 	on_explode = function(def, obj, pos, name)
 		minetest.add_particle({
 			pos = pos,
-			velocity = {x=0, y=0, z=0},
-			acceleration = {x=0, y=0, z=0},
+			velocity = { x = 0, y = 0, z = 0 },
+			acceleration = { x = 0, y = 0, z = 0 },
 			expirationtime = 0.3,
 			size = 15,
 			collisiondetection = false,
@@ -235,7 +245,7 @@ grenades.register_grenade("ctf_mode_nade_fight:knockback_grenade", {
 			object_collision = false,
 			vertical = false,
 			texture = "grenades_boom.png",
-			glow = 10
+			glow = 10,
 		})
 
 		minetest.sound_play("grenades_explode", {
@@ -255,12 +265,21 @@ grenades.register_grenade("ctf_mode_nade_fight:knockback_grenade", {
 			local vname = v:get_player_name()
 			local player = minetest.get_player_by_name(name)
 
-			if player and v:is_player() and v:get_hp() > 0 and v:get_properties().pointable and
-				(vname == name or ctf_teams.get(vname) ~= ctf_teams.get(name) or
-				ctf_jma_elysium.get_player(name) and ctf_jma_elysium.get_player(vname))
+			if
+				player
+				and v:is_player()
+				and v:get_hp() > 0
+				and v:get_properties().pointable
+				and (
+					vname == name
+					or ctf_teams.get(vname) ~= ctf_teams.get(name)
+					or ctf_jma_elysium.get_player(name)
+						and ctf_jma_elysium.get_player(vname)
+				)
 			then
 				local footpos = vector.offset(v:get_pos(), 0, 0.2, 0)
-				local headpos = vector.offset(v:get_pos(), 0, v:get_properties().eye_height, 0)
+				local headpos =
+					vector.offset(v:get_pos(), 0, v:get_properties().eye_height, 0)
 				local footdist = vector.distance(pos, footpos)
 				local headdist = vector.distance(pos, headpos)
 				local target_head = false
@@ -278,18 +297,18 @@ grenades.register_grenade("ctf_mode_nade_fight:knockback_grenade", {
 						damage_groups = {
 							fleshy = 1,
 							knockback_grenade = 1,
-						}
+						},
 					}, nil)
 					minetest.add_particlespawner({
 						attached = v,
 						amount = 10,
 						time = 1,
-						minpos = {x = 0, y = 1, z = 0}, -- Offset to middle of player
-						maxpos = {x = 0, y = 1, z = 0},
-						minvel = {x = 0, y = 0, z = 0},
+						minpos = { x = 0, y = 1, z = 0 }, -- Offset to middle of player
+						maxpos = { x = 0, y = 1, z = 0 },
+						minvel = { x = 0, y = 0, z = 0 },
 						maxvel = v:get_velocity(),
-						minacc = {x = 0, y = -9, z = 0},
-						maxacc = {x = 0, y = -9, z = 0},
+						minacc = { x = 0, y = -9, z = 0 },
+						maxacc = { x = 0, y = -9, z = 0 },
 						minexptime = 1,
 						maxexptime = 2.8,
 						minsize = 4,
@@ -308,8 +327,10 @@ grenades.register_grenade("ctf_mode_nade_fight:knockback_grenade", {
 					end
 
 					local dir = vector.direction(pos, headpos)
-					if dir.y < 0 then dir.y = 0 end
-					local vel = {x = dir.x * kb, y = dir.y * (kb / 1.2), z = dir.z * kb}
+					if dir.y < 0 then
+						dir.y = 0
+					end
+					local vel = { x = dir.x * kb, y = dir.y * (kb / 1.2), z = dir.z * kb }
 					v:add_velocity(vel)
 				end
 			end
@@ -319,14 +340,16 @@ grenades.register_grenade("ctf_mode_nade_fight:knockback_grenade", {
 
 local WEAR_MAX = 65535
 local grenade_list = {
-	{name = "ctf_mode_nade_fight:small_frag"         , cooldown = 1 },
-	{name = "ctf_mode_nade_fight:black_hole_grenade" , cooldown = 6 },
-	{name = "ctf_mode_nade_fight:knockback_grenade"  , cooldown = 5 },
+	{ name = "ctf_mode_nade_fight:small_frag", cooldown = 1 },
+	{ name = "ctf_mode_nade_fight:black_hole_grenade", cooldown = 6 },
+	{ name = "ctf_mode_nade_fight:knockback_grenade", cooldown = 5 },
 }
 
 local held_grenade = {}
 local function swap_next_grenade(itemstack, user, pointed)
-	if itemstack:get_wear() > 1 then return end
+	if itemstack:get_wear() > 1 then
+		return
+	end
 
 	local nadeid = itemstack:get_name():sub(-1, -1)
 	local nadeid_next = nadeid + 1
@@ -336,7 +359,7 @@ local function swap_next_grenade(itemstack, user, pointed)
 	end
 
 	held_grenade[user:get_player_name()] = nadeid_next
-	return "ctf_mode_nade_fight:grenade_tool_"..nadeid_next
+	return "ctf_mode_nade_fight:grenade_tool_" .. nadeid_next
 end
 
 minetest.register_on_leaveplayer(function(player)
@@ -346,13 +369,18 @@ end)
 for idx, info in ipairs(grenade_list) do
 	local def = minetest.registered_items[info.name]
 
-	minetest.register_tool("ctf_mode_nade_fight:grenade_tool_"..idx, {
-		description = def.description..minetest.colorize("gold", "\nRightclick off cooldown to switch to other grenades"),
+	minetest.register_tool("ctf_mode_nade_fight:grenade_tool_" .. idx, {
+		description = def.description .. minetest.colorize(
+			"gold",
+			"\nRightclick off cooldown to switch to other grenades"
+		),
 		inventory_image = def.inventory_image,
 		wield_image = def.inventory_image,
 		inventory_overlay = "ctf_modebase_special_item.png",
 		on_use = function(itemstack, user, pointed_thing)
-			if itemstack:get_wear() > 1 then return end
+			if itemstack:get_wear() > 1 then
+				return
+			end
 			local uname = user:get_player_name()
 
 			if not tool.holed[uname] then
@@ -367,7 +395,7 @@ for idx, info in ipairs(grenade_list) do
 			ctf_modebase.update_wear.start_update(
 				user:get_player_name(),
 				itemstack,
-				WEAR_MAX/info.cooldown,
+				WEAR_MAX / info.cooldown,
 				true
 			)
 
