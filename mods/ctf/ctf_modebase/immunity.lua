@@ -15,7 +15,12 @@ ctf_cosmetics.get_skin = function(player, color)
 	end
 end
 
-function ctf_modebase.give_immunity(player, respawn_timer, apply_callback, finish_callback)
+function ctf_modebase.give_immunity(
+	player,
+	respawn_timer,
+	apply_callback,
+	finish_callback
+)
 	local pname = player:get_player_name()
 	local old = immune_players[pname]
 
@@ -55,7 +60,7 @@ function ctf_modebase.give_immunity(player, respawn_timer, apply_callback, finis
 			origin_attached = player,
 			die_on_contact = true,
 		},
-		radius = {min = 0.8, max = 1.3, bias = 1},
+		radius = { min = 0.8, max = 1.3, bias = 1 },
 
 		minexptime = 0.3,
 		maxexptime = 0.3,
@@ -68,8 +73,8 @@ function ctf_modebase.give_immunity(player, respawn_timer, apply_callback, finis
 	if old == nil then
 		if not apply_callback then
 			player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
-			player:set_properties({pointable = false})
-			player:set_armor_groups({fleshy = 0})
+			player:set_properties({ pointable = false })
+			player:set_armor_groups({ fleshy = 0 })
 		else
 			apply_callback(player)
 		end
@@ -80,7 +85,9 @@ function ctf_modebase.remove_immunity(player)
 	local pname = player:get_player_name()
 	local old = immune_players[pname]
 
-	if old == nil then return end
+	if old == nil then
+		return
+	end
 
 	if old.timer then
 		old.timer:cancel()
@@ -101,8 +108,8 @@ function ctf_modebase.remove_immunity(player)
 
 	player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
 
-	player:set_properties({pointable = true})
-	player:set_armor_groups({fleshy = 100})
+	player:set_properties({ pointable = true })
+	player:set_armor_groups({ fleshy = 100 })
 end
 
 -- Remove immunity and return true if it's respawn immunity, return false otherwise
@@ -110,8 +117,12 @@ function ctf_modebase.remove_respawn_immunity(player)
 	local pname = player:get_player_name()
 	local old = immune_players[pname]
 
-	if old == nil then return true end
-	if old.timer == false then return false end
+	if old == nil then
+		return true
+	end
+	if old.timer == false then
+		return false
+	end
 
 	local finish_callback = old.finish_callback
 
@@ -128,8 +139,8 @@ function ctf_modebase.remove_respawn_immunity(player)
 
 	player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
 
-	player:set_properties({pointable = true})
-	player:set_armor_groups({fleshy = 100})
+	player:set_properties({ pointable = true })
+	player:set_armor_groups({ fleshy = 100 })
 
 	return true
 end
@@ -146,7 +157,7 @@ end)
 
 minetest.register_on_dieplayer(function(player)
 	ctf_modebase.remove_immunity(player)
-	player:set_properties({pointable = false})
+	player:set_properties({ pointable = false })
 end)
 
 minetest.register_on_leaveplayer(function(player)

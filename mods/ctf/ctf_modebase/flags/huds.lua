@@ -1,12 +1,16 @@
 local hud = mhud.init()
 
-local FLAG_SAFE             = {color = 0xFFFFFF, text = "Punch the enemy flags! Protect your flag!"           }
-local FLAG_STOLEN           = {color = 0xFF0000, text = "Kill %s, they've got your flag!"                     }
-local FLAG_STOLEN_YOU       = {color = 0xFF0000, text = "You've got a flag! Run back and punch your flag!"    }
-local FLAG_STOLEN_TEAMMATE  = {color = 0x22BB22, text = "Protect teammates %s! They have the enemy flag!"     }
-local BOTH_FLAGS_STOLEN     = {color = 0xFF0000, text = "Kill %s to allow teammates %s to capture the flag!"  }
-local BOTH_FLAGS_STOLEN_YOU = {color = 0xFF0000, text = "You can't capture that flag until %s is killed!"     }
-local OTHER_FLAG_STOLEN     = {color = 0xAA00FF, text = "Kill %s, they've got some flags!"                    }
+local FLAG_SAFE = { color = 0xFFFFFF, text = "Punch the enemy flags! Protect your flag!" }
+local FLAG_STOLEN = { color = 0xFF0000, text = "Kill %s, they've got your flag!" }
+local FLAG_STOLEN_YOU =
+	{ color = 0xFF0000, text = "You've got a flag! Run back and punch your flag!" }
+local FLAG_STOLEN_TEAMMATE =
+	{ color = 0x22BB22, text = "Protect teammates %s! They have the enemy flag!" }
+local BOTH_FLAGS_STOLEN =
+	{ color = 0xFF0000, text = "Kill %s to allow teammates %s to capture the flag!" }
+local BOTH_FLAGS_STOLEN_YOU =
+	{ color = 0xFF0000, text = "You can't capture that flag until %s is killed!" }
+local OTHER_FLAG_STOLEN = { color = 0xAA00FF, text = "Kill %s, they've got some flags!" }
 
 ctf_modebase.flag_huds = {}
 
@@ -26,7 +30,9 @@ end
 local function get_flag_status(you)
 	local teamname = ctf_teams.get(you)
 
-	if not teamname then return FLAG_SAFE end
+	if not teamname then
+		return FLAG_SAFE
+	end
 
 	local enemy_thief = ctf_modebase.flag_taken[teamname]
 	local your_thieves = {}
@@ -48,7 +54,7 @@ local function get_flag_status(you)
 	other_thieves = concat_players(other_thieves)
 
 	local format = function(template, ...)
-		return {color = template.color, text=string.format(template.text, ...)}
+		return { color = template.color, text = string.format(template.text, ...) }
 	end
 
 	if enemy_thief then
@@ -84,9 +90,9 @@ function ctf_modebase.flag_huds.update_player(player)
 	else
 		hud:add(player, "flag_status", {
 			type = "text",
-			position = {x = 1, y = 0},
-			offset = {x = -6, y = 6},
-			alignment = {x = "left", y = "down"},
+			position = { x = 1, y = 0 },
+			offset = { x = -6, y = 6 },
+			alignment = { x = "left", y = "down" },
 			text = flag_status.text,
 			color = flag_status.color,
 		})
@@ -103,7 +109,7 @@ function ctf_modebase.flag_huds.update_player(player)
 		end
 
 		if hud:exists(player, hud_label) then
-			hud:change(player, hud_label, {waypoint_text = base_label})
+			hud:change(player, hud_label, { waypoint_text = base_label })
 		else
 			hud:add(player, hud_label, {
 				type = "waypoint",
@@ -133,7 +139,11 @@ local function update_timer(pname)
 			player_timers[pname] = timeleft - 1
 
 			hud:change(pname, "flag_timer", {
-				text = string.format("%dm %ds left to capture", math.floor(timeleft / 60), math.floor(timeleft % 60))
+				text = string.format(
+					"%dm %ds left to capture",
+					math.floor(timeleft / 60),
+					math.floor(timeleft % 60)
+				),
 			})
 
 			minetest.after(1, update_timer, pname)
@@ -149,10 +159,10 @@ function ctf_modebase.flag_huds.track_capturer(player, time)
 
 		hud:add(player, "flag_timer", {
 			type = "text",
-			position = {x = 0.5, y = 0},
-			alignment = {x = "center", y = "down"},
+			position = { x = 0.5, y = 0 },
+			alignment = { x = "center", y = "down" },
 			color = 0xFF0000,
-			text_scale = 2
+			text_scale = 2,
 		})
 
 		update_timer(player)

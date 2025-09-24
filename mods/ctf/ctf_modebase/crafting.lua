@@ -14,14 +14,13 @@ ctf_api.register_on_mode_start(function()
 	end
 end)
 
-
 minetest.register_on_joinplayer(function(player)
 	ctf_modebase.update_crafts(player:get_player_name())
 end)
 
 local sword_materials = {
-	steel   = "default:steel_ingot",
-	mese    = "default:mese_crystal",
+	steel = "default:steel_ingot",
+	mese = "default:mese_crystal",
 	diamond = "default:diamond",
 }
 
@@ -29,7 +28,7 @@ local sword_materials = {
 for material, craft_material in pairs(sword_materials) do
 	crafting.register_recipe({
 		output = "ctf_melee:sword_" .. material,
-		items  = { "default:stick", craft_material .. " 2" },
+		items = { "default:stick", craft_material .. " 2" },
 		always_known = false,
 	})
 end
@@ -45,7 +44,7 @@ local full_ores = {
 for ore, ore_item in pairs(full_ores) do
 	crafting.register_recipe({
 		output = "default:pick_" .. ore,
-		items  = { "default:stick 2", ore_item .. " 3" },
+		items = { "default:stick 2", ore_item .. " 3" },
 		always_known = true,
 	})
 end
@@ -53,84 +52,84 @@ end
 -- Mese crystal x9 <== Mese block
 crafting.register_recipe({
 	output = "default:mese_crystal 9",
-	items  = { "default:mese"},
+	items = { "default:mese" },
 	always_known = true,
 })
 
 -- Furnace <== group:stone x8
 crafting.register_recipe({
 	output = "default:furnace",
-	items  = { "group:stone 8" },
+	items = { "group:stone 8" },
 	always_known = true,
 })
 
 -- Team door
 crafting.register_recipe({
 	output = "ctf_teams:door_steel",
-	items  = { "default:steel_ingot 6" },
+	items = { "default:steel_ingot 6" },
 	always_known = true,
 })
 
 -- Cobble Stairs
 crafting.register_recipe({
 	output = "stairs:stair_cobble 8",
-	items  = { "default:cobble 6"},
+	items = { "default:cobble 6" },
 	always_known = true,
 })
 
 -- Desert Cobble Stairs
 crafting.register_recipe({
 	output = "stairs:stair_desert_cobble 8",
-	items  = { "default:desert_cobble 6"},
+	items = { "default:desert_cobble 6" },
 	always_known = true,
 })
 
 -- Wood x4
 crafting.register_recipe({
 	output = "default:wood 4",
-	items  = { "group:tree" },
+	items = { "group:tree" },
 	always_known = true,
 })
 
 -- Stick x4
 crafting.register_recipe({
 	output = "default:stick 4",
-	items  = { "group:wood" },
+	items = { "group:wood" },
 	always_known = true,
 })
 
 -- Torch x5
 crafting.register_recipe({
 	output = "default:torch 5",
-	items  = { "default:stick", "default:coal_lump" },
+	items = { "default:stick", "default:coal_lump" },
 	always_known = true,
 })
 
 -- Wooden ladder x4
 crafting.register_recipe({
 	output = "default:ladder 4",
-	items  = { "default:stick 8" },
+	items = { "default:stick 8" },
 	always_known = true,
 })
 
 -- Stick x2 <== Wooden ladder
 crafting.register_recipe({
 	output = "default:stick 2",
-	items  = { "default:ladder" },
+	items = { "default:ladder" },
 	always_known = true,
 })
 
 -- Fence x4
 crafting.register_recipe({
 	output = "default:fence_wood 4",
-	items  = { "group:wood 4", "default:stick 2" },
+	items = { "group:wood 4", "default:stick 2" },
 	always_known = true,
 })
 
 -- Ammo
 crafting.register_recipe({
 	output = "ctf_ranged:ammo",
-	items  = { "default:steel_ingot 2", "default:coal_lump" },
+	items = { "default:steel_ingot 2", "default:coal_lump" },
 	always_known = false,
 })
 
@@ -143,13 +142,13 @@ for ore, ore_item in pairs(full_ores) do
 
 	crafting.register_recipe({
 		output = "default:shovel_" .. ore,
-		items  = { "default:stick 2", ore_item },
+		items = { "default:stick 2", ore_item },
 		always_known = show,
 	})
 
 	crafting.register_recipe({
 		output = "default:axe_" .. ore,
-		items  = { "default:stick 2", ore_item},
+		items = { "default:stick 2", ore_item },
 		always_known = show,
 	})
 end
@@ -158,7 +157,7 @@ end
 
 crafting.register_recipe({
 	output = "ctf_map:spike",
-	items  = { "default:steel_ingot 4" },
+	items = { "default:steel_ingot 4" },
 	always_known = false,
 })
 
@@ -170,12 +169,13 @@ crafting.register_recipe({
 
 crafting.register_recipe({
 	output = "ctf_map:reinforced_cobble 2",
-	items  = { "default:cobble 6", "default:steel_ingot" },
+	items = { "default:cobble 6", "default:steel_ingot" },
 	always_known = false,
 })
 
 crafting.register_recipe({
 	output = "ctf_landmine:landmine",
-	items  = { "default:steel_ingot", "grenades:frag" },
+	items = { "default:steel_ingot", "grenades:frag" },
 	always_known = false,
 })
+

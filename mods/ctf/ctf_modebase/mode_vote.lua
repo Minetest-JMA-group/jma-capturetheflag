@@ -11,7 +11,9 @@ local new_mode
 ctf_modebase.mode_vote = {}
 
 local function player_vote(name, length)
-	if not voted then return end
+	if not voted then
+		return
+	end
 
 	if not voted[name] then
 		voters_count = voters_count - 1
@@ -26,17 +28,33 @@ local function player_vote(name, length)
 end
 
 local function show_modechoose_form(player)
-	local vote_setting = ctf_settings.get(minetest.get_player_by_name(player), "ctf_modebase:default_vote_"..new_mode)
+	local vote_setting = ctf_settings.get(
+		minetest.get_player_by_name(player),
+		"ctf_modebase:default_vote_" .. new_mode
+	)
 
-	vote_setting = ctf_settings.settings["ctf_modebase:default_vote_"..new_mode]._list_map[tonumber(vote_setting)]
+	vote_setting =
+		ctf_settings.settings["ctf_modebase:default_vote_" .. new_mode]._list_map[tonumber(
+			vote_setting
+		)]
 
 	if vote_setting ~= "ask" then
 		minetest.after(0, function()
-			if not minetest.get_player_by_name(player) then return end
+			if not minetest.get_player_by_name(player) then
+				return
+			end
 
-			minetest.chat_send_player(player,
-				string.format("Voting for " .. new_mode .. ". Automatic vote: " .. vote_setting .. "\n" ..
-				"To change the automatic vote settings, go to the \"Settings\" tab of your inventory."))
+			minetest.chat_send_player(
+				player,
+				string.format(
+					"Voting for "
+						.. new_mode
+						.. ". Automatic vote: "
+						.. vote_setting
+						.. "\n"
+						.. 'To change the automatic vote settings, go to the "Settings" tab of your inventory.'
+				)
+			)
 			player_vote(player, vote_setting)
 		end)
 
@@ -57,8 +75,8 @@ local function show_modechoose_form(player)
 			type = "button",
 			label = label,
 			exit = true,
-			pos = {"center", i},
-			size = {1.4, 0.7},
+			pos = { "center", i },
+			size = { 1.4, 0.7 },
 			func = function()
 				if votes then
 					player_vote(player, vote_num)
@@ -75,13 +93,15 @@ local function show_modechoose_form(player)
 		type = "button",
 		exit = true,
 		label = "Exit Game",
-		pos = {x = "center", y = i},
+		pos = { x = "center", y = i },
 		func = function(playername, fields, field_name)
-			minetest.kick_player(playername, "You clicked 'Exit Game' in the mode vote formspec")
+			minetest.kick_player(
+				playername,
+				"You clicked 'Exit Game' in the mode vote formspec"
+			)
 		end,
 	}
 	i = i + (ctf_gui.ELEM_SIZE.y - 0.2)
-
 
 	local mode_def = ctf_modebase.modes[new_mode]
 	if mode_def.vote_label then
@@ -89,24 +109,25 @@ local function show_modechoose_form(player)
 			type = "label",
 			label = mode_def.vote_label,
 			centered = true,
-			pos = {x = 0, y = i + 0.9},
-			size = {x = 8, y = 0.5},
+			pos = { x = 0, y = i + 0.9 },
+			size = { x = 8, y = 0.5 },
 		}
 	end
 
 	ctf_gui.old_show_formspec(player, "ctf_modebase:mode_select", {
-		size = {x = 8, y = i + 3.5},
-		title = "Mode: "..HumanReadable(new_mode),
-		description = "Please vote on how many matches you would like to play.\n" ..
-			"You can change your default vote for this mode via the Settings tab (in your inventory)",
+		size = { x = 8, y = i + 3.5 },
+		title = "Mode: " .. HumanReadable(new_mode),
+		description = "Please vote on how many matches you would like to play.\n"
+			.. "You can change your default vote for this mode via the Settings tab (in your inventory)",
 		header_height = 2.4,
 		elements = elements,
 	})
-
 end
 
 local function send_formspec()
-	if not voted then return end
+	if not voted then
+		return
+	end
 	for pname in pairs(voted) do
 		if not voted[pname] then
 			show_modechoose_form(pname)
@@ -133,7 +154,7 @@ function ctf_modebase.mode_vote.start_vote()
 		attempts = attempts + 1
 
 		local mode_index = table.indexof(ctf_modebase.modelist, new_mode) or -1
-		if mode_index == -1 or mode_index+1 > #ctf_modebase.modelist then
+		if mode_index == -1 or mode_index + 1 > #ctf_modebase.modelist then
 			new_mode = ctf_modebase.modelist[1]
 		else
 			new_mode = ctf_modebase.modelist[mode_index + 1]
@@ -143,8 +164,10 @@ function ctf_modebase.mode_vote.start_vote()
 
 	for _, player in pairs(minetest.get_connected_players()) do
 		local pname = player:get_player_name()
-		if not ctf_teams.non_team_players[pname] and (ctf_teams.get(player) ~= nil or not ctf_modebase.current_mode) then
-
+		if
+			not ctf_teams.non_team_players[pname]
+			and (ctf_teams.get(player) ~= nil or not ctf_modebase.current_mode)
+		then
 			show_modechoose_form(pname)
 
 			voted[pname] = false
@@ -185,13 +208,14 @@ function ctf_modebase.mode_vote.end_vote()
 	for length = 0, MAX_ROUNDS do
 		local vote_count = length_votes[length]
 		if vote_count then
-			votes_result = votes_result .. string.format(
-				"    %d vote%s for %d match%s\n",
-				vote_count,
-				vote_count == 1 and "" or "s",
-				length,
-				length == 1 and "" or "es"
-			)
+			votes_result = votes_result
+				.. string.format(
+					"    %d vote%s for %d match%s\n",
+					vote_count,
+					vote_count == 1 and "" or "s",
+					length,
+					length == 1 and "" or "es"
+				)
 			entry_count = entry_count + vote_count
 			average_vote = average_vote + (length * vote_count)
 		end

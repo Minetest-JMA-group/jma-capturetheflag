@@ -11,8 +11,8 @@ ctf_map = {
 	DEFAULT_CHEST_AMOUNT = 42,
 	DEFAULT_START_TIME = 5900,
 	CHAT_COLOR = "orange",
-	maps_dir = minetest.get_modpath("ctf_map").."/maps/",
-	skyboxes = {"none"},
+	maps_dir = minetest.get_modpath("ctf_map") .. "/maps/",
+	skyboxes = { "none" },
 	current_map = false,
 	barrier_nodes = {}, -- populated in nodes.lua,
 	start_time = false,
@@ -22,10 +22,12 @@ ctf_map = {
 		end
 
 		local time = os.time() - ctf_map.start_time
-		return string.format("%02d:%02d:%02d",
-			math.floor(time / 3600),        -- hours
+		return string.format(
+			"%02d:%02d:%02d",
+			math.floor(time / 3600), -- hours
 			math.floor((time % 3600) / 60), -- minutes
-			math.floor(time % 60))          -- seconds
+			math.floor(time % 60)
+		) -- seconds
 	end,
 
 	-- List of registered map folder names. Use `ctf_map.map_path` to get the path
@@ -41,7 +43,10 @@ function ctf_map.register_map(dirname, path_to_map)
 		path_to_map = path_to_map .. "/"
 	end
 
-	assert(table.indexof(ctf_map.registered_maps, dirname) == -1, "Duplicate map detected: "..path_to_map)
+	assert(
+		table.indexof(ctf_map.registered_maps, dirname) == -1,
+		"Duplicate map detected: " .. path_to_map
+	)
 
 	table.insert(ctf_map.registered_maps, dirname)
 	ctf_map.map_path[dirname] = path_to_map .. dirname
@@ -53,7 +58,7 @@ function ctf_map.register_maps_dir(path_to_folder)
 	end
 
 	for _, mapdir in pairs(minetest.get_dir_list(path_to_folder, true)) do
-		if mapdir:sub(1,1) ~= "." then
+		if mapdir:sub(1, 1) ~= "." then
 			ctf_map.register_map(mapdir, path_to_folder)
 		end
 	end
@@ -89,9 +94,9 @@ minetest.register_tool("ctf_map:adminpick", {
 		full_punch_interval = 1.0,
 		max_drop_level = 3,
 		groupcaps = {
-			immortal = {times = {[1] = 0.2}, uses = 0, maxlevel = 3}
+			immortal = { times = { [1] = 0.2 }, uses = 0, maxlevel = 3 },
 		},
-		damage_groups = {fleshy = 10000}
+		damage_groups = { fleshy = 10000 },
 	},
 	on_place = function(itemstack, placer, pointed_thing)
 		if pointed_thing and pointed_thing.under then
@@ -110,7 +115,7 @@ local registered_commands = {}
 local command_params = {}
 function ctf_map.register_map_command(match, func)
 	registered_commands[match] = func
-	table.insert(command_params, "["..match.."]")
+	table.insert(command_params, "[" .. match .. "]")
 end
 
 ctf_core.include_files(
@@ -126,21 +131,23 @@ ctf_core.include_files(
 local directory = minetest.get_modpath(minetest.get_current_modname()) .. "/maps/"
 
 for _, entry in ipairs(minetest.get_dir_list(directory, true)) do
-	for _, filename in ipairs(minetest.get_dir_list(directory .. "/" .. entry .. "/", false)) do
+	for _, filename in
+		ipairs(minetest.get_dir_list(directory .. "/" .. entry .. "/", false))
+	do
 		if filename == "init.lua" then
-			dofile(directory .. "/" .. entry .. "/"..filename)
+			dofile(directory .. "/" .. entry .. "/" .. filename)
 		end
 	end
 end
 
-
 minetest.register_chatcommand("ctf_map", {
 	description = "Run map related commands",
-	privs = {ctf_map_editor = true},
-	params = "[editor | e] | "..table.concat(command_params, " | "),
+	privs = { ctf_map_editor = true },
+	params = "[editor | e] | " .. table.concat(command_params, " | "),
 	func = function(name, params)
 		if not params or params == "" then
-			return false, "/ctf_map [editor | e] | "..table.concat(command_params, " | ")
+			return false,
+				"/ctf_map [editor | e] | " .. table.concat(command_params, " | ")
 		end
 
 		params = string.split(params, " ")
@@ -153,9 +160,14 @@ minetest.register_chatcommand("ctf_map", {
 			end
 
 			if ctf_core.settings.server_mode ~= "mapedit" then
-				minetest.chat_send_player(name,
-						minetest.colorize("red", "It is not recommended to edit maps unless the server is in mapedit mode\n"..
-							"To enable mapedit mode, enable creative mode."))
+				minetest.chat_send_player(
+					name,
+					minetest.colorize(
+						"red",
+						"It is not recommended to edit maps unless the server is in mapedit mode\n"
+							.. "To enable mapedit mode, enable creative mode."
+					)
+				)
 			end
 
 			ctf_map.show_map_editor(name)
@@ -171,7 +183,7 @@ minetest.register_chatcommand("ctf_map", {
 		end
 
 		return false
-	end
+	end,
 })
 
 minetest.register_chatcommand("map", {
@@ -185,10 +197,16 @@ minetest.register_chatcommand("map", {
 
 		local mapName = map.name or "Unknown"
 		local mapAuthor = map.author or "Unknown Author"
-		local mapDuration =  ctf_map.get_duration()
+		local mapDuration = ctf_map.get_duration()
 
-		return true, string.format("The current map is %s by %s. Map duration: %s", mapName, mapAuthor, mapDuration)
-	end
+		return true,
+			string.format(
+				"The current map is %s by %s. Map duration: %s",
+				mapName,
+				mapAuthor,
+				mapDuration
+			)
+	end,
 })
 
 -- Attempt to restore user's time speed after server close

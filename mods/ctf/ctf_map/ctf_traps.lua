@@ -1,25 +1,25 @@
 minetest.register_node("ctf_map:unwalkable_dirt", {
 	description = "Unwalkable Dirt",
-	tiles = {"default_dirt.png^[colorize:#ffff00:19"},
+	tiles = { "default_dirt.png^[colorize:#ffff00:19" },
 	is_ground_content = false,
 	walkable = false,
-	groups = {crumbly=3, soil=1}
+	groups = { crumbly = 3, soil = 1 },
 })
 
 minetest.register_node("ctf_map:unwalkable_stone", {
 	description = "Unwalkable Stone",
-	tiles = {"default_stone.png^[colorize:#ffff00:17"},
+	tiles = { "default_stone.png^[colorize:#ffff00:17" },
 	is_ground_content = false,
 	walkable = false,
-	groups = {cracky=3, stone=1}
+	groups = { cracky = 3, stone = 1 },
 })
 
 minetest.register_node("ctf_map:unwalkable_cobble", {
 	description = "Unwalkable Cobblestone",
-	tiles = {"default_cobble.png^[colorize:#ffff00:15"},
+	tiles = { "default_cobble.png^[colorize:#ffff00:15" },
 	is_ground_content = false,
 	walkable = false,
-	groups = {cracky=3, stone=2}
+	groups = { cracky = 3, stone = 2 },
 })
 
 --
@@ -29,7 +29,7 @@ minetest.register_node("ctf_map:unwalkable_cobble", {
 minetest.register_node("ctf_map:spike", {
 	description = "Spike\n7 DPS\nDamages enemies that walk on it",
 	drawtype = "plantlike",
-	tiles = {"ctf_map_spike.png"},
+	tiles = { "ctf_map_spike.png" },
 	inventory_image = "ctf_map_spike.png",
 	use_texture_alpha = "clip",
 	paramtype = "light",
@@ -37,10 +37,10 @@ minetest.register_node("ctf_map:spike", {
 	sunlight_propagates = true,
 	walkable = false,
 	damage_per_second = 5,
-	groups = {cracky=1, level=2},
+	groups = { cracky = 1, level = 2 },
 	selection_box = {
 		type = "fixed",
-		fixed = {-0.5, -0.5, -0.5, 0.5, 0, 0.5},
+		fixed = { -0.5, -0.5, -0.5, 0.5, 0, 0.5 },
 	},
 	on_place = function(itemstack, placer, pointed_thing)
 		local pteam = ctf_teams.get(placer)
@@ -48,12 +48,20 @@ minetest.register_node("ctf_map:spike", {
 		if pteam then
 			local pname = placer:get_player_name()
 
-			if not ctf_core.pos_inside(pointed_thing.above, ctf_teams.get_team_territory(pteam)) then
-				minetest.chat_send_player(pname, "You can only place spikes in your own territory!")
+			if
+				not ctf_core.pos_inside(
+					pointed_thing.above,
+					ctf_teams.get_team_territory(pteam)
+				)
+			then
+				minetest.chat_send_player(
+					pname,
+					"You can only place spikes in your own territory!"
+				)
 				return itemstack
 			end
 
-			local newitemstack = ItemStack("ctf_map:spike_"..pteam)
+			local newitemstack = ItemStack("ctf_map:spike_" .. pteam)
 			newitemstack:set_count(itemstack:get_count())
 
 			local result = minetest.item_place(newitemstack, placer, pointed_thing, 34)
@@ -68,38 +76,40 @@ minetest.register_node("ctf_map:spike", {
 		end
 
 		return minetest.item_place(itemstack, placer, pointed_thing, 34)
-	end
+	end,
 })
 
 for _, team in ipairs(ctf_teams.teamlist) do
 	local spikecolor = ctf_teams.team[team].color
 
-	minetest.register_node("ctf_map:spike_"..team, {
-		description = HumanReadable(team).." Team Spike",
+	minetest.register_node("ctf_map:spike_" .. team, {
+		description = HumanReadable(team) .. " Team Spike",
 		drawtype = "plantlike",
-		tiles = {"ctf_map_spike.png^[colorize:"..spikecolor..":150"},
-		inventory_image = "ctf_map_spike.png^[colorize:"..spikecolor..":150",
+		tiles = { "ctf_map_spike.png^[colorize:" .. spikecolor .. ":150" },
+		inventory_image = "ctf_map_spike.png^[colorize:" .. spikecolor .. ":150",
 		use_texture_alpha = "clip",
 		paramtype = "light",
 		paramtype2 = "meshoptions",
 		sunlight_propagates = true,
 		walkable = false,
 		damage_per_second = 5,
-		groups = {cracky=1, level=2},
+		groups = { cracky = 1, level = 2 },
 		drop = "ctf_map:spike",
 		selection_box = {
 			type = "fixed",
-			fixed = {-0.5, -0.5, -0.5, 0.5, 0, 0.5},
+			fixed = { -0.5, -0.5, -0.5, 0.5, 0, 0.5 },
 		},
 		on_place = function(itemstack, placer, pointed_thing)
 			local item, pos = minetest.item_place(itemstack, placer, pointed_thing, 34)
 			if item then
 				local pname = placer:get_player_name()
-				minetest.get_meta(pointed_thing.above):set_string("placer_team", ctf_teams.get(pname))
+				minetest
+					.get_meta(pointed_thing.above)
+					:set_string("placer_team", ctf_teams.get(pname))
 				minetest.get_meta(pointed_thing.above):set_string("placer", pname)
 			end
 			return item, pos
-		end
+		end,
 	})
 end
 
@@ -120,7 +130,7 @@ minetest.register_on_player_hpchange(function(player, hp_change, reason)
 					player:set_hp(player:get_hp() - 7)
 					return -7, false
 				elseif placer then
-					player:punch(placer, 1, { fleshy = 7, spike = 1})
+					player:punch(placer, 1, { fleshy = 7, spike = 1 })
 					return -7, false
 				end
 			end
@@ -135,7 +145,9 @@ end, true)
 --
 
 local function damage_cobble_dig(pos, node, digger)
-	if not digger:is_player() then return end
+	if not digger:is_player() then
+		return
+	end
 
 	local digger_name = digger:get_player_name()
 	local digger_team = ctf_teams.get(digger_name)
@@ -149,7 +161,9 @@ local function damage_cobble_dig(pos, node, digger)
 		return
 	end
 
-	if digger_team == placer_team then return end
+	if digger_team == placer_team then
+		return
+	end
 
 	local placerobj = minetest.get_player_by_name(placer_name)
 
@@ -158,7 +172,7 @@ local function damage_cobble_dig(pos, node, digger)
 			damage_groups = {
 				fleshy = 7,
 				damage_cobble = 1,
-			}
+			},
 		})
 	else
 		digger:set_hp(digger:get_hp() - 7)
@@ -170,10 +184,10 @@ end
 
 minetest.register_node("ctf_map:damage_cobble", {
 	description = "Damage Cobble\n(Damages any enemy that breaks it)",
-	tiles = {"ctf_map_damage_cobble.png"},
+	tiles = { "ctf_map_damage_cobble.png" },
 	is_ground_content = false,
 	walkable = true,
-	groups = {cracky=3, stone=2},
+	groups = { cracky = 3, stone = 2 },
 	on_ranged_shoot = function(pos, node, shooter, type)
 		if type == "pistol" then
 			return
@@ -191,13 +205,13 @@ minetest.register_node("ctf_map:damage_cobble", {
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
 		local meta = minetest.get_meta(pos)
 		meta:set_string("placer", placer:get_player_name())
-	end
+	end,
 })
 
 minetest.register_node("ctf_map:reinforced_cobble", {
 	description = "Reinforced Cobblestone",
-	tiles = {"ctf_map_reinforced_cobble.png"},
+	tiles = { "ctf_map_reinforced_cobble.png" },
 	is_ground_content = false,
-	groups = {cracky = 1, stone = 2},
+	groups = { cracky = 1, stone = 2 },
 	sounds = default.node_sound_stone_defaults(),
 })

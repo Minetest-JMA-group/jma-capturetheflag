@@ -6,14 +6,18 @@ local blacklist = {
 	"ctf_ranged:sniper_magnum",
 	"ctf_ranged:sniper_magnum_loaded",
 	"ctf_mode_classes:ranged_rifle",
-	"ctf_mode_classes:ranged_rifle_loaded"
+	"ctf_mode_classes:ranged_rifle_loaded",
 }
+
+local S = core.get_translator(core.get_current_modname())
 
 ctf_settings.register("ctf_modebase:prevent_marker_placement", {
 	type = "bool",
-	label = "Prevent automatic marker placement while sniping",
-	description = "Prevent placement of markers while holding ranged weapons,\nthis exludes the shotgun and pistol.",
-	default = "true"
+	label = S("Prevent automatic marker placement while sniping"),
+	description = S(
+		"Prevent placement of markers while holding ranged weapons,\nthis exludes the shotgun and pistol."
+	),
+	default = "true",
 })
 
 local hud = mhud.init()
@@ -30,8 +34,7 @@ ctf_modebase.markers = {}
 function binoculars.update_player_property(player)
 	local new_zoom_fov = 84
 
-	if player:get_inventory():contains_item(
-			"main", "binoculars:binoculars") then
+	if player:get_inventory():contains_item("main", "binoculars:binoculars") then
 		new_zoom_fov = 10
 	elseif minetest.is_creative_enabled(player:get_player_name()) then
 		new_zoom_fov = 15
@@ -39,7 +42,7 @@ function binoculars.update_player_property(player)
 
 	-- Only set property if necessary to avoid player mesh reload
 	if player:get_properties().zoom_fov ~= new_zoom_fov then
-		player:set_properties({zoom_fov = new_zoom_fov})
+		player:set_properties({ zoom_fov = new_zoom_fov })
 	end
 end
 
@@ -50,12 +53,12 @@ local function add_marker(pname, pteam, message, pos, owner)
 			world_pos = pos,
 			precision = 1,
 			color = 0x31e800,
-			text = message
+			text = message,
 		})
 	else
 		hud:change(pname, "marker_" .. owner, {
 			world_pos = pos,
-			text = message
+			text = message,
 		})
 	end
 end
@@ -91,7 +94,11 @@ function ctf_modebase.markers.remove(pname, no_notify)
 
 		for teammate in pairs(ctf_teams.online_players[markers[pname].team].players) do
 			if not no_notify and teammate ~= pname then
-				minetest.chat_send_player(teammate, minetest.colorize("#ABCDEF", "* " .. pname .. " removed a marker!"))
+				minetest.chat_send_player(
+					teammate,
+					minetest.colorize("#ABCDEF", S("* @1 removed a marker!", pname))
+					-- TODO use a constant for the colour above
+				)
 			end
 
 			if hud:exists(teammate, "marker_" .. pname) then
@@ -104,31 +111,51 @@ function ctf_modebase.markers.remove(pname, no_notify)
 end
 
 function ctf_modebase.markers.add(pname, msg, pos, no_notify, specific_player)
-	if not ctf_modebase.in_game then return end
+	if not ctf_modebase.in_game then
+		return
+	end
 
 	local pteam = ctf_teams.get(pname)
-	if not pteam then return end
+	if not pteam then
+		return
+	end
 
 	if markers[pname] then
 		markers[pname].timer:cancel()
 	end
 
-	minetest.log("action", string.format("%s placed a marker at %s: '%s'", pname, minetest.pos_to_string(pos), msg))
+	minetest.log(
+		"action",
+		string.format(
+			"%s placed a marker at %s: '%s'",
+			pname,
+			minetest.pos_to_string(pos),
+			msg
+		)
+	)
 
 	markers[pname] = {
-		msg = msg, pos = pos, team = pteam,
+		msg = msg,
+		pos = pos,
+		team = pteam,
 		timer = minetest.after(MARKER_LIFETIME, ctf_modebase.markers.remove, pname, true),
 	}
 
 	if specific_player then
-		minetest.chat_send_player(specific_player, minetest.colorize("#ABCDEF", "* " .. pname .. " placed a marker for you!"))
+		minetest.chat_send_player(
+			specific_player,
+			minetest.colorize("#ABCDEF", S("* @1 placed a marker for you!", pname))
+		)
 
-		add_marker(pname          , pteam, msg, pos, pname)
+		add_marker(pname, pteam, msg, pos, pname)
 		add_marker(specific_player, pteam, msg, pos, pname)
 	else
 		for teammate in pairs(ctf_teams.online_players[pteam].players) do
 			if not no_notify and teammate ~= pname then
-				minetest.chat_send_player(teammate, minetest.colorize("#ABCDEF", "* " .. pname .. " placed a marker!"))
+				minetest.chat_send_player(
+					teammate,
+					minetest.colorize("#ABCDEF", S("* @1 placed a marker!", pname))
+				)
 			end
 
 			add_marker(teammate, pteam, msg, pos, pname)
@@ -163,11 +190,12 @@ local function marker_func(name, param, specific_player, hpmarker)
 	local pteam = ctf_teams.get(name)
 
 	if marker_cooldown:get(name) then
-		return false, "You can only place a marker every "..MARKER_PLACE_INTERVAL.." seconds"
+		return false,
+			S("You can only place a marker every @1 seconds", MARKER_PLACE_INTERVAL)
 	end
 
 	if not pteam then
-		return false, "You need to be in a team to use markers!"
+		return false, S"You need to be in a team to use markers!")
 	end
 
 	local player = minetest.get_player_by_name(name)
@@ -181,30 +209,35 @@ local function marker_func(name, param, specific_player, hpmarker)
 	end
 
 	local ray = minetest.raycast(
-		pos1, vector.add(pos1, vector.multiply(player:get_look_dir(), MARKER_RANGE),
-		true, false
-	))
+		pos1,
+		vector.add(
+			pos1,
+			vector.multiply(player:get_look_dir(), MARKER_RANGE),
+			true,
+			false
+		)
+	)
 	local pointed = ray:next()
 
 	if pointed and pointed.type == "object" and pointed.ref == player then
 		pointed = ray:next()
 	end
 
-	if pointed and vector.distance(
-		pointed.under or pointed.ref:get_pos(),
-		player:get_pos()
-	) <= 2 then
+	if
+		pointed
+		and vector.distance(pointed.under or pointed.ref:get_pos(), player:get_pos())
+			<= 2
+	then
 		hpmarker = true
 	end
 
 	if pointed and hpmarker == true then
-		local player_hpr = string.format("HP: %i/%i", player:get_hp(),
-		player:get_properties().hp_max)
+		local player_hpr =
+			S("HP: @1/#2", player:get_hp(), player:get_properties().hp_max)
 		message = string.format("m [%s]: ", name) .. player_hpr
-		if vector.distance(
-			pointed.under or pointed.ref:get_pos(),
-			player:get_pos()
-		) <= 2 then
+		if
+			vector.distance(pointed.under or pointed.ref:get_pos(), player:get_pos()) <= 2
+		then
 			pos = pointed.under or pointed.ref:get_pos()
 		else
 			pos = player:get_pos()
@@ -215,21 +248,24 @@ local function marker_func(name, param, specific_player, hpmarker)
 			end
 		end
 		if param ~= "Look here!" then
-			message = string.format("[HP: %i/%i] %s", player:get_hp(),
-			player:get_properties().hp_max, param)
+			message = S(
+				"[HP: @1/@2] @3",
+				player:get_hp(),
+				player:get_properties().hp_max,
+				param
+			)
 		end
 
 		-- If the player places a marker upon death, it will resort to the below
 		if player:get_hp() == 0 then
-			message = string.format("m <%s> died here", name)
-			if param ~= "Look here!" then message = string.format(
-				"m [%s]: %s", name, param
-			)
+			message = S("m <@1> died here", name)
+			if param ~= "Look here!" then
+				message = string.format("m [%s]: %s", name, param)
 			end
 		end
 	else
 		if not pointed then
-			return false, "Can't find anything to mark, too far away!"
+			return false, S("Can't find anything to mark, too far away!")
 		end
 		message = string.format("m [%s]: %s", name, param)
 		if pointed.type == "object" then
@@ -238,42 +274,43 @@ local function marker_func(name, param, specific_player, hpmarker)
 			pos = pointed.under
 		end
 	end
-
+	if message == "Look here!" then
+		message = S("Look here!")
+	end
 	ctf_modebase.markers.add(name, message, pos, nil, specific_player)
 	marker_cooldown:set(name, MARKER_PLACE_INTERVAL)
 	if hpmarker then
-		return true, "HP marker is placed!"
+		return true, S("HP marker is placed!")
 	else
-		return true, "Marker is placed!"
+		return true, S("Marker is placed!")
 	end
 end
 
-
 minetest.register_chatcommand("mhp", {
-	description = "Place a HP marker in your look direction",
+	description = S("Place a HP marker in your look direction"),
 	params = "",
-	privs = {interact = true, shout = true},
+	privs = { interact = true, shout = true },
 	func = function(name, param)
 		return marker_func(name, param, nil, true)
-	end
+	end,
 })
 
 minetest.register_chatcommand("m", {
-	description = "Place a marker in your look direction",
-	params = "[message]",
-	privs = {interact = true, shout = true},
-	func = marker_func
+	description = S("Place a marker in your look direction"),
+	params = S("[message]"),
+	privs = { interact = true, shout = true },
+	func = marker_func,
 })
 
 minetest.register_chatcommand("mp", {
-	description = "Place a marker in your look direction, for a specific player",
-	params = "<player> [message]",
-	privs = {interact = true, shout = true},
+	description = S("Place a marker in your look direction, for a specific player"),
+	params = S("<player> [message]"),
+	privs = { interact = true, shout = true },
 	func = function(name, params)
 		local pteam = ctf_teams.get(name)
 
 		if not pteam then
-			return false, "You aren't in a team!"
+			return false, S("You aren't in a team!")
 		end
 
 		params = string.split(params, " ", false, 1)
@@ -283,24 +320,24 @@ minetest.register_chatcommand("mp", {
 				if name ~= params[1] then
 					return marker_func(name, params[2] or "", params[1])
 				else
-					return false, "You can't place a marker for yourself."
+					return false, S("You can't place a marker for yourself.")
 				end
 			else
-				return false, "The given player isn't on your team!"
+				return false, S("The given player isn't on your team!")
 			end
 		else
-			return false, "The given player isn't online!"
+			return false, S("The given player isn't online!")
 		end
-	end
+	end,
 })
 
 minetest.register_chatcommand("mr", {
-	description = "Remove your own marker",
+	description = S("Remove your own marker"),
 	func = function(name, param)
 		ctf_modebase.markers.remove(name)
 
-		return true, "Marker is removed!"
-	end
+		return true, S("Marker is removed!")
+	end,
 })
 
 local check_interval = 0.3
@@ -308,7 +345,9 @@ local timer = 0
 minetest.register_globalstep(function(dtime)
 	timer = timer + dtime
 
-	if timer < check_interval then return end
+	if timer < check_interval then
+		return
+	end
 	timer = 0
 
 	for _, player in pairs(minetest.get_connected_players()) do
@@ -319,7 +358,9 @@ minetest.register_globalstep(function(dtime)
 			local stackname = player:get_wielded_item():get_name()
 
 			local holding_blacklisted_item = false
-			if ctf_settings.get(player, "ctf_modebase:prevent_marker_placement") == true then
+			if
+				ctf_settings.get(player, "ctf_modebase:prevent_marker_placement") == true
+			then
 				for _, itemstring in ipairs(blacklist) do
 					if stackname:match(itemstring) then
 						holding_blacklisted_item = true
@@ -331,10 +372,10 @@ minetest.register_globalstep(function(dtime)
 			if controls.LMB then
 				marker_text = ""
 			elseif controls.RMB then
-				marker_text = "Defend!"
+				marker_text = S("Defend!")
 			end
 
-			if marker_text  and not holding_blacklisted_item then
+			if marker_text and not holding_blacklisted_item then
 				local success, msg = marker_func(player:get_player_name(), marker_text)
 
 				if not success and msg then

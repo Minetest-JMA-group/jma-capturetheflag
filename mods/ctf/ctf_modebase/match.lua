@@ -1,13 +1,11 @@
 --- @type false | string
 ctf_modebase.restart_on_next_match = false -- used by server_restart mod to restart after a match
 
-
 ctf_modebase.map_on_next_match = nil
 ctf_modebase.mode_on_next_match = nil
 
 -- Overridable
-function ctf_modebase.map_chosen(map)
-end
+function ctf_modebase.map_chosen(map) end
 
 function ctf_modebase.start_match_after_mode_vote()
 	local old_mode = ctf_modebase.current_mode
@@ -20,7 +18,8 @@ function ctf_modebase.start_match_after_mode_vote()
 	ctf_modebase.mode_on_next_match = nil
 
 	if ctf_modebase.map_on_next_match then
-		ctf_modebase.map_catalog.current_map = ctf_modebase.map_catalog.map_dirnames[ctf_modebase.map_on_next_match]
+		ctf_modebase.map_catalog.current_map =
+			ctf_modebase.map_catalog.map_dirnames[ctf_modebase.map_on_next_match]
 		ctf_modebase.map_on_next_match = nil
 		ctf_modebase.start_match_after_map_vote()
 	else
@@ -34,14 +33,17 @@ function ctf_modebase.start_match_after_map_vote()
 	ctf_modebase.map_chosen(map)
 	ctf_map.place_map(map, function()
 		-- Set time and time_speed
-		minetest.set_timeofday(map.start_time/24000)
+		minetest.set_timeofday(map.start_time / 24000)
 		minetest.settings:set("time_speed", map.time_speed * 72)
 
 		ctf_map.announce_map(map)
-		ctf_modebase.announce(string.format("New match: %s map by %s, %s mode",
-			map.name,
-			map.author,
-			HumanReadable(ctf_modebase.current_mode))
+		ctf_modebase.announce(
+			string.format(
+				"New match: %s map by %s, %s mode",
+				map.name,
+				map.author,
+				HumanReadable(ctf_modebase.current_mode)
+			)
 		)
 
 		ctf_modebase.on_new_match()
@@ -49,19 +51,30 @@ function ctf_modebase.start_match_after_map_vote()
 		ctf_modebase.in_game = true
 		ctf_teams.allocate_teams(ctf_map.current_map.teams)
 
-		ctf_modebase.current_mode_matches_played = ctf_modebase.current_mode_matches_played + 1
+		ctf_modebase.current_mode_matches_played = ctf_modebase.current_mode_matches_played
+			+ 1
 
 		local current_map = ctf_map.current_map
 		local current_mode = ctf_modebase.current_mode
 
 		if table.indexof(current_map.game_modes, current_mode) == -1 then
-			local concat = "The current mode is not in the list of modes supported by the current map."
-			local cmd_text = string.format("/ctf_next -f [mode:technical modename] %s", current_map.dirname)
+			local concat =
+				"The current mode is not in the list of modes supported by the current map."
+			local cmd_text = string.format(
+				"/ctf_next -f [mode:technical modename] %s",
+				current_map.dirname
+			)
 			local msg = minetest.colorize(
-				"red", string.format("%s\nSupported mode(s): %s. To switch to a mode set for the map, do %s",
-				concat, table.concat(current_map.game_modes, ", "), cmd_text))
+				"red",
+				string.format(
+					"%s\nSupported mode(s): %s. To switch to a mode set for the map, do %s",
+					concat,
+					table.concat(current_map.game_modes, ", "),
+					cmd_text
+				)
+			)
 
-			chat_lib.send_message_to_privileged(msg, {"ctf_admin", "server"})
+			chat_lib.send_message_to_privileged(msg, { "ctf_admin", "server" })
 		end
 	end)
 end
@@ -77,8 +90,10 @@ local function start_new_match()
 	if ctf_modebase.mode_on_next_match then
 		ctf_modebase.current_mode_matches_played = 0
 		ctf_modebase.start_match_after_mode_vote()
-	elseif ctf_modebase.current_mode_matches_played >= ctf_modebase.current_mode_matches or
-	not ctf_modebase.current_mode then
+	elseif
+		ctf_modebase.current_mode_matches_played >= ctf_modebase.current_mode_matches
+		or not ctf_modebase.current_mode
+	then
 		ctf_modebase.current_mode_matches_played = 0
 		ctf_modebase.mode_vote.start_vote()
 	else
@@ -98,10 +113,13 @@ end
 
 minetest.register_chatcommand("ctf_next", {
 	description = "Set a new map and mode",
-	privs = {ctf_admin = true},
+	privs = { ctf_admin = true },
 	params = "[-f] [mode:technical modename] [technical mapname]",
 	func = function(name, param)
-		minetest.log("action", string.format("[ctf_admin] %s ran /ctf_next %s", name, param))
+		minetest.log(
+			"action",
+			string.format("[ctf_admin] %s ran /ctf_next %s", name, param)
+		)
 
 		local force = param == "-f"
 		if force then
@@ -147,7 +165,7 @@ minetest.register_chatcommand("ctf_next", {
 
 minetest.register_chatcommand("ctf_skip", {
 	description = "Skip to a new match",
-	privs = {ctf_admin = true},
+	privs = { ctf_admin = true },
 	func = function(name, param)
 		minetest.log("action", string.format("[ctf_admin] %s ran /ctf_skip", name))
 
@@ -160,3 +178,4 @@ minetest.register_chatcommand("ctf_skip", {
 		return true, "Skipping match..."
 	end,
 })
+

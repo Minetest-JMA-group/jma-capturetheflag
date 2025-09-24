@@ -1,6 +1,10 @@
 function ctf_map.announce_map(map)
-	local msg = (minetest.colorize("#fcdb05", "Map: ") .. minetest.colorize("#f49200", map.name) ..
-	minetest.colorize("#fcdb05", " by ") .. minetest.colorize("#f49200", map.author))
+	local msg = (
+		minetest.colorize("#fcdb05", "Map: ")
+		.. minetest.colorize("#f49200", map.name)
+		.. minetest.colorize("#fcdb05", " by ")
+		.. minetest.colorize("#f49200", map.author)
+	)
 	if map.hint and map.hint ~= "" then
 		msg = msg .. "\n" .. minetest.colorize("#f49200", map.hint)
 	end
@@ -13,11 +17,21 @@ function ctf_map.place_map(mapmeta, callback)
 
 	ctf_map.emerge_with_callbacks(nil, mapmeta.pos1, mapmeta.pos2, function(ctx)
 		local rotation = (mapmeta.rotation and mapmeta.rotation ~= "z") and "90" or "0"
-		local res = minetest.place_schematic(mapmeta.pos1, schempath, rotation, {["ctf_map:chest"] = "air"})
+		local res = minetest.place_schematic(
+			mapmeta.pos1,
+			schempath,
+			rotation,
+			{ ["ctf_map:chest"] = "air" }
+		)
 
-		minetest.log("action", string.format(
-			"Placed map %s in %.2fs", dirname, (minetest.get_us_time() - ctx.start_time) / 1000000
-		))
+		minetest.log(
+			"action",
+			string.format(
+				"Placed map %s in %.2fs",
+				dirname,
+				(minetest.get_us_time() - ctx.start_time) / 1000000
+			)
+		)
 
 		for name, def in pairs(mapmeta.teams) do
 			local p = def.flag_pos
@@ -25,15 +39,24 @@ function ctf_map.place_map(mapmeta, callback)
 			local node = minetest.get_node(p)
 
 			if node.name ~= "ctf_modebase:flag" then
-				minetest.log("error", name.."'s flag was set incorrectly, or there is no flag node placed")
+				minetest.log(
+					"error",
+					name .. "'s flag was set incorrectly, or there is no flag node placed"
+				)
 			else
-				minetest.set_node(vector.offset(p, 0, 1, 0), {name="ctf_modebase:flag_top_"..name, param2 = node.param2})
+				minetest.set_node(
+					vector.offset(p, 0, 1, 0),
+					{ name = "ctf_modebase:flag_top_" .. name, param2 = node.param2 }
+				)
 
 				-- Place flag base if needed
 				if tonumber(mapmeta.map_version or "0") < 2 then
 					for x = -2, 2 do
 						for z = -2, 2 do
-							minetest.set_node(vector.offset(p, x, -1, z), {name = def.base_node or "ctf_map:cobble"})
+							minetest.set_node(
+								vector.offset(p, x, -1, z),
+								{ name = def.base_node or "ctf_map:cobble" }
+							)
 						end
 					end
 				end
@@ -44,22 +67,31 @@ function ctf_map.place_map(mapmeta, callback)
 			local y = p.y - 1
 			for x = p.x - 2, p.x + 2 do
 				for z = p.z - 2, p.z + 2 do
-					local node = minetest.get_node({x = x, y = y, z = z})
+					local node = minetest.get_node({ x = x, y = y, z = z })
 					if node and string.sub(node.name, 1, 8) ~= "ctf_map:" then
-						minetest.set_node({x = x, y = y, z = z}, {name = "ctf_map:cobble"})	
+						minetest.set_node(
+							{ x = x, y = y, z = z },
+							{ name = "ctf_map:cobble" }
+						)
 						floor_fixed = true
 					end
 				end
 			end
 
 			if floor_fixed then
-				minetest.log("action", "Fixed base floor on map: " .. mapmeta.name .. ", team: " .. name)
+				minetest.log(
+					"action",
+					"Fixed base floor on map: " .. mapmeta.name .. ", team: " .. name
+				)
 			end
 		end
 
 		minetest.after(0, minetest.fix_light, mapmeta.pos1, mapmeta.pos2)
 
-		assert(res, "Unable to place schematic, does the MTS file exist? Path: " .. schempath)
+		assert(
+			res,
+			"Unable to place schematic, does the MTS file exist? Path: " .. schempath
+		)
 
 		ctf_map.current_map = mapmeta
 
@@ -92,7 +124,6 @@ function ctf_map.remove_barrier(mapmeta, callback)
 
 				for barriernode_id, replacement_id in pairs(barrier_nodes) do
 					if id == barriernode_id then
-
 						data[i] = replacement_id
 						done = true
 						break
@@ -147,10 +178,11 @@ function ctf_map.remove_barrier(mapmeta, callback)
 	end
 end
 
-
 local ID_CHEST = minetest.get_content_id("ctf_map:chest")
 local function get_place_positions(a, data, pos1, pos2)
-	if a.amount <= 0 then return {} end
+	if a.amount <= 0 then
+		return {}
+	end
 
 	local Nx = pos2.x - pos1.x + 1
 	local Ny = pos2.y - pos1.y + 1
@@ -181,14 +213,19 @@ local function get_place_positions(a, data, pos1, pos2)
 		local z = math_floor(pos / My / Mx) + Sz
 
 		local vi = (z - pos1.z) * Ny * Nx + (y - pos1.y) * Nx + (x - pos1.x) + 1
-		local id_below = data[(z - pos1.z) * Ny * Nx + (y - 1 - pos1.y) * Nx + (x - pos1.x) + 1]
-		local id_above = data[(z - pos1.z) * Ny * Nx + (y + 1 - pos1.y) * Nx + (x - pos1.x) + 1]
+		local id_below =
+			data[(z - pos1.z) * Ny * Nx + (y - 1 - pos1.y) * Nx + (x - pos1.x) + 1]
+		local id_above =
+			data[(z - pos1.z) * Ny * Nx + (y + 1 - pos1.y) * Nx + (x - pos1.x) + 1]
 
-		if (data[vi] == ID_AIR or data[vi] == ID_WATER) and
-			id_below ~= ID_AIR and id_below ~= ID_IGNORE and id_below ~= ID_WATER and
-			(id_above == ID_AIR or id_above == ID_WATER)
+		if
+			(data[vi] == ID_AIR or data[vi] == ID_WATER)
+			and id_below ~= ID_AIR
+			and id_below ~= ID_IGNORE
+			and id_below ~= ID_WATER
+			and (id_above == ID_AIR or id_above == ID_WATER)
 		then
-			table_insert(ret, {vi=vi, x=x, y=y, z=z})
+			table_insert(ret, { vi = vi, x = x, y = y, z = z })
 			if #ret >= a.amount then
 				return ret
 			end
@@ -227,7 +264,7 @@ local function prepare_nodes(pos1, pos2, data, team_chest_items, blacklisted_nod
 			local x = (i - 1) % Nx + pos1.x
 			local y = math_floor((i - 1) / Nx) % Ny + pos1.y
 			local z = math_floor((i - 1) / Ny / Nx) + pos1.z
-			local pos = {x=x, y=y, z=z}
+			local pos = { x = x, y = y, z = z }
 
 			op.on_construct(pos)
 
@@ -239,7 +276,14 @@ local function prepare_nodes(pos1, pos2, data, team_chest_items, blacklisted_nod
 	end
 end
 
-local function place_treasure_chests(mapmeta, pos1, pos2, data, param2_data, treasurefy_node_callback)
+local function place_treasure_chests(
+	mapmeta,
+	pos1,
+	pos2,
+	data,
+	param2_data,
+	treasurefy_node_callback
+)
 	for i, a in pairs(mapmeta.chests) do
 		local place_positions = get_place_positions(a, data, pos1, pos2)
 
@@ -258,8 +302,10 @@ local function place_treasure_chests(mapmeta, pos1, pos2, data, param2_data, tre
 		end
 
 		if #place_positions < a.amount then
-			minetest.log("error",
-				string.format("[MAP] Couldn't place %d of the %d chests needed to place in zone %s",
+			minetest.log(
+				"error",
+				string.format(
+					"[MAP] Couldn't place %d of the %d chests needed to place in zone %s",
 					a.amount - #place_positions,
 					a.amount,
 					i
@@ -269,7 +315,13 @@ local function place_treasure_chests(mapmeta, pos1, pos2, data, param2_data, tre
 	end
 end
 
-function ctf_map.prepare_map_nodes(mapmeta, treasurefy_node_callback, no_treasures, team_chest_items, blacklisted_nodes)
+function ctf_map.prepare_map_nodes(
+	mapmeta,
+	treasurefy_node_callback,
+	no_treasures,
+	team_chest_items,
+	blacklisted_nodes
+)
 	local vm = VoxelManip()
 	local pos1, pos2 = vm:read_from_map(mapmeta.pos1, mapmeta.pos2)
 
@@ -278,7 +330,14 @@ function ctf_map.prepare_map_nodes(mapmeta, treasurefy_node_callback, no_treasur
 
 	prepare_nodes(pos1, pos2, data, team_chest_items, blacklisted_nodes)
 	if not no_treasures then
-		place_treasure_chests(mapmeta, pos1, pos2, data, param2_data, treasurefy_node_callback)
+		place_treasure_chests(
+			mapmeta,
+			pos1,
+			pos2,
+			data,
+			param2_data,
+			treasurefy_node_callback
+		)
 	end
 
 	vm:set_data(data)

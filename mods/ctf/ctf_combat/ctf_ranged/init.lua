@@ -2,7 +2,7 @@ local hud = mhud.init()
 local shoot_cooldown = ctf_core.init_cooldowns()
 
 ctf_ranged = {
-	scoped = {}
+	scoped = {},
 }
 
 local scoped = ctf_ranged.scoped
@@ -16,11 +16,12 @@ minetest.register_craftitem("ctf_ranged:ammo", {
 local function process_ray(ray, user, look_dir, def)
 	local hitpoint = ray:hit_object_or_node({
 		node = function(ndef)
-			return (ndef.walkable == true and ndef.pointable == true) or ndef.groups.liquid
+			return (ndef.walkable == true and ndef.pointable == true)
+				or ndef.groups.liquid
 		end,
 		object = function(obj)
 			return obj:is_player() and obj ~= user
-		end
+		end,
 	})
 
 	if hitpoint then
@@ -28,7 +29,11 @@ local function process_ray(ray, user, look_dir, def)
 			local node = minetest.get_node(hitpoint.under)
 			local nodedef = minetest.registered_nodes[node.name]
 
-			if nodedef.on_ranged_shoot or nodedef.groups.snappy or (nodedef.groups.oddly_breakable_by_hand or 0) >= 3 then
+			if
+				nodedef.on_ranged_shoot
+				or nodedef.groups.snappy
+				or (nodedef.groups.oddly_breakable_by_hand or 0) >= 3
+			then
 				if not minetest.is_protected(hitpoint.under, user:get_player_name()) then
 					if nodedef.on_ranged_shoot then
 						nodedef.on_ranged_shoot(hitpoint.under, node, user, def.type)
@@ -39,47 +44,64 @@ local function process_ray(ray, user, look_dir, def)
 			else
 				if nodedef.walkable and nodedef.pointable then
 					minetest.add_particle({
-						pos = vector.subtract(hitpoint.intersection_point, vector.multiply(look_dir, 0.04)),
+						pos = vector.subtract(
+							hitpoint.intersection_point,
+							vector.multiply(look_dir, 0.04)
+						),
 						velocity = vector.new(),
-						acceleration = {x=0, y=0, z=0},
+						acceleration = { x = 0, y = 0, z = 0 },
 						expirationtime = def.bullethole_lifetime or 3,
 						size = 1,
 						collisiondetection = false,
 						texture = "ctf_ranged_bullethole.png",
 					})
 
-					minetest.sound_play("ctf_ranged_ricochet", {pos = hitpoint.intersection_point})
+					minetest.sound_play(
+						"ctf_ranged_ricochet",
+						{ pos = hitpoint.intersection_point }
+					)
 				elseif nodedef.groups.liquid then
 					minetest.add_particlespawner({
 						amount = 10,
 						time = 0.1,
 						minpos = hitpoint.intersection_point,
 						maxpos = hitpoint.intersection_point,
-						minvel = {x=look_dir.x * 3, y=4, z=-look_dir.z * 3},
-						maxvel = {x=look_dir.x * 4, y=6, z= look_dir.z * 4},
-						minacc = {x=0, y=-10, z=0},
-						maxacc = {x=0, y=-13, z=0},
+						minvel = { x = look_dir.x * 3, y = 4, z = -look_dir.z * 3 },
+						maxvel = { x = look_dir.x * 4, y = 6, z = look_dir.z * 4 },
+						minacc = { x = 0, y = -10, z = 0 },
+						maxacc = { x = 0, y = -13, z = 0 },
 						minexptime = 1,
 						maxexptime = 1,
 						minsize = 0,
 						maxsize = 0,
 						collisiondetection = false,
 						glow = 3,
-						node = {name = nodedef.name},
+						node = { name = nodedef.name },
 					})
 
 					if def.liquid_travel_dist then
-						process_ray(rawf.bulletcast(
-							def.bullet, hitpoint.intersection_point,
-							vector.add(hitpoint.intersection_point, vector.multiply(look_dir, def.liquid_travel_dist)), true, false
-						), user, look_dir, def)
+						process_ray(
+							rawf.bulletcast(
+								def.bullet,
+								hitpoint.intersection_point,
+								vector.add(
+									hitpoint.intersection_point,
+									vector.multiply(look_dir, def.liquid_travel_dist)
+								),
+								true,
+								false
+							),
+							user,
+							look_dir,
+							def
+						)
 					end
 				end
 			end
 		elseif hitpoint.type == "object" then
 			hitpoint.ref:punch(user, 1, {
 				full_punch_interval = 1,
-				damage_groups = {ranged = 1, [def.type] = 1, fleshy = def.damage}
+				damage_groups = { ranged = 1, [def.type] = 1, fleshy = def.damage },
 			}, look_dir)
 
 			minetest.sound_play("ctf_ranged_hit", {
@@ -99,30 +121,34 @@ end
 function ctf_ranged.simple_register_gun(name, def)
 	minetest.register_tool(rawf.also_register_loaded_tool(name, {
 		description = def.description,
-		inventory_image = def.texture.."^[colorize:#F44:42",
+		inventory_image = def.texture .. "^[colorize:#F44:42",
 		ammo = def.ammo or "ctf_ranged:ammo",
 		rounds = def.rounds,
 		_g_category = def.type,
-		groups = {ranged = 1, [def.type] = 1, tier = def.tier or 1, not_in_creative_inventory = 1},
+		groups = {
+			ranged = 1,
+			[def.type] = 1,
+			tier = def.tier or 1,
+			not_in_creative_inventory = 1,
+		},
 		on_use = function(itemstack, user)
 			if not ctf_ranged.can_use_gun(user, name) then
-				minetest.sound_play("ctf_ranged_click", {pos = user:get_pos()}, true)
+				minetest.sound_play("ctf_ranged_click", { pos = user:get_pos() }, true)
 				return
 			end
 
 			local result = rawf.load_weapon(itemstack, user:get_inventory())
 
 			if result:get_name() == itemstack:get_name() then
-				minetest.sound_play("ctf_ranged_click", {pos = user:get_pos()}, true)
+				minetest.sound_play("ctf_ranged_click", { pos = user:get_pos() }, true)
 			else
-				minetest.sound_play("ctf_ranged_reload", {pos = user:get_pos()}, true)
+				minetest.sound_play("ctf_ranged_reload", { pos = user:get_pos() }, true)
 			end
 
 			return result
 		end,
-	},
-	function(loaded_def)
-		loaded_def.description = def.description.." (Loaded)"
+	}, function(loaded_def)
+		loaded_def.description = def.description .. " (Loaded)"
 		loaded_def.inventory_image = def.texture
 		loaded_def.inventory_overlay = def.texture_overlay
 		loaded_def.wield_image = def.wield_texture or def.texture
@@ -130,7 +156,7 @@ function ctf_ranged.simple_register_gun(name, def)
 		loaded_def.on_secondary_use = def.on_secondary_use
 		loaded_def.on_use = function(itemstack, user)
 			if not ctf_ranged.can_use_gun(user, name) then
-				minetest.sound_play("ctf_ranged_click", {pos = user:get_pos()}, true)
+				minetest.sound_play("ctf_ranged_click", { pos = user:get_pos() }, true)
 				return
 			end
 
@@ -153,19 +179,16 @@ function ctf_ranged.simple_register_gun(name, def)
 			if type(def.bullet) == "table" then
 				def.bullet.texture = "ctf_ranged_bullet.png"
 			else
-				def.bullet = {texture = "ctf_ranged_bullet.png"}
+				def.bullet = { texture = "ctf_ranged_bullet.png" }
 			end
 
 			if not def.bullet.spread then
-				rays = {rawf.bulletcast(
-					def.bullet,
-					spawnpos, endpos, true, true
-				)}
+				rays = { rawf.bulletcast(def.bullet, spawnpos, endpos, true, true) }
 			else
 				rays = rawf.spread_bulletcast(def.bullet, spawnpos, endpos, true, true)
 			end
 
-			minetest.sound_play(def.fire_sound, {pos = user:get_pos()}, true)
+			minetest.sound_play(def.fire_sound, { pos = user:get_pos() }, true)
 
 			for _, ray in pairs(rays) do
 				process_ray(ray, user, look_dir, def)
@@ -212,40 +235,38 @@ function ctf_ranged.show_scope(name, item_name, fov_mult)
 		item_name = item_name,
 		wielditem = player:hud_get_flags().wielditem,
 		hud = true,
-		physics_override = "ctf_ranged:scoping"
+		physics_override = "ctf_ranged:scoping",
 	}
 
 	hud:add(player, "ctf_ranged:scope", {
 		type = "image",
-		position = {x = 0.5, y = 0.5},
+		position = { x = 0.5, y = 0.5 },
 		text = "ctf_ranged_rifle_crosshair.png",
-		scale = {x = scale_const, y = scale_const},
-		alignment = {x = "center", y = "center"},
+		scale = { x = scale_const, y = scale_const },
+		alignment = { x = "center", y = "center" },
 	})
 
 	player:set_fov(1 / fov_mult, true)
 	physics.set(name, "ctf_ranged:scoping", { speed = 0.1, jump = 0 })
 	player:hud_set_flags({ wielditem = false })
-
 end
 
 function ctf_ranged.show_shoulder_scope(name, item_name, fov_mult)
-    local player = minetest.get_player_by_name(name)
-    if not player then
-        return
-    end
+	local player = minetest.get_player_by_name(name)
+	if not player then
+		return
+	end
 
-    scoped[name] = {
-        item_name = item_name,
-        wielditem = player:hud_get_flags().wielditem,
+	scoped[name] = {
+		item_name = item_name,
+		wielditem = player:hud_get_flags().wielditem,
 		hud = false,
-		physics_override = "ctf_ranged:shoulder_scoping"
-    }
+		physics_override = "ctf_ranged:shoulder_scoping",
+	}
 
-    player:set_fov(1 / fov_mult, true)
-    physics.set(name, "ctf_ranged:shoulder_scoping", { speed = 0.5, jump = 0.5 })
+	player:set_fov(1 / fov_mult, true)
+	physics.set(name, "ctf_ranged:shoulder_scoping", { speed = 0.5, jump = 0.5 })
 end
-
 
 function ctf_ranged.hide_scope(name)
 	local player = minetest.get_player_by_name(name)
@@ -280,7 +301,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
 			local item_name = itemstack:get_name()
 			ctf_ranged.show_shoulder_scope(user:get_player_name(), item_name, 2)
 		end
-	end
+	end,
 })
 
 ctf_ranged.simple_register_gun("ctf_ranged:rifle", {
@@ -332,7 +353,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:assault_rifle", {
 			local item_name = itemstack:get_name()
 			ctf_ranged.show_shoulder_scope(user:get_player_name(), item_name, 2)
 		end
-	end
+	end,
 })
 
 ctf_ranged.simple_register_gun("ctf_ranged:sniper", {
@@ -352,7 +373,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper", {
 			local item_name = itemstack:get_name()
 			ctf_ranged.show_scope(user:get_player_name(), item_name, 4)
 		end
-	end
+	end,
 })
 
 ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
@@ -372,7 +393,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
 			local item_name = itemstack:get_name()
 			ctf_ranged.show_scope(user:get_player_name(), item_name, 8)
 		end
-	end
+	end,
 })
 
 ------------------

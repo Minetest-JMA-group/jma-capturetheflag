@@ -34,10 +34,10 @@ local function landmine_explode(pos)
 		time = 0.5,
 		minpos = vector.subtract(pos, 3),
 		maxpos = vector.add(pos, 3),
-		minvel = {x = 0, y = 5, z = 0},
-		maxvel = {x = 0, y = 7, z = 0},
-		minacc = {x = 0, y = 1, z = 0},
-		maxacc = {x = 0, y = 1, z = 0},
+		minvel = { x = 0, y = 5, z = 0 },
+		maxvel = { x = 0, y = 7, z = 0 },
+		minacc = { x = 0, y = 1, z = 0 },
+		maxacc = { x = 0, y = 1, z = 0 },
 		minexptime = 0.3,
 		maxexptime = 0.6,
 		minsize = 7,
@@ -50,8 +50,8 @@ local function landmine_explode(pos)
 
 	minetest.add_particle({
 		pos = pos,
-		velocity = {x=0, y=0, z=0},
-		acceleration = {x=0, y=0, z=0},
+		velocity = { x = 0, y = 0, z = 0 },
+		acceleration = { x = 0, y = 0, z = 0 },
 		expirationtime = 0.3,
 		size = 15,
 		collisiondetection = false,
@@ -59,7 +59,7 @@ local function landmine_explode(pos)
 		object_collision = false,
 		vertical = false,
 		texture = "grenades_boom.png",
-		glow = 10
+		glow = 10,
 	})
 
 	minetest.sound_play("ctf_landmine_explosion", {
@@ -71,16 +71,12 @@ local function landmine_explode(pos)
 	for _, obj in pairs(near_objs) do
 		if is_self_landmine(obj, pos) == false then
 			if placerobj then
-				obj:punch(
-					placerobj,
-					1,
-					{
-						damage_groups = {
-							fleshy = 15,
-							landmine = 1
-						}
-					}
-				)
+				obj:punch(placerobj, 1, {
+					damage_groups = {
+						fleshy = 15,
+						landmine = 1,
+					},
+				})
 			else
 				local chp = obj:get_hp()
 				obj:set_hp(chp - 15)
@@ -97,37 +93,42 @@ local function landmine_explode(pos)
 end
 
 minetest.register_node("ctf_landmine:landmine", {
-	description = "Landmine\n"
-		.. "A trap that explodes when stepped on except for team mates.\n"
-		.. "Effective defensive tool for securing your base.",
+	description = S("Landmine") .. "\n" .. S(
+		"A trap that explodes when stepped on except for team mates."
+	) .. "\n" .. S("Effective defensive tool for securing your base."),
 	drawtype = "nodebox",
 	tiles = {
 		"ctf_landmine_landmine.png",
-		"ctf_landmine_landmine.png^[transformFY"
+		"ctf_landmine_landmine.png^[transformFY",
 	},
 	inventory_image = "ctf_landmine_landmine.png",
 	paramtype = "light",
 	sunlight_propagates = true,
 	walkable = true,
-	groups = {cracky=1, level=2},
+	groups = { cracky = 1, level = 2 },
 	node_box = {
 		type = "fixed",
-		fixed = {-0.4375, -0.5000, -0.4375, 0.4375, -0.4750, 0.4375}
+		fixed = { -0.4375, -0.5000, -0.4375, 0.4375, -0.4750, 0.4375 },
 	},
 	selection_box = {
 		type = "fixed",
-		fixed = {-0.4375, -0.5000, -0.4375, 0.4375, -0.4750, 0.4375}
+		fixed = { -0.4375, -0.5000, -0.4375, 0.4375, -0.4750, 0.4375 },
 	},
-    on_place = function(itemstack, placer, pointed_thing)
+	on_place = function(itemstack, placer, pointed_thing)
 		local pteam = ctf_teams.get(placer:get_player_name())
 
 		if pteam then
 			for flagteam, team in pairs(ctf_map.current_map.teams) do
-				if pteam ~= flagteam and not ctf_modebase.flag_captured[flagteam] and team.flag_pos then
-					local distance_from_flag = vector.distance(placer:get_pos(), team.flag_pos)
+				if
+					pteam ~= flagteam
+					and not ctf_modebase.flag_captured[flagteam]
+					and team.flag_pos
+				then
+					local distance_from_flag =
+						vector.distance(placer:get_pos(), team.flag_pos)
 					if distance_from_flag < 15 then -- block landmine placement when closer than 15 nodes to the enemy flag
 						hud_events.new(placer:get_player_name(), {
-							text = "You can't place landmine so close to a flag",
+							text = S("You can't place landmine so close to a flag"),
 							color = "warning",
 							quick = true,
 						})
@@ -160,11 +161,8 @@ minetest.register_node("ctf_landmine:landmine", {
 				break
 			end
 		end
-	end
+	end,
 })
-
-
-
 
 minetest.register_globalstep(function(dtime)
 	if #landmines == 0 then
@@ -176,16 +174,14 @@ minetest.register_globalstep(function(dtime)
 	end
 	landmine_globalstep_counter = 0.0
 	for _idx, pos in pairs(landmines) do
-		local near_objs = minetest.get_objects_in_area(
-		{
-			x = pos.x-0.5,
-			y = pos.y-0.5,
-			z = pos.z-0.5
-		},
-		{
-			x = pos.x+0.5,
-			y = pos.y-0.3,
-			z = pos.z+0.5
+		local near_objs = minetest.get_objects_in_area({
+			x = pos.x - 0.5,
+			y = pos.y - 0.5,
+			z = pos.z - 0.5,
+		}, {
+			x = pos.x + 0.5,
+			y = pos.y - 0.3,
+			z = pos.z + 0.5,
 		})
 		local must_explode = false
 		for _, obj in pairs(near_objs) do
