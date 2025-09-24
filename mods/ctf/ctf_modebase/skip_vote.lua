@@ -44,20 +44,25 @@ end
 local function vote_timer_hud(player)
 	local yes, no, abs = count_votes()
 
-	local time_str = string.format("Vote to skip match [%d]\nYes: %d | No: %d | Abs: %d",
-								  math.floor(time_left % 60), yes, no, abs)
+	local time_str = string.format(
+		"Vote to skip match [%d]\nYes: %d | No: %d | Abs: %d",
+		math.floor(time_left % 60),
+		yes,
+		no,
+		abs
+	)
 
 	if not hud:exists(player, "skip_vote:timer") then
 		hud:add(player, "skip_vote:timer", {
 			type = "text",
-			position = {x = 1, y = 0.5},
-			offset = {x =-100, y = -30},
+			position = { x = 1, y = 0.5 },
+			offset = { x = -100, y = -30 },
 			text = time_str,
 			color = 0xFFFFFF,
 		})
 	else
 		hud:change(player, "skip_vote:timer", {
-			text = time_str
+			text = time_str,
 		})
 	end
 end
@@ -65,11 +70,11 @@ end
 local function add_vote_hud(player)
 	hud:add(player, "skip_vote:vote", {
 		type = "text",
-		position = {x = 1, y = 0.52},
-		offset = {x = -100, y = 0},
+		position = { x = 1, y = 0.52 },
+		offset = { x = -100, y = 0 },
 		text = "/yes /no or /abs",
 		color = 0xFFFFFF,
-		style = 2
+		style = 2,
 	})
 	vote_timer_hud(player)
 end
@@ -125,23 +130,33 @@ function ctf_modebase.skip_vote.end_vote()
 
 	if voters_count < math.ceil(connected_players / 2) then
 		if yes > no then
-			minetest.chat_send_all(string.format(
-				"The vote to skip the match has passed! (%d yes vs %d no)", yes, no))
+			minetest.chat_send_all(
+				string.format(
+					"The vote to skip the match has passed! (%d yes vs %d no)",
+					yes,
+					no
+				)
+			)
 
 			voted_skip = true
 			if flags_hold <= 0 then
 				ctf_modebase.start_new_match(5)
 			end
 		else
-			minetest.chat_send_all(string.format(
-				"The vote to skip the match has failed. (%d yes vs %d no)", yes, no))
+			minetest.chat_send_all(
+				string.format(
+					"The vote to skip the match has failed. (%d yes vs %d no)",
+					yes,
+					no
+				)
+			)
 		end
 	else
 		minetest.chat_send_all(
-			"The vote to skip the match has failed due to not enough participation.")
+			"The vote to skip the match has failed due to not enough participation."
+		)
 	end
 end
-
 
 -- Automatically start a skip vote after 50m, and subsequent votes every 15m
 ctf_api.register_on_match_start(function()
@@ -156,7 +171,6 @@ ctf_api.register_on_match_start(function()
 
 	voted_skip = false
 	flags_hold = 0
-
 
 	timer = minetest.after(SKIP_DELAY, ctf_modebase.skip_vote.start_vote)
 	already_voted = false
@@ -215,7 +229,7 @@ end)
 
 minetest.register_chatcommand("vote_skip", {
 	description = "Start a match skip vote",
-	privs = {ctf_admin = true},
+	privs = { ctf_admin = true },
 	func = function(name, param)
 		minetest.log("action", string.format("[ctf_admin] %s ran /vote_skip", name))
 
@@ -234,7 +248,6 @@ minetest.register_chatcommand("vote_skip", {
 
 -- ctf_api.register_on_new_match(function()
 -- 	--start voting later, otherwise will start at loading
-
 
 -- 	minetest.after(1, function()
 -- 		if not ctf_modebase.in_game or votes then
@@ -266,7 +279,7 @@ local function player_vote(name, vote)
 	if hud:exists(player, "skip_vote:vote") then
 		hud:change(player, "skip_vote:vote", {
 			text = string.format("[%s]", vote),
-			style = 1
+			style = 1,
 		})
 	end
 
@@ -280,24 +293,24 @@ end
 
 minetest.register_chatcommand("yes", {
 	description = "Vote yes",
-	privs = {interact = true},
+	privs = { interact = true },
 	func = function(name, params)
 		return player_vote(name, "yes")
-	end
+	end,
 })
 
 minetest.register_chatcommand("no", {
 	description = "Vote no",
-	privs = {interact = true},
+	privs = { interact = true },
 	func = function(name, params)
 		return player_vote(name, "no")
-	end
+	end,
 })
 
 minetest.register_chatcommand("abs", {
 	description = "Vote third party",
-	privs = {interact = true},
+	privs = { interact = true },
 	func = function(name, params)
 		return player_vote(name, "abstain")
-	end
+	end,
 })

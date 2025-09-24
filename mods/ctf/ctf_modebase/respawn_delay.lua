@@ -12,7 +12,9 @@ minetest.register_entity("ctf_modebase:respawn_movement_freezer", {
 		static_save = false,
 		pointable = false,
 	},
-	on_punch = function() return true end,
+	on_punch = function()
+		return true
+	end,
 })
 
 local function finish_respawn(player)
@@ -23,7 +25,7 @@ local function finish_respawn(player)
 	end
 
 	local hp_max = respawn_delay[pname].hp_max
-	player:set_properties({hp_max = hp_max, pointable = true})
+	player:set_properties({ hp_max = hp_max, pointable = true })
 	player:set_hp(hp_max)
 
 	physics.remove(pname, "ctf_modebase:respawn_freeze")
@@ -42,13 +44,15 @@ local function finish_respawn(player)
 end
 
 local function run_respawn_timer(pname)
-	if not respawn_delay[pname] then return end
+	if not respawn_delay[pname] then
+		return
+	end
 
 	respawn_delay[pname].left = respawn_delay[pname].left - 1
 
 	if respawn_delay[pname].left > 0 then
 		hud:change(pname, "left", {
-			text = string.format("Respawning in %ds", respawn_delay[pname].left)
+			text = string.format("Respawning in %ds", respawn_delay[pname].left),
 		})
 
 		respawn_delay[pname].timer = minetest.after(1, run_respawn_timer, pname)
@@ -64,7 +68,9 @@ end
 
 local function respawn(player, time)
 	local pname = player:get_player_name()
-	if not respawn_delay[pname] or respawn_delay[pname].state == true then return end
+	if not respawn_delay[pname] or respawn_delay[pname].state == true then
+		return
+	end
 
 	assert(time >= 1, "Delay time must be >= 1!")
 
@@ -73,8 +79,8 @@ local function respawn(player, time)
 
 	hud:add(pname, "left", {
 		type = "text",
-		position = {x = 0.5, y = 0.1},
-		alignment = {x = "center", y = "down"},
+		position = { x = 0.5, y = 0.1 },
+		alignment = { x = "center", y = "down" },
 		text_scale = 2,
 		color = 0xA000B3,
 	})
@@ -101,15 +107,26 @@ end
 
 function ctf_modebase.prepare_respawn_delay(player, new_delay, finish_callback)
 	local pname = player:get_player_name()
-	if respawn_delay[pname] then return end
+	if respawn_delay[pname] then
+		return
+	end
 
-	respawn_delay[pname] = {state = false, hp_max = player:get_properties().hp_max, finish_callback = finish_callback}
+	respawn_delay[pname] = {
+		state = false,
+		hp_max = player:get_properties().hp_max,
+		finish_callback = finish_callback,
+	}
 
-	player:set_properties({hp_max = 0})
+	player:set_properties({ hp_max = 0 })
 	player:set_velocity(vector.zero())
-	physics.set(pname, "ctf_modebase:respawn_freeze", {speed = 0, jump = 0, gravity = 0})
+	physics.set(
+		pname,
+		"ctf_modebase:respawn_freeze",
+		{ speed = 0, jump = 0, gravity = 0 }
+	)
 
-	local obj = minetest.add_entity(player:get_pos(), "ctf_modebase:respawn_movement_freezer")
+	local obj =
+		minetest.add_entity(player:get_pos(), "ctf_modebase:respawn_movement_freezer")
 	if obj then
 		player:set_attach(obj)
 		respawn_delay[pname].obj = obj
@@ -138,7 +155,7 @@ minetest.register_on_leaveplayer(function(player)
 		if respawn_delay[pname].timer then
 			respawn_delay[pname].timer:cancel()
 		end
-		player:set_properties({hp_max = respawn_delay[pname].hp_max})
+		player:set_properties({ hp_max = respawn_delay[pname].hp_max })
 		respawn_delay[pname] = nil
 	end
 

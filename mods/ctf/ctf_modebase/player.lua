@@ -4,14 +4,14 @@ ctf_settings.register("ctf_modebase:auto_trash_stone_swords", {
 	type = "bool",
 	label = "Auto-trash stone swords when you pick up a better sword",
 	description = "Only triggers when picking up swords from the ground",
-	default = "false"
+	default = "false",
 })
 
 ctf_settings.register("ctf_modebase:auto_trash_stone_tools", {
 	type = "bool",
 	label = "Auto-trash stone tools when you pick up a better one",
 	description = "Only triggers when picking up tools from the ground",
-	default = "false"
+	default = "false",
 })
 
 ctf_settings.register("ctf_modebase:flag_sound_volume", {
@@ -24,7 +24,9 @@ ctf_settings.register("ctf_modebase:flag_sound_volume", {
 })
 
 local simplify_for_saved_stuff = function(iname)
-	if not iname or iname == "" then return iname end
+	if not iname or iname == "" then
+		return iname
+	end
 
 	local match
 
@@ -49,9 +51,9 @@ local simplify_for_saved_stuff = function(iname)
 	end
 
 	if
-	iname == "ctf_mode_classes:knight_sword" or
-	iname == "ctf_mode_classes:support_bandage" or
-	iname == "ctf_mode_classes:ranged_rifle_loaded"
+		iname == "ctf_mode_classes:knight_sword"
+		or iname == "ctf_mode_classes:support_bandage"
+		or iname == "ctf_mode_classes:ranged_rifle_loaded"
 	then
 		return "class_primary"
 	end
@@ -86,11 +88,15 @@ local function is_initial_stuff(player, i)
 end
 
 function ctf_modebase.player.save_initial_stuff_positions(player, soft)
-	if not ctf_modebase.current_mode then return end
+	if not ctf_modebase.current_mode then
+		return
+	end
 
 	local inv = player:get_inventory()
 	local meta = player:get_meta()
-	local ssp = meta:get_string("ctf_modebase:player:initial_stuff_positions:"..ctf_modebase.current_mode)
+	local ssp = meta:get_string(
+		"ctf_modebase:player:initial_stuff_positions:" .. ctf_modebase.current_mode
+	)
 
 	if ssp == "" then
 		ssp = {}
@@ -114,7 +120,10 @@ function ctf_modebase.player.save_initial_stuff_positions(player, soft)
 		end
 	end
 
-	meta:set_string("ctf_modebase:player:initial_stuff_positions:"..ctf_modebase.current_mode, minetest.serialize(ssp))
+	meta:set_string(
+		"ctf_modebase:player:initial_stuff_positions:" .. ctf_modebase.current_mode,
+		minetest.serialize(ssp)
+	)
 end
 
 -- Changes made to this function should also be made to is_initial_stuff() above
@@ -158,7 +167,8 @@ function ctf_modebase.player.give_initial_stuff(player)
 								inv:remove_item("main", item_level[itype].item)
 							end
 
-							item_level[itype] = {level = ilevel, item = item, keep = keep}
+							item_level[itype] =
+								{ level = ilevel, item = item, keep = keep }
 						elseif not keep then
 							-- minetest.log(dump(item:get_name()).." s< "..dump(item_level[itype].item:get_name()))
 
@@ -166,7 +176,7 @@ function ctf_modebase.player.give_initial_stuff(player)
 						end
 					else
 						-- First item of this type!
-						item_level[itype] = {level = ilevel, item = item, keep = keep}
+						item_level[itype] = { level = ilevel, item = item, keep = keep }
 					end
 
 					-- We can't break after discovering an item type, as it might have multiple types
@@ -182,7 +192,7 @@ function ctf_modebase.player.give_initial_stuff(player)
 	ctf_modebase.player.save_initial_stuff_positions(player, true)
 
 	local saved_stuff_positions = meta:get_string(
-		"ctf_modebase:player:initial_stuff_positions:"..ctf_modebase.current_mode
+		"ctf_modebase:player:initial_stuff_positions:" .. ctf_modebase.current_mode
 	)
 
 	if saved_stuff_positions == "" then
@@ -236,10 +246,13 @@ local function swap_tools(itemstack, picker, inv, inv_action, item_index)
 
 			if priority then
 				inv = inv or picker:get_inventory()
-				for i=1, 8 do -- loop through the top row of the player's inv
+				for i = 1, 8 do -- loop through the top row of the player's inv
 					local compare = inv:get_stack("main", i)
 
-					if not mode.is_bound_item or not mode.is_bound_item(picker, compare:get_name()) then
+					if
+						not mode.is_bound_item
+						or not mode.is_bound_item(picker, compare:get_name())
+					then
 						local cprio = func(compare)
 
 						if cprio and cprio < priority then
@@ -247,20 +260,35 @@ local function swap_tools(itemstack, picker, inv, inv_action, item_index)
 							-- minetest.log(dump(item)..dump(typ))
 							inv:set_stack("main", i, itemstack)
 
-							if item == "sword" and typ == "stone" and
-							ctf_settings.get(picker, "ctf_modebase:auto_trash_stone_swords") == "true" then
+							if
+								item == "sword"
+								and typ == "stone"
+								and ctf_settings.get(
+										picker,
+										"ctf_modebase:auto_trash_stone_swords"
+									)
+									== "true"
+							then
 								return ItemStack("")
 							end
 
-							if item ~= "sword" and typ == "stone" and
-							ctf_settings.get(picker, "ctf_modebase:auto_trash_stone_tools") == "true" then
+							if
+								item ~= "sword"
+								and typ == "stone"
+								and ctf_settings.get(
+										picker,
+										"ctf_modebase:auto_trash_stone_tools"
+									)
+									== "true"
+							then
 								return ItemStack("")
 							else
 								if inv_action then
 									inv:set_stack("main", item_index, compare)
 									return
 								else
-									local result = inv:add_item("main", compare):get_count()
+									local result = inv:add_item("main", compare)
+										:get_count()
 									if result == 0 then
 										return ItemStack("")
 									else
@@ -282,16 +310,23 @@ minetest.register_on_item_pickup(function(itemstack, picker)
 	return swap_tools(itemstack, picker)
 end)
 
-minetest.register_on_player_inventory_action(function(player, action, inventory, inventory_info)
-	if action == "put" and inventory_info.listname == "main" then
-		local index = inventory_info.index
-		local stack = swap_tools(ItemStack(inventory_info.stack), player, inventory, true, index)
-		if stack then
-			inventory:set_stack("main", index, stack)
+minetest.register_on_player_inventory_action(
+	function(player, action, inventory, inventory_info)
+		if action == "put" and inventory_info.listname == "main" then
+			local index = inventory_info.index
+			local stack = swap_tools(
+				ItemStack(inventory_info.stack),
+				player,
+				inventory,
+				true,
+				index
+			)
+			if stack then
+				inventory:set_stack("main", index, stack)
+			end
 		end
 	end
-end)
-
+)
 
 function ctf_modebase.player.empty_inv(player)
 	player:get_inventory():set_list("main", {})
@@ -334,9 +369,9 @@ function ctf_modebase.player.update(player)
 	if mode and ctf_map.current_map then
 		local map = ctf_map.current_map
 
-		skybox.set(player, table.indexof(ctf_map.skyboxes, map.skybox)-1)
+		skybox.set(player, table.indexof(ctf_map.skyboxes, map.skybox) - 1)
 
-		player:set_lighting({shadows = {intensity = map.enable_shadows}})
+		player:set_lighting({ shadows = { intensity = map.enable_shadows } })
 
 		physics.set(player:get_player_name(), "ctf_modebase:map_physics", {
 			speed = map.phys_speed,
