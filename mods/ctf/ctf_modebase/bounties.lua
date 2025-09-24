@@ -12,7 +12,7 @@ local contributed_bounties = {}
 --- @type number
 local PLAYER_BOUNTY_CAP = 100
 --- @type number
-local PLAYER_BOUNTY_MIN = 1
+local PLAYER_BOUNTY_MIN = 5
 
 local S = core.get_translator(core.get_current_modname())
 
@@ -399,7 +399,7 @@ local last_bounty_use = {}
 ctf_core.register_chatcommand_alias(
 	"bounty",
 	"bo",
-	{  -- /b is already registered in babelfish mod in JMA
+	{ -- /b is already registered in babelfish mod in JMA
 		description = S(
 			"Place a bounty on someone using your match score.\n"
 				.. "The score is returned to you if the match ends and nobody kills.\n"
@@ -414,7 +414,11 @@ ctf_core.register_chatcommand_alias(
 			local now = minetest.get_gametime()
 			if last_bounty_use[name] and now - last_bounty_use[name] < 5 then
 				local remaining = 5 - (now - last_bounty_use[name])
-				return false, S("You must wait @1 seconds before using this command again.", remaining)
+				return false,
+					S(
+						"You must wait @1 seconds before using this command again.",
+						remaining
+					)
 			end
 			last_bounty_use[name] = now
 
@@ -493,7 +497,6 @@ ctf_core.register_chatcommand_alias(
 		end,
 	}
 )
-
 
 ctf_api.register_on_match_end(function()
 	-- there might be some unclaimed player bounties, here we return
