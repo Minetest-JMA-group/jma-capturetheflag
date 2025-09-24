@@ -1,12 +1,12 @@
 ctf_api = {}
 
-ctf_api.registered_on_mode_start    = {}
-ctf_api.registered_on_new_match     = {}
-ctf_api.registered_on_match_start   = {}
-ctf_api.registered_on_match_end     = {}
+ctf_api.registered_on_mode_start = {}
+ctf_api.registered_on_new_match = {}
+ctf_api.registered_on_match_start = {}
+ctf_api.registered_on_match_end = {}
 ctf_api.registered_on_respawnplayer = {}
-ctf_api.registered_on_flag_take     = {}
-ctf_api.registered_on_flag_capture  = {}
+ctf_api.registered_on_flag_take = {}
+ctf_api.registered_on_flag_capture = {}
 
 ---@param func function
 function ctf_api.register_on_mode_start(func)
