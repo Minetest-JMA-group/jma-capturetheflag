@@ -32,7 +32,7 @@ end
 do
 	local registered_on_formspec_input = {}
 	function ctf_core.register_on_formspec_input(formname, func)
-		table.insert(registered_on_formspec_input, {formname = formname, call = func})
+		table.insert(registered_on_formspec_input, { formname = formname, call = func })
 	end
 
 	minetest.register_on_player_receive_fields(function(player, formname, fields, ...)
@@ -51,13 +51,15 @@ end
 --
 
 function HumanReadable(input)
-	if not input then return input end
+	if not input then
+		return input
+	end
 
 	local out
 	local t = type(input)
 
 	if t == "string" then
-		out = string.gsub(input, "(%a)([%w'-]*)", function(a,b)
+		out = string.gsub(input, "(%a)([%w'-]*)", function(a, b)
 			return string.format("%s%s", string.upper(a), string.lower(b))
 		end)
 
@@ -83,16 +85,16 @@ function HumanReadable(input)
 end
 
 function joinStrings(...)
-    local result = ""
-    for i, str in ipairs({...}) do
-        if str ~= "" and str ~= " " then
-            if result ~= "" then
-                result = result .. " "
-            end
-            result = result .. str
-        end
-    end
-    return result
+	local result = ""
+	for i, str in ipairs({ ... }) do
+		if str ~= "" and str ~= " " then
+			if result ~= "" then
+				result = result .. " "
+			end
+			result = result .. str
+		end
+	end
+	return result
 end
 
 --
@@ -119,9 +121,12 @@ do
 	function ctf_core.pos_inside(pos, pos1, pos2)
 		pos1, pos2 = vsort(pos1, pos2)
 
-		return pos.x >= pos1.x and pos.x <= pos2.x
-		and pos.y >= pos1.y and pos.y <= pos2.y
-		and pos.z >= pos1.z and pos.z <= pos2.z
+		return pos.x >= pos1.x
+			and pos.x <= pos2.x
+			and pos.y >= pos1.y
+			and pos.y <= pos2.y
+			and pos.z >= pos1.z
+			and pos.z <= pos2.z
 	end
 
 	if not math.round then
@@ -154,8 +159,8 @@ function ctf_core.file_exists(path)
 end
 
 do
-	local inf = 1/0
-	local minf = -1/0
+	local inf = 1 / 0
+	local minf = -1 / 0
 	function ctf_core.to_number(s)
 		local n = tonumber(s)
 		if n == n and n ~= inf and n ~= minf then
@@ -165,12 +170,14 @@ do
 end
 
 function ctf_core.format_number(n, d)
-	if n == nil then return "0" end
-    if n == math.floor(n) then -- math.type is misssing in luajit
-        return tostring(n)
-    else
-        return string.format("%." .. (d or "2") .. "f", n)
-    end
+	if n == nil then
+		return "0"
+	end
+	if n == math.floor(n) then -- math.type is misssing in luajit
+		return tostring(n)
+	else
+		return string.format("%." .. (d or "2") .. "f", n)
+	end
 end
 
 --
