@@ -14,7 +14,7 @@ function ctf_core.init_cooldowns()
 			end
 
 			if type(time) ~= "table" then
-				time = {_time = time}
+				time = { _time = time }
 			end
 
 			time._timer = minetest.after(time._time, function()
@@ -34,6 +34,6 @@ function ctf_core.init_cooldowns()
 		end,
 		get = function(self, player)
 			return self.players[PlayerName(player)]
-		end
+		end,
 	}
 end
