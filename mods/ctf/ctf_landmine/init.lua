@@ -93,9 +93,9 @@ local function landmine_explode(pos)
 end
 
 minetest.register_node("ctf_landmine:landmine", {
-	description = "Landmine\n"
-		.. "A trap that explodes when stepped on except for team mates.\n"
-		.. "Effective defensive tool for securing your base.",
+	description = S("Landmine") .. "\n" .. S(
+		"A trap that explodes when stepped on except for team mates."
+	) .. "\n" .. S("Effective defensive tool for securing your base."),
 	drawtype = "nodebox",
 	tiles = {
 		"ctf_landmine_landmine.png",
@@ -128,7 +128,7 @@ minetest.register_node("ctf_landmine:landmine", {
 						vector.distance(placer:get_pos(), team.flag_pos)
 					if distance_from_flag < 15 then -- block landmine placement when closer than 15 nodes to the enemy flag
 						hud_events.new(placer:get_player_name(), {
-							text = "You can't place landmine so close to a flag",
+							text = S("You can't place landmine so close to a flag"),
 							color = "warning",
 							quick = true,
 						})
