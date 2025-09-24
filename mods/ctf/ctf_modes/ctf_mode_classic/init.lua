@@ -2,6 +2,46 @@ local rankings = ctf_rankings.init()
 local recent_rankings = ctf_modebase.recent_rankings(rankings)
 local features = ctf_modebase.features(rankings, recent_rankings)
 
+local TEAM_CHEST_OPEN_TIMEOUT = 10
+
+--- @alias TeamChestOpenStatus { [PlayerName]: integer }
+--- @type { [Team]: TeamChestOpenStatus }
+local teamchest_openers = {}
+
+--- @param team Team
+local function is_teamchest_open(team)
+	--- @type nil | TeamChestOpenStatus
+	local status = teamchest_openers[team]
+	if status == nil then
+		return false
+	end
+	local now = os.time()
+	for pname, time in pairs(status) do
+		if os.difftime(time, now) < TEAM_CHEST_OPEN_TIMEOUT then
+			return true
+		end
+	end
+	return false
+end
+
+--- @param pname PlayerName
+--- @param team Team
+local function close_team_chest(pname, team)
+	if teamchest_openers[team] == nil then
+		teamchest_openers[team] = {}
+	end
+	teamchest_openers[team][pname] = nil
+end
+
+--- @param pname PlayerName
+--- @param team Team
+local function open_team_chest(pname, team)
+	if teamchest_openers[team] == nil then
+		teamchest_openers[team] = {}
+	end
+	teamchest_openers[team][pname] = os.time()
+end
+
 local old_bounty_reward_func = ctf_modebase.bounties.bounty_reward_func
 local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 ctf_modebase.register_mode("classic", {
@@ -124,11 +164,35 @@ ctf_modebase.register_mode("classic", {
 		ctf_modebase.bounties.get_next_bounty = old_get_next_bounty
 	end,
 	on_new_match = features.on_new_match,
-	on_match_end = features.on_match_end,
+	on_match_end = function()
+		for team, _ in pairs(teamchest_openers) do
+			teamchest_openers[team] = {}
+		end
+		return features.on_match_end()
+	end,
 	team_allocator = features.team_allocator,
+	team_chest_access = function(team, pname)
+		if is_teamchest_open(team) and ctf_teams.get(pname) ~= team then
+			return features.get_chest_access(pname)
+		else
+			return features.team_chest_access(team, pname)
+		end
+	end,
 	on_allocplayer = features.on_allocplayer,
-	on_leaveplayer = features.on_leaveplayer,
-	on_dieplayer = features.on_dieplayer,
+	on_leaveplayer = function(pname)
+		local team = ctf_teams.get(pname)
+		if team ~= nil then
+			close_team_chest(pname, team)
+		end
+		return features.on_leaveplayer(pname)
+	end,
+	on_dieplayer = function(pname, reason)
+		local team = ctf_teams.get(pname)
+		if team ~= nil then
+			close_team_chest(pname, team)
+		end
+		return features.on_dieplayer(pname, reason)
+	end,
 	on_respawnplayer = features.on_respawnplayer,
 	can_take_flag = features.can_take_flag,
 	on_flag_take = features.on_flag_take,
