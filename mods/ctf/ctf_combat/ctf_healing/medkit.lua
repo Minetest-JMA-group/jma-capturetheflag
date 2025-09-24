@@ -16,7 +16,7 @@ local function stop_medkit_heal(playername, interrupt_reason)
 		if interrupt_reason then
 			local php = player:get_hp()
 
-			player:set_hp((php + healing_players[playername].hp)/2) -- set hp halfway from the original to the current
+			player:set_hp((php + healing_players[playername].hp) / 2) -- set hp halfway from the original to the current
 
 			hud_events.new(playername, {
 				text = "Your healing was interrupted: " .. interrupt_reason,
@@ -54,9 +54,21 @@ local function medkit_heal(playername)
 		local node_0 = minetest.get_node(pos).name
 		local node_1 = minetest.get_node(pos:offset(0, 1, 0)).name
 
-		if (not node_0:match("slab") and not node_0:match("stair") and not node_0:match("door") and
-        not node_0:match("fence") and node_0 ~= "default:snow" and minetest.registered_nodes[node_0].walkable) or
-	    (minetest.registered_nodes[node_1].walkable and not node_1:match("door") and not node_1:match("fence")) then
+		if
+			(
+				not node_0:match("slab")
+				and not node_0:match("stair")
+				and not node_0:match("door")
+				and not node_0:match("fence")
+				and node_0 ~= "default:snow"
+				and minetest.registered_nodes[node_0].walkable
+			)
+			or (
+				minetest.registered_nodes[node_1].walkable
+				and not node_1:match("door")
+				and not node_1:match("fence")
+			)
+		then
 			return stop_medkit_heal(playername, "You can't heal while inside blocks")
 		end
 
@@ -78,11 +90,15 @@ local function medkit_heal(playername)
 end
 
 local function start_medkit_heal(playername)
-	if healing_players[playername] then return end
+	if healing_players[playername] then
+		return
+	end
 
 	local player = minetest.get_player_by_name(playername)
 
-	if not player then return end
+	if not player then
+		return
+	end
 
 	local hp_max = player:get_properties().hp_max
 	local php = player:get_hp()
@@ -101,9 +117,21 @@ local function start_medkit_heal(playername)
 	local node_0 = minetest.get_node(pos).name
 	local node_1 = minetest.get_node(pos:offset(0, 1, 0)).name
 
-	if (not node_0:match("slab") and not node_0:match("stair") and not node_0:match("door") and
-	not node_0:match("fence") and node_0 ~= "default:snow" and minetest.registered_nodes[node_0].walkable) or
-	(minetest.registered_nodes[node_1].walkable and not node_1:match("door") and not node_1:match("fence")) then
+	if
+		(
+			not node_0:match("slab")
+			and not node_0:match("stair")
+			and not node_0:match("door")
+			and not node_0:match("fence")
+			and node_0 ~= "default:snow"
+			and minetest.registered_nodes[node_0].walkable
+		)
+		or (
+			minetest.registered_nodes[node_1].walkable
+			and not node_1:match("door")
+			and not node_1:match("fence")
+		)
+	then
 		return hud_events.new(playername, {
 			text = "You can't heal inside blocks",
 			color = "danger",
@@ -111,13 +139,13 @@ local function start_medkit_heal(playername)
 		})
 	end
 
-	healing_players[playername] = {hp = php}
+	healing_players[playername] = { hp = php }
 
 	hud:add(player, "healing_overlay", {
 		type = "image",
-		position = {x = 0.5, y = 0.5},
+		position = { x = 0.5, y = 0.5 },
 		image_scale = -100,
-		texture = "[combine:1x1^[invert:rgba^[opacity:1^[colorize:#099bd1:101"
+		texture = "[combine:1x1^[invert:rgba^[opacity:1^[colorize:#099bd1:101",
 	})
 
 	physics.set(playername, "ctf_healing:medkit_slow", { speed = 0.3 })
@@ -130,7 +158,13 @@ minetest.register_on_punchplayer(function(player, hitter, _, _, _, damage)
 		local pname = player:get_player_name()
 		local hname = hitter:is_player() and hitter:get_player_name()
 
-		if hname and ctf_teams.get(pname) and ctf_teams.get(pname) == ctf_teams.get(hname) then return end
+		if
+			hname
+			and ctf_teams.get(pname)
+			and ctf_teams.get(pname) == ctf_teams.get(hname)
+		then
+			return
+		end
 
 		if healing_players[pname] then
 			stop_medkit_heal(pname, "Someone is attacking you")
@@ -145,7 +179,9 @@ end)
 minetest.register_on_leaveplayer(function(player)
 	local pname = player:get_player_name()
 
-	if not healing_players[pname] then return end
+	if not healing_players[pname] then
+		return
+	end
 
 	if healing_players[pname].after then
 		healing_players[pname].after:cancel()
