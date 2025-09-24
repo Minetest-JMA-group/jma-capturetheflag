@@ -137,6 +137,12 @@ local function create_visual(name, pref, def)
 				alpha_tween = {0.6, 0},
 				scale = 32}
 	})
+	
+	core.sound_play("ctf_jma_achieves_applause_"..def.type, {
+		to_player = name,
+		gain = 1.0,
+		fade = 2.0,
+	})
 end
 
 function ctf_jma_achieves.grant_achievement(name, id)
