@@ -37,6 +37,14 @@ ctf_jma_achieves.register_achievement("cja:ff", {
 	order = 3,
 	type = "bronze"
 })
+ctf_jma_achieves.register_achievement("cja:rq", {
+	name = S("Ragequit"),
+	description = S("Have someone leave just after you killed them"),
+	hint = S("Congratulations: you just made a noob leave and never join back! Hooray!"),
+	icon = "ctf_jma_achieves_broken_screen.png",
+	order = 3.5,
+	type = "bronze"
+})
 ctf_jma_achieves.register_achievement("cja:ew", {
 	name = S("Emoji Wizard"),
 	description = S("Create a secret emoji icon"),
@@ -61,6 +69,14 @@ ctf_jma_achieves.register_achievement("cja:btg", {
 	hint = S("Kamikaze!"),
 	icon = "ctf_jma_achieves_grave.png",
 	order = 6,
+	type = "silver"
+})
+ctf_jma_achieves.register_achievement("cja:bs", {
+	name = S("Bullseye"),
+	description = S("Kill by shooting from <mono>100</mono>+ blocks away"),
+	hint = S("You haven't <b>really</b> completed this until you find a bull's eye from a chest and shoot it."),
+	icon = "ctf_jma_achieves_target.png",
+	order = 6.5,
 	type = "silver"
 })
 ctf_jma_achieves.register_achievement("cja:spdrn", {
@@ -188,13 +204,29 @@ core.register_on_punchplayer(function(player, hitter, _, _, _, damage)
 	local hname = hitter:get_player_name()
 	if not hitter:is_player() or hname == player:get_player_name() then return false end
 	if player:get_hp() <= 0 then
+		-- We know that this hit killed the player
+		
+		-- Check for the hitter being dead
 		if hitter:get_hp() == 0 then
 			grant(hname, "cja:btg")
 		end
 		
+		-- Check for the hitter not wielding any items
 		if hitter:get_wielded_item():get_name() == "" then
 			grant(hname, "cja:ff")
 		end
+		
+		-- Check for seperation being greater than or equal to 100
+		if hitter:get_pos():distance(player:get_pos()) >= 100 then
+			grant(hname, "cja:bs")
+		end
+		
+		core.after(3, function()
+			-- Check for the player being offline
+			if hitter:get_player_name() ~= "" and player:get_player_name() == "" then
+				grant(hname, "cja:rq")
+			end
+		end)
 	end
 end)
 

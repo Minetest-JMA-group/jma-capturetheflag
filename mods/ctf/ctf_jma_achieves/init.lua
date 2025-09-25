@@ -244,8 +244,11 @@ local function get_pie_image(p)
 		return "3"
 	elseif p > 0.1 then
 		return "4"
-	end
-	return "5"
+	elseif p > 0.05 then
+		return "5"
+	elseif p > 0.025 then
+		return "6"
+	return "7"
 end
 
 local unselected_text = S([[<center><b>JMA CTF Achievements</b>
