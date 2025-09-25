@@ -5,7 +5,7 @@ local blacklist = {
 	"default:pick_stone",
 }
 
-local S = core.get_translator(minetest.get_current_modname())
+local S = core.get_translator(core.get_current_modname())
 
 --- Does the player have access to the chest?
 --- Example usage: `has_normal, has_pro = get_chest_access(name)`
