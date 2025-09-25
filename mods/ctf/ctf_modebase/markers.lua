@@ -195,7 +195,7 @@ local function marker_func(name, param, specific_player, hpmarker)
 	end
 
 	if not pteam then
-		return false, S"You need to be in a team to use markers!")
+		return false, S("You need to be in a team to use markers!")
 	end
 
 	local player = minetest.get_player_by_name(name)

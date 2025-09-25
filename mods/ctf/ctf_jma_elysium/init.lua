@@ -6,6 +6,7 @@ ctf_jma_elysium = {
 	on_joining = {},
 	elysium_locked = false,
 }
+local S = core.get_translator(core.get_current_modname())
 local storage = core.get_mod_storage()
 local SPAWNTP_COOLDOWN = ctf_core.init_cooldowns()
 local FORMNAME_WAIT = "ctf_jma_elysium:wait"
@@ -33,7 +34,9 @@ end
 
 function ctf_jma_elysium.get_player(player)
 	local name = PlayerName(player)
-	if not name then return nil end
+	if not name then
+		return nil
+	end
 	return ctf_jma_elysium.players[name]
 end
 
@@ -56,8 +59,8 @@ core.register_on_dieplayer(function(player)
 		ctf_modebase.prepare_respawn_delay(player, 3, function()
 			ctf_modebase.give_immunity(player, 3, nil, function()
 				player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
-				player:set_properties({pointable = pctx.pvp})
-				player:set_armor_groups({fleshy = 100})
+				player:set_properties({ pointable = pctx.pvp })
+				player:set_armor_groups({ fleshy = 100 })
 			end)
 		end)
 	end
@@ -67,7 +70,10 @@ function ctf_jma_elysium.can_hit_player(target, hitter)
 	local hitter_ctx = ctf_jma_elysium.players[hitter:get_player_name()]
 	local target_ctx = ctf_jma_elysium.players[target:get_player_name()]
 
-	if (hitter_ctx and hitter_ctx.pvp == true) and (target_ctx and target_ctx.pvp == true) then
+	if
+		(hitter_ctx and hitter_ctx.pvp == true)
+		and (target_ctx and target_ctx.pvp == true)
+	then
 		-- if ctf_core.pos_inside(target:get_pos(), map.no_pvp_zone.pos1, map.no_pvp_zone.pos2) then
 		-- 	hud_events.new(hitter, {
 		-- 		quick = true,
@@ -91,7 +97,9 @@ function ctf_modebase.player.is_playing(player)
 end
 
 function ctf_jma_elysium.set_pvp_mode(player, mode)
-	if not player then return end
+	if not player then
+		return
+	end
 	local name = player:get_player_name()
 	local ctx = ctf_jma_elysium.players[name]
 	if ctx then
@@ -108,7 +116,7 @@ function ctf_jma_elysium.set_pvp_mode(player, mode)
 			texture = "ctf_jma_elysium_mini_sword.png"
 		end
 
-		player:set_properties({pointable = pointable,})
+		player:set_properties({ pointable = pointable })
 		hpbar.set_icon(player, texture)
 		return ctx.pvp
 	end
@@ -117,7 +125,7 @@ end
 function ctf_jma_elysium.chat_send_elysium(msg)
 	for pname, ctx in pairs(ctf_jma_elysium.players) do
 		-- if ctx.location == "main" then -- In plans is to send messages to a specified location or to everyone
-			core.chat_send_player(pname, msg)
+		core.chat_send_player(pname, msg)
 		-- end
 	end
 end
@@ -129,27 +137,29 @@ function ctf_jma_elysium.can_player_join_elysium(name)
 	end
 
 	if ctf_jma_elysium.players[name] then
-		return false, "You're already joined Elysium. Use /leave to exit"
+		return false, S("You're already joined Elysium. Use /leave to exit")
 	end
 
 	if ctf_jma_elysium.elysium_locked then
-		return false, "Elysium is currently locked by admin."
+		return false, S("Elysium is currently locked by admin.")
 	end
 
 	if player:get_hp() <= 0 then
-		return false, "You're a ghost, not a player! Can't join Elysium while dead."
+		return false, S("You're a ghost, not a player! Can't join Elysium while dead.")
 	end
 
 	if player:get_attach() then
-		return false, "You cannot join Elysium while attached."
+		return false, S("You cannot join Elysium while attached.")
 	end
 
 	if ctf_modebase.taken_flags[name] then
-		return false, "Dear hacker " .. name .. ", you cannot join Elysium while holding a flag(s)."
+		return false,
+			S("Dear hacker @1, you cannot join Elysium while holding a flag(s).", name)
 	end
 
 	if ctf_combat_mode.in_combat(player) then
-		return false, "You cannot join Elysium while in combat. Please wait until combat ends."
+		return false,
+			S("You cannot join Elysium while in combat. Please wait until combat ends.")
 	end
 
 	return true
@@ -159,8 +169,10 @@ function ctf_jma_elysium.show_wait_formspec(player_name)
 	local fs = "formspec_version[7]"
 		.. "size[8,3]"
 		.. "no_prepend[]"
-		.. "hypertext[0,0;8,3;hypertext;<global valign=middle><center><b>%s</b></center>]"
-	core.show_formspec(player_name, FORMNAME_WAIT, string.format(fs, "Please wait..."))
+		.. "hypertext[0,0;8,3;hypertext;<global valign=middle><center><b>"
+		.. S("Please wait...")
+		.. "</b></center>]"
+	core.show_formspec(player_name, FORMNAME_WAIT, fs)
 end
 
 function ctf_jma_elysium.join(player, joined_callback)
@@ -180,9 +192,9 @@ function ctf_jma_elysium.join(player, joined_callback)
 		ctf_jma_elysium.on_joining[player_name] = nil
 		ctf_jma_elysium.players[player_name] = {
 			pvp = false,
-			location = "main"
+			location = "main",
 		}
-		core.chat_send_all(player_name .. " has joined Elysium.")
+		core.chat_send_all(S("@1 has joined Elysium."))
 		core.close_formspec(player_name, FORMNAME_WAIT)
 
 		ctf_teams.remove_online_player(player)
@@ -199,7 +211,7 @@ function ctf_jma_elysium.join(player, joined_callback)
 		player:set_properties({
 			hp_max = 20,
 		})
-		player:set_armor_groups({fleshy = 100})
+		player:set_armor_groups({ fleshy = 100 })
 		player:set_hp(20)
 
 		physics.set(name, "ctf_modebase:map_physics", {
@@ -209,9 +221,9 @@ function ctf_jma_elysium.join(player, joined_callback)
 		})
 
 		player:set_physics_override({
-				sneak_glitch = true,
-				new_move = true,
-			})
+			sneak_glitch = true,
+			new_move = true,
+		})
 
 		ctf_modebase.update_wear.cancel_player_updates(player)
 
@@ -266,16 +278,21 @@ function ctf_jma_elysium.leave(player)
 	local name = player:get_player_name()
 
 	if player:get_attach() then
-		core.chat_send_player(name, "You cannot leave Elysium while attached")
+		core.chat_send_player(name, S("You cannot leave Elysium while attached"))
 		return false
 	end
 
 	if player:get_hp() == 0 then
-		core.chat_send_player(name, "You cannot leave Elysium while you are dead! Please wait until you respawn.")
+		core.chat_send_player(
+			name,
+			S(
+				"You cannot leave Elysium while you are dead! Please wait until you respawn."
+			)
+		)
 		return false
 	end
 
-	core.chat_send_all(name .. " has left Elysium.")
+	core.chat_send_all(S("@1 has left Elysium", name))
 
 	local inv = player:get_inventory()
 	inv:set_list("main", {})
@@ -298,80 +315,87 @@ end
 ctf_jma_elysium.register_map("main", {
 	file = ctf_jma_elysium.modpath .. "/maps/jma_elysium_hub.mts",
 	bounds = {
-		pos1 = {x = 0, y = 0, z = 0},
-		pos2 = {x = 226, y = 124, z = 222},
+		pos1 = { x = 0, y = 0, z = 0 },
+		pos2 = { x = 226, y = 124, z = 222 },
 	},
-	pos = {x = 0, y = 500, z = 0},
-	spawn = {x = 115, y = 21, z = 111},
+	pos = { x = 0, y = 500, z = 0 },
+	spawn = { x = 115, y = 21, z = 111 },
 	no_pvp_zone = {
-		pos1 = {x = 5, y = 1, z = 5},
-		pos2 = {x = 15, y = 15, z = 15}
-	}
+		pos1 = { x = 5, y = 1, z = 5 },
+		pos2 = { x = 15, y = 15, z = 15 },
+	},
 })
 
 core.register_chatcommand("elist", {
-	description = "List all players in Elysium",
+	description = S("List all players in Elysium"),
 	func = function()
 		local players = ctf_jma_elysium.get_player_list()
 		if #players == 0 then
-			return false, "No players in Elysium."
+			return false, S("No players in Elysium.")
 		end
 
-		local msg = string .format("Players in Elysium (%d): %s", #players, table.concat(players, ", "))
+		local msg =
+			S("Players in Elysium (@1): @2", #players, table.concat(players, ", "))
 		return true, msg
-	end
+	end,
 })
 
 core.register_chatcommand("espawn", {
-	description = "Teleport to Elysium spawn point",
-	privs = {interact = true},
+	description = S("Teleport to Elysium spawn point"),
+	privs = { interact = true },
 	func = function(name, param)
 		local player = core.get_player_by_name(name)
 		if not player then
-			return false, "You must be online to use this command."
+			return false, S("You must be online to use this command.")
 		end
 
 		local pctx = ctf_jma_elysium.get_player(player)
 		if not pctx then
-			return false, "You are not in Elysium."
+			return false, S("You are not in Elysium.")
 		end
 
 		if SPAWNTP_COOLDOWN:get(player) then
-			return false, "Not too fast!"
+			return false, S("Not too fast!")
 		end
 
 		if player:get_hp() == 0 then
-			return false, "You cannot use this command while dead."
+			return false, S("You cannot use this command while dead.")
 		end
 
 		if player:get_attach() then
-			return false, "You cannot use this command right now."
+			return false, S("You cannot use this command right now.")
 		end
 
 		local map = ctf_jma_elysium.maps.main
 
 		SPAWNTP_COOLDOWN:set(player, 3)
 		player:set_pos(map.spawn_abs)
-		return true, "Teleported."
-	end
+		return true, S("Teleported.")
+	end,
 })
 
 local allow_reset = {}
 core.register_chatcommand("el_reset", {
-	description = "Reset Elysium modstorage (dangerous, admin only)",
-	privs = {ctf_admin = true, server = true},
+	description = S("Reset Elysium modstorage (dangerous, admin only)"),
+	privs = { ctf_admin = true, server = true },
 	func = function(name)
 		if not allow_reset[name] then
 			allow_reset[name] = true
 			minetest.after(30, function()
 				allow_reset[name] = nil
 			end)
-			return true, "Please re-run this command to confirm reset. This action cannot be undone."
+			return true,
+				S(
+					"Please re-run this command to confirm reset. This action cannot be undone."
+				)
 		end
 		storage:from_table({})
-		core.log("action", "[ctf_jma_elysium] Elysium modstorage has been reset by " .. name)
-		return true, "Elysium modstorage has been reset."
-	end
+		core.log(
+			"action",
+			"[ctf_jma_elysium] Elysium modstorage has been reset by " .. name
+		)
+		return true, S("Elysium modstorage has been reset.")
+	end,
 })
 
 ctf_core.include_files("things.lua", "map_utils.lua", "elysium_access.lua")

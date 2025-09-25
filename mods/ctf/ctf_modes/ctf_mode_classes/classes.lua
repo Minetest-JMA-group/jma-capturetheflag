@@ -58,7 +58,7 @@ local class_props = {
 	},
 }
 
-minetest.register_on_mods_loaded(function()
+core.register_on_mods_loaded(function()
 	for k, class_prop in pairs(class_props) do
 		local items_markup = ""
 		local disallowed_items_markup = ""
@@ -77,13 +77,13 @@ minetest.register_on_mods_loaded(function()
 			items_markup = string.format(
 				"%s%s\n<item name=%s float=left width=48>\n\n\n",
 				items_markup,
-				minetest.formspec_escape(desc[1]) .. (count and count or ""),
+				core.formspec_escape(desc[1]) .. (count and count or ""),
 				item:get_name()
 			)
 		end
 
 		for _, iname in ipairs(class_prop.disallowed_items or {}) do
-			if minetest.registered_items[iname] then
+			if core.registered_items[iname] then
 				disallowed_items_markup = string.format(
 					"%s<item name=%s width=48>",
 					disallowed_items_markup,
@@ -140,7 +140,7 @@ ctf_settings.register("ctf_mode_classes:simple_support_activate", {
 })
 
 ctf_melee.simple_register_sword("ctf_mode_classes:knight_sword", {
-	description = "Knight Sword\n" .. minetest.colorize(
+	description = "Knight Sword\n" .. core.colorize(
 		"gold",
 		"(Sneak/Run) + Rightclick to use Rage ability (Lasts "
 			.. KNIGHT_USAGE_TIME
@@ -173,7 +173,7 @@ ctf_melee.simple_register_sword("ctf_mode_classes:knight_sword", {
 				step,
 				false,
 				function(item_id)
-					local player = minetest.get_player_by_name(pname)
+					local player = core.get_player_by_name(pname)
 
 					if player then
 						local pinv = player:get_inventory()
@@ -197,7 +197,7 @@ ctf_melee.simple_register_sword("ctf_mode_classes:knight_sword", {
 					end
 				end,
 				function(item_id)
-					local player = minetest.get_player_by_name(pname)
+					local player = core.get_player_by_name(pname)
 
 					if player then
 						local pinv = player:get_inventory()
@@ -225,7 +225,7 @@ local RANGED_ZOOM_MULT = 3
 local scoped = ctf_ranged.scoped
 ctf_ranged.simple_register_gun("ctf_mode_classes:ranged_rifle", {
 	type = "classes_rifle",
-	description = "Scout Rifle\n" .. minetest.colorize(
+	description = "Scout Rifle\n" .. core.colorize(
 		"gold",
 		"(Sneak/Run) + Rightclick to launch grenade ("
 			.. RANGED_COOLDOWN_TIME
@@ -282,7 +282,7 @@ local SCALING_TIMEOUT = 4
 
 -- Code borrowed from minetest_game default/nodes.lua -> default:ladder_steel
 local scaling_def = {
-	description = "Scaling Ladder\n" .. minetest.colorize(
+	description = "Scaling Ladder\n" .. core.colorize(
 		"gold",
 		"(Infinite usage, self-removes after " .. SCALING_TIMEOUT .. "s)"
 	),
@@ -305,18 +305,18 @@ local scaling_def = {
 	on_place = function(itemstack, placer, pointed_thing, ...)
 		if pointed_thing.type == "node" then
 			itemstack:set_count(2)
-			minetest.item_place(itemstack, placer, pointed_thing, ...)
+			core.item_place(itemstack, placer, pointed_thing, ...)
 		end
 	end,
 	on_construct = function(pos)
-		minetest.get_node_timer(pos):start(SCALING_TIMEOUT)
+		core.get_node_timer(pos):start(SCALING_TIMEOUT)
 	end,
 	on_timer = function(pos)
-		minetest.remove_node(pos)
+		core.remove_node(pos)
 	end,
 }
 
-minetest.register_node("ctf_mode_classes:scaling_ladder", scaling_def)
+core.register_node("ctf_mode_classes:scaling_ladder", scaling_def)
 
 --
 --- Medic Bandage
@@ -329,7 +329,7 @@ local HEAL_PERCENT = 0.8
 ctf_healing.register_bandage("ctf_mode_classes:support_bandage", {
 	description = string.format(
 		"Bandage\nHeals teammates for 4-5 HP until target's HP is equal to %d%% of their maximum HP\n"
-			.. minetest.colorize(
+			.. core.colorize(
 				"gold",
 				"(Sneak/Run) + Rightclick to become immune to damage for %ds (%ds cooldown)"
 			),
@@ -415,7 +415,7 @@ function classes.update(player)
 	local class = classes.get(player)
 
 	player:set_properties({
-		hp_max = class.hp_max or minetest.PLAYER_MAX_HP_DEFAULT,
+		hp_max = class.hp_max or core.PLAYER_MAX_HP_DEFAULT,
 		visual_size = class.visual_size or vector.new(1, 1, 1),
 	})
 
@@ -573,7 +573,7 @@ function classes.show_class_formspec(player)
 					(form_x / 2) + 0.5,
 					form_y - 2.4,
 					class_prop.description,
-					class_prop.hp_max or minetest.PLAYER_MAX_HP_DEFAULT,
+					class_prop.hp_max or core.PLAYER_MAX_HP_DEFAULT,
 					class_prop.physics
 							and class_prop.physics.speed
 							and "<img name=sprint_stamina_icon.png width=20 float=left> " .. class_prop.physics.speed .. "x Speed\n"
@@ -660,9 +660,9 @@ function classes.is_restricted_item(player, name)
 end
 
 function classes.finish()
-	for _, player in pairs(minetest.get_connected_players()) do
+	for _, player in pairs(core.get_connected_players()) do
 		player:set_properties({
-			hp_max = minetest.PLAYER_MAX_HP_DEFAULT,
+			hp_max = core.PLAYER_MAX_HP_DEFAULT,
 			visual_size = vector.new(1, 1, 1),
 		})
 		physics.remove(player:get_player_name(), "ctf_mode_classes:class_physics")
