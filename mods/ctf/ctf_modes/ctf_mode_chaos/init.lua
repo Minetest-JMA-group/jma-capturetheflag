@@ -21,7 +21,7 @@ ctf_modebase.register_mode("chaos", {
 		end
 		return false
 	end,
-	vote_label = minetest.colorize("orange", "Weekend mode"),
+	vote_label = core.colorize("orange", "Weekend mode"),
 	hp_regen = 4,
 	crafts = {
 		"ctf_map:damage_cobble",
@@ -131,7 +131,7 @@ ctf_modebase.register_mode("chaos", {
 	end,
 })
 
-minetest.register_chatcommand("wannachaos", {
+core.register_chatcommand("wannachaos", {
 	description = "Allow chaos mode once",
 	privs = { dev = true },
 	func = function()

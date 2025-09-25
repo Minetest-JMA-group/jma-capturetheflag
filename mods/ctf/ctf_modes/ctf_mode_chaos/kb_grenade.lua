@@ -1,6 +1,6 @@
 local WEAR_MAX = 65535
 local function check_hit(pos1, pos2, obj)
-	local ray = minetest.raycast(pos1, pos2, true, false)
+	local ray = core.raycast(pos1, pos2, true, false)
 	local hit = ray:next()
 
 	-- Skip over non-normal nodes like ladders, water, doors, glass, leaves, etc
@@ -13,7 +13,7 @@ local function check_hit(pos1, pos2, obj)
 				hit.type == "node"
 				and (
 					hit.intersection_point:distance(pos2) <= 1
-					or not minetest.registered_nodes[minetest.get_node(hit.under).name].walkable
+					or not core.registered_nodes[core.get_node(hit.under).name].walkable
 				)
 			) or (hit.type == "object" and hit.ref ~= obj)
 		)
@@ -41,7 +41,7 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 	touch_interaction = "short_dig_long_place", -- throw with short tap
 
 	on_explode = function(def, obj, pos, name)
-		minetest.add_particle({
+		core.add_particle({
 			pos = pos,
 			velocity = { x = 0, y = 0, z = 0 },
 			acceleration = { x = 0, y = 0, z = 0 },
@@ -55,16 +55,16 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 			glow = 10,
 		})
 
-		minetest.sound_play("grenades_explode", {
+		core.sound_play("grenades_explode", {
 			pos = pos,
 			gain = 0.6,
 			pitch = 3.0,
 			max_hear_distance = KNOCKBACK_RADIUS * 4,
 		}, true)
 
-		for _, v in pairs(minetest.get_objects_inside_radius(pos, KNOCKBACK_RADIUS)) do
+		for _, v in pairs(core.get_objects_inside_radius(pos, KNOCKBACK_RADIUS)) do
 			local vname = v:get_player_name()
-			local player = minetest.get_player_by_name(name)
+			local player = core.get_player_by_name(name)
 
 			if
 				player
@@ -100,7 +100,7 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 							knockback_grenade = 1,
 						},
 					}, nil)
-					minetest.add_particlespawner({
+					core.add_particlespawner({
 						attached = v,
 						amount = 10,
 						time = 1,
@@ -140,7 +140,7 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 })
 
 do
-	local kb_def = minetest.registered_items["ctf_mode_chaos:knockback_grenade"]
+	local kb_def = core.registered_items["ctf_mode_chaos:knockback_grenade"]
 	kb_def.name = "ctf_mode_chaos:knockback_grenade_tool"
 	kb_def.on_use = function(itemstack, user, pointed_thing)
 		if itemstack:get_wear() > 1 then
@@ -161,13 +161,12 @@ do
 
 		return itemstack
 	end
-	minetest.register_tool(kb_def.name, kb_def)
+	core.register_tool(kb_def.name, kb_def)
 
 	ctf_api.register_on_match_end(function()
 		for sound in pairs(sounds) do
-			minetest.sound_stop(sound)
+			core.sound_stop(sound)
 		end
 		sounds = {}
 	end)
 end
-

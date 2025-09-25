@@ -77,7 +77,7 @@ ctf_ranged.simple_register_gun(shotgun_name, {
 local shotgun_wield_scale = { x = 1.5, y = 1.5, z = 2 }
 
 -- Shotgun unloaded
-minetest.override_item(shotgun_name, {
+core.override_item(shotgun_name, {
 	wield_scale = shotgun_wield_scale,
 	on_secondary_use = function(itemstack, user, pointed_thing)
 		local meta = itemstack:get_meta()
@@ -96,7 +96,7 @@ minetest.override_item(shotgun_name, {
 })
 
 -- Shotgun loaded
-minetest.override_item(shotgun_name .. "_loaded", {
+core.override_item(shotgun_name .. "_loaded", {
 	wield_scale = shotgun_wield_scale,
 	on_secondary_use = function(itemstack, user, pointed_thing)
 		local meta = itemstack:get_meta()
@@ -143,13 +143,13 @@ local shot_types = {
 	},
 }
 
-minetest.register_craftitem("ctf_mode_chaos:power_charge", {
+core.register_craftitem("ctf_mode_chaos:power_charge", {
 	description = "Grenade Power Charge",
 	inventory_image = "ctf_mode_chaos_power_charge.png",
 	stack_max = 25,
 })
 
-minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
+core.register_tool("ctf_mode_chaos:grenade_launcher", {
 	description = "Grenade Launcher",
 	wield_scale = { x = 2.0, y = 2.0, z = 2.5 },
 	inventory_image = "ctf_mode_chaos_grenade_launcher.png",
@@ -187,13 +187,13 @@ minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 		if pos and dir then
 			pos.y = pos.y + 1.5
 			local ahead = vector.add(pos, vector.multiply(dir, 1))
-			local obj = minetest.add_entity(ahead, "ctf_mode_chaos:grenade")
+			local obj = core.add_entity(ahead, "ctf_mode_chaos:grenade")
 			if obj then
 				local ent = obj:get_luaentity()
 				ent.puncher_name = name
 				ent.radius = cooldown:get(user) and 1 or stats.radius
 				if shot_type == "powered" then
-					minetest.add_particlespawner({
+					core.add_particlespawner({
 						amount = 15,
 						time = 1,
 						minvel = vector.multiply(dir, 2),
@@ -219,7 +219,7 @@ minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 			end
 		end
 
-		minetest.sound_play("ctf_mode_chaos_grenade_launcher_plop", {
+		core.sound_play("ctf_mode_chaos_grenade_launcher_plop", {
 			to_player = name,
 			gain = 0.5,
 			pitch = shot_type == "powered" and 0.5 or 1.1,
@@ -259,8 +259,8 @@ minetest.register_tool("ctf_mode_chaos:grenade_launcher", {
 })
 
 local function can_explode(pos, pname, radius)
-	if minetest.is_protected(pos, "") then
-		minetest.chat_send_player(pname, "You can't explode grenade on spawn!")
+	if core.is_protected(pos, "") then
+		core.chat_send_player(pname, "You can't explode grenade on spawn!")
 		return false
 	end
 
@@ -283,7 +283,7 @@ local function can_explode(pos, pname, radius)
 	return true
 end
 
-minetest.register_entity("ctf_mode_chaos:grenade", {
+core.register_entity("ctf_mode_chaos:grenade", {
 	initial_properties = {
 		visual = "sprite",
 		visual_size = { x = 1, y = 1 },
@@ -298,7 +298,7 @@ minetest.register_entity("ctf_mode_chaos:grenade", {
 	},
 	timer = 0,
 	on_activate = function(self)
-		minetest.add_particlespawner({
+		core.add_particlespawner({
 			attached = self.object,
 			amount = 5,
 			time = 1,
