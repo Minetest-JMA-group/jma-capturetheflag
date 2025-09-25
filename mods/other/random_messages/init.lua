@@ -6,7 +6,7 @@ arsdragonfly@gmail.com
 
 random_messages = {}
 
-if minetest.settings:get("random_messages_disabled") == "true" then
+if core.settings:get("random_messages_disabled") == "true" then
 	return
 end
 
@@ -80,20 +80,19 @@ local messages = {
 	"Want to enter Elysium? Heal 100 HP and capture 1 flag to unlock access for 24 hours! Check progress with /eprogress",
 }
 
-local MESSAGE_INTERVAL = tonumber(minetest.settings:get("random_messages_interval"))
-	or 120
+local MESSAGE_INTERVAL = tonumber(core.settings:get("random_messages_interval")) or 120
 
 function random_messages.get_random_message()
 	return messages[math.random(1, #messages)]
 end
 
 local timer = 0
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	timer = timer + dtime
 	if timer > MESSAGE_INTERVAL then
-		if #minetest.get_connected_players() > 0 then
-			minetest.chat_send_all(
-				minetest.colorize("#808080", random_messages.get_random_message()),
+		if #core.get_connected_players() > 0 then
+			core.chat_send_all(
+				core.colorize("#808080", random_messages.get_random_message()),
 				"random_messages"
 			)
 		end
