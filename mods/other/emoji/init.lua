@@ -108,7 +108,9 @@ minetest.register_on_chat_message(function(name, message, pos)
 						length = 2.0,
 					}
 				})
-
+				if ctf_jma_achieves then
+					ctf_jma_achieves.grant_achievement(name, "cja:ew")
+				end
 			else
 
 				local player = minetest.get_player_by_name(name)
