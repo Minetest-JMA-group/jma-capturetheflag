@@ -1,6 +1,5 @@
 local default_radius = 3
 
-
 minetest.register_craftitem("rocket_launcher:rocket", {
 	wield_scale = {x=2,y=2,z=1.5},
 	stack_max = 16,
@@ -40,7 +39,7 @@ minetest.register_tool("rocket_launcher:launcher", {
 			end
 			minetest.sound_play('fire_extinguish_flame',{to_player = name, gain = 0.5})
 			itemstack:set_wear(WEAR_MAX - 6000)
-			ctf_modebase.update_wear.start_update(user:get_player_name(), itemstack, WEAR_MAX/4, true)
+			ctf_modebase.update_wear.start_update(user:get_player_name(), "rocket_launcher:launcher", WEAR_MAX/4, true)
 			return itemstack
 		end
 	end
@@ -68,9 +67,7 @@ local function can_explode(pos, pname, radius)
 		minetest.chat_send_player(pname, "You can't explode rocket on spawn")
 		return false
 	end
-
 	local pteam = ctf_teams.get(pname)
-
 	if pteam then
 		for flagteam, team in pairs(ctf_map.current_map.teams) do
 			if not ctf_modebase.flag_captured[flagteam] and team.flag_pos then
@@ -100,7 +97,6 @@ rocket.on_step = function(self, dtime, moveresult)
 			texture = "tnt_smoke.png",
 			glow = 15})
 	end)
-
 	if self.timer >= 60 then
 		self.object:remove()
 	end
@@ -121,12 +117,10 @@ rocket.on_step = function(self, dtime, moveresult)
 			end
 		end
 	end
-
 	if moveresult.collides then
 		if can_explode(pos, self.puncher_name, self.radius)  then
 			tnt.boom(pos, {
 				radius = self.radius,
-				-- ignore_indestructible = true,
 				puncher_name = self.puncher_name
 			})
 		end
@@ -134,5 +128,50 @@ rocket.on_step = function(self, dtime, moveresult)
 	end
 end
 
-
 minetest.register_entity("rocket_launcher:rocket", rocket)
+
+ctf_modebase = ctf_modebase or {}
+ctf_modebase.update_wear = {}
+ctf_modebase.update_wear.active_updates = {}
+
+function ctf_modebase.update_wear.start_update(pname, toolname, wear_step, reset_on_done)
+	ctf_modebase.update_wear.active_updates[pname] = {
+		toolname = toolname,
+		wear_step = wear_step,
+		reset_on_done = reset_on_done,
+	}
+end
+
+minetest.register_globalstep(function(dtime)
+	for pname, data in pairs(ctf_modebase.update_wear.active_updates) do
+		local player = minetest.get_player_by_name(pname)
+		if not player then
+			ctf_modebase.update_wear.active_updates[pname] = nil
+		else
+			local inv = player:get_inventory()
+			local list = inv:get_list("main")
+			local found = false
+			for i, stack in ipairs(list) do
+				if stack:get_name() == data.toolname and stack:get_wear() > 0 then
+					found = true
+					local wear = stack:get_wear() - data.wear_step
+					if wear <= 0 then
+						if data.reset_on_done then
+							stack:set_wear(0)
+						else
+							stack:set_wear(1)
+						end
+						ctf_modebase.update_wear.active_updates[pname] = nil
+					else
+						stack:set_wear(wear)
+					end
+					inv:set_stack("main", i, stack)
+					break
+				end
+			end
+			if not found then
+				ctf_modebase.update_wear.active_updates[pname] = nil
+			end
+		end
+	end
+end)
