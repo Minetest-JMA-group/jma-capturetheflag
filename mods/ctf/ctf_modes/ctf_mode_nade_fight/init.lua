@@ -169,6 +169,7 @@ ctf_modebase.register_mode("nade_fight", {
 		ctf_modebase.bounties.bounty_reward_func = old_bounty_reward_func
 		ctf_modebase.bounties.get_next_bounty = old_get_next_bounty
 	end,
+	team_chest_access = features.team_chest_access,
 	on_new_match = features.on_new_match,
 	on_match_end = features.on_match_end,
 	team_allocator = features.team_allocator,
