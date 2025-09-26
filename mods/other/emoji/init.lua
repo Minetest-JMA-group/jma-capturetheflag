@@ -44,12 +44,12 @@ local form = "size[10,7.8] bgcolor[#333444cc; false] image_button_exit[0,0;2,2;"
 	.. bg
 	.. "^troll_emoji.png;troll_emoji;]"
 
-minetest.register_chatcommand("e", {
+core.register_chatcommand("e", {
 	params = "",
 	description = "Emoji",
 	privs = {},
 	func = function(name, param)
-		minetest.show_formspec(name, "emoji_form", form)
+		core.show_formspec(name, "emoji_form", form)
 	end,
 })
 
@@ -77,18 +77,18 @@ local v = {
 	{ "rick_emoji", "rick" },
 }
 
-minetest.register_on_player_receive_fields(function(player, formname, fields)
+core.register_on_player_receive_fields(function(player, formname, fields)
 	if formname == "emoji_form" then
 		local pos = player:get_pos()
 
 		for _, v in pairs(v) do
 			if fields[v[1]] then
-				minetest.sound_play(
+				core.sound_play(
 					"emoji_sound",
 					{ pos = pos, max_hear_distance = 12, gain = 1.0 }
 				)
 
-				minetest.add_particlespawner(
+				core.add_particlespawner(
 					1, --amount
 					0.01, --time
 					{ x = pos.x, y = pos.y + 2, z = pos.z }, --minpos
@@ -109,16 +109,16 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	end
 end)
 
-minetest.register_on_chat_message(function(name, message, pos)
+core.register_on_chat_message(function(name, message, pos)
 	local checkingmessage = (name .. " " .. message .. " ")
 	for _, v in pairs(v) do
 		if string.find(checkingmessage, v[2], 1, true) ~= nil then
 			if v[2] == "rick" then
-				local player = minetest.get_player_by_name(name)
+				local player = core.get_player_by_name(name)
 
 				local pos = player:get_pos()
 
-				minetest.add_particlespawner({
+				core.add_particlespawner({
 					amount = 1,
 					time = 0.01,
 					minpos = { x = pos.x, y = pos.y + 2, z = pos.z },
@@ -144,11 +144,11 @@ minetest.register_on_chat_message(function(name, message, pos)
 					},
 				})
 			else
-				local player = minetest.get_player_by_name(name)
+				local player = core.get_player_by_name(name)
 
 				local pos = player:get_pos()
 
-				minetest.add_particlespawner(
+				core.add_particlespawner(
 					1, --amount
 					0.01, --time
 					{ x = pos.x, y = pos.y + 2, z = pos.z }, --minpos
