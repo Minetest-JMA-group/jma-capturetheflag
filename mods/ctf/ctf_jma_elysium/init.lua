@@ -170,7 +170,7 @@ function ctf_jma_elysium.show_wait_formspec(player_name)
 		.. "size[8,3]"
 		.. "no_prepend[]"
 		.. "hypertext[0,0;8,3;hypertext;<global valign=middle><center><b>"
-		.. S("Please wait...")
+		.. core.formspec_escape(S("Please wait..."))
 		.. "</b></center>]"
 	core.show_formspec(player_name, FORMNAME_WAIT, fs)
 end
