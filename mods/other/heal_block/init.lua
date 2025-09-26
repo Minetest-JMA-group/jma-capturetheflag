@@ -90,8 +90,10 @@ minetest.register_node("heal_block:heal", {
 			end
 			local meta = core.get_meta(pos)
 			local healed_points = meta:get_int("healed_points")
-			local break_reward =
-				math.max(HEAL_DIG_REWARD_BASE, healed_points * BREAK_REWARD_PER_HP)
+			local break_reward = math.max(
+				HEAL_DIG_REWARD_BASE,
+				math.ceil(healed_points * BREAK_REWARD_PER_HP)
+			)
 			cur_mode.recent_rankings.add(
 				digger:get_player_name(),
 				{ score = break_reward },
