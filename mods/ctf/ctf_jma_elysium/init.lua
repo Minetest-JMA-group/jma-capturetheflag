@@ -194,7 +194,7 @@ function ctf_jma_elysium.join(player, joined_callback)
 			pvp = false,
 			location = "main",
 		}
-		core.chat_send_all(S("@1 has joined Elysium."))
+		core.chat_send_all(S("@1 has joined Elysium.", player_name))
 		core.close_formspec(player_name, FORMNAME_WAIT)
 
 		ctf_teams.remove_online_player(player)
