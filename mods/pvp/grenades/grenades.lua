@@ -1,11 +1,16 @@
-
 local function remove_flora(pos, radius)
 	local pos1 = vector.subtract(pos, radius)
 	local pos2 = vector.add(pos, radius)
 
-	for _, p in ipairs(minetest.find_nodes_in_area(pos1, pos2, {
-		"group:flora", "group:mushroom", "default:snow", "group:grenade_breakable", "group:leaves"
-	})) do
+	for _, p in
+		ipairs(minetest.find_nodes_in_area(pos1, pos2, {
+			"group:flora",
+			"group:mushroom",
+			"default:snow",
+			"group:grenade_breakable",
+			"group:leaves",
+		}))
+	do
 		if vector.distance(pos, p) <= radius then
 			minetest.remove_node(p)
 		end
@@ -19,21 +24,18 @@ local function check_hit(pos1, pos2, obj)
 	-- Skip over non-normal nodes like ladders, water, doors, glass, leaves, etc
 	-- Also skip over all objects that aren't the target
 	-- Any collisions within a 1 node distance from the target don't stop the grenade
-	while hit and (
-		(
-		 hit.type == "node"
-		 and
-		 (
-			hit.intersection_point:distance(pos2) <= 1
-			or
-			not minetest.registered_nodes[minetest.get_node(hit.under).name].walkable
-		 )
+	while
+		hit
+		and (
+			(
+				hit.type == "node"
+				and (
+					hit.intersection_point:distance(pos2) <= 1
+					or not minetest.registered_nodes[minetest.get_node(hit.under).name].walkable
+				)
+			) or (hit.type == "object" and hit.ref ~= obj)
 		)
-		or
-		(
-		 hit.type == "object" and hit.ref ~= obj
-		)
-	) do
+	do
 		hit = ray:next()
 	end
 
@@ -51,11 +53,14 @@ local fragdef = {
 		return true
 	end,
 	on_explode = function(def, obj, pos, name)
-		if not name or not pos then return end
+		if not name or not pos then
+			return
+		end
 
 		local player = minetest.get_player_by_name(name)
-		if not player then return end
-
+		if not player then
+			return
+		end
 
 		local radius = def.explode_radius
 
@@ -64,10 +69,10 @@ local fragdef = {
 			time = 0.5,
 			minpos = vector.subtract(pos, radius),
 			maxpos = vector.add(pos, radius),
-			minvel = {x = 0, y = 5, z = 0},
-			maxvel = {x = 0, y = 7, z = 0},
-			minacc = {x = 0, y = 1, z = 0},
-			maxacc = {x = 0, y = 1, z = 0},
+			minvel = { x = 0, y = 5, z = 0 },
+			maxvel = { x = 0, y = 7, z = 0 },
+			minacc = { x = 0, y = 1, z = 0 },
+			maxacc = { x = 0, y = 1, z = 0 },
 			minexptime = 0.3,
 			maxexptime = 0.6,
 			minsize = 7,
@@ -80,8 +85,8 @@ local fragdef = {
 
 		minetest.add_particle({
 			pos = pos,
-			velocity = {x=0, y=0, z=0},
-			acceleration = {x=0, y=0, z=0},
+			velocity = { x = 0, y = 0, z = 0 },
+			acceleration = { x = 0, y = 0, z = 0 },
 			expirationtime = 0.3,
 			size = 15,
 			collisiondetection = false,
@@ -89,7 +94,7 @@ local fragdef = {
 			object_collision = false,
 			vertical = false,
 			texture = "grenades_boom.png",
-			glow = 10
+			glow = 10,
 		})
 
 		minetest.sound_play("grenades_explode", {
@@ -98,12 +103,13 @@ local fragdef = {
 			max_hear_distance = 64,
 		})
 
-		remove_flora(pos, radius/2)
+		remove_flora(pos, radius / 2)
 
 		for _, v in pairs(minetest.get_objects_inside_radius(pos, radius)) do
 			if v:is_player() and v:get_hp() > 0 and v:get_properties().pointable then
 				local footpos = vector.offset(v:get_pos(), 0, 0.1, 0)
-				local headpos = vector.offset(v:get_pos(), 0, v:get_properties().eye_height, 0)
+				local headpos =
+					vector.offset(v:get_pos(), 0, v:get_properties().eye_height, 0)
 				local footdist = vector.distance(pos, footpos)
 				local headdist = vector.distance(pos, headpos)
 				local target_head = false
@@ -120,8 +126,9 @@ local fragdef = {
 						punch_interval = 1,
 						damage_groups = {
 							grenade = 1,
-							fleshy = def.explode_damage - ( (radius/3) * (target_head and headdist or footdist) )
-						}
+							fleshy = def.explode_damage
+								- ((radius / 3) * (target_head and headdist or footdist)),
+						},
 					}, nil)
 				end
 			end
@@ -145,7 +152,7 @@ local sounds = {}
 local SMOKE_GRENADE_TIME = 30
 
 local register_smoke_grenade = function(name, description, image, damage)
-	grenades.register_grenade("grenades:"..name, {
+	grenades.register_grenade("grenades:" .. name, {
 		description = description,
 		image = image,
 		on_collide = function()
@@ -153,7 +160,9 @@ local register_smoke_grenade = function(name, description, image, damage)
 		end,
 		on_explode = function(def, obj, pos, pname)
 			local player = minetest.get_player_by_name(pname)
-			if not player or not pos then return end
+			if not player or not pos then
+				return
+			end
 
 			local pteam = ctf_teams.get(pname)
 			local duration_multiplier = 1
@@ -164,14 +173,19 @@ local register_smoke_grenade = function(name, description, image, damage)
 					if not ctf_modebase.flag_captured[flagteam] and team.flag_pos then
 						local distance_from_flag = vector.distance(pos, team.flag_pos)
 						if distance_from_flag <= 15 and (damage or pteam == flagteam) then
-							minetest.chat_send_player(pname, "You can't explode smoke grenades so close to a flag!")
+							minetest.chat_send_player(
+								pname,
+								"You can't explode smoke grenades so close to a flag!"
+							)
 							if player:get_hp() <= 0 then
 								-- Drop the nade at its explode point if the thrower is dead
 								-- Fixes https://github.com/MT-CTF/capturetheflag/issues/1160
-								minetest.add_item(pos, ItemStack("grenades:"..name))
+								minetest.add_item(pos, ItemStack("grenades:" .. name))
 							else
 								-- Add the nade back into the thrower's inventory
-								player:get_inventory():add_item("main", "grenades:"..name)
+								player
+									:get_inventory()
+									:add_item("main", "grenades:" .. name)
 							end
 							return
 						elseif damage and distance_from_flag <= 26 then
@@ -210,7 +224,7 @@ local register_smoke_grenade = function(name, description, image, damage)
 											fleshy = 2,
 											grenade = 1,
 											poison_grenade = 1,
-										}
+										},
 									})
 								end
 							end
@@ -233,7 +247,10 @@ local register_smoke_grenade = function(name, description, image, damage)
 			local p = "grenades_smoke.png^["
 			local particletexture
 			if pteam and damage then
-				particletexture = p .. "colorize:" .. ctf_teams.team[pteam].color .. ":76^[noalpha"
+				particletexture = p
+					.. "colorize:"
+					.. ctf_teams.team[pteam].color
+					.. ":76^[noalpha"
 			else
 				particletexture = p .. "noalpha"
 			end
@@ -241,13 +258,14 @@ local register_smoke_grenade = function(name, description, image, damage)
 			for i = 0, 5, 1 do
 				minetest.add_particlespawner({
 					amount = 40,
-					time = (SMOKE_GRENADE_TIME * duration_multiplier) + (damage and 1 or 3),
+					time = (SMOKE_GRENADE_TIME * duration_multiplier)
+						+ (damage and 1 or 3),
 					minpos = vector.subtract(pos, 2),
 					maxpos = vector.add(pos, 2),
-					minvel = {x = 0, y = 2, z = 0},
-					maxvel = {x = 0, y = 3, z = 0},
-					minacc = {x = 1, y = 0.2, z = 1},
-					maxacc = {x = 1, y = 0.2, z = 1},
+					minvel = { x = 0, y = 2, z = 0 },
+					maxvel = { x = 0, y = 3, z = 0 },
+					minacc = { x = 1, y = 0.2, z = 1 },
+					maxacc = { x = 1, y = 0.2, z = 1 },
 					minexptime = 1,
 					maxexptime = 1,
 					minsize = 125,
@@ -260,12 +278,12 @@ local register_smoke_grenade = function(name, description, image, damage)
 			end
 		end,
 		particle = {
-			image = "grenades_smoke.png".. (damage and "^[multiply:#00ff00" or ""),
+			image = "grenades_smoke.png" .. (damage and "^[multiply:#00ff00" or ""),
 			life = 1,
 			size = 4,
 			glow = 0,
 			interval = 0.3,
-		}
+		},
 	})
 end
 
