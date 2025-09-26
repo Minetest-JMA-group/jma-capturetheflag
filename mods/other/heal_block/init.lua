@@ -2,6 +2,7 @@
 -- Copyright (c) 2024 Ivan Shkatov (Maintainer_) ivanskatov672@gmail.com
 
 local BREAK_REWARD_PER_HP = 0.1
+local HEAL_DIG_REWARD_BASE = 20
 
 minetest.register_node("heal_block:heal", {
 	description = "Healing Block\n"
@@ -89,7 +90,8 @@ minetest.register_node("heal_block:heal", {
 			end
 			local meta = core.get_meta(pos)
 			local healed_points = meta:get_int("healed_points")
-			local break_reward = healed_points * BREAK_REWARD_PER_HP
+			local break_reward =
+				math.max(HEAL_DIG_REWARD_BASE, healed_points * BREAK_REWARD_PER_HP)
 			cur_mode.recent_rankings.add(
 				digger:get_player_name(),
 				{ score = break_reward },
