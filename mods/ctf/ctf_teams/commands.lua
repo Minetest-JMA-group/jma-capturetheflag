@@ -60,7 +60,7 @@ local function get_team_players(team)
 	)
 end
 
-minetest.register_chatcommand("team", {
+core.register_chatcommand("team", {
 	description = S("Get team members for 'team' or on which team is 'player' in"),
 	params = "<team> | player <player>",
 	func = function(name, param)
@@ -74,8 +74,7 @@ minetest.register_chatcommand("team", {
 			end
 
 			local tcolor = ctf_teams.team[pteam].color
-			return true,
-				S("@1 is in the @2 team", player, minetest.colorize(tcolor, pteam))
+			return true, S("@1 is in the @2 team", player, core.colorize(tcolor, pteam))
 		elseif param == "" then
 			local str = ""
 			for _, team in ipairs(ctf_teams.current_team_list) do
