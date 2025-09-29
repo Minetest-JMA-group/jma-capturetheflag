@@ -8,7 +8,8 @@ return {
 			{task_type = "kills", params = {goal = 25, mode_name = "total"}, description = "Reach 25 kills"},
 			{task_type = "score", params = {goal = 200, mode_name = "total"}, description = "Reach 200 score"},
 			{task_type = "playtime", params = {goal = 20}, description = "Play for 20 minutes"},
-			{task_type = "kd", params = {goal = 0.28, mode_name = "total"}, description = "Maintain a K/D ratio of at least 0.28"},
+			{task_type = "kd", params = {goal = 0.28, mode_name = "total"}, description = "Maintain a K/D ratio of at least 0.28"},4
+			{task_type = "acv_bronze", params = {goal = 1}, description = "Complete 1 bronze achievement"},
 		}
 	},
 	["wood"] = {
@@ -24,6 +25,7 @@ return {
 			{task_type = "flag_captures", params = {goal = 4, mode_name = "total"}, description = "Capture 4 flags"},
 			{task_type = "score", params = {goal = 600, mode_name = "total"}, description = "Reach 600 score"},
 			{task_type = "kd", params = {goal = 0.71, mode_name = "total"}, description = "Maintain a K/D ratio of at least 0.71"},
+			{task_type = "acv_bronze", params = {goal = 3}, description = "Complete 3 bronze achievements"},
 		}
 	},
 	["stone"] = {
@@ -39,6 +41,8 @@ return {
 			{task_type = "playtime", params = {goal = 250}, description = "Play for 4 hours and 10 minutes"},
 			{task_type = "score", params = {goal = 1650, mode_name = "total"}, description = "Reach 1650 score"},
 			{task_type = "kd", params = {goal = 0.94, mode_name = "total"}, description = "Maintain a K/D ratio of at least 0.94"},
+			{task_type = "acv_bronze", params = {goal = 4}, description = "Complete 4 bronze achievements"},
+			{task_type = "acv_silver", params = {goal = 2}, description = "Complete 2 silver achievements"},
 
 		}
 	},
@@ -56,6 +60,7 @@ return {
 			{task_type = "score", params = {goal = 3300, mode_name = "total"}, description = "Reach 3300 score"},
 			{task_type = "kd", params = {goal = 1.12, mode_name = "total"}, description = "Maintain a K/D ratio of at least 1.12"},
 			{task_type = "top_pos", params = {goal = 1000, range = 1200, mode_name = "classes"}, description = "Reach Top 1000 (in Classes)"},
+			{task_type = "acv_silver", params = {goal = 3}, description = "Complete 3 silver achievements"},
 		}
 	},
 	["steel"] = {
@@ -72,6 +77,7 @@ return {
 			{task_type = "score", params = {goal = 5500, mode_name = "total"}, description = "Reach 5500 score"},
 			{task_type = "kd", params = {goal = 1.19, mode_name = "total"}, description = "Maintain a K/D ratio of at least 1.19"},
 			{task_type = "top_pos", params = {goal = 700, range = 800, mode_name = "classes"}, description = "Reach Top 700 (in Classes)"},
+			{task_type = "acv_silver", params = {goal = 4}, description = "Complete 4 silver achievements"},
 		}
 	},
 	["bronze"] = {
@@ -88,6 +94,8 @@ return {
 			{task_type = "score", params = {goal = 7700, mode_name = "total"}, description = "Reach 7700 score"},
 			{task_type = "kd", params = {goal = 1.27, mode_name = "total"}, description = "Maintain a K/D ratio of at least 1.27"},
 			{task_type = "top_pos", params = {goal = 500, range = 600, mode_name = "nade_fight"}, description = "Reach Top 500 (in Nades)"},
+			{task_type = "acv_bronze", params = {goal = 5}, description = "Complete 5 bronze achievements"},
+			{task_type = "acv_silver", params = {goal = 5}, description = "Complete 5 silver achievements"},
 		}
 	},
 	["gold"] = {
@@ -105,6 +113,8 @@ return {
 			{task_type = "top_pos", params = {goal = 1000, range = 1200, mode_name = "classes"}, description = "Reach Top 1000 (in Classes)"},
 			{task_type = "kd", params = {goal = 1.55, mode_name = "total"}, description = "Maintain a K/D ratio of at least 1.55"},
 			{task_type = "top_pos", params = {goal = 500, range = 600, mode_name = "classic"}, description = "Reach Top 500 (in Classic)"},
+			{task_type = "acv_silver", params = {goal = 7}, description = "Complete 7 silver achievements"},
+			{task_type = "acv_gold", params = {goal = 1}, description = "Complete 1 gold achievement"},
 
 		}
 	},
@@ -122,6 +132,7 @@ return {
 			{task_type = "score", params = {goal = 13200, mode_name = "total"}, description = "Reach 13200 score"},
 			{task_type = "kd", params = {goal = 2.1, mode_name = "total"}, description = "Maintain a K/D ratio of at least 2.1"},
 			{task_type = "top_pos", params = {goal = 200, range = 300, mode_name = "classes"}, description = "Reach Top 200 (in Classes)"},
+			{task_type = "acv_gold", params = {goal = 2}, description = "Complete 2 gold achievements"},
 		}
 	},
 	["diamond"] = {
@@ -138,6 +149,7 @@ return {
 			{task_type = "score", params = {goal = 22000, mode_name = "total"}, description = "Reach 22000 score"},
 			{task_type = "kd", params = {goal = 2.25, mode_name = "total"}, description = "Maintain a K/D ratio of at least 2.25"},
 			{task_type = "top_pos", params = {goal = 100, range = 200, mode_name = "total"}, description = "Reach Top 100 (in Any Mode)"},
+			{task_type = "acv_silver", params = {goal = 8}, description = "Complete 8 silver achievements"},
 		}
 	},
 	["platinum"] = {
@@ -156,6 +168,7 @@ return {
 			{task_type = "top_pos", params = {goal = 50, range = 100, mode_name = "classic"}, description = "Reach Top 50 (in Classic)"},
 			{task_type = "top_pos", params = {goal = 50, range = 100, mode_name = "classes"}, description = "Reach Top 50 (in Classes)"},
 			{task_type = "top_pos", params = {goal = 50, range = 100, mode_name = "nade_fight"}, description = "Reach Top 50 (in Nades)"},
+			{task_type = "acv_gold", params = {goal = 3}, description = "Complete 3 gold achievements"},
 		}
 	},
 	["titanium"] = {
@@ -174,6 +187,8 @@ return {
 			{task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "classic"}, description = "Reach Top 30 (in Classic)"},
 			{task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "classes"}, description = "Reach Top 30 (in Classes)"},
 			{task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "nade_fight"}, description = "Reach Top 30 (in Nades)"},
+			{task_type = "acv_silver", params = {goal = 9}, description = "Complete 9 silver achievements"},
+			{task_type = "acv_gold", params = {goal = 4}, description = "Complete 4 gold achievements"},
 		}
 	},
 	["legend"] = {
@@ -192,6 +207,7 @@ return {
 			{task_type = "top_pos", params = {goal = 10, range = 50, mode_name = "classic"}, description = "Reach Top 10 (in Classic)"},
 			{task_type = "top_pos", params = {goal = 10, range = 50, mode_name = "classes"}, description = "Reach Top 10 (in Classes)"},
 			{task_type = "top_pos", params = {goal = 10, range = 50, mode_name = "nade_fight"}, description = "Reach Top 10 (in Nades)"},
+			{task_type = "acv_gold", params = {goal = 5}, description = "Complete 5 gold achievements"},
 		}
 	},
 }
