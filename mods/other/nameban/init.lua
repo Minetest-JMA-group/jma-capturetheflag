@@ -9,7 +9,7 @@ local LCSthreshold = storage:get_int("LCSthreshold") or 4
 
 local function make_logger(level)
 	return function(text, ...)
-		minetest.log(level, "[nameban] "..text:format(...))
+		minetest.log(level, "[nameban] " .. text:format(...))
 	end
 end
 
@@ -48,14 +48,16 @@ local function parse_players(name)
 	db.namelock = db.namelock or {}
 	local whitelisted = findElement(db.namelock, name)
 	local msg = "Your username is not allowed. Please, change it and relogin."
-	local logmsg = "User "..name.." has been denied access to the server. [ENFORCING]"
+	local logmsg = "User " .. name .. " has been denied access to the server. [ENFORCING]"
 	if mode == 0 then
 		msg = nil
-		logmsg = "User "..name.." would have been denied access to the server. [PERMISSIVE]"
+		logmsg = "User "
+			.. name
+			.. " would have been denied access to the server. [PERMISSIVE]"
 	end
 
 	if filter_on == 1 and filter and not filter.check_message(name) then
-		ACTION(logmsg.." [filter-detected]")
+		ACTION(logmsg .. " [filter-detected]")
 		return msg
 	end
 	for _, word in ipairs(db) do
@@ -85,89 +87,99 @@ end
 minetest.register_chatcommand("wordban", {
 	description = "Add a word to the blacklist for what's allowed in player names",
 	params = "<word>",
-	privs = { ban=true },
+	privs = { ban = true },
 	func = function(name, params)
 		if params:match("[%p%s]") ~= nil then
-			return false, "You have to enter something that's possible to appear in the filename in the first place."
+			return false,
+				"You have to enter something that's possible to appear in the filename in the first place."
 		end
 		if findElement(db, params) then
-			return false, "Word "..params.." is already blacklisted."
+			return false, "Word " .. params .. " is already blacklisted."
 		end
 		table.insert(db, params)
 		save_db()
 
 		check_online_players()
 		if xban then
-			xban.report_to_discord("nameban: ***"..name.."*** has banned the word: "..params)
+			xban.report_to_discord(
+				"nameban: ***" .. name .. "*** has banned the word: " .. params
+			)
 		end
-		return true, "Word "..params.." has been blacklisted."
+		return true, "Word " .. params .. " has been blacklisted."
 	end,
 })
 
 minetest.register_chatcommand("wordunban", {
 	description = "Remove a word from the blacklist for what's allowed in player names",
 	params = "<word>",
-	privs = { ban=true },
+	privs = { ban = true },
 	func = function(name, params)
 		local index = findElement(db, params)
 		if not index then
-			return false, "Word "..params.." doesn't exist in the blacklist."
+			return false, "Word " .. params .. " doesn't exist in the blacklist."
 		end
 		table.remove(db, index)
 		save_db()
 		if xban then
-			xban.report_to_discord("nameban: ***"..name.."*** has UNbanned the word "..params)
+			xban.report_to_discord(
+				"nameban: ***" .. name .. "*** has UNbanned the word " .. params
+			)
 		end
-		return true, "Word "..params.." has been removed from the blacklist."
+		return true, "Word " .. params .. " has been removed from the blacklist."
 	end,
 })
 
 minetest.register_chatcommand("namelock", {
 	description = "Lock a name so that no other player with a similar name may log in",
 	params = "<playername>",
-	privs = { ban=true },
+	privs = { ban = true },
 	func = function(name, params)
 		db.namelock = db.namelock or {}
 		if params:match("[%p%s]") ~= nil then
-			return false, "You have to enter something that's possible to appear in the filename in the first place."
+			return false,
+				"You have to enter something that's possible to appear in the filename in the first place."
 		end
 		if findElement(db.namelock, params) then
-			return false, "Name "..params.." is already locked"
+			return false, "Name " .. params .. " is already locked"
 		end
 		table.insert(db.namelock, params)
 		save_db()
 
 		check_online_players()
 		if xban then
-			xban.report_to_discord("nameban: ***"..name.."*** has locked the playername "..params)
+			xban.report_to_discord(
+				"nameban: ***" .. name .. "*** has locked the playername " .. params
+			)
 		end
-		return true, "Name "..params.." has been locked."
+		return true, "Name " .. params .. " has been locked."
 	end,
 })
 
 minetest.register_chatcommand("nameunlock", {
 	description = "Unlock a name so that other players can use it as part of their username",
 	params = "<playername>",
-	privs = { ban=true },
+	privs = { ban = true },
 	func = function(name, params)
 		db.namelock = db.namelock or {}
 		local index = findElement(db.namelock, params)
 		if not index then
-			return false, "Name "..params.." isn't locked."
+			return false, "Name " .. params .. " isn't locked."
 		end
 		table.remove(db.namelock, index)
 		save_db()
 		if xban then
-			xban.report_to_discord("nameban: ***"..name.."*** has UNlocked the playername "..params)
+			xban.report_to_discord(
+				"nameban: ***" .. name .. "*** has UNlocked the playername " .. params
+			)
 		end
-		return true, "Name "..params.." has been unlocked."
+		return true, "Name " .. params .. " has been unlocked."
 	end,
 })
 
 minetest.register_chatcommand("nameban_mode", {
 	description = "Set nameban mode of operation",
 	params = "<permissive/enforcing/filter/no_filter>",
-	privs = { dev=true },
+	privs = { dev = true },
 	func = function(name, params)
 		if params == "permissive" then
 			if mode == 0 then
@@ -203,14 +215,15 @@ minetest.register_chatcommand("nameban_mode", {
 			storage:set_int("filter", 0)
 			return true, "Filter is disabled"
 		end
-		return false, "Error: Your parameter doesn't match any operation.\nParameters: <permissive/enforcing/filter/no_filter>"
+		return false,
+			"Error: Your parameter doesn't match any operation.\nParameters: <permissive/enforcing/filter/no_filter>"
 	end,
 })
 
 minetest.register_chatcommand("nameban_lcs", {
 	description = "Set minimal pattern length for LCS to be employed",
 	params = "<pattern length>",
-	privs = { dev=true },
+	privs = { dev = true },
 	func = function(name, params)
 		local number = tonumber(params) or 4
 		number = math.floor(number)
@@ -219,7 +232,7 @@ minetest.register_chatcommand("nameban_lcs", {
 		end
 		LCSthreshold = number
 		storage:set_int("LCSthreshold", number)
-		return true, "Nameban LCSthreshold set to "..tostring(number)
+		return true, "Nameban LCSthreshold set to " .. tostring(number)
 	end,
 })
 

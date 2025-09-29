@@ -3,11 +3,11 @@
 
 sprint = {}
 -- Config, see README.md
-local MOD_WALK    = tonumber(minetest.settings:get("sprint_speed")     or 1.8)
-local MOD_JUMP    = tonumber(minetest.settings:get("sprint_jump")      or 1.1)
-local STAMINA_MAX = tonumber(minetest.settings:get("sprint_stamina")   or 20)
-local HEAL_RATE   = tonumber(minetest.settings:get("sprint_heal_rate") or 0.5)
-local MIN_SPRINT  = tonumber(minetest.settings:get("sprint_min")       or 0.5)
+local MOD_WALK = tonumber(core.settings:get("sprint_speed") or 1.8)
+local MOD_JUMP = tonumber(core.settings:get("sprint_jump") or 1.1)
+local STAMINA_MAX = tonumber(core.settings:get("sprint_stamina") or 20)
+local HEAL_RATE = tonumber(core.settings:get("sprint_heal_rate") or 0.5)
+local MIN_SPRINT = tonumber(core.settings:get("sprint_min") or 0.5)
 
 local players = {}
 
@@ -18,11 +18,17 @@ local function use_hudbars(player)
 end
 
 -- from https://github.com/rubenwardy/sprint
-if minetest.get_modpath("hudbars") ~= nil then
-	hb.register_hudbar("sprint", 0xFFFFFF, "Stamina",
+if core.get_modpath("hudbars") ~= nil then
+	hb.register_hudbar(
+		"sprint",
+		0xFFFFFF,
+		"Stamina",
 		{ bar = "sprint_stamina_bar.png", icon = "sprint_stamina_icon.png" },
-		STAMINA_MAX, STAMINA_MAX,
-		false, nil)
+		STAMINA_MAX,
+		STAMINA_MAX,
+		false,
+		nil
+	)
 	HUDBAR_REGISTERED = true
 else
 	HUDBAR_REGISTERED = false
@@ -32,8 +38,8 @@ local function setSprinting(player, sprinting)
 	if sprinting then
 		physics.set(player:get_player_name(), "sprint:sprint", {
 			speed = MOD_WALK,
-			jump  = MOD_JUMP,
-			speed_crouch = 1.1
+			jump = MOD_JUMP,
+			speed_crouch = 1.1,
 		})
 	else
 		physics.remove(player:get_player_name(), "sprint:sprint")
@@ -60,12 +66,13 @@ function sprint.get_sprint_info(name)
 	return players[name]
 end
 
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	for name, info in pairs(players) do
-		local player = minetest.get_player_by_name(name)
+		local player = core.get_player_by_name(name)
 		--Check if the player should be sprinting
 		local controls = player:get_player_control()
-		local sprintRequested = controls.aux1 and (controls.up or controls.jump or (controls.sneak and controls.down))
+		local sprintRequested = controls.aux1
+			and (controls.up or controls.jump or (controls.sneak and controls.down))
 
 		if sprintRequested and info.stamina > MIN_SPRINT then
 			if not info.sprinting then
@@ -96,10 +103,10 @@ minetest.register_globalstep(function(dtime)
 	end
 end)
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	local info = {
-		sprinting       = false,       -- Is the player actually sprinting?
-		stamina         = STAMINA_MAX, -- integer, the stamina we have left
+		sprinting = false, -- Is the player actually sprinting?
+		stamina = STAMINA_MAX, -- integer, the stamina we have left
 	}
 
 	if use_hudbars(player) then
@@ -108,14 +115,14 @@ minetest.register_on_joinplayer(function(player)
 	else
 		info.hud = player:hud_add({
 			type = "statbar",
-			position      = {x=0.5, y=1},
-			size          = {x=24, y=24},
-			text          = "sprint_stamina_icon.png",
-			text2         = "sprint_stamina_icon_gone.png",
-			number        = 20,
-			item          = 2 * STAMINA_MAX,
-			alignment     = {x=0, y=1},
-			offset        = {x=-263, y=-110},
+			position = { x = 0.5, y = 1 },
+			size = { x = 24, y = 24 },
+			text = "sprint_stamina_icon.png",
+			text2 = "sprint_stamina_icon_gone.png",
+			number = 20,
+			item = 2 * STAMINA_MAX,
+			alignment = { x = 0, y = 1 },
+			offset = { x = -263, y = -110 },
 		})
 	end
 
@@ -134,7 +141,7 @@ ctf_api.register_on_new_match(function()
 	for name, info in pairs(players) do
 		if info.stamina < STAMINA_MAX then
 			info.stamina = STAMINA_MAX
-			updateHud(minetest.get_player_by_name(name), info)
+			updateHud(core.get_player_by_name(name), info)
 		end
 	end
 end)
@@ -146,6 +153,6 @@ ctf_api.register_on_flag_take(function(taker, flag_team)
 	updateHud(taker, players[tname])
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	players[player:get_player_name()] = nil
 end)
