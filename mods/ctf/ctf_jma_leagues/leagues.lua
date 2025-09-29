@@ -8,7 +8,7 @@ return {
 			{task_type = "kills", params = {goal = 25, mode_name = "total"}, description = "Reach 25 kills"},
 			{task_type = "score", params = {goal = 200, mode_name = "total"}, description = "Reach 200 score"},
 			{task_type = "playtime", params = {goal = 20}, description = "Play for 20 minutes"},
-			{task_type = "kd", params = {goal = 0.28, mode_name = "total"}, description = "Maintain a K/D ratio of at least 0.28"},4
+			{task_type = "kd", params = {goal = 0.28, mode_name = "total"}, description = "Maintain a K/D ratio of at least 0.28"},
 			{task_type = "acv_bronze", params = {goal = 1}, description = "Complete 1 bronze achievement"},
 		}
 	},
