@@ -187,7 +187,6 @@ return {
 			{task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "classic"}, description = "Reach Top 30 (in Classic)"},
 			{task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "classes"}, description = "Reach Top 30 (in Classes)"},
 			{task_type = "top_pos", params = {goal = 30, range = 50, mode_name = "nade_fight"}, description = "Reach Top 30 (in Nades)"},
-			{task_type = "acv_silver", params = {goal = 9}, description = "Complete 9 silver achievements"},
 			{task_type = "acv_gold", params = {goal = 4}, description = "Complete 4 gold achievements"},
 		}
 	},
