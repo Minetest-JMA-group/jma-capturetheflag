@@ -37,6 +37,8 @@ local hud = mhud.init()
 local LOADING_SCREEN_TARGET_TIME = 5
 local loading_screen_time
 
+local S = core.get_translator(core.get_current_modname())
+
 -- tag: map_image
 local old_announce = ctf_modebase.map_chosen
 function ctf_modebase.map_chosen(map, ...)
@@ -604,6 +606,39 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local streak_bonus_received = {}
 
 	return {
+		--- Query if the player has access to the teamchest of team.
+		--- The first boolean value shows if they have access to the chest.
+		--- The second one indicates if the player has pro access
+		--- The string shows the reason why no access
+		--- @param team Team
+		--- @param pname PlayerName
+		--- @return boolean, boolean, string?
+		team_chest_access = function(team, pname)
+			--- Does the player have access to the chest?
+			--- Example usage: `has_normal, has_pro = get_chest_access(name)`
+			--- @param name PlayerName
+			--- @return boolean, boolean
+			local function get_chest_access(name)
+				local current_mode = ctf_modebase:get_current_mode()
+				if not current_mode then
+					return false, false
+				end
+
+				return current_mode.get_chest_access(name)
+			end
+
+			local flag_captured = ctf_modebase.flag_captured[team]
+			if ctf_rankings.backend == "dummy" then
+				return true, true
+			end
+			if team == ctf_teams.get(pname) then
+				return get_chest_access(pname)
+			elseif flag_captured then
+				return get_chest_access(pname)
+			else
+				return false, false, S("This is not your teamchest!")
+			end
+		end,
 		on_new_match = function()
 			team_list = {}
 			for tname in pairs(ctf_map.current_map.teams) do
@@ -987,31 +1022,20 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				flag_or_flags = " flags!"
 			end
 
-			flag_event_notify(
-				pname,
-				pteam,
-				teamnames,
-				{
-					text = "You have captured: " .. teamnames_readable .. flag_or_flags,
-					color = "success",
-				},
-				{
-					text = "Your teammate "
-						.. pname
-						.. " has captured: "
-						.. teamnames_readable
-						.. flag_or_flags,
-					color = "success",
-				},
-				{ text = pname .. " has captured your flag!", color = "warning" },
-				{
-					text = pname
-						.. " has captured: "
-						.. teamnames_readable
-						.. flag_or_flags,
-					color = "light",
-				}
-			)
+			flag_event_notify(pname, pteam, teamnames, {
+				text = "You have captured: " .. teamnames_readable .. flag_or_flags,
+				color = "success",
+			}, {
+				text = "Your teammate "
+					.. pname
+					.. " has captured: "
+					.. teamnames_readable
+					.. flag_or_flags,
+				color = "success",
+			}, { text = pname .. " has captured your flag!", color = "warning" }, {
+				text = pname .. " has captured: " .. teamnames_readable .. flag_or_flags,
+				color = "light",
+			})
 
 			minetest.chat_send_all(
 				minetest.colorize(tcolor, pname)
