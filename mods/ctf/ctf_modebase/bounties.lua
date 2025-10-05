@@ -135,6 +135,10 @@ local function set(pname, pteam, rewards)
 		end
 	end
 
+	if ctf_jma_achieves then
+		ctf_jma_achieves.grant_achievement(pname, "cja:wntd")
+		if rewards.score > 100 then ctf_jma_achieves.grant_achievement(pname, "cja:atl") end
+	end
 	game_bounties[pteam] = { name = pname, rewards = rewards, msg = bounty_message }
 end
 
@@ -167,6 +171,10 @@ function ctf_modebase.bounties.claim(player, killer)
 	local rewards = nil
 	if got_game_bounty then
 		rewards = game_bounties[pteam].rewards
+
+		if ctf_jma_achieves then
+			ctf_jma_achieves.grant_achievement(killer, "cja:ndd")
+		end
 	end
 
 	if rewards then
