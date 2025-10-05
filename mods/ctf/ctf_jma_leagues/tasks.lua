@@ -125,7 +125,6 @@ end)
 for _, atype in ipairs({"bronze", "silver", "gold"}) do
 	ctf_jma_leagues.register_task("acv_"..atype, function(player_name, ctx, params)
 		local trophies = ctf_jma_achieves.count_trophies(player_name)[atype]
-		core.debug(trophies)
 		return {
 			done = trophies >= params.goal,
 			current = trophies,
