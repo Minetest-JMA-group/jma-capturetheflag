@@ -2,6 +2,7 @@ local rankings = ctf_rankings.init()
 local recent_rankings = ctf_modebase.recent_rankings(rankings)
 local features = ctf_modebase.features(rankings, recent_rankings)
 
+-- It's in seconds
 local TEAM_CHEST_OPEN_TIMEOUT = 10
 
 --- @alias TeamChestOpenStatus { [PlayerName]: integer }
@@ -208,3 +209,6 @@ ctf_modebase.register_mode("classic", {
 		return 0
 	end,
 })
+
+ctf_teams.register_on_open_teamchest(open_team_chest)
+ctf_teams.register_on_close_teamchest(close_team_chest)
