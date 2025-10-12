@@ -111,8 +111,17 @@ for _, team in ipairs(ctf_teams.teamlist) do
 
 		function def.on_rightclick(pos, node, player)
 			local pname = player:get_player_name()
+			local current_mode = ctf_modebase.get_current_mode()
+			if current_mode == false then
+				hud_events.new(player, {
+					quick = true,
+					text = S("No mode in effect..."),
+					color = "warning",
+				})
+				return
+			end
 			local reg_access, pro_access, deny_reason =
-				ctf_modebase.current_mode.team_chest_access(team, pname)
+				current_mode.team_chest_access(team, pname)
 			if not reg_access then
 				hud_events.new(player, {
 					quick = true,
@@ -201,8 +210,17 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			player
 		)
 			local pname = player:get_player_name()
+			local current_mode = ctf_modebase.get_current_mode()
+			if current_mode == false then
+				hud_events.new(player, {
+					quick = true,
+					text = S("No mode in effect..."),
+					color = "warning",
+				})
+				return
+			end
 			local reg_access, pro_access, deny_reason =
-				ctf_modbase.current_mode.team_chest_access(team, pname)
+				current_mode.team_chest_access(team, pname)
 			if not reg_access then
 				hud_events.new(player, {
 					quick = true,
@@ -239,8 +257,18 @@ for _, team in ipairs(ctf_teams.teamlist) do
 
 		function def.allow_metadata_inventory_put(pos, listname, index, stack, player)
 			local pname = player:get_player_name()
+			local current_mode = ctf_modebase.get_current_mode()
+			if current_mode == false then
+				hud_events.new(player, {
+					quick = true,
+					text = S("No mode in effect..."),
+					color = "warning",
+				})
+				return
+			end
+
 			local reg_access, pro_access, deny_reason =
-				ctf_modbase.current_mode.team_chest_access(team, pname)
+				current_mode.team_chest_access(team, pname)
 			if not reg_access then
 				hud_events.new(player, {
 					quick = true,
@@ -277,8 +305,18 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				return 0
 			end
 			local pname = player:get_player_name()
+			local current_mode = ctf_modebase.get_current_mode()
+			if current_mode == false then
+				hud_events.new(player, {
+					quick = true,
+					text = S("No mode in effect..."),
+					color = "warning",
+				})
+				return
+			end
+
 			local reg_access, pro_access, deny_reason =
-				ctf_modebase.current_mode.team_chest_access(team, pname)
+				current_mode.team_chest_access(team, pname)
 
 			if reg_access then
 				if (listname == "pro" and pro_access) or listname ~= "pro" then
