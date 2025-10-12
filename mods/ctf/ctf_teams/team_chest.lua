@@ -185,7 +185,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				.. ";main]"
 				.. "listring[current_player;main]"
 
-			core.show_formspec(name, "ctf_teams:chest_" .. team, formspec)
+			core.show_formspec(pname, "ctf_teams:chest_" .. team, formspec)
 			for func in ipairs(ctf_teams.registered_on_open_teamchest) do
 				func(pname, team)
 			end
@@ -358,7 +358,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 		end
 
 		core.register_node("ctf_teams:chest_" .. team, def)
-		core.register_on_placyer_receive_fields(function(player, formname, fields)
+		core.register_on_player_receive_fields(function(player, formname, fields)
 			if formname ~= "ctf_teams:chest_" .. team then
 				return
 			end
