@@ -1,4 +1,4 @@
-if os.date("%m") ~= "10" or tonumber(os.date("%d")) < 17 then return end
+if os.date("%m") ~= "10" or tonumber(os.date("%d")) < 15 then return end
 
 spooky_effects = {}
 

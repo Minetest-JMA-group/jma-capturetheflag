@@ -1,4 +1,4 @@
-if (os.date("%m") ~= "10" or tonumber(os.date("%d")) < 17) and os.date("%m") ~= "11" then return end
+if (os.date("%m") ~= "10" or tonumber(os.date("%d")) < 15) and os.date("%m") ~= "11" then return end
 
 local function get_color(texture)
 	-- Change trees to a dark grey/brown
