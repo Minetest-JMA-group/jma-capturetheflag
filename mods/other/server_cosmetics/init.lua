@@ -97,6 +97,7 @@ server_cosmetics = {
 				["2022"] = {"server_cosmetics_hallows_hat.png^(server_cosmetics_hallows_hat_overlay.png^[multiply:#333)"},
 				["2023"] = {"server_cosmetics_hallows_hat.png^(server_cosmetics_hallows_hat_overlay.png^[multiply:purple)"},
 				["2024"] = {"server_cosmetics_hallows_hat.png^(server_cosmetics_hallows_hat_overlay.png^[multiply:red)"},
+				["2025"] = {"server_cosmetics_hallows_hat.png^(server_cosmetics_hallows_hat_overlay.png^[multiply:#00d2ff)"},
 			},
 			crown = {
 				_prefix = "Wear ",
@@ -128,6 +129,44 @@ server_cosmetics = {
 		}
 	}
 }
+
+local function copy_texture_list(src)
+	local out = {}
+	for i = 1, #src do
+		out[i] = src[i]
+	end
+
+	return out
+end
+
+do
+	local current_year_num = tonumber(os.date("%Y"))
+	local current_year_key = tostring(current_year_num)
+
+	for name, data in pairs(server_cosmetics.cosmetics.entity_cosmetics) do
+		local date_start = data._date_start
+		if date_start and current_year_num >= date_start and not data[current_year_key] then
+			local fallback_year = current_year_num - 1
+
+			while fallback_year >= date_start do
+				local fallback = data[tostring(fallback_year)]
+				if fallback then
+					data[current_year_key] = copy_texture_list(fallback)
+					minetest.log("warning",
+						string.format(
+							"[server_cosmetics] Missing %s variant for %d; reusing %d textures",
+							name,
+							current_year_num,
+							fallback_year
+						)
+					)
+					break
+				end
+				fallback_year = fallback_year - 1
+			end
+		end
+	end
+end
 
 if os.date("%m/%d") == "04/01" then
 	server_cosmetics.cosmetics.default_cosmetics.skin.smurf = "#0085e8"
