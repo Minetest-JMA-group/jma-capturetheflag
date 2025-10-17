@@ -712,7 +712,7 @@ minetest.after(0, function()
 end)
 
 ctf_modebase.register_mode("rush", {
-	hp_regen = 0,
+	hp_regen = 0.3,
 	physics = { sneak_glitch = true, new_move = true },
 	flag_hud_labels = {
 		noun = "base",
