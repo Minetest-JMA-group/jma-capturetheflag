@@ -81,10 +81,8 @@ local function restore_privs(name, player)
 		privs = safe_deserialize(ref:get_meta():get_string(MATCH_PRIV_KEY))
 	end
 
-	if privs then
-		privs = table.copy(privs)
-	else
-		privs = table.copy(minetest.get_player_privs(name) or {})
+	if not privs then
+		privs = minetest.get_player_privs(name) or {}
 	end
 
 	minetest.set_player_privs(name, privs)
@@ -316,7 +314,7 @@ local function make_spectator(player)
 	end
 
 	if not state.saved_privs[pname] then
-		state.saved_privs[pname] = table.copy(minetest.get_player_privs(pname))
+		state.saved_privs[pname] = minetest.get_player_privs(pname) or {}
 	end
 
 	local privs = table.copy(state.saved_privs[pname] or {})
@@ -511,9 +509,7 @@ end
 local function update_saved_priv_snapshot(target, modifier)
 	local snapshot = state.saved_privs[target]
 
-	if snapshot then
-		snapshot = table.copy(snapshot)
-	else
+	if not snapshot then
 		local player = minetest.get_player_by_name(target)
 		if not player then
 			return
@@ -533,7 +529,7 @@ local function update_saved_priv_snapshot(target, modifier)
 		if type(parsed) ~= "table" then
 			return
 		end
-		snapshot = table.copy(parsed)
+		snapshot = parsed
 	end
 
 	modifier(snapshot)
