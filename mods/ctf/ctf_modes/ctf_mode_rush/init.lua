@@ -5,6 +5,7 @@ local features = ctf_modebase.features(rankings, recent_rankings)
 local MAX_REVIVES = 2
 local MATCH_META_KEY = "ctf_mode_rush:spectator_match"
 local MATCH_PRIV_KEY = "ctf_mode_rush:spectator_privs"
+local MATCH_GRANTED_KEY = "ctf_mode_rush:spectator_granted"
 local MAX_SPECTATOR_DISTANCE = 12
 local MIN_SPECTATOR_ALTITUDE = 2
 local SPECTATOR_BOUND_CHECK_INTERVAL = 0.5
@@ -87,8 +88,23 @@ local function restore_privs(name, player)
 		privs = table.copy(minetest.get_player_privs(name) or {})
 	end
 
-	privs.fast = nil
-	privs.fly = nil
+	local granted = {}
+	if ref then
+		local granted_meta = ref:get_meta():get_string(MATCH_GRANTED_KEY)
+		if granted_meta ~= "" then
+			local parsed = safe_deserialize(granted_meta)
+			if type(parsed) == "table" then
+				granted = parsed
+			end
+		end
+	end
+
+	if granted.fast then
+		privs.fast = nil
+	end
+	if granted.fly then
+		privs.fly = nil
+	end
 	privs.interact = true
 
 	minetest.set_player_privs(name, privs)
@@ -96,6 +112,7 @@ local function restore_privs(name, player)
 
 	if ref then
 		ref:get_meta():set_string(MATCH_PRIV_KEY, "")
+		ref:get_meta():set_string(MATCH_GRANTED_KEY, "")
 	end
 end
 
@@ -351,6 +368,10 @@ local function make_spectator(player)
 		MATCH_PRIV_KEY,
 		minetest.serialize(state.saved_privs[pname] or {})
 	)
+	meta:set_string(
+		MATCH_GRANTED_KEY,
+		minetest.serialize(granted_flags)
+	)
 end
 
 local function update_flag_huds()
@@ -496,6 +517,7 @@ local function restore_all_players()
 		local meta = player:get_meta()
 		meta:set_string(MATCH_META_KEY, "")
 		meta:set_string(MATCH_PRIV_KEY, "")
+		meta:set_string(MATCH_GRANTED_KEY, "")
 	end
 	state.match_id = nil
 	state.spectator_anchor = {}
@@ -519,6 +541,7 @@ local function remove_stuck_spectator_state(player)
 
 	meta:set_string(MATCH_META_KEY, "")
 	meta:set_string(MATCH_PRIV_KEY, "")
+	meta:set_string(MATCH_GRANTED_KEY, "")
 	ctf_teams.non_team_players[name] = nil
 end
 
