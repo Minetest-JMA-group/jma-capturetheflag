@@ -5,6 +5,9 @@ local features = ctf_modebase.features(rankings, recent_rankings)
 local MAX_REVIVES = 2
 local MATCH_META_KEY = "ctf_mode_rush:spectator_match"
 local MATCH_PRIV_KEY = "ctf_mode_rush:spectator_privs"
+local MAX_SPECTATOR_DISTANCE = 12
+local MIN_SPECTATOR_ALTITUDE = 2
+local SPECTATOR_BOUND_CHECK_INTERVAL = 0.5
 local SPECTATOR_CHAT_COLOR = "#8f7bb9"
 
 ctf_mode_rush = ctf_mode_rush or {}
@@ -21,6 +24,7 @@ local state = {
 	vanish_active = {},
 	winner_announced = false,
 	match_id = nil,
+	spectator_anchor = {},
 }
 
 local function reset_state()
@@ -33,6 +37,7 @@ local function reset_state()
 	state.saved_privs = {}
 	state.vanish_active = {}
 	state.winner_announced = false
+	state.spectator_anchor = {}
 end
 
 local function new_match_id()
@@ -112,6 +117,173 @@ local function for_each_spectator(callback)
 	end
 end
 
+local function get_player_score(pname)
+	local rec = recent_rankings.get(pname)
+	if rec and rec.score then
+		return rec.score
+	end
+
+	local overall = rankings:get(pname)
+	if overall and overall.score then
+		return overall.score
+	end
+
+	return 0
+end
+
+local function select_anchor_for_team(team)
+	local alive = state.alive_players[team]
+	if not alive then
+		return nil
+	end
+
+	local best_player
+	local best_score = -math.huge
+
+	for pname in pairs(alive) do
+		local player_obj = minetest.get_player_by_name(pname)
+		if player_obj and player_obj:get_hp() > 0 then
+			local score = get_player_score(pname)
+			if score > best_score then
+				best_score = score
+				best_player = pname
+			end
+		end
+	end
+
+	return best_player
+end
+
+local function place_spectator_near_anchor(player)
+	local pname = player:get_player_name()
+	local anchor_name = state.spectator_anchor[pname]
+	if not anchor_name then
+		return
+	end
+
+	local anchor = minetest.get_player_by_name(anchor_name)
+	if not anchor then
+		return
+	end
+
+	local anchor_pos = anchor:get_pos()
+	if not anchor_pos then
+		return
+	end
+
+	local offset = {
+		x = math.random(-3, 3),
+		y = MIN_SPECTATOR_ALTITUDE + 2,
+		z = math.random(-3, 3),
+	}
+
+	player:set_pos(vector.add(anchor_pos, offset))
+end
+
+local function assign_spectator_anchor(pname)
+	local team = state.initial_team[pname]
+	if not team then
+		state.spectator_anchor[pname] = nil
+		return nil
+	end
+
+	local previous = state.spectator_anchor[pname]
+	local anchor = select_anchor_for_team(team)
+	state.spectator_anchor[pname] = anchor
+
+	if anchor and anchor ~= previous then
+		local msg = string.format("Spectating %s. Stay within %d nodes.", anchor, MAX_SPECTATOR_DISTANCE)
+		minetest.chat_send_player(pname, minetest.colorize(SPECTATOR_CHAT_COLOR, msg))
+		local player = minetest.get_player_by_name(pname)
+		if player then
+			place_spectator_near_anchor(player)
+		end
+	elseif not anchor and previous then
+		minetest.chat_send_player(pname, minetest.colorize(SPECTATOR_CHAT_COLOR, "No teammates available to spectate."))
+	end
+
+	return anchor
+end
+
+local function reassign_team_spectators(team)
+	for pname, eliminated in pairs(state.eliminated) do
+		if eliminated and state.initial_team[pname] == team then
+			assign_spectator_anchor(pname)
+		end
+	end
+end
+
+local function enforce_spectator_bounds(pname)
+	local spectator = minetest.get_player_by_name(pname)
+	if not spectator then
+		return
+	end
+
+	local team = state.initial_team[pname]
+	if not team then
+		return
+	end
+
+	local anchor_name = state.spectator_anchor[pname]
+	if not anchor_name or not (state.alive_players[team] and state.alive_players[team][anchor_name]) then
+		anchor_name = assign_spectator_anchor(pname)
+	end
+
+	if not anchor_name then
+		return
+	end
+
+	local anchor = minetest.get_player_by_name(anchor_name)
+	if not anchor then
+		anchor_name = assign_spectator_anchor(pname)
+		if not anchor_name then
+			return
+		end
+		anchor = minetest.get_player_by_name(anchor_name)
+		if not anchor then
+			return
+		end
+	end
+
+	local best_now = select_anchor_for_team(team)
+	if best_now and best_now ~= anchor_name then
+		anchor_name = assign_spectator_anchor(pname)
+		if not anchor_name then
+			return
+		end
+		anchor = minetest.get_player_by_name(anchor_name)
+		if not anchor then
+			return
+		end
+	end
+
+	local anchor_pos = anchor:get_pos()
+	local spec_pos = spectator:get_pos()
+	if not anchor_pos or not spec_pos then
+		return
+	end
+
+	local displacement = vector.subtract(spec_pos, anchor_pos)
+	local distance = vector.length(displacement)
+
+	if distance <= MAX_SPECTATOR_DISTANCE then
+		return
+	end
+
+	if distance == 0 then
+		displacement = { x = MAX_SPECTATOR_DISTANCE, y = MIN_SPECTATOR_ALTITUDE + 1, z = 0 }
+	else
+		displacement = vector.multiply(displacement, MAX_SPECTATOR_DISTANCE / distance)
+	end
+
+	if displacement.y < MIN_SPECTATOR_ALTITUDE then
+		displacement.y = MIN_SPECTATOR_ALTITUDE
+	end
+
+	local target = vector.add(anchor_pos, displacement)
+	spectator:set_pos(target)
+end
+
 local function disable_vanish(player)
 	local name = player:get_player_name()
 
@@ -158,6 +330,9 @@ local function make_spectator(player)
 
 	remove_player_from_team(pname)
 	apply_vanish(player)
+	assign_spectator_anchor(pname)
+	place_spectator_near_anchor(player)
+
 	player:set_hp(20)
 	player:set_armor_groups({ fleshy = 0 })
 	player:set_physics_override({
@@ -261,6 +436,7 @@ local function check_for_winner(team)
 	end
 
 	announce_team_defeat(team)
+	reassign_team_spectators(team)
 
 	local alive_teams = get_alive_teams()
 	if #alive_teams <= 1 then
@@ -316,11 +492,13 @@ local function restore_all_players()
 			ctf_teams.non_team_players[name] = nil
 		end
 		state.eliminated[name] = nil
+		state.spectator_anchor[name] = nil
 		local meta = player:get_meta()
 		meta:set_string(MATCH_META_KEY, "")
 		meta:set_string(MATCH_PRIV_KEY, "")
 	end
 	state.match_id = nil
+	state.spectator_anchor = {}
 end
 
 local function remove_stuck_spectator_state(player)
@@ -334,6 +512,7 @@ local function remove_stuck_spectator_state(player)
 	state.eliminated[name] = nil
 	state.revives_left[name] = MAX_REVIVES
 	state.saved_privs[name] = nil
+	state.spectator_anchor[name] = nil
 
 	restore_privs(name, player)
 	disable_vanish(player)
@@ -491,6 +670,7 @@ ctf_modebase.register_mode("rush", {
 
 	restore_privs(pname, player)
 	disable_vanish(player)
+	reassign_team_spectators(new_team)
 
 	features.on_allocplayer(player, new_team)
 end,
@@ -513,9 +693,11 @@ end,
 				MATCH_PRIV_KEY,
 				minetest.serialize(state.saved_privs[pname] or {})
 			)
-				else
+			state.spectator_anchor[pname] = nil
+		else
 			state.eliminated[pname] = nil
-					restore_privs(pname, player)
+			state.spectator_anchor[pname] = nil
+			restore_privs(pname, player)
 			state.vanish_active[pname] = nil
 
 			local meta = player:get_meta()
@@ -524,7 +706,8 @@ end,
 		end
 
 		if team then
-				end
+			reassign_team_spectators(team)
+		end
 
 		if team and state.alive_players[team] and not state.team_defeated[team] then
 			if not next(state.alive_players[team]) then
@@ -565,7 +748,8 @@ end,
 			state.eliminated[pname] = true
 			if team and state.alive_players[team] then
 				state.alive_players[team][pname] = nil
-						end
+				reassign_team_spectators(team)
+			end
 			hud_events.new(pname, {
 				text = "You are out of revives! Spectating after respawn...",
 				color = "warning",
@@ -631,6 +815,22 @@ end,
 	on_flag_capture = function() end,
 	get_chest_access = features.get_chest_access,
 })
+
+local spectator_bound_timer = 0
+minetest.register_globalstep(function(dtime)
+	spectator_bound_timer = spectator_bound_timer + dtime
+	if spectator_bound_timer < SPECTATOR_BOUND_CHECK_INTERVAL then
+		return
+	end
+
+	spectator_bound_timer = 0
+
+	for pname, eliminated in pairs(state.eliminated) do
+		if eliminated then
+			enforce_spectator_bounds(pname)
+		end
+	end
+end)
 
 minetest.register_on_joinplayer(function(player)
 	local mode_is_rush = ctf_modebase.current_mode == "rush"
