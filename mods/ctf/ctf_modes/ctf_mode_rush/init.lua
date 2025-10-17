@@ -5,7 +5,6 @@ local features = ctf_modebase.features(rankings, recent_rankings)
 local MAX_REVIVES = 2
 local MATCH_META_KEY = "ctf_mode_rush:spectator_match"
 local MATCH_PRIV_KEY = "ctf_mode_rush:spectator_privs"
-local MATCH_GRANTED_KEY = "ctf_mode_rush:spectator_granted"
 local MAX_SPECTATOR_DISTANCE = 12
 local MIN_SPECTATOR_ALTITUDE = 2
 local SPECTATOR_BOUND_CHECK_INTERVAL = 0.5
@@ -88,31 +87,12 @@ local function restore_privs(name, player)
 		privs = table.copy(minetest.get_player_privs(name) or {})
 	end
 
-	local granted = {}
-	if ref then
-		local granted_meta = ref:get_meta():get_string(MATCH_GRANTED_KEY)
-		if granted_meta ~= "" then
-			local parsed = safe_deserialize(granted_meta)
-			if type(parsed) == "table" then
-				granted = parsed
-			end
-		end
-	end
-
-	if granted.fast then
-		privs.fast = nil
-	end
-	if granted.fly then
-		privs.fly = nil
-	end
-	privs.interact = true
-
 	minetest.set_player_privs(name, privs)
 	state.saved_privs[name] = nil
 
 	if ref then
+		ref:get_meta():set_string(MATCH_META_KEY, "")
 		ref:get_meta():set_string(MATCH_PRIV_KEY, "")
-		ref:get_meta():set_string(MATCH_GRANTED_KEY, "")
 	end
 end
 
@@ -339,10 +319,11 @@ local function make_spectator(player)
 		state.saved_privs[pname] = table.copy(minetest.get_player_privs(pname))
 	end
 
-	local privs = table.copy(state.saved_privs[pname])
+	local privs = table.copy(state.saved_privs[pname] or {})
 	privs.interact = nil
 	privs.fast = nil
 	privs.fly = true
+
 	minetest.set_player_privs(pname, privs)
 
 	remove_player_from_team(pname)
@@ -367,10 +348,6 @@ local function make_spectator(player)
 	meta:set_string(
 		MATCH_PRIV_KEY,
 		minetest.serialize(state.saved_privs[pname] or {})
-	)
-	meta:set_string(
-		MATCH_GRANTED_KEY,
-		minetest.serialize(granted_flags)
 	)
 end
 
@@ -514,36 +491,170 @@ local function restore_all_players()
 		end
 		state.eliminated[name] = nil
 		state.spectator_anchor[name] = nil
+		state.revives_left[name] = nil
 		local meta = player:get_meta()
 		meta:set_string(MATCH_META_KEY, "")
 		meta:set_string(MATCH_PRIV_KEY, "")
-		meta:set_string(MATCH_GRANTED_KEY, "")
 	end
 	state.match_id = nil
 	state.spectator_anchor = {}
 end
 
-local function remove_stuck_spectator_state(player)
-	local meta = player:get_meta()
-	local stored_match = meta:get_string(MATCH_META_KEY)
-	if stored_match == "" then
+local function is_rush_active()
+	return ctf_modebase.current_mode == "rush"
+end
+
+local function trim(str)
+	return (str:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+local function update_saved_priv_snapshot(target, modifier)
+	local snapshot = state.saved_privs[target]
+
+	if snapshot then
+		snapshot = table.copy(snapshot)
+	else
+		local player = minetest.get_player_by_name(target)
+		if not player then
+			return
+		end
+
+		local meta = player:get_meta()
+		if meta:get_string(MATCH_META_KEY) == "" then
+			return
+		end
+
+		local raw = meta:get_string(MATCH_PRIV_KEY)
+		if raw == "" then
+			return
+		end
+
+		local parsed = safe_deserialize(raw)
+		if type(parsed) ~= "table" then
+			return
+		end
+		snapshot = table.copy(parsed)
+	end
+
+	modifier(snapshot)
+
+	state.saved_privs[target] = snapshot
+
+	local player = minetest.get_player_by_name(target)
+	if player then
+		player:get_meta():set_string(MATCH_PRIV_KEY, minetest.serialize(snapshot))
+	end
+end
+
+local function parse_priv_param(param)
+	if not param then
 		return
 	end
 
-	local name = player:get_player_name()
-	state.eliminated[name] = nil
-	state.revives_left[name] = MAX_REVIVES
-	state.saved_privs[name] = nil
-	state.spectator_anchor[name] = nil
+	local target, payload = param:match("^(%S+)%s+(.+)$")
+	if not target then
+		return
+	end
 
-	restore_privs(name, player)
-	disable_vanish(player)
+	payload = trim(payload)
+	if payload == "" then
+		return
+	end
 
-	meta:set_string(MATCH_META_KEY, "")
-	meta:set_string(MATCH_PRIV_KEY, "")
-	meta:set_string(MATCH_GRANTED_KEY, "")
-	ctf_teams.non_team_players[name] = nil
+	if payload == "all" then
+		return target, "all"
+	end
+
+	local privs = {}
+	for token in payload:gmatch("[^,]+") do
+		local priv = trim(token)
+		if priv ~= "" then
+			table.insert(privs, priv)
+		end
+	end
+
+	if #privs == 0 then
+		return
+	end
+
+	return target, privs
 end
+
+local function record_priv_change(target, privs, grant)
+	if not privs then
+		return
+	end
+
+	update_saved_priv_snapshot(target, function(snapshot)
+		if privs == "all" then
+			for name in pairs(minetest.registered_privileges) do
+				if grant then
+					snapshot[name] = true
+				else
+					snapshot[name] = nil
+				end
+			end
+		else
+			for _, priv in ipairs(privs) do
+				if grant then
+					snapshot[priv] = true
+				else
+					snapshot[priv] = nil
+				end
+			end
+		end
+	end)
+end
+
+local function create_priv_wrapper(is_grant)
+	return function(original)
+		return function(name, param)
+			local ok, message = original(name, param)
+			if ok then
+				local target, privs = parse_priv_param(param)
+				if target and privs then
+					record_priv_change(target, privs, is_grant)
+				end
+			end
+			return ok, message
+		end
+	end
+end
+
+minetest.after(0, function()
+	local grant_wrapper = create_priv_wrapper(true)
+	local revoke_wrapper = create_priv_wrapper(false)
+
+	local grant_def = minetest.registered_chatcommands.grant
+	if grant_def and type(grant_def.func) == "function" then
+		grant_def.func = grant_wrapper(grant_def.func)
+	end
+
+	local revoke_def = minetest.registered_chatcommands.revoke
+	if revoke_def and type(revoke_def.func) == "function" then
+		revoke_def.func = revoke_wrapper(revoke_def.func)
+	end
+
+	local old_register_chatcommand = minetest.register_chatcommand
+	function minetest.register_chatcommand(name, def)
+		if name == "grant" and def and type(def.func) == "function" then
+			def.func = grant_wrapper(def.func)
+		elseif name == "revoke" and def and type(def.func) == "function" then
+			def.func = revoke_wrapper(def.func)
+		end
+		return old_register_chatcommand(name, def)
+	end
+
+	local old_override_chatcommand = minetest.override_chatcommand
+	function minetest.override_chatcommand(name, def)
+		if name == "grant" and def and type(def.func) == "function" then
+			def.func = grant_wrapper(def.func)
+		elseif name == "revoke" and def and type(def.func) == "function" then
+			def.func = revoke_wrapper(def.func)
+		end
+		return old_override_chatcommand(name, def)
+	end
+end)
 
 ctf_modebase.register_mode("rush", {
 	hp_regen = 0,
@@ -663,6 +774,7 @@ ctf_modebase.register_mode("rush", {
 	end,
 	on_match_end = function()
 		restore_all_players()
+		reset_state()
 		features.on_match_end()
 	end,
 	team_allocator = features.team_allocator,
@@ -687,7 +799,12 @@ ctf_modebase.register_mode("rush", {
 			return
 		end
 
-	state.revives_left[pname] = MAX_REVIVES
+	local revives = state.revives_left[pname]
+	if revives == nil then
+		revives = MAX_REVIVES
+	end
+	state.revives_left[pname] = revives
+
 	state.alive_players[new_team] = state.alive_players[new_team] or {}
 	state.alive_players[new_team][pname] = true
 
@@ -696,7 +813,7 @@ ctf_modebase.register_mode("rush", {
 	reassign_team_spectators(new_team)
 
 	features.on_allocplayer(player, new_team)
-end,
+	end,
 	on_leaveplayer = function(player)
 		local pname = player:get_player_name()
 		local team = state.initial_team[pname]
@@ -711,6 +828,8 @@ end,
 			local meta = player:get_meta()
 			if state.match_id then
 				meta:set_string(MATCH_META_KEY, state.match_id)
+			else
+				meta:set_string(MATCH_META_KEY, "")
 			end
 			meta:set_string(
 				MATCH_PRIV_KEY,
@@ -750,8 +869,8 @@ end,
 			state.revives_left[pname] = revives
 		end
 
-		revives = revives - 1
-		state.revives_left[pname] = revives
+	revives = revives - 1
+	state.revives_left[pname] = revives
 
 		if revives >= 0 then
 			if revives == 0 then
@@ -856,7 +975,6 @@ minetest.register_globalstep(function(dtime)
 end)
 
 minetest.register_on_joinplayer(function(player)
-	local mode_is_rush = ctf_modebase.current_mode == "rush"
 	local meta = player:get_meta()
 	local stored_match = meta:get_string(MATCH_META_KEY)
 
@@ -864,12 +982,12 @@ minetest.register_on_joinplayer(function(player)
 		return
 	end
 
-	if not mode_is_rush or state.match_id == nil or stored_match ~= state.match_id then
-		remove_stuck_spectator_state(player)
+	local name = player:get_player_name()
+
+	if not is_rush_active() or not state.match_id or stored_match ~= state.match_id then
+		restore_privs(name, player)
 		return
 	end
-
-	local name = player:get_player_name()
 
 	state.eliminated[name] = true
 	ctf_teams.non_team_players[name] = true
