@@ -1064,11 +1064,3 @@ rush_api.get_match_id = function()
 	return state.match_id
 end
 rush_api._state = state
-
-if ctf_chat and ctf_chat.register_prefix then
-	ctf_chat.register_prefix(60, function(name)
-		if is_spectator(name) then
-			return minetest.colorize(SPECTATOR_CHAT_COLOR, "[SPEC]")
-		end
-	end)
-end
