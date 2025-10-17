@@ -718,6 +718,8 @@ ctf_modebase.register_mode("rush", {
 		noun = "base",
 		captured = "defeated",
 	},
+	vote_title_suffix = " (Test Phase)",
+	vote_max_rounds = 2,
 	treasures = {
 		["default:cobble"] = {
 			min_count = 30,

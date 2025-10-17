@@ -1,5 +1,5 @@
 local VOTING_TIME = 30
-local MAX_ROUNDS = 5
+local DEFAULT_MAX_ROUNDS = 5
 
 local timer = nil
 local formspec_send_timer = nil
@@ -9,6 +9,20 @@ local voters_count = nil
 local new_mode
 
 ctf_modebase.mode_vote = {}
+
+local function get_mode_max_rounds(mode)
+	local def = ctf_modebase.modes[mode]
+	if def and def.vote_max_rounds then
+		return def.vote_max_rounds
+	end
+	return DEFAULT_MAX_ROUNDS
+end
+
+local function get_mode_vote_title(mode)
+	local def = ctf_modebase.modes[mode]
+	local suffix = (def and def.vote_title_suffix) or ""
+	return HumanReadable(mode) .. suffix
+end
 
 local function player_vote(name, length)
 	if not voted then
@@ -28,6 +42,8 @@ local function player_vote(name, length)
 end
 
 local function show_modechoose_form(player)
+	local max_rounds = get_mode_max_rounds(new_mode)
+
 	local vote_setting = ctf_settings.get(
 		minetest.get_player_by_name(player),
 		"ctf_modebase:default_vote_" .. new_mode
@@ -37,6 +53,10 @@ local function show_modechoose_form(player)
 		ctf_settings.settings["ctf_modebase:default_vote_" .. new_mode]._list_map[tonumber(
 			vote_setting
 		)]
+
+	if vote_setting ~= "ask" and vote_setting > max_rounds then
+		vote_setting = max_rounds
+	end
 
 	if vote_setting ~= "ask" then
 		minetest.after(0, function()
@@ -48,7 +68,7 @@ local function show_modechoose_form(player)
 				player,
 				string.format(
 					"Voting for "
-						.. new_mode
+						.. get_mode_vote_title(new_mode)
 						.. ". Automatic vote: "
 						.. vote_setting
 						.. "\n"
@@ -65,7 +85,7 @@ local function show_modechoose_form(player)
 
 	local i = 0.4
 	local vote = 0
-	while vote <= MAX_ROUNDS do
+	while vote <= max_rounds do
 		local vote_num = vote
 		local label = tostring(vote)
 		if vote_num == 0 then
@@ -116,7 +136,7 @@ local function show_modechoose_form(player)
 
 	ctf_gui.old_show_formspec(player, "ctf_modebase:mode_select", {
 		size = { x = 8, y = i + 3.5 },
-		title = "Mode: " .. HumanReadable(new_mode),
+		title = "Mode: " .. get_mode_vote_title(new_mode),
 		description = "Please vote on how many matches you would like to play.\n"
 			.. "You can change your default vote for this mode via the Settings tab (in your inventory)",
 		header_height = 2.4,
@@ -194,6 +214,7 @@ function ctf_modebase.mode_vote.end_vote()
 		minetest.close_formspec(player:get_player_name(), "ctf_modebase:mode_select")
 	end
 
+	local max_rounds = get_mode_max_rounds(new_mode)
 	local length_votes = {}
 	for _, length in pairs(votes) do
 		length_votes[length] = (length_votes[length] or 0) + 1
@@ -205,7 +226,7 @@ function ctf_modebase.mode_vote.end_vote()
 	local votes_result = ""
 	local average_vote = 0
 	local entry_count = 0
-	for length = 0, MAX_ROUNDS do
+	for length = 0, max_rounds do
 		local vote_count = length_votes[length]
 		if vote_count then
 			votes_result = votes_result
@@ -224,12 +245,12 @@ function ctf_modebase.mode_vote.end_vote()
 	if entry_count > 0 then
 		average_vote = math.round(average_vote / entry_count)
 	else
-		average_vote = MAX_ROUNDS -- no votes, default to max rounds
+		average_vote = max_rounds -- no votes, default to max rounds
 	end
 
 	votes_result = string.format(
 		"Voting is over. The mode %s will be played for %d match%s\n%s",
-		HumanReadable(new_mode),
+		get_mode_vote_title(new_mode),
 		average_vote,
 		average_vote == 1 and "" or "es",
 		votes_result:sub(1, -2)
