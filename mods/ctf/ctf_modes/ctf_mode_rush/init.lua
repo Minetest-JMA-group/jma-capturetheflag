@@ -1,0 +1,677 @@
+local rankings = ctf_rankings.init()
+local recent_rankings = ctf_modebase.recent_rankings(rankings)
+local features = ctf_modebase.features(rankings, recent_rankings)
+
+local MAX_REVIVES = 2
+local MATCH_META_KEY = "ctf_mode_rush:spectator_match"
+local MATCH_PRIV_KEY = "ctf_mode_rush:spectator_privs"
+local SPECTATOR_CHAT_COLOR = "#8f7bb9"
+
+ctf_mode_rush = ctf_mode_rush or {}
+local rush_api = ctf_mode_rush
+
+local state = {
+	revives_left = {},
+	eliminated = {},
+	initial_team = {},
+	participants = {},
+	alive_players = {},
+	team_defeated = {},
+	saved_privs = {},
+	vanish_active = {},
+	winner_announced = false,
+	match_id = nil,
+}
+
+local function reset_state()
+	state.revives_left = {}
+	state.eliminated = {}
+	state.initial_team = {}
+	state.participants = {}
+	state.alive_players = {}
+	state.team_defeated = {}
+	state.saved_privs = {}
+	state.vanish_active = {}
+	state.winner_announced = false
+end
+
+local function new_match_id()
+	return tostring(minetest.get_us_time())
+end
+
+local function safe_deserialize(data)
+	if data == "" then
+		return
+	end
+
+	local ok, value = pcall(minetest.deserialize, data)
+	if ok then
+		return value
+	end
+end
+
+local function store_initial_team(pname, team)
+	if not state.initial_team[pname] then
+		state.initial_team[pname] = team
+	end
+end
+
+local function get_alive_teams()
+	local alive = {}
+
+	for team, players in pairs(state.alive_players) do
+		if not state.team_defeated[team] and next(players) then
+			table.insert(alive, team)
+		end
+	end
+
+	return alive
+end
+
+local function restore_privs(name, player)
+	local privs = state.saved_privs[name]
+	local ref = player or minetest.get_player_by_name(name)
+
+	if not privs and ref then
+		privs = safe_deserialize(ref:get_meta():get_string(MATCH_PRIV_KEY))
+	end
+
+	if privs then
+		privs = table.copy(privs)
+	else
+		privs = table.copy(minetest.get_player_privs(name) or {})
+	end
+
+	privs.fast = nil
+	privs.fly = nil
+	privs.interact = true
+
+	minetest.set_player_privs(name, privs)
+	state.saved_privs[name] = nil
+
+	if ref then
+		ref:get_meta():set_string(MATCH_PRIV_KEY, "")
+	end
+end
+
+local function remove_player_from_team(name)
+	ctf_teams.remove_online_player(name)
+	ctf_teams.player_team[name] = nil
+	ctf_teams.non_team_players[name] = true
+end
+
+local function is_spectator(name)
+	return state.eliminated[name] == true
+end
+
+local function for_each_spectator(callback)
+	for pname, eliminated in pairs(state.eliminated) do
+		if eliminated then
+			callback(pname)
+		end
+	end
+end
+
+local function disable_vanish(player)
+	local name = player:get_player_name()
+
+	if state.vanish_active[name] then
+		vanish.off(player)
+		player:set_armor_groups({ fleshy = 100 })
+	end
+
+	state.vanish_active[name] = nil
+end
+
+local function apply_vanish(player)
+	local name = player:get_player_name()
+
+	if state.vanish_active[name] then
+		return
+	end
+
+	vanish.on(player, { pointable = false, is_visible = false })
+	state.vanish_active[name] = true
+end
+
+local function make_spectator(player)
+	local pname = player:get_player_name()
+	local team = state.initial_team[pname]
+
+	if team and state.alive_players[team] then
+		state.alive_players[team][pname] = nil
+	end
+
+	if state.eliminated[pname] ~= true then
+		state.eliminated[pname] = true
+	end
+
+	if not state.saved_privs[pname] then
+		state.saved_privs[pname] = table.copy(minetest.get_player_privs(pname))
+	end
+
+	local privs = table.copy(state.saved_privs[pname])
+	privs.interact = nil
+	privs.fast = nil
+	privs.fly = true
+	minetest.set_player_privs(pname, privs)
+
+	remove_player_from_team(pname)
+	apply_vanish(player)
+	player:set_hp(20)
+	player:set_armor_groups({ fleshy = 0 })
+	player:set_physics_override({
+		speed = 1,
+		jump = 1,
+		gravity = 1,
+	})
+
+	local meta = player:get_meta()
+	if state.match_id then
+		meta:set_string(MATCH_META_KEY, state.match_id)
+	else
+		meta:set_string(MATCH_META_KEY, "")
+	end
+	meta:set_string(
+		MATCH_PRIV_KEY,
+		minetest.serialize(state.saved_privs[pname] or {})
+	)
+end
+
+local function update_flag_huds()
+	for _, player in ipairs(minetest.get_connected_players()) do
+		ctf_modebase.flag_huds.update_player(player)
+	end
+end
+
+local function award_score(name, score)
+	recent_rankings.add(name, { score = score }, true)
+end
+
+local function announce_team_defeat(team)
+	if state.team_defeated[team] then
+		return
+	end
+
+	state.team_defeated[team] = true
+	ctf_modebase.flag_captured[team] = true
+	ctf_modebase.flag_taken[team] = nil
+
+	local color = ctf_teams.team[team] and ctf_teams.team[team].color or "white"
+	local message =
+		minetest.colorize(color, HumanReadable(team) .. " base has been defeated!")
+	minetest.chat_send_all(message)
+
+	update_flag_huds()
+end
+
+local function declare_winner(team)
+	if state.winner_announced then
+		return
+	end
+	state.winner_announced = true
+
+	local connected = minetest.get_connected_players()
+	local winner_text
+
+	if team then
+		local color = ctf_teams.team[team] and ctf_teams.team[team].color or "white"
+		winner_text = HumanReadable(team) .. " Team Wins!"
+		minetest.chat_send_all(minetest.colorize(color, winner_text))
+	else
+		winner_text = "No team survived!"
+		minetest.chat_send_all(minetest.colorize("orange", winner_text))
+	end
+
+	for name in pairs(state.participants) do
+		if team and state.initial_team[name] == team and state.eliminated[name] ~= true then
+			award_score(name, 500)
+		else
+			award_score(name, 50)
+		end
+	end
+
+	ctf_modebase.summary.set_winner(winner_text)
+
+	local match_rankings, special_rankings, rank_values, formdef =
+		ctf_modebase.summary.get()
+	if formdef then
+		formdef.title = winner_text
+	end
+
+	if match_rankings then
+		for _, player in ipairs(connected) do
+			ctf_modebase.summary.show_gui(
+				player:get_player_name(),
+				match_rankings,
+				special_rankings,
+				rank_values,
+				formdef
+			)
+		end
+	end
+
+	ctf_modebase.start_new_match(5)
+end
+
+local function check_for_winner(team)
+	local alive = state.alive_players[team]
+	if not alive or next(alive) then
+		return
+	end
+
+	announce_team_defeat(team)
+
+	local alive_teams = get_alive_teams()
+	if #alive_teams <= 1 then
+		declare_winner(alive_teams[1])
+	end
+end
+
+local function remove_flags()
+	if not ctf_map.current_map then
+		return
+	end
+
+	for _, teamdef in pairs(ctf_map.current_map.teams or {}) do
+		if teamdef.flag_pos then
+			local base_pos = vector.new(teamdef.flag_pos)
+			local top_pos = vector.add(base_pos, { x = 0, y = 1, z = 0 })
+
+			local node = minetest.get_node_or_nil(base_pos)
+			if node and node.name ~= "air" then
+				minetest.swap_node(base_pos, { name = "air" })
+			end
+
+			local top_node = minetest.get_node_or_nil(top_pos)
+			if top_node and top_node.name ~= "air" then
+				minetest.swap_node(top_pos, { name = "air" })
+			end
+		end
+	end
+end
+
+local function init_alive_players()
+	state.alive_players = {}
+	state.team_defeated = {}
+
+	if not ctf_map.current_map then
+		return
+	end
+
+	for team in pairs(ctf_map.current_map.teams) do
+		state.alive_players[team] = {}
+		state.team_defeated[team] = false
+		ctf_modebase.flag_captured[team] = nil
+		ctf_modebase.flag_taken[team] = nil
+	end
+end
+
+local function restore_all_players()
+	for _, player in ipairs(minetest.get_connected_players()) do
+		local name = player:get_player_name()
+		restore_privs(name, player)
+		disable_vanish(player)
+		if state.initial_team[name] then
+			ctf_teams.non_team_players[name] = nil
+		end
+		state.eliminated[name] = nil
+		local meta = player:get_meta()
+		meta:set_string(MATCH_META_KEY, "")
+		meta:set_string(MATCH_PRIV_KEY, "")
+	end
+	state.match_id = nil
+end
+
+local function remove_stuck_spectator_state(player)
+	local meta = player:get_meta()
+	local stored_match = meta:get_string(MATCH_META_KEY)
+	if stored_match == "" then
+		return
+	end
+
+	local name = player:get_player_name()
+	state.eliminated[name] = nil
+	state.revives_left[name] = MAX_REVIVES
+	state.saved_privs[name] = nil
+
+	restore_privs(name, player)
+	disable_vanish(player)
+
+	meta:set_string(MATCH_META_KEY, "")
+	meta:set_string(MATCH_PRIV_KEY, "")
+	ctf_teams.non_team_players[name] = nil
+end
+
+ctf_modebase.register_mode("rush", {
+	hp_regen = 0,
+	physics = { sneak_glitch = true, new_move = true },
+	flag_hud_labels = {
+		noun = "base",
+		captured = "defeated",
+	},
+	treasures = {
+		["default:cobble"] = {
+			min_count = 30,
+			max_count = 99,
+			rarity = 0.25,
+			max_stacks = 2,
+		},
+		["default:wood"] = {
+			min_count = 20,
+			max_count = 80,
+			rarity = 0.25,
+			max_stacks = 2,
+		},
+		["default:ladder_wood"] = {
+			max_count = 16,
+			rarity = 0.35,
+			max_stacks = 4,
+		},
+		["default:torch"] = {
+			max_count = 20,
+			rarity = 0.3,
+			max_stacks = 4,
+		},
+		["default:pick_steel"] = { rarity = 0.35, max_stacks = 2 },
+		["ctf_melee:sword_steel"] = { rarity = 0.25, max_stacks = 2 },
+		["ctf_melee:sword_mese"] = { rarity = 0.08, max_stacks = 1 },
+		["ctf_ranged:pistol_loaded"] = { rarity = 0.25, max_stacks = 2 },
+		["ctf_ranged:rifle_loaded"] = { rarity = 0.2, max_stacks = 1 },
+		["ctf_ranged:shotgun_loaded"] = { rarity = 0.1, max_stacks = 1 },
+		["ctf_ranged:assault_rifle_loaded"] = { rarity = 0.08, max_stacks = 1 },
+		["ctf_ranged:ammo"] = {
+			min_count = 3,
+			max_count = 12,
+			rarity = 0.3,
+			max_stacks = 2,
+		},
+		["ctf_healing:bandage"] = {
+			min_count = 1,
+			max_count = 3,
+			rarity = 0.35,
+			max_stacks = 2,
+		},
+		["ctf_healing:medkit"] = { rarity = 0.07, max_stacks = 1 },
+		["grenades:frag"] = { rarity = 0.18, max_stacks = 2 },
+		["grenades:smoke"] = { rarity = 0.2, max_stacks = 2 },
+		["wind_charges:wind_charge"] = {
+			min_count = 3,
+			max_count = 6,
+			rarity = 0.25,
+			max_stacks = 1,
+		},
+		["default:apple"] = {
+			min_count = 4,
+			max_count = 12,
+			rarity = 0.25,
+			max_stacks = 2,
+		},
+		["ctf_landmine:landmine"] = {
+			min_count = 1,
+			max_count = 4,
+			rarity = 0.12,
+			max_stacks = 1,
+		},
+		["boats:boat"] = { min_count = 1, max_count = 1, rarity = 0.05, max_stacks = 1 },
+	},
+	team_chest_items = {
+		"default:cobble 80",
+		"default:wood 80",
+		"default:torch 30",
+		"ctf_teams:door_steel 2",
+		"heal_block:heal",
+	},
+	rankings = rankings,
+	recent_rankings = recent_rankings,
+	summary_ranks = {
+		_sort = "score",
+		"score",
+		"kills",
+		"kill_assists",
+		"deaths",
+		"hp_healed",
+	},
+	stuff_provider = function()
+		return {
+			"default:sword_steel",
+			"default:pick_steel",
+			"default:torch 20",
+		}
+	end,
+	initial_stuff_item_levels = features.initial_stuff_item_levels,
+	on_mode_start = function()
+		reset_state()
+	end,
+	on_mode_end = function()
+		restore_all_players()
+		features.on_mode_end()
+	end,
+	on_new_match = function()
+		reset_state()
+		features.on_new_match()
+
+		state.match_id = new_match_id()
+		init_alive_players()
+
+		minetest.after(0, function()
+			remove_flags()
+			update_flag_huds()
+		end)
+	end,
+	on_match_end = function()
+		restore_all_players()
+		features.on_match_end()
+	end,
+	team_allocator = features.team_allocator,
+	on_allocplayer = function(player, new_team)
+		local pname = player:get_player_name()
+
+		state.participants[pname] = true
+		store_initial_team(pname, new_team)
+
+		if state.eliminated[pname] then
+			minetest.after(0, function()
+				local current = minetest.get_player_by_name(pname)
+				if current then
+					make_spectator(current)
+					hud_events.new(pname, {
+						text = "You have no revives left and are spectating this round.",
+						color = "warning",
+						quick = true,
+					})
+				end
+			end)
+			return
+		end
+
+	state.revives_left[pname] = MAX_REVIVES
+	state.alive_players[new_team] = state.alive_players[new_team] or {}
+	state.alive_players[new_team][pname] = true
+
+	restore_privs(pname, player)
+	disable_vanish(player)
+
+	features.on_allocplayer(player, new_team)
+end,
+	on_leaveplayer = function(player)
+		local pname = player:get_player_name()
+		local team = state.initial_team[pname]
+
+		if team and state.alive_players[team] then
+			state.alive_players[team][pname] = nil
+		end
+
+		if state.eliminated[pname] then
+			state.vanish_active[pname] = nil
+
+			local meta = player:get_meta()
+			if state.match_id then
+				meta:set_string(MATCH_META_KEY, state.match_id)
+			end
+			meta:set_string(
+				MATCH_PRIV_KEY,
+				minetest.serialize(state.saved_privs[pname] or {})
+			)
+				else
+			state.eliminated[pname] = nil
+					restore_privs(pname, player)
+			state.vanish_active[pname] = nil
+
+			local meta = player:get_meta()
+			meta:set_string(MATCH_META_KEY, "")
+			meta:set_string(MATCH_PRIV_KEY, "")
+		end
+
+		if team then
+				end
+
+		if team and state.alive_players[team] and not state.team_defeated[team] then
+			if not next(state.alive_players[team]) then
+				check_for_winner(team)
+			end
+		end
+
+		features.on_leaveplayer(player)
+	end,
+	on_dieplayer = function(player, reason)
+		local pname = player:get_player_name()
+		local team = ctf_teams.get(pname)
+
+		local revives = state.revives_left[pname]
+		if revives == nil then
+			revives = MAX_REVIVES
+			state.revives_left[pname] = revives
+		end
+
+		revives = revives - 1
+		state.revives_left[pname] = revives
+
+		if revives >= 0 then
+			if revives == 0 then
+				hud_events.new(pname, {
+					text = "Last life! Stay alive!",
+					color = "warning",
+					quick = true,
+				})
+			else
+				hud_events.new(pname, {
+					text = string.format("%d revives remaining", revives),
+					color = "info",
+					quick = true,
+				})
+			end
+		else
+			state.eliminated[pname] = true
+			if team and state.alive_players[team] then
+				state.alive_players[team][pname] = nil
+						end
+			hud_events.new(pname, {
+				text = "You are out of revives! Spectating after respawn...",
+				color = "warning",
+				quick = true,
+			})
+		end
+
+		features.on_dieplayer(player, reason)
+
+		if revives < 0 and team then
+			check_for_winner(team)
+		end
+	end,
+	on_respawnplayer = function(player)
+		local pname = player:get_player_name()
+
+		if state.eliminated[pname] then
+			minetest.after(0, function()
+				local p = minetest.get_player_by_name(pname)
+				if not p then
+					return
+				end
+				make_spectator(p)
+				hud_events.new(pname, {
+					text = "Spectating — thanks for playing!",
+					color = "info",
+					quick = true,
+				})
+			end)
+			return
+		end
+
+		features.on_respawnplayer(player)
+
+		local revives = state.revives_left[pname]
+		if revives then
+			local text
+			local color = "info"
+
+			if revives == 0 then
+				text = "Last life! No revives remaining."
+				color = "warning"
+			else
+				text = string.format("%d revives remaining", revives)
+			end
+
+			hud_events.new(pname, {
+				text = text,
+				color = color,
+				quick = true,
+			})
+		end
+	end,
+	on_healplayer = features.on_healplayer,
+	can_punchplayer = features.can_punchplayer,
+	on_punchplayer = features.on_punchplayer,
+	player_is_pro = features.player_is_pro,
+	can_take_flag = function()
+		return false
+	end,
+	on_flag_take = function() end,
+	on_flag_drop = function() end,
+	on_flag_capture = function() end,
+	get_chest_access = features.get_chest_access,
+})
+
+minetest.register_on_joinplayer(function(player)
+	local mode_is_rush = ctf_modebase.current_mode == "rush"
+	local meta = player:get_meta()
+	local stored_match = meta:get_string(MATCH_META_KEY)
+
+	if stored_match == "" then
+		return
+	end
+
+	if not mode_is_rush or state.match_id == nil or stored_match ~= state.match_id then
+		remove_stuck_spectator_state(player)
+		return
+	end
+
+	local name = player:get_player_name()
+
+	state.eliminated[name] = true
+	ctf_teams.non_team_players[name] = true
+
+	minetest.after(0, function()
+		local current = minetest.get_player_by_name(name)
+		if not current then
+			return
+		end
+
+		make_spectator(current)
+	end)
+end)
+
+rush_api.is_spectator = is_spectator
+rush_api.for_each_spectator = for_each_spectator
+rush_api.get_match_id = function()
+	return state.match_id
+end
+rush_api._state = state
+
+if ctf_chat and ctf_chat.register_prefix then
+	ctf_chat.register_prefix(60, function(name)
+		if is_spectator(name) then
+			return minetest.colorize(SPECTATOR_CHAT_COLOR, "[SPEC]")
+		end
+	end)
+end

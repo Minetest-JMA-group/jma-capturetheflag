@@ -2,6 +2,7 @@ ctf_chat = {}
 local callbacks = {}
 local prefix_callbacks = {}
 local colorize = minetest.colorize
+local SPECTATOR_CHAT_COLOR = "#8f7bb9"
 
 minetest.override_chatcommand("msg", {
 	func = function(name, param)
@@ -114,7 +115,46 @@ local function elysium_format_chat_message(name, message)
 	return joinStrings(core.colorize("#5a6d93", "[Elysium]:"), prefix, "<" .. name .. ">:", " ", message)
 end
 
+local function rush_spectator_format_chat_message(name, message)
+	local prefixes = format_prefixes(name, "white")
+	return joinStrings(core.colorize(SPECTATOR_CHAT_COLOR, "[Spectators]:"), prefixes, "<" .. name .. ">:", " ", message)
+end
+
 core.register_on_chat_message(function(name, message)
+	local rush_api = rawget(_G, "ctf_mode_rush")
+	if rush_api and rush_api.is_spectator and rush_api.is_spectator(name) then
+		if filter_caps then
+			message = filter_caps.parse(name, message)
+		end
+
+		if filter and not filter.check_message(message) then
+			filter.on_violation(name, message)
+			core.chat_send_player(name, "Watch your language!")
+			return true
+		end
+
+		core.log("action", string.format("[Rush Spectator Chat]: <%s>: %s", name, message))
+
+		local formatted_msg = rush_spectator_format_chat_message(name, message)
+		local delivered = false
+
+		if rush_api.for_each_spectator then
+			rush_api.for_each_spectator(function(target)
+				local target_ref = core.get_player_by_name(target)
+				if target_ref then
+					delivered = true
+					core.chat_send_player(target, formatted_msg)
+				end
+			end)
+		end
+
+		if not delivered then
+			core.chat_send_player(name, formatted_msg)
+		end
+
+		return true
+	end
+
 	local el_players = ctf_jma_elysium.players
 	if el_players[name] then
 		if filter and not filter.check_message(message) then
