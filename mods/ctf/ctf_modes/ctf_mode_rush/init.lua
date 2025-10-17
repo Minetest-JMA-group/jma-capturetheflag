@@ -606,12 +606,37 @@ local function record_priv_change(target, privs, grant)
 	end)
 end
 
-local function create_priv_wrapper(is_grant)
+local function parse_self_priv_param(param)
+	if not param then
+		return
+	end
+
+	param = trim(param)
+	if param == "" then
+		return
+	end
+
+	local privs = {}
+	for token in param:gmatch("[^,]+") do
+		local priv = trim(token)
+		if priv ~= "" then
+			table.insert(privs, priv)
+		end
+	end
+
+	if #privs == 0 then
+		return
+	end
+
+	return privs
+end
+
+local function create_priv_wrapper(is_grant, resolver)
 	return function(original)
 		return function(name, param)
 			local ok, message = original(name, param)
 			if ok then
-				local target, privs = parse_priv_param(param)
+				local target, privs = resolver(name, param)
 				if target and privs then
 					record_priv_change(target, privs, is_grant)
 				end
@@ -622,8 +647,24 @@ local function create_priv_wrapper(is_grant)
 end
 
 minetest.after(0, function()
-	local grant_wrapper = create_priv_wrapper(true)
-	local revoke_wrapper = create_priv_wrapper(false)
+	local grant_wrapper = create_priv_wrapper(true, function(_, param)
+		return parse_priv_param(param)
+	end)
+	local revoke_wrapper = create_priv_wrapper(false, function(_, param)
+		return parse_priv_param(param)
+	end)
+	local grantme_wrapper = create_priv_wrapper(true, function(executor, param)
+		local privs = parse_self_priv_param(param)
+		if privs then
+			return executor, privs
+		end
+	end)
+	local revokeme_wrapper = create_priv_wrapper(false, function(executor, param)
+		local privs = parse_self_priv_param(param)
+		if privs then
+			return executor, privs
+		end
+	end)
 
 	local grant_def = minetest.registered_chatcommands.grant
 	if grant_def and type(grant_def.func) == "function" then
@@ -635,12 +676,26 @@ minetest.after(0, function()
 		revoke_def.func = revoke_wrapper(revoke_def.func)
 	end
 
+	local grantme_def = minetest.registered_chatcommands.grantme
+	if grantme_def and type(grantme_def.func) == "function" then
+		grantme_def.func = grantme_wrapper(grantme_def.func)
+	end
+
+	local revokeme_def = minetest.registered_chatcommands.revokeme
+	if revokeme_def and type(revokeme_def.func) == "function" then
+		revokeme_def.func = revokeme_wrapper(revokeme_def.func)
+	end
+
 	local old_register_chatcommand = minetest.register_chatcommand
 	function minetest.register_chatcommand(name, def)
 		if name == "grant" and def and type(def.func) == "function" then
 			def.func = grant_wrapper(def.func)
 		elseif name == "revoke" and def and type(def.func) == "function" then
 			def.func = revoke_wrapper(def.func)
+		elseif name == "grantme" and def and type(def.func) == "function" then
+			def.func = grantme_wrapper(def.func)
+		elseif name == "revokeme" and def and type(def.func) == "function" then
+			def.func = revokeme_wrapper(def.func)
 		end
 		return old_register_chatcommand(name, def)
 	end
@@ -651,6 +706,10 @@ minetest.after(0, function()
 			def.func = grant_wrapper(def.func)
 		elseif name == "revoke" and def and type(def.func) == "function" then
 			def.func = revoke_wrapper(def.func)
+		elseif name == "grantme" and def and type(def.func) == "function" then
+			def.func = grantme_wrapper(def.func)
+		elseif name == "revokeme" and def and type(def.func) == "function" then
+			def.func = revokeme_wrapper(def.func)
 		end
 		return old_override_chatcommand(name, def)
 	end
