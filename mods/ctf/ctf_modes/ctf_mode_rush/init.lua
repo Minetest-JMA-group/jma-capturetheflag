@@ -815,7 +815,6 @@ ctf_modebase.register_mode("rush", {
 	end,
 	on_mode_end = function()
 		restore_all_players()
-		features.on_mode_end()
 	end,
 	on_new_match = function()
 		reset_state()
