@@ -45,6 +45,15 @@ sfinv.register_page("server_cosmetics:customize", {
 				rotation = {0, 160},
 			}
 		}
+		local overlay_models = {}
+		local entity_cosmetics = server_cosmetics.cosmetics.entity_cosmetics
+		local active_entity_hat
+
+		for key in pairs(current) do
+			if entity_cosmetics and entity_cosmetics[key] then
+				active_entity_hat = key
+			end
+		end
 
 		for category, contents in pairs(server_cosmetics.cosmetics) do
 			for ctype, cosmetics in pairs(contents) do
@@ -98,12 +107,32 @@ sfinv.register_page("server_cosmetics:customize", {
 					end
 
 					if cosmetics._model then
-						table.insert(models, {
-							mesh = cosmetics._model,
-							texture = (current[ctype] or cosmetics[available_cosmetics[1]]).color,
-							anim_range = (cosmetics._anims and cosmetics._anims.idle) or {x = 1, y = 1},
-							rotation = cosmetics._preview_rot or {0, 0},
-						})
+						local selected_entry = current[ctype] or cosmetics[available_cosmetics[1]]
+
+						if selected_entry then
+							local selected_texture = selected_entry.color or {"blank.png"}
+							local preview_scale = cosmetics._preview_scale
+							local preview_shift = cosmetics._preview_shift
+							local preview_rot_offset = cosmetics._preview_rot_offset
+
+							table.insert(models, {
+								mesh = cosmetics._model,
+								texture = selected_texture,
+								anim_range = (cosmetics._anims and cosmetics._anims.idle) or {x = 1, y = 1},
+								rotation = cosmetics._preview_rot or {0, 0},
+							})
+
+							if current[ctype] and ctype == active_entity_hat then
+								table.insert(overlay_models, {
+									mesh = cosmetics._model,
+									texture = selected_texture,
+									anim_range = (cosmetics._anims and cosmetics._anims.idle) or {x = 1, y = 1},
+									preview_scale = preview_scale,
+									preview_shift = preview_shift,
+									preview_rot_offset = preview_rot_offset,
+								})
+							end
+						end
 					end
 
 					local selected = current[ctype] and table.indexof(available_cosmetics, current[ctype]._key)
@@ -131,12 +160,70 @@ sfinv.register_page("server_cosmetics:customize", {
 			context.model_selected = 1
 		end
 
+		local overlay_forms = ""
+		if context.model_selected == 1 and overlay_models[1] then
+			local player_model = models[1]
+			local base_rotation = player_model.rotation or {0, 0}
+			local base_width = (FORMSIZE.x/2)
+			local base_height = FORMSIZE.y + 0.2
+			local base_pos_x = 0
+			local base_pos_y = 0
+
+			for idx, overlay in ipairs(overlay_models) do
+				local rotation = {base_rotation[1] or 0, base_rotation[2] or 0}
+
+				local rot_offset = overlay.preview_rot_offset
+				if rot_offset then
+					local rot_off_x, rot_off_y
+					if type(rot_offset) == "number" then
+						rot_off_x, rot_off_y = 0, rot_offset
+					else
+						rot_off_x = rot_offset.x or rot_offset[1] or 0
+						rot_off_y = rot_offset.y or rot_offset[2] or 0
+					end
+					rotation[1] = (rotation[1] + rot_off_x) % 360
+					rotation[2] = (rotation[2] + rot_off_y) % 360
+				end
+
+				local scale = overlay.preview_scale or 1
+				local scale_x = scale
+				local scale_y = scale
+				if type(scale) == "table" then
+					scale_x = scale.x or scale[1] or 1
+					scale_y = scale.y or scale[2] or scale_x
+				end
+
+				local shift = overlay.preview_shift or {}
+				local shift_x = shift.x or shift[1] or 0
+				local shift_y = shift.y or shift[2] or 0
+
+				local overlay_width = base_width * scale_x
+				local overlay_height = base_height * scale_y
+
+				local pos_x = base_pos_x + (base_width - overlay_width) / 2 + shift_x
+				local pos_y = base_pos_y + shift_y
+
+				overlay_forms = overlay_forms .. string.format(
+					"\nmodel[%f,%f;%f,%f;playerview_overlay_%d;%s;%s,%s;%f,%f;;;%f,%f]",
+					pos_x, pos_y,
+					overlay_width, overlay_height,
+					idx,
+					overlay.mesh,
+					overlay.texture[1] or "blank.png",
+					overlay.texture[2] or "blank.png",
+					rotation[1], rotation[2],
+					overlay.anim_range.x, overlay.anim_range.y
+				)
+			end
+		end
+
 		local form = string.format(
 			[[
 				formspec_version[4]
 				real_coordiantes[true]
 				box[0,-0.2;%f,%f;#00000055]
 				model[0,0;%f,%f;playerview;%s;%s,%s;%d,%d;;;%f,%f]
+				%s
 				image_button[0,%f;0.8,0.8;creative_prev_icon.png;model_prev;]
 				label[%f,%f;%d/%d]
 				image_button[%f,%f;0.8,0.8;creative_next_icon.png;model_next;]
@@ -156,6 +243,7 @@ sfinv.register_page("server_cosmetics:customize", {
 				models[context.model_selected].texture[2] or "blank.png",
 				models[context.model_selected].rotation[1], models[context.model_selected].rotation[2],
 				models[context.model_selected].anim_range.x, models[context.model_selected].anim_range.y,
+			overlay_forms,
 			--image_button
 			FORMSIZE.y-0.1,
 			--label
