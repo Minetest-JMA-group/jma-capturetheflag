@@ -4,6 +4,8 @@ local features = ctf_modebase.features(rankings, recent_rankings)
 
 local MAX_REVIVES = 2
 local RUSH_SPEC_KEY = "ctf_mode_rush:spectator_state"
+local ROUND_DURATION = 120
+local HUD_UPDATE_INTERVAL = 0.5
 local MAX_SPECTATOR_DISTANCE = 12
 local MIN_SPECTATOR_ALTITUDE = 2
 local SPECTATOR_BOUND_CHECK_INTERVAL = 0.5
@@ -24,6 +26,9 @@ local state = {
 	winner_announced = false,
 	match_id = nil,
 	spectator_anchor = {},
+	hud_handles = {},
+	round_time_left = 0,
+	round_timer_active = false,
 }
 
 local function reset_state()
@@ -37,6 +42,9 @@ local function reset_state()
 	state.vanish_active = {}
 	state.winner_announced = false
 	state.spectator_anchor = {}
+	state.hud_handles = {}
+	state.round_time_left = 0
+	state.round_timer_active = false
 end
 
 local function new_match_id()
@@ -84,6 +92,102 @@ local function set_spectator_state(meta, data)
 	}
 
 	meta:set_string(RUSH_SPEC_KEY, minetest.serialize(payload))
+end
+
+local function clear_round_hud(name)
+	local handle = state.hud_handles[name]
+	if not handle then
+		return
+	end
+
+	local player = minetest.get_player_by_name(name)
+	if player then
+		player:hud_remove(handle)
+	end
+
+	state.hud_handles[name] = nil
+end
+
+local function clear_all_round_huds()
+	for name in pairs(state.hud_handles) do
+		clear_round_hud(name)
+	end
+end
+
+local function get_alive_counts()
+	local counts = {}
+	for team, players in pairs(state.alive_players) do
+		local count = 0
+		for _, alive in pairs(players) do
+			if alive then
+				count = count + 1
+			end
+		end
+		counts[team] = count
+	end
+	return counts
+end
+
+local function format_round_hud_text()
+	if not state.match_id then
+		return ""
+	end
+
+	local time_left = math.max(0, state.round_time_left or 0)
+	local minutes = math.floor(time_left / 60)
+	local seconds = math.floor(time_left % 60)
+	local time_line = string.format("Time: %d:%02d", minutes, seconds)
+
+	local counts = get_alive_counts()
+	local team_parts = {}
+	for _, team_name in ipairs(ctf_teams.teamlist) do
+		if counts[team_name] then
+			local label = HumanReadable(team_name)
+			table.insert(team_parts, string.format("%s: %d", label, counts[team_name]))
+		end
+	end
+
+	local teams_line = table.concat(team_parts, "  ")
+	if teams_line ~= "" then
+		return time_line .. "\n" .. teams_line
+	end
+	return time_line
+end
+
+local function update_round_hud_for_player(player)
+	local pname = player:get_player_name()
+	local text = format_round_hud_text()
+	if text == "" then
+		clear_round_hud(pname)
+		return
+	end
+
+	local handle = state.hud_handles[pname]
+	if not handle then
+		handle = player:hud_add({
+			type = "text",
+			position = { x = 1, y = 1 },
+			offset = { x = -20, y = -80 },
+			alignment = { x = -1, y = -1 },
+			number = 0xFFFFFF,
+			scale = { x = 100, y = 100 },
+			text = text,
+		})
+		state.hud_handles[pname] = handle
+	else
+		player:hud_change(handle, "text", text)
+	end
+end
+
+local function update_round_huds()
+	if ctf_modebase.current_mode ~= "rush" or not state.match_id then
+		clear_all_round_huds()
+		return
+	end
+
+	for _, player in ipairs(minetest.get_connected_players()) do
+		update_round_hud_for_player(player)
+	end
 end
 
 local function store_initial_team(pname, team)
@@ -340,6 +444,7 @@ local function make_spectator(player)
 	if team and state.alive_players[team] then
 		state.alive_players[team][pname] = nil
 	end
+	update_round_huds()
 
 	if state.eliminated[pname] ~= true then
 		state.eliminated[pname] = true
@@ -403,6 +508,8 @@ local function declare_winner(team)
 		return
 	end
 	state.winner_announced = true
+	state.round_timer_active = false
+	update_round_huds()
 
 	local connected = minetest.get_connected_players()
 	local winner_text
@@ -447,6 +554,36 @@ local function declare_winner(team)
 	ctf_modebase.start_new_match(5)
 end
 
+local function end_round_due_to_time()
+	if state.winner_announced then
+		return
+	end
+
+	local counts = get_alive_counts()
+	local best_team = nil
+	local best_count = -1
+	local tie = false
+
+	for _, team_name in ipairs(ctf_teams.teamlist) do
+		local count = counts[team_name]
+		if count then
+			if count > best_count then
+				best_team = team_name
+				best_count = count
+				tie = false
+			elseif count == best_count then
+				tie = true
+			end
+		end
+	end
+
+	if not best_team or best_count <= 0 or tie then
+		declare_winner(nil)
+	else
+		declare_winner(best_team)
+	end
+end
+
 local function check_for_winner(team)
 	local alive = state.alive_players[team]
 	if not alive or next(alive) then
@@ -455,6 +592,7 @@ local function check_for_winner(team)
 
 	announce_team_defeat(team)
 	reassign_team_spectators(team)
+	update_round_huds()
 
 	local alive_teams = get_alive_teams()
 	if #alive_teams <= 1 then
@@ -512,11 +650,15 @@ local function restore_all_players()
 		state.eliminated[name] = nil
 		state.spectator_anchor[name] = nil
 		state.revives_left[name] = nil
+		clear_round_hud(name)
 		local meta = player:get_meta()
 		set_spectator_state(meta, nil)
 	end
 	state.match_id = nil
 	state.spectator_anchor = {}
+	state.round_timer_active = false
+	state.round_time_left = 0
+	state.hud_handles = {}
 end
 
 local function is_rush_active()
@@ -833,17 +975,21 @@ ctf_modebase.register_mode("rush", {
 		restore_all_players()
 	end,
 	on_new_match = function()
-		reset_state()
-		features.on_new_match()
+	reset_state()
+	features.on_new_match()
 
-		state.match_id = new_match_id()
-		init_alive_players()
+	state.match_id = new_match_id()
+	init_alive_players()
+	state.round_time_left = ROUND_DURATION
+	state.round_timer_active = true
+	update_round_huds()
 
-		minetest.after(0, function()
-			remove_flags()
-			update_flag_huds()
-		end)
-	end,
+	minetest.after(0, function()
+		remove_flags()
+		update_flag_huds()
+		update_round_huds()
+	end)
+end,
 	on_match_end = function()
 		restore_all_players()
 		reset_state()
@@ -877,12 +1023,13 @@ ctf_modebase.register_mode("rush", {
 		end
 		state.revives_left[pname] = revives
 
-		state.alive_players[new_team] = state.alive_players[new_team] or {}
-		state.alive_players[new_team][pname] = true
+	state.alive_players[new_team] = state.alive_players[new_team] or {}
+	state.alive_players[new_team][pname] = true
 
-		restore_privs(pname, player)
-		disable_vanish(player)
-		reassign_team_spectators(new_team)
+	restore_privs(pname, player)
+	disable_vanish(player)
+	reassign_team_spectators(new_team)
+	update_round_huds()
 
 		features.on_allocplayer(player, new_team)
 	end,
@@ -890,25 +1037,30 @@ ctf_modebase.register_mode("rush", {
 		local pname = player:get_player_name()
 		local team = state.initial_team[pname]
 
-		if team and state.alive_players[team] then
-			state.alive_players[team][pname] = nil
+	if team and state.alive_players[team] then
+		state.alive_players[team][pname] = nil
+	end
+
+	if not state.eliminated[pname] then
+		state.eliminated[pname] = nil
+	end
+	state.spectator_anchor[pname] = nil
+	state.vanish_active[pname] = nil
+	clear_round_hud(pname)
+
+	if team then
+		reassign_team_spectators(team)
+	end
+
+	if team and state.alive_players[team] and not state.team_defeated[team] then
+		if not next(state.alive_players[team]) then
+			check_for_winner(team)
 		end
+	end
 
-		state.spectator_anchor[pname] = nil
-		state.vanish_active[pname] = nil
-
-		if team then
-			reassign_team_spectators(team)
-		end
-
-		if team and state.alive_players[team] and not state.team_defeated[team] then
-			if not next(state.alive_players[team]) then
-				check_for_winner(team)
-			end
-		end
-
-		features.on_leaveplayer(player)
-	end,
+	update_round_huds()
+	features.on_leaveplayer(player)
+end,
 	on_dieplayer = function(player, reason)
 		local pname = player:get_player_name()
 		local team = ctf_teams.get(pname)
@@ -936,18 +1088,21 @@ ctf_modebase.register_mode("rush", {
 					quick = true,
 				})
 			end
-		else
-			state.eliminated[pname] = true
-			if team and state.alive_players[team] then
-				state.alive_players[team][pname] = nil
-				reassign_team_spectators(team)
-			end
-			hud_events.new(pname, {
-				text = "You are out of revives! Spectating after respawn...",
-				color = "warning",
-				quick = true,
-			})
+	else
+		state.eliminated[pname] = true
+		if team and state.alive_players[team] then
+			state.alive_players[team][pname] = nil
+			reassign_team_spectators(team)
 		end
+		hud_events.new(pname, {
+			text = "You are out of revives! Spectating after respawn...",
+			color = "warning",
+			quick = true,
+		})
+	end
+	if revives < 0 then
+		update_round_huds()
+	end
 
 		features.on_dieplayer(player, reason)
 
@@ -1009,18 +1164,36 @@ ctf_modebase.register_mode("rush", {
 })
 
 local spectator_bound_timer = 0
+local round_hud_timer = 0
+
 minetest.register_globalstep(function(dtime)
-	spectator_bound_timer = spectator_bound_timer + dtime
-	if spectator_bound_timer < SPECTATOR_BOUND_CHECK_INTERVAL then
+	if ctf_modebase.current_mode ~= "rush" then
 		return
 	end
 
-	spectator_bound_timer = 0
-
-	for pname, eliminated in pairs(state.eliminated) do
-		if eliminated then
-			enforce_spectator_bounds(pname)
+	if state.round_timer_active then
+		state.round_time_left = math.max(0, (state.round_time_left or 0) - dtime)
+		if state.round_time_left <= 0 then
+			state.round_time_left = 0
+			state.round_timer_active = false
+			end_round_due_to_time()
 		end
+	end
+
+	spectator_bound_timer = spectator_bound_timer + dtime
+	if spectator_bound_timer >= SPECTATOR_BOUND_CHECK_INTERVAL then
+		spectator_bound_timer = spectator_bound_timer - SPECTATOR_BOUND_CHECK_INTERVAL
+		for pname, eliminated in pairs(state.eliminated) do
+			if eliminated then
+				enforce_spectator_bounds(pname)
+			end
+		end
+	end
+
+	round_hud_timer = round_hud_timer + dtime
+	if round_hud_timer >= HUD_UPDATE_INTERVAL then
+		round_hud_timer = 0
+		update_round_huds()
 	end
 end)
 
