@@ -36,6 +36,8 @@ ctf_map = {
 	-- Table of map paths. Indexed by map's folder name
 	-- Doesn't include trailing '/'
 	map_path = {},
+
+	globalstep_function = nil,
 }
 
 function ctf_map.register_map(dirname, path_to_map)
@@ -125,7 +127,8 @@ ctf_core.include_files(
 	"map_functions.lua",
 	"editor_functions.lua",
 	"mapedit_gui.lua",
-	"ctf_traps.lua"
+	"ctf_traps.lua",
+	"map_api.lua"
 )
 
 local directory = minetest.get_modpath(minetest.get_current_modname()) .. "/maps/"
