@@ -74,6 +74,16 @@ minetest.register_on_mods_loaded(function()
 	for _, name in pairs(drop_self) do
 		minetest.override_item(name, {drop = name})
 	end
+	
+	local abms_to_disable = {["Grow cactus"]  = true,
+	 						 ["Grow papyrus"] = true,
+							 ["Moss growth"]  = true,}
+	
+	for i, def in ipairs(core.registered_abms) do
+		if abms_to_disable[def.label] then
+			core.registered_abms[i] = nil
+		end
+	end
 end)
 
 minetest.override_item("default:apple", {
@@ -179,3 +189,4 @@ minetest.register_on_mods_loaded(function()
 end)
 
 dofile(minetest.get_modpath("ctf_changes") .. "/ctf_lava.lua")
+dofile(minetest.get_modpath("ctf_changes") .. "/item_despawning.lua")
