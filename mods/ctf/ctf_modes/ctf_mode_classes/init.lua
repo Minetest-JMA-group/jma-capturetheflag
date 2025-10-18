@@ -212,6 +212,7 @@ ctf_modebase.register_mode("classes", {
 	on_new_match = features.on_new_match,
 	on_match_end = features.on_match_end,
 	team_allocator = features.team_allocator,
+	get_item_value = features.get_item_value,
 	on_allocplayer = function(player, new_team)
 		classes.update(player)
 		features.on_allocplayer(player, new_team)
