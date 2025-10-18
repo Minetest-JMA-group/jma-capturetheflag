@@ -3,8 +3,7 @@ local recent_rankings = ctf_modebase.recent_rankings(rankings)
 local features = ctf_modebase.features(rankings, recent_rankings)
 
 local MAX_REVIVES = 2
-local MATCH_META_KEY = "ctf_mode_rush:spectator_match"
-local MATCH_PRIV_KEY = "ctf_mode_rush:spectator_privs"
+local RUSH_SPEC_KEY = "ctf_mode_rush:spectator_state"
 local MAX_SPECTATOR_DISTANCE = 12
 local MIN_SPECTATOR_ALTITUDE = 2
 local SPECTATOR_BOUND_CHECK_INTERVAL = 0.5
@@ -55,6 +54,38 @@ local function safe_deserialize(data)
 	end
 end
 
+local function get_spectator_state(meta)
+	local raw = meta:get_string(RUSH_SPEC_KEY)
+	if raw == "" then
+		return
+	end
+
+	local parsed = safe_deserialize(raw)
+	if type(parsed) ~= "table" then
+		return
+	end
+
+	if type(parsed.privs) ~= "table" then
+		parsed.privs = {}
+	end
+
+	return parsed
+end
+
+local function set_spectator_state(meta, data)
+	if not data or (not data.match and (not data.privs or next(data.privs) == nil)) then
+		meta:set_string(RUSH_SPEC_KEY, "")
+		return
+	end
+
+	local payload = {
+		match = data.match,
+		privs = data.privs,
+	}
+
+	meta:set_string(RUSH_SPEC_KEY, minetest.serialize(payload))
+end
+
 local function store_initial_team(pname, team)
 	if not state.initial_team[pname] then
 		state.initial_team[pname] = team
@@ -78,19 +109,21 @@ local function restore_privs(name, player)
 	local ref = player or minetest.get_player_by_name(name)
 
 	if not privs and ref then
-		privs = safe_deserialize(ref:get_meta():get_string(MATCH_PRIV_KEY))
+		local spec_state = get_spectator_state(ref:get_meta())
+		if spec_state then
+			privs = spec_state.privs
+		end
 	end
 
 	if not privs then
-		privs = minetest.get_player_privs(name) or {}
+		privs = minetest.get_player_privs(name)
 	end
 
 	minetest.set_player_privs(name, privs)
 	state.saved_privs[name] = nil
 
 	if ref then
-		ref:get_meta():set_string(MATCH_META_KEY, "")
-		ref:get_meta():set_string(MATCH_PRIV_KEY, "")
+		set_spectator_state(ref:get_meta(), nil)
 	end
 end
 
@@ -284,7 +317,6 @@ local function disable_vanish(player)
 
 	if state.vanish_active[name] then
 		vanish.off(player)
-		player:set_armor_groups({ fleshy = 100 })
 	end
 
 	state.vanish_active[name] = nil
@@ -314,13 +346,14 @@ local function make_spectator(player)
 	end
 
 	if not state.saved_privs[pname] then
-		state.saved_privs[pname] = minetest.get_player_privs(pname) or {}
+		state.saved_privs[pname] = minetest.get_player_privs(pname)
 	end
 
-	local privs = table.copy(state.saved_privs[pname] or {})
+	local privs = table.copy(state.saved_privs[pname])
 	privs.interact = nil
 	privs.fast = nil
 	privs.fly = true
+	privs.noclip = true
 
 	minetest.set_player_privs(pname, privs)
 
@@ -330,23 +363,12 @@ local function make_spectator(player)
 	place_spectator_near_anchor(player)
 
 	player:set_hp(20)
-	player:set_armor_groups({ fleshy = 0 })
-	player:set_physics_override({
-		speed = 1,
-		jump = 1,
-		gravity = 1,
-	})
 
 	local meta = player:get_meta()
-	if state.match_id then
-		meta:set_string(MATCH_META_KEY, state.match_id)
-	else
-		meta:set_string(MATCH_META_KEY, "")
-	end
-	meta:set_string(
-		MATCH_PRIV_KEY,
-		minetest.serialize(state.saved_privs[pname] or {})
-	)
+	set_spectator_state(meta, {
+		match = state.match_id,
+		privs = state.saved_privs[pname],
+	})
 end
 
 local function update_flag_huds()
@@ -491,8 +513,7 @@ local function restore_all_players()
 		state.spectator_anchor[name] = nil
 		state.revives_left[name] = nil
 		local meta = player:get_meta()
-		meta:set_string(MATCH_META_KEY, "")
-		meta:set_string(MATCH_PRIV_KEY, "")
+		set_spectator_state(meta, nil)
 	end
 	state.match_id = nil
 	state.spectator_anchor = {}
@@ -515,21 +536,12 @@ local function update_saved_priv_snapshot(target, modifier)
 			return
 		end
 
-		local meta = player:get_meta()
-		if meta:get_string(MATCH_META_KEY) == "" then
+		local spec_state = get_spectator_state(player:get_meta())
+		if not spec_state or not spec_state.match then
 			return
 		end
 
-		local raw = meta:get_string(MATCH_PRIV_KEY)
-		if raw == "" then
-			return
-		end
-
-		local parsed = safe_deserialize(raw)
-		if type(parsed) ~= "table" then
-			return
-		end
-		snapshot = parsed
+		snapshot = spec_state.privs
 	end
 
 	modifier(snapshot)
@@ -538,7 +550,11 @@ local function update_saved_priv_snapshot(target, modifier)
 
 	local player = minetest.get_player_by_name(target)
 	if player then
-		player:get_meta():set_string(MATCH_PRIV_KEY, minetest.serialize(snapshot))
+		local meta = player:get_meta()
+		local spec_state = get_spectator_state(meta) or {}
+		spec_state.match = spec_state.match or state.match_id
+		spec_state.privs = snapshot
+		set_spectator_state(meta, spec_state)
 	end
 end
 
@@ -855,20 +871,20 @@ ctf_modebase.register_mode("rush", {
 			return
 		end
 
-	local revives = state.revives_left[pname]
-	if revives == nil then
-		revives = MAX_REVIVES
-	end
-	state.revives_left[pname] = revives
+		local revives = state.revives_left[pname]
+		if revives == nil then
+			revives = MAX_REVIVES
+		end
+		state.revives_left[pname] = revives
 
-	state.alive_players[new_team] = state.alive_players[new_team] or {}
-	state.alive_players[new_team][pname] = true
+		state.alive_players[new_team] = state.alive_players[new_team] or {}
+		state.alive_players[new_team][pname] = true
 
-	restore_privs(pname, player)
-	disable_vanish(player)
-	reassign_team_spectators(new_team)
+		restore_privs(pname, player)
+		disable_vanish(player)
+		reassign_team_spectators(new_team)
 
-	features.on_allocplayer(player, new_team)
+		features.on_allocplayer(player, new_team)
 	end,
 	on_leaveplayer = function(player)
 		local pname = player:get_player_name()
@@ -878,30 +894,8 @@ ctf_modebase.register_mode("rush", {
 			state.alive_players[team][pname] = nil
 		end
 
-		if state.eliminated[pname] then
-			state.vanish_active[pname] = nil
-
-			local meta = player:get_meta()
-			if state.match_id then
-				meta:set_string(MATCH_META_KEY, state.match_id)
-			else
-				meta:set_string(MATCH_META_KEY, "")
-			end
-			meta:set_string(
-				MATCH_PRIV_KEY,
-				minetest.serialize(state.saved_privs[pname] or {})
-			)
-			state.spectator_anchor[pname] = nil
-		else
-			state.eliminated[pname] = nil
-			state.spectator_anchor[pname] = nil
-			restore_privs(pname, player)
-			state.vanish_active[pname] = nil
-
-			local meta = player:get_meta()
-			meta:set_string(MATCH_META_KEY, "")
-			meta:set_string(MATCH_PRIV_KEY, "")
-		end
+		state.spectator_anchor[pname] = nil
+		state.vanish_active[pname] = nil
 
 		if team then
 			reassign_team_spectators(team)
@@ -925,8 +919,8 @@ ctf_modebase.register_mode("rush", {
 			state.revives_left[pname] = revives
 		end
 
-	revives = revives - 1
-	state.revives_left[pname] = revives
+		revives = revives - 1
+		state.revives_left[pname] = revives
 
 		if revives >= 0 then
 			if revives == 0 then
@@ -1032,20 +1026,20 @@ end)
 
 minetest.register_on_joinplayer(function(player)
 	local meta = player:get_meta()
-	local stored_match = meta:get_string(MATCH_META_KEY)
-
-	if stored_match == "" then
+	local spec_state = get_spectator_state(meta)
+	if not spec_state or not spec_state.match then
 		return
 	end
 
 	local name = player:get_player_name()
 
-	if not is_rush_active() or not state.match_id or stored_match ~= state.match_id then
+	if not is_rush_active() or not state.match_id or spec_state.match ~= state.match_id then
 		restore_privs(name, player)
 		return
 	end
 
-	state.eliminated[name] = true
+	--[[state.eliminated[name] = true
+	state.saved_privs[name] = spec_state.privs
 	ctf_teams.non_team_players[name] = true
 
 	minetest.after(0, function()
@@ -1055,7 +1049,7 @@ minetest.register_on_joinplayer(function(player)
 		end
 
 		make_spectator(current)
-	end)
+	end)]]
 end)
 
 rush_api.is_spectator = is_spectator
