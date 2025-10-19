@@ -92,13 +92,23 @@ local item = {
 		builtin_item.on_step(self, dtime, ...)
 
 		if self.timer then
-			self.timer = self.timer - dtime*10
+			self.timer = self.timer - dtime
 			if self.timer < 0 then
 				self.object:remove()
 			end
 		end
 	end,
 }
+
+ctf_api.register_on_match_end(function()
+	-- Delete all items as soon as the match ends, shouldn't be a problem
+	for _, obj in pairs(core.objects_by_guid) do
+		local lua_entity = obj:get_luaentity()
+		if lua_entity and lua_entity.name == "__builtin:item" then
+			lua_entity.object:remove()
+		end
+	end
+end)
 
 -- set defined item as new __builtin:item, with the old one as fallback table
 setmetatable(item, { __index = builtin_item })
