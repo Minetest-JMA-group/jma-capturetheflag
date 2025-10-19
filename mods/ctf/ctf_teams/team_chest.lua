@@ -5,41 +5,7 @@ local blacklist = {
 	"default:pick_stone",
 }
 
-local item_value = {
-	["ctf_melee:sword_diamond"] = 12,
-	["ctf_ranged:shotgun_loaded"] = 12,
-	["ctf_melee:sword_mese"] = 11,
-	["ctf_ranged:shotgun"] = 10,
-	["ctf_ranged:sniper_magnum_loaded"] = 12,
-	["default:axe_diamond"] = 8,
-	["ctf_ranged:sniper_magnum"] = 10,
-	["ctf_ranged:assault_rifle_loaded"] = 8,
-	["rocket_launcher:launcher"] = 8,
-	["default:sword_steel"] = 7,
-	["ctf_melee:sword_steel"] = 7,
-	["default:pick_diamond"] = 6,
-	["ctf_ranged:assault_rifle"] = 6,
-	["grenades:frag"] = 6,
-	["ctf_healing:medkit"] = 6,
-	["default:pick_mese"] = 5,
-	["default:axe_mese"] = 5,
-	["grenades:poison"] = 5,
-	["ctf_ranged:rifle_loaded"] = 5,
-	["ctf_ranged:smg_loaded"] = 5,
-	["ctf_ranged:rifle"] = 4,
-	["ctf_ranged:smg"] = 4,
-	["ctf_healing:bandage"] = 4,
-	["default:shovel_diamond"] = 4,
-	["grenades:smoke"] = 2,
-	["ctf_ranged:pistol_loaded"] = 2,
-	["default:shovel_steel"] = 2,
-	["default:pick_steel"] = 1,
-	["default:axe_steel"] = 1,
-	["default:shovel_mese"] = 1,
-	["ctf_ranged:pistol"] = 1,
-}
-
-local S = core.get_translator(minetest.get_current_modname())
+local S = core.get_translator(core.get_current_modname())
 
 --- Does the player have access to the chest?
 --- Example usage: `has_normal, has_pro = get_chest_access(name)`
@@ -361,18 +327,19 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				local cur_mode = ctf_modebase:get_current_mode()
 				if pname and cur_mode then
 					local item_name = stack:get_name()
-					local score = item_value[item_name] or 1
+					local score = cur_mode:get_item_value(stack:get_name(), pos)
+					if score > 0 then
+						local item_desc = stack:get_short_description()
+						if item_desc == "" then
+							item_desc = item_name
+						end
 
-					local item_desc = stack:get_short_description()
-					if item_desc == "" then
-						item_desc = item_name
+						cur_mode.recent_rankings.add(pname, { score = score }, true)
+						cmsg.push_message_player(
+							player,
+							string.format("+ %s: %s", score, item_desc)
+						)
 					end
-
-					cur_mode.recent_rankings.add(pname, { score = score }, true)
-					cmsg.push_message_player(
-						player,
-						string.format("+ %s: %s", score, item_desc)
-					)
 				end
 			end
 			meta:set_string("dropped_by", "")

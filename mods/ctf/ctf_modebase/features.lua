@@ -1,3 +1,40 @@
+--- @alias Vec3 { x: number, y: number, z: number }
+
+--- @type { [string]: number }
+local default_item_value = {
+	["ctf_melee:sword_diamond"] = 12,
+	["ctf_ranged:shotgun_loaded"] = 12,
+	["ctf_melee:sword_mese"] = 11,
+	["ctf_ranged:shotgun"] = 10,
+	["ctf_ranged:sniper_magnum_loaded"] = 12,
+	["default:axe_diamond"] = 8,
+	["ctf_ranged:sniper_magnum"] = 10,
+	["ctf_ranged:assault_rifle_loaded"] = 8,
+	["rocket_launcher:launcher"] = 8,
+	["default:sword_steel"] = 7,
+	["ctf_melee:sword_steel"] = 7,
+	["default:pick_diamond"] = 6,
+	["ctf_ranged:assault_rifle"] = 6,
+	["grenades:frag"] = 6,
+	["ctf_healing:medkit"] = 6,
+	["default:pick_mese"] = 5,
+	["default:axe_mese"] = 5,
+	["grenades:poison"] = 5,
+	["ctf_ranged:rifle_loaded"] = 5,
+	["ctf_ranged:smg_loaded"] = 5,
+	["ctf_ranged:rifle"] = 4,
+	["ctf_ranged:smg"] = 4,
+	["ctf_healing:bandage"] = 4,
+	["default:shovel_diamond"] = 4,
+	["grenades:smoke"] = 2,
+	["ctf_ranged:pistol_loaded"] = 2,
+	["default:shovel_steel"] = 2,
+	["default:pick_steel"] = 1,
+	["default:axe_steel"] = 1,
+	["default:shovel_mese"] = 1,
+	["ctf_ranged:pistol"] = 1,
+}
+
 ctf_core.testing = {
 	-- This is here temporarily, I'm modifying it with //lua and a code minimizer on the main server-
 	-- -so I don't need to restart for every little change
@@ -860,6 +897,26 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				return "You can't take the enemy flag during build time!"
 			end
 		end,
+		--- How much does an item values in score, when you put
+		--- it in teamchest? Currently, it is used when someone dies
+		--- and a teammate puts it back in teamchest. Also it is possible
+		--- for modes to override these values.
+		---
+		--- in the chest. --Farooq
+		--- @param itemname string
+		--- @param teamchest_pos Vec3
+		--- @return number
+		get_item_value = function(itemname, teamchest_pos)
+			-- teamchest_pos is passed
+			-- here for future use. For instanace if we wanted to calculate value
+			-- of an item depending on how many of the same item already exists in
+			local value = default_item_value[itemname]
+			if value == nil then
+				return 0
+			else
+				return value
+			end
+		end,
 		on_flag_take = function(player, teamname)
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(player)
@@ -987,31 +1044,20 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				flag_or_flags = " flags!"
 			end
 
-			flag_event_notify(
-				pname,
-				pteam,
-				teamnames,
-				{
-					text = "You have captured: " .. teamnames_readable .. flag_or_flags,
-					color = "success",
-				},
-				{
-					text = "Your teammate "
-						.. pname
-						.. " has captured: "
-						.. teamnames_readable
-						.. flag_or_flags,
-					color = "success",
-				},
-				{ text = pname .. " has captured your flag!", color = "warning" },
-				{
-					text = pname
-						.. " has captured: "
-						.. teamnames_readable
-						.. flag_or_flags,
-					color = "light",
-				}
-			)
+			flag_event_notify(pname, pteam, teamnames, {
+				text = "You have captured: " .. teamnames_readable .. flag_or_flags,
+				color = "success",
+			}, {
+				text = "Your teammate "
+					.. pname
+					.. " has captured: "
+					.. teamnames_readable
+					.. flag_or_flags,
+				color = "success",
+			}, { text = pname .. " has captured your flag!", color = "warning" }, {
+				text = pname .. " has captured: " .. teamnames_readable .. flag_or_flags,
+				color = "light",
+			})
 
 			minetest.chat_send_all(
 				minetest.colorize(tcolor, pname)
