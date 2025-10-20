@@ -14,7 +14,7 @@ skins = {
 	catalog = {},
 	max_skin_id = 0, -- Used to get the last Skin ID
 	skins = {},
-	default_skin = 6
+	default_skin = 6,
 }
 
 local sorted_skin_ids_public = {}
@@ -23,7 +23,10 @@ local player_collections = {}
 function skins.register_skins(t)
 	for skin_id, meta in pairs(t) do
 		assert(type(skin_id) == "number", "Skin ID must be a number.")
-		assert(skins.catalog[skin_id] == nil, "Skin ID already exists in the catalog (ID: " .. skin_id .. ")")
+		assert(
+			skins.catalog[skin_id] == nil,
+			"Skin ID already exists in the catalog (ID: " .. skin_id .. ")"
+		)
 		assert(type(meta) == "table", "Skin metadata must be a table.")
 		assert(meta.name, "Skin metadata must have a 'name' field.")
 
@@ -47,7 +50,9 @@ minetest.register_on_mods_loaded(function()
 		end
 	end
 
-	table.sort(sorted_skin_ids, function(a, b) return catalog[a].name < catalog[b].name end)
+	table.sort(sorted_skin_ids, function(a, b)
+		return catalog[a].name < catalog[b].name
+	end)
 	sorted_skin_ids_public = sorted_skin_ids
 end)
 
@@ -91,7 +96,10 @@ function skins.get_player_collection(name)
 		if serialized ~= "" then
 			player_collection = core.deserialize(serialized)
 			if not player_collection then
-				core.log("error", "[simple_skins] Failed to deserialize collection for player: " .. name)
+				core.log(
+					"error",
+					"[simple_skins] Failed to deserialize collection for player: " .. name
+				)
 				player_collection = {}
 			end
 		else
@@ -109,7 +117,13 @@ function skins.save_player_collection(name)
 	local player_collection = player_collections[name]
 
 	if type(player_collection) ~= "table" then
-		core.log("error", "[simple_skins] Failed to save collection for player: " .. name .. ". Invalid collection format " .. dump(player_collection))
+		core.log(
+			"error",
+			"[simple_skins] Failed to save collection for player: "
+				.. name
+				.. ". Invalid collection format "
+				.. dump(player_collection)
+		)
 		return false
 	end
 
@@ -131,7 +145,13 @@ function skins.add_skin_to_collection(name, skin_id)
 	player_collections[name] = player_collection
 	skins.save_player_collection(name)
 
-	core.log("action", "[simple_skins] Skin ID " .. skin_id .. " added to the collection of player: " .. name)
+	core.log(
+		"action",
+		"[simple_skins] Skin ID "
+			.. skin_id
+			.. " added to the collection of player: "
+			.. name
+	)
 	return true
 end
 
@@ -147,7 +167,13 @@ function skins.remove_skin_from_collection(name, skin_id)
 	player_collections[name] = player_collection
 	skins.save_player_collection(name)
 
-	core.log("action", "[simple_skins] Skin ID " .. skin_id .. " removed from the collection of player: " .. name)
+	core.log(
+		"action",
+		"[simple_skins] Skin ID "
+			.. skin_id
+			.. " removed from the collection of player: "
+			.. name
+	)
 	return true
 end
 
@@ -161,14 +187,26 @@ function skins.check_and_clean_player_collection(name)
 			table.insert(valid_collection, skin_id)
 		else
 			collection_changed = true
-			core.log("action", "[simple_skins] Removed invalid skin ID " .. skin_id .. " from player: " .. name .. "'s collection.")
+			core.log(
+				"action",
+				"[simple_skins] Removed invalid skin ID "
+					.. skin_id
+					.. " from player: "
+					.. name
+					.. "'s collection."
+			)
 		end
 	end
 
 	if collection_changed then
 		player_collections[name] = valid_collection
 		skins.save_player_collection(name)
-		core.chat_send_player(name, S("Error: Your skin collection contained invalid skins. They have been removed."))
+		core.chat_send_player(
+			name,
+			S(
+				"Error: Your skin collection contained invalid skins. They have been removed."
+			)
+		)
 	end
 end
 
@@ -176,31 +214,42 @@ end
 local is_player_api_exists = core.global_exists("player_api")
 local is_ctf_cosmetics_exists = core.global_exists("ctf_cosmetics")
 function skins.update_player_skin(player)
-	if not player then return end
+	if not player then
+		return
+	end
 	local name = player:get_player_name()
 
 	-- is the current skin exist?
 	local skin_id = skins.skins[name]
 	if not skins.catalog[skin_id] then
-		core.chat_send_player(name, S("Error: Your current skin (ID:" .. dump(skin_id) .. ") is invalid. Applying default skin."))
+		core.chat_send_player(
+			name,
+			S(
+				"Error: Your current skin (ID:"
+					.. dump(skin_id)
+					.. ") is invalid. Applying default skin."
+			)
+		)
 		skins.skins[name] = skins.default_skin
 		skin_id = skins.default_skin
 	end
 
 	if is_player_api_exists then
-		player_api.set_textures(player, {skins.get_skin(name)})
+		player_api.set_textures(player, { skins.get_skin(name) })
 		if is_ctf_cosmetics_exists then
 			player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
 		end
 	else
-		default.player_set_textures(player, {skins.get_skin(name)})
+		default.player_set_textures(player, { skins.get_skin(name) })
 	end
 end
 
 -- Load player skin on join
 core.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
-	if not name then return end
+	if not name then
+		return
+	end
 
 	-- Check for backward compatibility with Simple Skins
 	local meta = player:get_meta()
@@ -209,7 +258,13 @@ core.register_on_joinplayer(function(player)
 		local skin_id = tonumber(old_skin:match("character_(%d+)"))
 		if skin_id then
 			skins.set_player_skin(name, skin_id)
-			core.log("action", "[simple_skins] Converted old skin data for player: " .. name .. " to skin ID " .. skin_id)
+			core.log(
+				"action",
+				"[simple_skins] Converted old skin data for player: "
+					.. name
+					.. " to skin ID "
+					.. skin_id
+			)
 		end
 		-- Purge the old attribute
 		meta:set_string("simple_skins:skin", "")
@@ -244,7 +299,7 @@ sfinv.register_page("simple_skins:skins", {
 		-- Initialize context when entering the page
 		context.skins = {
 			show_player_collection = "false",
-			selected_skin_id = skins.skins[player:get_player_name()]
+			selected_skin_id = skins.skins[player:get_player_name()],
 		}
 	end,
 	on_leave = function(self, player, context)
@@ -254,9 +309,15 @@ sfinv.register_page("simple_skins:skins", {
 	get = function(self, player, context)
 		-- Build formspec for skin selection
 		local sctx = context.skins
-		local formspec = "label[.5,2;" .. S("Select Player Skin:") .. "]"
-		.. "checkbox[.5,1.4;show_player_collection;" .. S("Show my collection") .. ";" .. sctx.show_player_collection .. "]"
-		.. "textlist[.5,2.5;6.8,6;skins_set;"
+		local formspec = "label[.5,2;"
+			.. S("Select Player Skin:")
+			.. "]"
+			.. "checkbox[.5,1.4;show_player_collection;"
+			.. S("Show my collection")
+			.. ";"
+			.. sctx.show_player_collection
+			.. "]"
+			.. "textlist[.5,2.5;6.8,6;skins_set;"
 
 		local name = player:get_player_name()
 		local skins_list = sorted_skin_ids_public
@@ -295,10 +356,17 @@ sfinv.register_page("simple_skins:skins", {
 			end
 		end
 
-		formspec = formspec .. "model[6,-0.2;1.5,3;player;character.b3d;"
-		.. skins.get_skin(name, sctx.selected_skin_id) .. ";0,180;false;true]"
-		.. "button[.5,8.5;2,1;apply_skin;" .. S("Apply") .. "]"
-		.. "label[2,0;" .. S("Current Skin: ") .. skins.catalog[skins.skins[name]].name .. "]"
+		formspec = formspec
+			.. "model[6,-0.2;1.5,3;player;character.b3d;"
+			.. skins.get_skin(name, sctx.selected_skin_id)
+			.. ";0,180;false;true]"
+			.. "button[.5,8.5;2,1;apply_skin;"
+			.. S("Apply")
+			.. "]"
+			.. "label[2,0;"
+			.. S("Current Skin: ")
+			.. skins.catalog[skins.skins[name]].name
+			.. "]"
 
 		return sfinv.make_formspec(player, context, formspec)
 	end,
@@ -320,7 +388,9 @@ sfinv.register_page("simple_skins:skins", {
 				skins_list = sctx.skins_list
 			end
 			local skin_id = skins_list[event.index]
-			if not skin_id or not skins.catalog[skin_id] then return true end
+			if not skin_id or not skins.catalog[skin_id] then
+				return true
+			end
 
 			-- Save the current selection in the context
 			sctx.selected_skin_id = skin_id
@@ -334,7 +404,10 @@ sfinv.register_page("simple_skins:skins", {
 			local skin_id = sctx.selected_skin_id
 			if skin_id and skins.catalog[skin_id] then
 				skins.set_player_skin(name, skin_id)
-				core.chat_send_player(name, S("Your skin has been changed to: ") .. skins.catalog[skin_id].name)
+				core.chat_send_player(
+					name,
+					S("Your skin has been changed to: ") .. skins.catalog[skin_id].name
+				)
 			end
 			return true, true
 		end
@@ -344,12 +417,13 @@ sfinv.register_page("simple_skins:skins", {
 core.register_chatcommand("skin_collection", {
 	params = "<add/remove/show> <skin_id> [player_name]",
 	description = "Manage a player's skin collection. Use 'add <skin_id>' to add a skin, 'remove <skin_id>' to remove a skin, or 'show' to view a player's collection.",
-	privs = {server = true},
+	privs = { server = true },
 	func = function(name, param)
 		local args = string.split(param, " ")
 
 		if #args < 2 then
-			return false, "Invalid usage. Correct format: /skin_collection <add/remove/show> <skin_id> [player_name]"
+			return false,
+				"Invalid usage. Correct format: /skin_collection <add/remove/show> <skin_id> [player_name]"
 		end
 
 		local action = args[1]
@@ -357,7 +431,8 @@ core.register_chatcommand("skin_collection", {
 		local target_name = args[3] or name
 
 		if not skin_id and action ~= "show" then
-			return false, "Invalid skin ID. Please provide a numeric ID for add/remove actions."
+			return false,
+				"Invalid skin ID. Please provide a numeric ID for add/remove actions."
 		end
 
 		if not core.player_exists(name) then
@@ -367,14 +442,25 @@ core.register_chatcommand("skin_collection", {
 		if action == "add" then
 			local success, message = skins.add_skin_to_collection(target_name, skin_id)
 			if success then
-				return true, "Skin ID " .. skin_id .. " successfully added to " .. target_name .. "'s collection!"
+				return true,
+					"Skin ID "
+						.. skin_id
+						.. " successfully added to "
+						.. target_name
+						.. "'s collection!"
 			else
 				return false, message
 			end
 		elseif action == "remove" then
-			local success, message = skins.remove_skin_from_collection(target_name, skin_id)
+			local success, message =
+				skins.remove_skin_from_collection(target_name, skin_id)
 			if success then
-				return true, "Skin ID " .. skin_id .. " successfully removed from " .. target_name .. "'s collection!"
+				return true,
+					"Skin ID "
+						.. skin_id
+						.. " successfully removed from "
+						.. target_name
+						.. "'s collection!"
 			else
 				return false, message
 			end
@@ -388,12 +474,17 @@ core.register_chatcommand("skin_collection", {
 			for i, skin_id in ipairs(collection) do
 				local skin = skins.catalog[skin_id]
 				if skin then
-					collection_list = collection_list .. skin.name .. " (ID: " .. skin_id .. "), "
+					collection_list = collection_list
+						.. skin.name
+						.. " (ID: "
+						.. skin_id
+						.. "), "
 				end
 			end
 			return true, collection_list:sub(1, -3)
 		else
-			return false, "Invalid action. Use 'add' to add a skin, 'remove' to remove a skin, or 'show' to view a player's collection."
+			return false,
+				"Invalid action. Use 'add' to add a skin, 'remove' to remove a skin, or 'show' to view a player's collection."
 		end
 	end,
 })
@@ -401,12 +492,13 @@ core.register_chatcommand("skin_collection", {
 core.register_chatcommand("set_skin", {
 	params = "<skin_id> [player_name]",
 	description = "Change the skin of a player. Specify a skin ID and optionally a player name.",
-	privs = {server = true},
+	privs = { server = true },
 	func = function(name, param)
 		local args = string.split(param, " ")
 
 		if #args < 1 or #args > 2 then
-			return false, "Invalid usage. Correct format: /set_skin <skin_id> [player_name]"
+			return false,
+				"Invalid usage. Correct format: /set_skin <skin_id> [player_name]"
 		end
 
 		local skin_id = tonumber(args[1])
@@ -428,11 +520,14 @@ core.register_chatcommand("set_skin", {
 core.register_chatcommand("skin_catalog", {
 	params = "",
 	description = "Show the entire catalog of skins.",
-	privs = {server = true},
+	privs = { server = true },
 	func = function(name, _)
-		local msg_list = {"Skins Catalog:\n"}
+		local msg_list = { "Skins Catalog:\n" }
 		for skin_id, skin_data in pairs(skins.catalog) do
-			table.insert(msg_list, "ID: " .. skin_id .. " " .. dump(skin_data):gsub("\n", ""))
+			table.insert(
+				msg_list,
+				"ID: " .. skin_id .. " " .. dump(skin_data):gsub("\n", "")
+			)
 		end
 
 		-- Split the message into chunks if it exceeds 255 characters

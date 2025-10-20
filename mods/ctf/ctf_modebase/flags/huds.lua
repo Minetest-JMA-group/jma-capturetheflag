@@ -14,6 +14,13 @@ local OTHER_FLAG_STOLEN = { color = 0xAA00FF, text = "Kill %s, they've got some 
 
 ctf_modebase.flag_huds = {}
 
+local function get_label_config()
+	local mode = ctf_modebase:get_current_mode()
+	if mode and mode.flag_hud_labels then
+		return mode.flag_hud_labels
+	end
+end
+
 local function concat_players(players)
 	local list = {}
 	for pname in pairs(players) do
@@ -101,11 +108,16 @@ function ctf_modebase.flag_huds.update_player(player)
 	for tname, def in pairs(ctf_map.current_map.teams) do
 		local hud_label = "flag_pos:" .. tname
 
-		local base_label = HumanReadable(tname) .. "'s flag"
+		local label_conf = get_label_config()
+		local noun = (label_conf and label_conf.noun) or "flag"
+		local captured_text = (label_conf and label_conf.captured) or "captured"
+		local taken_text = (label_conf and label_conf.taken) or "taken"
+
+		local base_label = HumanReadable(tname) .. "'s " .. noun
 		if ctf_modebase.flag_captured[tname] then
-			base_label = base_label .. " (captured)"
+			base_label = base_label .. " (" .. captured_text .. ")"
 		elseif ctf_modebase.flag_taken[tname] then
-			base_label = base_label .. " (taken)"
+			base_label = base_label .. " (" .. taken_text .. ")"
 		end
 
 		if hud:exists(player, hud_label) then

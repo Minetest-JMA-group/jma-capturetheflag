@@ -2,6 +2,33 @@ local rankings = ctf_rankings.init()
 local recent_rankings = ctf_modebase.recent_rankings(rankings)
 local features = ctf_modebase.features(rankings, recent_rankings)
 
+--- @type { [string]: number }
+local item_value = {
+	["ctf_melee:sword_diamond"] = 12,
+	["ctf_ranged:shotgun_loaded"] = 14,
+	["ctf_melee:sword_mese"] = 16,
+	["ctf_ranged:shotgun"] = 14,
+	["default:axe_diamond"] = 5,
+	["ctf_ranged:assault_rifle_loaded"] = 10,
+	["ctf_melee:sword_steel"] = 5,
+	["default:pick_diamond"] = 5,
+	["ctf_ranged:assault_rifle"] = 10,
+	["ctf_healing:medkit"] = 7,
+	["default:pick_mese"] = 1,
+	["default:axe_mese"] = 1,
+	["grenades:poison"] = 3,
+	["ctf_ranged:rifle_loaded"] = 5,
+	["ctf_ranged:smg_loaded"] = 5,
+	["ctf_ranged:rifle"] = 5,
+	["ctf_ranged:smg"] = 5,
+	["ctf_healing:bandage"] = 6,
+	["default:shovel_diamond"] = 6,
+	["grenades:smoke"] = 2,
+	["ctf_ranged:pistol_loaded"] = 1,
+	["default:shovel_mese"] = 1,
+	["ctf_ranged:pistol"] = 1,
+}
+
 local tool = ctf_core.include_files("tool.lua")
 
 local old_bounty_reward_func = ctf_modebase.bounties.bounty_reward_func
@@ -184,6 +211,14 @@ ctf_modebase.register_mode("nade_fight", {
 	get_chest_access = features.get_chest_access,
 	player_is_pro = features.player_is_pro,
 	can_punchplayer = features.can_punchplayer,
+	get_item_value = function(itemname, teamchest_pos)
+		local value = item_value[itemname]
+		if value == nil then
+			return 0
+		else
+			return value
+		end
+	end,
 	on_punchplayer = function(player, hitter, damage, unneeded, tool_capabilities, ...)
 		if tool.holed[player:get_player_name()] then
 			if tool_capabilities.grenade then

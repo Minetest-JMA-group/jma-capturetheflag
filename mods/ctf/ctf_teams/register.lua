@@ -1,4 +1,4 @@
---- @alias TeamsOnAllocCallback fun(player: string, team: TeamColour)
+--- @alias TeamsOnAllocCallback fun(player: string, team: Team, old_team: Team?)
 --- @type TeamsOnAllocCallback[]
 ctf_teams.registered_on_allocplayer = {}
 --- @param func TeamsOnAllocCallback

@@ -61,7 +61,8 @@ end
 -- ********** Gift managing helpers **********
 
 local function load_gift(mode_name, receiver_name)
-	return minetest.deserialize(storage:get_string(mode_name .. ":" .. receiver_name)) or {}
+	return minetest.deserialize(storage:get_string(mode_name .. ":" .. receiver_name))
+		or {}
 end
 
 local function save_gift(score, giver_name, mode_name, receiver_name)
@@ -76,8 +77,16 @@ local function dispatch_gifts(receiver_name)
 		for giver_name, score in pairs(gift_table) do
 			local old_receiver_ranks = mode_data.rankings:get(receiver_name)
 			local old_receiver_score = old_receiver_ranks.score or 0
-			mode_data.rankings:set(receiver_name, {score = old_receiver_score + score})
-			minetest.chat_send_player(receiver_name, minetest.colorize("#01D800", giver_name) .. string.format(" has welcomed you with the %i score gift in mode %s!", score, mode_name))
+			mode_data.rankings:set(receiver_name, { score = old_receiver_score + score })
+			minetest.chat_send_player(
+				receiver_name,
+				minetest.colorize("#01D800", giver_name)
+					.. string.format(
+						" has welcomed you with the %i score gift in mode %s!",
+						score,
+						mode_name
+					)
+			)
 		end
 		storage:set_string(mode_name .. ":" .. receiver_name, "")
 	end
@@ -86,7 +95,10 @@ end
 -- ********** REGISTRATIONS **********
 
 minetest.register_chatcommand("wb", {
-	description = string.format("Send a welcoming message to the player with a gift of %i score", msg_price),
+	description = string.format(
+		"Send a welcoming message to the player with a gift of %i score",
+		msg_price
+	),
 	params = "[mode:technical modename] <playername>",
 	func = function(giver_name, param)
 		local mode_name, mode_data, receiver_name = get_gamemode(param)
@@ -97,8 +109,13 @@ minetest.register_chatcommand("wb", {
 			return false, "You have to provide player name!"
 		end
 
-		if core.global_exists("block_msgs") and block_msgs.is_chat_blocked(giver_name, receiver_name) then
-			return false, receiver_name.." has you on their block list. You cannot interact with them."
+		if
+			core.global_exists("block_msgs")
+			and block_msgs.is_chat_blocked(giver_name, receiver_name)
+		then
+			return false,
+				receiver_name
+					.. " has you on their block list. You cannot interact with them."
 		end
 
 		local old_receiver_ranks = mode_data.rankings:get(receiver_name)
@@ -112,27 +129,48 @@ minetest.register_chatcommand("wb", {
 		end
 
 		if old_giver_ranks.score == nil or old_giver_ranks.score < msg_price then
-			return false, string.format("You don't have enough score to give! You need at least %i score.", msg_price)
+			return false,
+				string.format(
+					"You don't have enough score to give! You need at least %i score.",
+					msg_price
+				)
 		end
 
 		if limit_reached(giver_name) then
-			return false, string.format("You have to wait; you can only send %i messages every %i minutes.", msg_num_limit, msg_interval_limit / 60)
+			return false,
+				string.format(
+					"You have to wait; you can only send %i messages every %i minutes.",
+					msg_num_limit,
+					msg_interval_limit / 60
+				)
 		end
 
 		-- All checks passed. Send the Welcome message
 		record_timestamp(giver_name)
-		mode_data.rankings:set(giver_name, {score = old_giver_ranks.score - msg_price})
+		mode_data.rankings:set(giver_name, { score = old_giver_ranks.score - msg_price })
 		save_gift(msg_price, giver_name, mode_name, receiver_name)
 
 		if minetest.get_player_by_name(receiver_name) then
 			dispatch_gifts(receiver_name)
 		end
 
-		minetest.log("action", string.format(
-			"Player %s welcomed player %s with %i more score in mode %s", giver_name, receiver_name, msg_price, mode_name
-		))
-		return true, string.format("Gifted %i score to player '%s' via welcome message", msg_price, receiver_name)
-	end
+		minetest.log(
+			"action",
+			string.format(
+				"Player %s welcomed player %s with %i more score in mode %s",
+				giver_name,
+				receiver_name,
+				msg_price,
+				mode_name
+			)
+		)
+		return true,
+			string.format(
+				"Gifted %i score to player '%s' via welcome message",
+				msg_price,
+				receiver_name
+			)
+	end,
 })
 
 minetest.register_on_joinplayer(function(player)

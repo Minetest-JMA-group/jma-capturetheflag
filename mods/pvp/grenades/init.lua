@@ -1,5 +1,5 @@
 grenades = {
-	grenade_deaccel = 8
+	grenade_deaccel = 8,
 }
 
 local cooldown = ctf_core.init_cooldowns()
@@ -7,8 +7,18 @@ local max_vel = 34
 
 function grenades.throw_grenade(name, startspeed, player)
 	local player_vel = player:get_velocity()
-	if math.abs(player_vel.x) > max_vel or math.abs(player_vel.y) > max_vel or math.abs(player_vel.z) > max_vel then
-		minetest.log("warning", "grenades: Player " .. player:get_player_name() .. " exceeded the maximum allowed velocity: " .. vector.to_string(player_vel))
+	if
+		math.abs(player_vel.x) > max_vel
+		or math.abs(player_vel.y) > max_vel
+		or math.abs(player_vel.z) > max_vel
+	then
+		minetest.log(
+			"warning",
+			"grenades: Player "
+				.. player:get_player_name()
+				.. " exceeded the maximum allowed velocity: "
+				.. vector.to_string(player_vel)
+		)
 		return
 	end
 
@@ -21,7 +31,7 @@ function grenades.throw_grenade(name, startspeed, player)
 	end
 
 	obj:set_velocity(vector.add(vector.multiply(dir, startspeed), player_vel))
-	obj:set_acceleration({x = 0, y = -9.8, z = 0})
+	obj:set_acceleration({ x = 0, y = -9.8, z = 0 })
 
 	local data = obj:get_luaentity()
 	data.thrower_name = player:get_player_name()
@@ -39,9 +49,9 @@ function grenades.register_grenade(name, def)
 			physical = true,
 			collide_with_objects = def.collide_with_objects or false,
 			visual = "sprite",
-			visual_size = {x = 0.5, y = 0.5, z = 0.5},
-			textures = {def.image},
-			collisionbox = {-0.05, -0.05, -0.05, 0.05, 0.05, 0.05},
+			visual_size = { x = 0.5, y = 0.5, z = 0.5 },
+			textures = { def.image },
+			collisionbox = { -0.05, -0.05, -0.05, 0.05, 0.05, 0.05 },
 			pointable = false,
 			static_save = false,
 		},
@@ -96,15 +106,22 @@ function grenades.register_grenade(name, def)
 
 			if not vector.equals(vel, vector.new()) then
 				obj:set_acceleration({
-					x = -norm_vel.x * grenades.grenade_deaccel * (moveresult.touching_ground and 2 or 1),
+					x = -norm_vel.x
+						* grenades.grenade_deaccel
+						* (moveresult.touching_ground and 2 or 1),
 					y = -9.8,
-					z = -norm_vel.z * grenades.grenade_deaccel * (moveresult.touching_ground and 2 or 1),
+					z = -norm_vel.z
+						* grenades.grenade_deaccel
+						* (moveresult.touching_ground and 2 or 1),
 				})
 			end
 
 			if moveresult.touching_ground then -- Is the grenade sliding?
 				-- If grenade is barely moving, make sure it stays that way
-				if vector.distance(vector.new(), vel) <= 2 and not vector.equals(vel, vector.new()) then
+				if
+					vector.distance(vector.new(), vel) <= 2
+					and not vector.equals(vel, vector.new())
+				then
 					obj:set_velocity(vector.new())
 					obj:set_acceleration(vector.new(0, -9.8, 0))
 				end
@@ -118,14 +135,17 @@ function grenades.register_grenade(name, def)
 				minetest.add_particle({
 					pos = obj:get_pos(),
 					velocity = vector.divide(vel, 2),
-					acceleration = vector.divide(obj:get_acceleration() or vector.new(1, 1, 1), -5),
+					acceleration = vector.divide(
+						obj:get_acceleration() or vector.new(1, 1, 1),
+						-5
+					),
 					expirationtime = def.particle.life,
 					size = def.particle.size,
 					collisiondetection = false,
 					collision_removal = false,
 					vertical = false,
 					texture = def.particle.image,
-					glow = def.particle.glow
+					glow = def.particle.glow,
 				})
 			elseif def.particle and self.particle < def.particle.interval then
 				self.particle = self.particle + dtime
@@ -142,12 +162,12 @@ function grenades.register_grenade(name, def)
 
 				obj:remove()
 			end
-		end
+		end,
 	}
 
 	minetest.register_entity(name, grenade_entity)
 
-	local newdef = {grenade = def}
+	local newdef = { grenade = def }
 
 	newdef.description = def.description
 	newdef.stack_max = math.max(1, def.stack_max or 1)
@@ -157,7 +177,10 @@ function grenades.register_grenade(name, def)
 		if pointed_thing.type ~= "node" then
 			grenades.throw_grenade(name, 17, user)
 
-			if not minetest.settings:get_bool("creative_mode") and (def.stack_max or 99) > -1 then
+			if
+				not minetest.settings:get_bool("creative_mode")
+				and (def.stack_max or 99) > -1
+			then
 				itemstack:take_item(1)
 			end
 		end
