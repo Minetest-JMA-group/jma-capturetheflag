@@ -1,4 +1,4 @@
---- @alias Reward { bounty_kills: integer, score: number }
+--- @alias Reward { bounty_kills?: integer, score: number }
 --- @alias ContributedBounty { contributors: { [string]: number } }
 --- @alias GameBounty { name: string, rewards: Reward, msg: string }
 --- @type "orange"
@@ -207,6 +207,10 @@ function ctf_modebase.bounties.claim(player, killer)
 		core.chat_send_all(core.colorize(CHAT_COLOR, player_bounty_text))
 		ctf_modebase.announce(player_bounty_text)
 		contributed_bounties[player] = nil
+	end
+
+	if rewards and rewards.bounty_kills == 0 then
+		rewards.bounty_kills = nil
 	end
 
 	return rewards
