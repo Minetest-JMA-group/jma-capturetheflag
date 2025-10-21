@@ -739,6 +739,18 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		on_match_end = function()
 			recent_rankings.on_match_end()
 
+			-- Remove all item entities on the map
+			--- @type ObjectRef[]
+			local objs = core.get_objects_in_area(
+				ctf_map.crrent_map.pos1,
+				ctf_map.current_map.pos2
+			)
+			for obj in ipairs(objs) do
+				if obj:get_luaentity().name == ":__builtin:item" then
+					obj:remove()
+				end
+			end
+
 			if ctf_map.current_map then
 				-- Queue deletion for after the players have left
 				delete_queue = {
