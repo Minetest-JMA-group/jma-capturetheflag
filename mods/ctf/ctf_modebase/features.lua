@@ -745,7 +745,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				ctf_map.current_map.pos1,
 				ctf_map.current_map.pos2
 			)
-			for obj in ipairs(objs) do
+			for _, obj in ipairs(objs) do
 				if obj:get_luaentity().name == ":__builtin:item" then
 					obj:remove()
 				end
