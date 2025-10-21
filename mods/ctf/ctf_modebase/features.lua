@@ -742,7 +742,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			-- Remove all item entities on the map
 			--- @type ObjectRef[]
 			local objs = core.get_objects_in_area(
-				ctf_map.crrent_map.pos1,
+				ctf_map.current_map.pos1,
 				ctf_map.current_map.pos2
 			)
 			for obj in ipairs(objs) do
