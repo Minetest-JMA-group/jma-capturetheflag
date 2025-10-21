@@ -738,7 +738,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end,
 		on_match_end = function()
 			recent_rankings.on_match_end()
-
+			--[[
 			-- Remove all item entities on the map
 			--- @type ObjectRef[]
 			local objs = core.get_objects_in_area(
@@ -750,6 +750,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					obj:remove()
 				end
 			end
+			]]
 
 			if ctf_map.current_map then
 				-- Queue deletion for after the players have left
