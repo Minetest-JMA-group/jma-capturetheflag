@@ -327,14 +327,14 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				local cur_mode = ctf_modebase:get_current_mode()
 				if pname and cur_mode then
 					local item_name = stack:get_name()
-					local score = cur_mode:get_item_value(stack:get_name(), pos)
+					local score = cur_mode:get_item_value(item_name, pos)
 					if score > 0 then
 						local item_desc = stack:get_short_description()
 						if item_desc == "" then
 							item_desc = item_name
 						end
 
-						cur_mode.recent_rankings.add(pname, { score = score }, true)
+						cur_mode.recent_rankings.add(pname, { score = score }, false)
 						cmsg.push_message_player(
 							player,
 							string.format("+ %s: %s", score, item_desc)
