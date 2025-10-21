@@ -88,6 +88,9 @@ ctf_modebase.register_mode("chaos", {
 		random_gifts.stop_spawn_timer()
 		random_gifts.set_items({})
 	end,
+	get_item_value = function(itemname, teamchest_pos)
+		return 0
+	end,
 	on_new_match = features.on_new_match,
 	on_match_end = features.on_match_end,
 	team_allocator = features.team_allocator,
