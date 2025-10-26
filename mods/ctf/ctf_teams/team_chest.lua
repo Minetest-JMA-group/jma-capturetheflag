@@ -312,18 +312,8 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			local meta = stack:get_meta()
 			local dropped_by = meta:get_string("dropped_by")
 			local dropteam = ctf_teams.get(dropped_by)
-			local dropinfo = core.get_player_information(dropped_by)
 			local pname = player:get_player_name()
-			local pinfo = core.get_player_information(pname)
-			if
-				dropped_by ~= pname
-				and dropped_by ~= ""
-				and dropteam
-				and ctf_teams.get(pname) ~= dropteam
-				and dropinfo
-				and pinfo
-				and dropinfo.address ~= pinfo.address
-			then
+			if dropped_by ~= pname and dropped_by ~= "" and dropteam then
 				local cur_mode = ctf_modebase:get_current_mode()
 				if pname and cur_mode then
 					local item_name = stack:get_name()
@@ -334,7 +324,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 							item_desc = item_name
 						end
 
-						cur_mode.recent_rankings.add(pname, { score = score }, false)
+						cur_mode.recent_rankings.add(pname, { score = score })
 						cmsg.push_message_player(
 							player,
 							string.format("+ %s: %s", score, item_desc)
