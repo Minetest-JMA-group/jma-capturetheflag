@@ -81,7 +81,6 @@ local function get_alive_teams()
 	return alive
 end
 
-
 local function update_flag_huds()
 	for _, player in ipairs(minetest.get_connected_players()) do
 		ctf_modebase.flag_huds.update_player(player)
@@ -129,7 +128,11 @@ local function declare_winner(team)
 	end
 
 	for name in pairs(state.participants) do
-		if team and state.initial_team[name] == team and state.eliminated[name] ~= true then
+		if
+			team
+			and state.initial_team[name] == team
+			and state.eliminated[name] ~= true
+		then
 			award_score(name, 500)
 		else
 			award_score(name, 50)
@@ -271,7 +274,6 @@ local function is_rush_active()
 	return ctf_modebase.current_mode == "rush"
 end
 
-
 ctf_modebase.register_mode("rush", {
 	hp_regen = 0.3,
 	physics = { sneak_glitch = true, new_move = true },
@@ -351,7 +353,7 @@ ctf_modebase.register_mode("rush", {
 		"default:wood 80",
 		"default:torch 30",
 		"ctf_teams:door_steel 2",
-		"heal_block:heal",
+		"ctf_healing:heal_block",
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,
@@ -584,7 +586,11 @@ minetest.register_on_joinplayer(function(player)
 
 	local name = player:get_player_name()
 
-	if not is_rush_active() or not state.match_id or spec_state.match ~= state.match_id then
+	if
+		not is_rush_active()
+		or not state.match_id
+		or spec_state.match ~= state.match_id
+	then
 		spectator.restore_privs(name, player)
 		return
 	end

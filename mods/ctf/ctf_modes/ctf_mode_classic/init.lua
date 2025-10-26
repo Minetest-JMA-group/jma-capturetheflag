@@ -88,7 +88,7 @@ ctf_modebase.register_mode("classic", {
 		"default:wood 99",
 		"default:torch 30",
 		"ctf_teams:door_steel 2",
-		"heal_block:heal",
+		"ctf_healing:heal_block",
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,

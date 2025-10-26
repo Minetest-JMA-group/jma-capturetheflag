@@ -4,7 +4,7 @@
 local BREAK_REWARD_PER_HP = 0.1
 local HEAL_DIG_REWARD_BASE = 20
 
-core.register_node("heal_block:heal", {
+core.register_node("ctf_healing:heal_block", {
 	description = "Healing Block\n"
 		.. "A block that heals players within a 3-block radius.\n"
 		.. "Place it on your team's territory to keep your allies healthy nearby.\n"
@@ -20,7 +20,7 @@ core.register_node("heal_block:heal", {
 	walkable = true,
 	tiles = {
 		{
-			name = "heal_block_top.png",
+			name = "ctf_healing_heal_block_top.png",
 			align_style = "repeat",
 			scale = 1,
 			position = { x = 0, y = 0, z = 0.5 },
