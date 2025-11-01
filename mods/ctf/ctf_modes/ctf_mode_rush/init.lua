@@ -194,6 +194,14 @@ end
 
 timer.set_timeout_handler(end_round_due_to_time)
 
+ctf_api.register_on_match_start(function()
+	if ctf_modebase.current_mode ~= "rush" or not state.match_id or state.round_timer_active then
+		return
+	end
+
+	timer.start_round(timer.ROUND_DURATION)
+end)
+
 local function check_for_winner(team)
 	local alive = state.alive_players[team]
 	if not alive or next(alive) then
@@ -385,7 +393,6 @@ ctf_modebase.register_mode("rush", {
 
 		state.match_id = new_match_id()
 		init_alive_players()
-		timer.start_round(timer.ROUND_DURATION)
 
 		minetest.after(0, function()
 			remove_flags()

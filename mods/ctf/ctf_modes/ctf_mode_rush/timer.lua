@@ -132,6 +132,11 @@ end
 function timer.update_round_huds()
 	ensure_state()
 
+	if not state.round_timer_active then
+		timer.clear_all_round_huds()
+		return
+	end
+
 	if not config.is_mode_active() or not state.match_id then
 		timer.clear_all_round_huds()
 		return
