@@ -602,18 +602,7 @@ minetest.register_on_joinplayer(function(player)
 		return
 	end
 
-	--[[state.eliminated[name] = true
-	state.saved_privs[name] = spec_state.privs
-	ctf_teams.non_team_players[name] = true
-
-	minetest.after(0, function()
-		local current = minetest.get_player_by_name(name)
-		if not current then
-			return
-		end
-
-		spectator.make_spectator(current)
-	end)]]
+	spectator.resume(player, spec_state)
 end)
 
 rush_api.is_spectator = spectator.is_spectator

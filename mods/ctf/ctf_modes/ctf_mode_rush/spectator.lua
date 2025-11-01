@@ -340,6 +340,28 @@ function spectator.make_spectator(player)
 	})
 end
 
+function spectator.resume(player, spec_state)
+	ensure_state()
+
+	local pname = player:get_player_name()
+
+	if spec_state and type(spec_state.privs) == "table" then
+		state.saved_privs[pname] = spec_state.privs
+	end
+
+	state.eliminated[pname] = true
+
+	apply_vanish(player)
+
+	minetest.after(0, function()
+		local current = minetest.get_player_by_name(pname)
+		if not current then
+			return
+		end
+		spectator.make_spectator(current)
+	end)
+end
+
 function spectator.is_spectator(name)
 	ensure_state()
 	return state.eliminated[name] == true
