@@ -1,43 +1,13 @@
 local players = {}
-local ATTACH_POSITION = minetest.rgba and { x = 0, y = 20, z = 0 }
-	or {
-		x = 0,
-		y = 10,
-		z = 0,
-	}
+local ATTACH_POSITION = minetest.rgba and {x=0, y=20, z=0} or {x=0, y=10, z=0}
 
 local TYPE_BUILTIN = 0
 local TYPE_ENTITY = 1
 
---- Length of a string. If utf8_simple mod is present, it uses that
---- @param s string
----	@return number
-local function string_len(s)
-	if utf8_simple and utf8_simple.len then
-		return utf8_simple.len(s)
-	else
-		return string.len(s)
-	end
-end
-
---- Iterator over characters of a string. Uses utf8_simple if present
---- @param s string
-local function chars(s)
-	if utf8_simple and utf8_simple.chars then
-		return utf8_simple.chars(s)
-	else
-		return coroutine.wrap(function()
-			for idx = 1, string.len(s) do
-				coroutine.yield(idx, string.sub(s, idx, idx), idx)
-			end
-		end)
-	end
-end
-
 playertag = {
 	TYPE_BUILTIN = TYPE_BUILTIN,
-	TYPE_ENTITY = TYPE_ENTITY,
-	no_entity_attach = {},
+	TYPE_ENTITY  = TYPE_ENTITY,
+	no_entity_attach = {}
 }
 
 local codepoint
@@ -48,13 +18,11 @@ local function add_entity_tag(player, old_observers, readded)
 	local player_name = player:get_player_name()
 	-- Hide fixed nametag
 	player:set_nametag_attributes({
-		color = { a = 0, r = 0, g = 0, b = 0 },
+		color = {a = 0, r = 0, g = 0, b = 0}
 	})
 
 	local ent = minetest.add_entity(player:get_pos(), "playertag:tag")
-	if not ent then
-		return
-	end
+	if not ent then return end
 	local ent2 = false
 	local ent3 = false
 
@@ -64,7 +32,7 @@ local function add_entity_tag(player, old_observers, readded)
 		ent2:set_properties({
 			nametag = player_name,
 			nametag_color = "#EEFFFFDD",
-			nametag_bgcolor = "#0000002D",
+			nametag_bgcolor = "#0000002D"
 		})
 
 		ent3 = minetest.add_entity(player:get_pos(), "playertag:tag")
@@ -73,48 +41,36 @@ local function add_entity_tag(player, old_observers, readded)
 			collisionbox = { 0, 0, 0, 0, 0, 0 },
 			nametag = "V",
 			nametag_color = "#EEFFFFDD",
-			nametag_bgcolor = "#0000002D",
+			nametag_bgcolor = "#0000002D"
 		})
 	end
 
 	-- Build name from font texture
 	local texture = "npcf_tag_bg.png"
-	local x = math.floor(134 - ((string_len(player_name) * 11) / 2))
+	local x = math.floor(134 - ((utf8_simple.len(player_name) * 11) / 2))
 	local i = 0
-	for idx, char, bidx in chars(player_name) do
+	for idx, char, bidx in utf8_simple.chars(player_name) do
 		local n = "_"
 		if #char > 1 and codepoint then
 			local code = codepoint(char)
-			n = "U-" .. string.format("%04X", code)
-		elseif
-			char:byte() > 96 and char:byte() < 123
-			or char:byte() > 47 and char:byte() < 58
-			or char == "-"
-		then
+			n = "U-"..string.format("%04X", code)
+		elseif char:byte() > 96 and char:byte() < 123 or char:byte() > 47 and char:byte() < 58 or char == "-" then
 			n = char
 		elseif char:byte() > 64 and char:byte() < 91 then
 			n = "U" .. char
 		end
-		texture = texture
-			.. "^[combine:84x14:"
-			.. (x + i + 1)
-			.. ",1=(W_"
-			.. n
-			.. ".png\\^[multiply\\:#000):"
-			.. (x + i)
-			.. ",0=W_"
-			.. n
-			.. ".png"
+		texture = texture.."^[combine:84x14:"..(x+i+1)..",1=(W_".. n ..".png\\^[multiply\\:#000):"..
+				(x+i)..",0=W_".. n ..".png"
 		i = i + 11
 	end
-	ent:set_properties({ textures = { texture } })
+	ent:set_properties({ textures={texture} })
 
 	-- Attach to player
-	ent:set_attach(player, "", ATTACH_POSITION, { x = 0, y = 0, z = 0 })
+	ent:set_attach(player, "", ATTACH_POSITION, {x=0, y=0, z=0})
 
 	if ent2 and ent3 then
-		ent2:set_attach(player, "", ATTACH_POSITION, { x = 0, y = 0, z = 0 })
-		ent3:set_attach(player, "", ATTACH_POSITION, { x = 0, y = 0, z = 0 })
+		ent2:set_attach(player, "", ATTACH_POSITION, {x=0, y=0, z=0})
+		ent3:set_attach(player, "", ATTACH_POSITION, {x=0, y=0, z=0})
 	end
 
 	-- Store
@@ -122,22 +78,11 @@ local function add_entity_tag(player, old_observers, readded)
 	players[player_name].nametag_entity = ent2 and ent2:get_luaentity()
 	players[player_name].symbol_entity = ent3 and ent3:get_luaentity()
 
-	if readded then
-		return
-	end
+	if readded then return end
 	players[player_name].timer = minetest.after(5, function()
 		if minetest.get_player_by_name(player_name) ~= nil then -- check if the player is still online
-			if
-				not ent:get_luaentity()
-				or (
-					ent.set_observers
-					and not (ent2:get_luaentity() or ent3:get_luaentity())
-				)
-			then
-				minetest.log(
-					"warning",
-					"playertag: respawning entity for " .. player_name
-				)
+			if not ent:get_luaentity() or (ent.set_observers and not (ent2:get_luaentity() or ent3:get_luaentity())) then
+				minetest.log("warning", "playertag: respawning entity for " .. player_name)
 				add_entity_tag(player, old_observers, true)
 			end
 		end
@@ -194,8 +139,8 @@ local function update(player, settings)
 
 	if settings.type == TYPE_BUILTIN then
 		player:set_nametag_attributes({
-			color = settings.color or { a = 255, r = 255, g = 255, b = 255 },
-			bgcolor = { a = 0, r = 0, g = 0, b = 0 },
+			color = settings.color or {a=255, r=255, g=255, b=255},
+			bgcolor = {a=0, r=0, g=0, b=0},
 		})
 	elseif settings.type == TYPE_ENTITY then
 		add_entity_tag(player, old_observers)
@@ -208,9 +153,7 @@ function playertag.set(player, type, color, extra)
 	end
 
 	local oldset = players[player:get_player_name()]
-	if not oldset then
-		return
-	end
+	if not oldset then return end
 
 	-- update it anyway
 	extra = extra or {}
@@ -233,8 +176,8 @@ end
 minetest.register_entity("playertag:tag", {
 	initial_properties = {
 		visual = "sprite",
-		visual_size = { x = 2.16, y = 0.18, z = 2.16 }, --{x=1.44, y=0.12, z=1.44},
-		textures = { "blank.png" },
+		visual_size = {x=2.16, y=0.18, z=2.16}, --{x=1.44, y=0.12, z=1.44},
+		textures = {"blank.png"},
 		collisionbox = { 0, -0.2, 0, 0, -0.2, 0 },
 		physical = false,
 		makes_footstep_sound = false,
@@ -242,24 +185,13 @@ minetest.register_entity("playertag:tag", {
 		static_save = false,
 		pointable = false,
 	},
-	on_punch = function(
-		self,
-		puncher,
-		time_from_last_punch,
-		tool_capabilities,
-		dir,
-		damage
-	)
+	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir, damage)
 		if minetest.is_player(puncher) then
-			puncher:set_hp(puncher:get_hp() - damage, { type = "punch" }) --cause damage to yourself.
-			minetest.log(
-				"warning",
-				puncher:get_player_name()
-					.. ' is trying to damage non-pointable entity "playertag:tag".'
-			)
+			puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
+			minetest.log("warning", puncher:get_player_name() .. " is trying to damage non-pointable entity \"playertag:tag\".")
 		end
 		return true
-	end,
+	end
 })
 
 minetest.register_on_joinplayer(function(player)
@@ -267,8 +199,7 @@ minetest.register_on_joinplayer(function(player)
 	if playertag.no_entity_attach[name] then
 		return
 	end
-	players[name] =
-		{ type = TYPE_BUILTIN, color = { a = 255, r = 255, g = 255, b = 255 } }
+	players[name] = {type = TYPE_BUILTIN, color = {a=255, r=255, g=255, b=255}}
 end)
 
 minetest.register_on_leaveplayer(function(player)
