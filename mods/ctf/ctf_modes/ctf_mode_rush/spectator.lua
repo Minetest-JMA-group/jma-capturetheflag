@@ -1,6 +1,14 @@
 local spectator = {}
 
 local RUSH_SPEC_KEY = "ctf_mode_rush:spectator_state"
+local storage = minetest.get_mod_storage()
+
+local function storage_key(name)
+	if type(name) ~= "string" or name == "" then
+		return
+	end
+	return RUSH_SPEC_KEY .. ":" .. name
+end
 local MAX_SPECTATOR_DISTANCE = 12
 local MIN_SPECTATOR_ALTITUDE = 2
 local SPECTATOR_BOUND_CHECK_INTERVAL = 0.5
@@ -31,8 +39,13 @@ local function safe_deserialize(data)
 	end
 end
 
-function spectator.get_spectator_state(meta)
-	local raw = meta:get_string(RUSH_SPEC_KEY)
+function spectator.get_spectator_state(name)
+	local key = storage_key(name)
+	if not key then
+		return
+	end
+
+	local raw = storage:get_string(key)
 	if raw == "" then
 		return
 	end
@@ -49,9 +62,14 @@ function spectator.get_spectator_state(meta)
 	return parsed
 end
 
-function spectator.set_spectator_state(meta, data)
+function spectator.set_spectator_state(name, data)
+	local key = storage_key(name)
+	if not key then
+		return
+	end
+
 	if not data or (not data.match and (not data.privs or next(data.privs) == nil)) then
-		meta:set_string(RUSH_SPEC_KEY, "")
+		storage:set_string(key, "")
 		return
 	end
 
@@ -60,7 +78,7 @@ function spectator.set_spectator_state(meta, data)
 		privs = data.privs,
 	}
 
-	meta:set_string(RUSH_SPEC_KEY, minetest.serialize(payload))
+	storage:set_string(key, minetest.serialize(payload))
 end
 
 local function get_player_score(pname)
@@ -274,14 +292,12 @@ local function remove_player_from_team(name)
 	ctf_teams.non_team_players[name] = true
 end
 
-function spectator.restore_privs(name, player)
+function spectator.restore_privs(name)
 	ensure_state()
 
 	local privs = state.saved_privs[name]
-	local ref = player or minetest.get_player_by_name(name)
-
-	if not privs and ref then
-		local spec_state = spectator.get_spectator_state(ref:get_meta())
+	if not privs then
+		local spec_state = spectator.get_spectator_state(name)
 		if spec_state then
 			privs = spec_state.privs
 		end
@@ -293,10 +309,7 @@ function spectator.restore_privs(name, player)
 
 	minetest.set_player_privs(name, privs)
 	state.saved_privs[name] = nil
-
-	if ref then
-		spectator.set_spectator_state(ref:get_meta(), nil)
-	end
+	spectator.set_spectator_state(name, nil)
 end
 
 function spectator.make_spectator(player)
@@ -333,8 +346,7 @@ function spectator.make_spectator(player)
 
 	player:set_hp(20)
 
-	local meta = player:get_meta()
-	spectator.set_spectator_state(meta, {
+	spectator.set_spectator_state(pname, {
 		match = state.match_id,
 		privs = state.saved_privs[pname],
 	})
@@ -365,14 +377,10 @@ local function update_saved_priv_snapshot(target, modifier)
 	end
 
 	local snapshot = state.saved_privs[target]
+	local spec_state
 
 	if not snapshot then
-		local player = minetest.get_player_by_name(target)
-		if not player then
-			return
-		end
-
-		local spec_state = spectator.get_spectator_state(player:get_meta())
+		spec_state = spectator.get_spectator_state(target)
 		if not spec_state or not spec_state.match then
 			return
 		end
@@ -384,14 +392,10 @@ local function update_saved_priv_snapshot(target, modifier)
 
 	state.saved_privs[target] = snapshot
 
-	local player = minetest.get_player_by_name(target)
-	if player then
-		local meta = player:get_meta()
-		local spec_state = spectator.get_spectator_state(meta) or {}
-		spec_state.match = spec_state.match or state.match_id
-		spec_state.privs = snapshot
-		spectator.set_spectator_state(meta, spec_state)
-	end
+	spec_state = spec_state or spectator.get_spectator_state(target) or {}
+	spec_state.match = spec_state.match or state.match_id
+	spec_state.privs = snapshot
+	spectator.set_spectator_state(target, spec_state)
 end
 
 local function parse_priv_param(param)

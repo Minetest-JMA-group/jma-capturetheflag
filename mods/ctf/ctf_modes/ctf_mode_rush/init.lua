@@ -260,7 +260,7 @@ end
 local function restore_all_players()
 	for _, player in ipairs(minetest.get_connected_players()) do
 		local name = player:get_player_name()
-		spectator.restore_privs(name, player)
+		spectator.restore_privs(name)
 		spectator.disable_vanish(player)
 		if state.initial_team[name] then
 			ctf_teams.non_team_players[name] = nil
@@ -269,8 +269,7 @@ local function restore_all_players()
 		state.spectator_anchor[name] = nil
 		state.revives_left[name] = nil
 		timer.clear_round_hud(name)
-		local meta = player:get_meta()
-		spectator.set_spectator_state(meta, nil)
+		spectator.set_spectator_state(name, nil)
 	end
 	state.match_id = nil
 	state.spectator_anchor = {}
@@ -436,7 +435,7 @@ ctf_modebase.register_mode("rush", {
 		state.alive_players[new_team] = state.alive_players[new_team] or {}
 		state.alive_players[new_team][pname] = true
 
-		spectator.restore_privs(pname, player)
+		spectator.restore_privs(pname)
 		spectator.disable_vanish(player)
 		spectator.reassign_team_spectators(new_team)
 		timer.update_round_huds()
@@ -585,20 +584,18 @@ minetest.register_globalstep(function(dtime)
 end)
 
 minetest.register_on_joinplayer(function(player)
-	local meta = player:get_meta()
-	local spec_state = spectator.get_spectator_state(meta)
+	local name = player:get_player_name()
+	local spec_state = spectator.get_spectator_state(name)
 	if not spec_state or not spec_state.match then
 		return
 	end
-
-	local name = player:get_player_name()
 
 	if
 		not is_rush_active()
 		or not state.match_id
 		or spec_state.match ~= state.match_id
 	then
-		spectator.restore_privs(name, player)
+		spectator.restore_privs(name)
 		return
 	end
 
