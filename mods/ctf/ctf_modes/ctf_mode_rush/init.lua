@@ -602,7 +602,11 @@ minetest.register_on_joinplayer(function(player)
 		return
 	end
 
-	spectator.resume(player, spec_state)
+	if spec_state.privs and not state.saved_privs[name] then
+		state.saved_privs[name] = spec_state.privs
+	end
+
+	state.eliminated[name] = true
 end)
 
 rush_api.is_spectator = spectator.is_spectator
