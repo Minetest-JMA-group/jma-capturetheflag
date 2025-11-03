@@ -181,7 +181,7 @@ end
 
 core.register_craftitem(COIN_ITEM, {
 	description = S("Teleport Coin"),
-	inventory_image = "default_mese_crystal_fragment.png^[brighten",
+	inventory_image = "teleport_coin_32px.png",
 	stack_max = 1,
 	on_use = function(itemstack, user)
 		if not user or not user:is_player() then
