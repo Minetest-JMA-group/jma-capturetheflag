@@ -4,6 +4,10 @@ local S = core.get_translator(modname)
 local COIN_ITEM = modname .. ":coin"
 local MAX_ATTEMPTS = 128
 
+local INVALID_GROUND_NODES = {
+	["ctf_map:ind_glass"] = true,
+}
+
 local function is_passable(name)
 	if not name or name == "" then
 		return false
@@ -39,6 +43,10 @@ local function is_solid_ground(name)
 	end
 
 	if name == "ignore" or name == "ctf_map:ignore" then
+		return false
+	end
+
+	if INVALID_GROUND_NODES[name] then
 		return false
 	end
 
