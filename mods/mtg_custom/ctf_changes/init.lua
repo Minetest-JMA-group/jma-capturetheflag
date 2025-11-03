@@ -1,6 +1,6 @@
 local COOLDOWN = ctf_core.init_cooldowns()
 
-local DISALLOW_MOD_ABMS = {"default", "fire", "flowers", "tnt"}
+local DISALLOW_MOD_ABMS = {"fire", "flowers", "tnt"}
 
 local node_fall_damage_factors = {
 	["default:snowblock"] = -14, -- From a height of 13 blocks you take 5 damage
