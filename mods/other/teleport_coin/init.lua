@@ -55,6 +55,10 @@ local function is_solid_ground(name)
 		return false
 	end
 
+	if def.damage_per_second and def.damage_per_second > 0 then
+		return false
+	end
+
 	if def.liquidtype and def.liquidtype ~= "none" then
 		return false
 	end
