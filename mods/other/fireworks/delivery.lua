@@ -4,7 +4,7 @@ local mass = 0.9
 local amplitude = 1
 local frequency = 3
 
-minetest.register_entity("fireworks:firework_static", {
+core.register_entity("fireworks:firework_static", {
 	initial_properties = {
         visual = "wielditem",
 		wield_item = "default:apple",
@@ -35,8 +35,8 @@ minetest.register_entity("fireworks:firework_static", {
 		if movement.touching_ground then
 			self.inactive = true
             local pos = self.object:get_pos()
-            if not minetest.is_protected(pos, "") then
-                minetest.add_node(pos, {name = self.object:get_properties().wield_item})
+            if not core.is_protected(pos, "") then
+                core.add_node(pos, {name = self.object:get_properties().wield_item})
             end
 			if random_gifts.entity_exists(self.parachute) then
 				self.parachute:remove()
@@ -61,7 +61,7 @@ minetest.register_entity("fireworks:firework_static", {
 	end,
 
 	on_activate = function(self, staticdata, dtime_s)
-		local par = minetest.add_entity(self.object:get_pos(), "random_gifts:parachute")
+		local par = core.add_entity(self.object:get_pos(), "random_gifts:parachute")
 		par:set_attach(self.object)
 		par:set_properties({visual_size = {x = 18, y = 18, z = 18}})
 		self.parachute = par
@@ -83,7 +83,7 @@ local spawn_interval = 120
 local reduce_radius = 8
 
 local function spawn_giftbox()
-    local spawn_amount = math.max(27, math.min(#minetest.get_connected_players(), 70))
+    local spawn_amount = math.max(27, math.min(#core.get_connected_players(), 70))
 
     local vm = VoxelManip()
     local pos1, pos2 = vm:read_from_map(vector.add(ctf_map.current_map.pos1, reduce_radius), vector.subtract(ctf_map.current_map.pos2, reduce_radius))
@@ -104,17 +104,17 @@ local function spawn_giftbox()
             end
 
             if air_nodes >= 3 then
-                minetest.add_entity(npos, "fireworks:firework_static")
+                core.add_entity(npos, "fireworks:firework_static")
                 break
             end
         end
     end
 
-    timer = minetest.after(spawn_interval, spawn_giftbox)
+    timer = core.after(spawn_interval, spawn_giftbox)
 end
 
 function fireworks.run_spawn_timer()
-    timer = minetest.after(10, spawn_giftbox)
+    timer = core.after(10, spawn_giftbox)
 end
 
 function fireworks.stop_spawn_timer()

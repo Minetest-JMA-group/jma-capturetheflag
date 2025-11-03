@@ -1,5 +1,5 @@
 function server_cosmetics.enable_graves()
-	minetest.register_on_dieplayer(function(player, reason)
+	core.register_on_dieplayer(function(player, reason)
 		if reason.type == "punch" and not server_cosmetics.disable_graves then
 			local team = ctf_teams.get(player)
 			local letters = "server_cosmetics_grave_rip.png"
@@ -8,7 +8,7 @@ function server_cosmetics.enable_graves()
 				letters = string.format("(%s^[multiply:%s)", letters, ctf_teams.team[team].color)
 			end
 
-			minetest.add_particle({
+			core.add_particle({
 				pos = player:get_pos():offset(0, 1.5, 0),
 				velocity = vector.new(0, -10, 0),
 				expirationtime = 30,

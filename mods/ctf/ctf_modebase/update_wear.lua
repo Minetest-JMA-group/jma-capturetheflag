@@ -69,7 +69,7 @@ function ctf_modebase.update_wear.start_update(
 	end
 
 	-- Store the item in player's inventory with the ID
-	local player = minetest.get_player_by_name(pname)
+	local player = core.get_player_by_name(pname)
 	if player then
 		local pinv = player:get_inventory()
 		local pos, _ = ctf_modebase.update_wear.find_item_by_id(pinv, item_id)
@@ -80,9 +80,9 @@ function ctf_modebase.update_wear.start_update(
 
 	wear_timers[pname][item_id] = {
 		c = cancel_callback,
-		t = minetest.after(1, function()
+		t = core.after(1, function()
 			wear_timers[pname][item_id] = nil
-			local player = minetest.get_player_by_name(pname)
+			local player = core.get_player_by_name(pname)
 
 			if player then
 				local pinv = player:get_inventory()
@@ -166,10 +166,10 @@ function ctf_modebase.update_wear.cancel_player_updates(pname, force)
 	end
 end
 
-minetest.register_on_dieplayer(function(player)
+core.register_on_dieplayer(function(player)
 	ctf_modebase.update_wear.cancel_player_updates(player)
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	ctf_modebase.update_wear.cancel_player_updates(player, true)
 end)

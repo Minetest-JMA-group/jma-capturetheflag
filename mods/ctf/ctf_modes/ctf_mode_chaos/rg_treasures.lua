@@ -6,7 +6,7 @@ local function add_score(player, score)
 		if type(old_receiver_ranks) == "table" then
 			local old_receiver_score = old_receiver_ranks.score or 0
 			mode.rankings:set(receiver_name, { score = old_receiver_score + score })
-			minetest.chat_send_player(receiver_name, "+" .. score .. " score!")
+			core.chat_send_player(receiver_name, "+" .. score .. " score!")
 		end
 	end
 end
@@ -77,7 +77,7 @@ return {
 	-- {chance = 3, image = "random_gifts_santa_hat2023.png",
 	-- func = function(player)
 	-- 	player:get_meta():set_int("server_cosmetics:entity:santa_hat:2023", 1)
-	-- 	minetest.chat_send_player(player:get_player_name(), "You got Santa hat! Congratulations!")
+	-- 	core.chat_send_player(player:get_player_name(), "You got Santa hat! Congratulations!")
 	-- end},
 
 	--score

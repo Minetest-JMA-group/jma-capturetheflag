@@ -38,7 +38,7 @@ local function show_mapchoose_form(player)
 			.. "_screenshot.png"
 		local image_path = string.format(
 			"%s/textures/%s",
-			minetest.get_modpath("ctf_map"),
+			core.get_modpath("ctf_map"),
 			image_texture
 		)
 
@@ -72,7 +72,7 @@ local function show_mapchoose_form(player)
 		pos = { x = (i / 2) + 0.5, y = 8 },
 		size = { x = 3, y = 0.6 },
 		func = function(playername, fields, field_name)
-			minetest.kick_player(
+			core.kick_player(
 				playername,
 				S("You clicked 'Exit Game' in the map vote formspec")
 			)
@@ -108,7 +108,7 @@ local function send_formspec()
 			show_mapchoose_form(pname)
 		end
 	end
-	formspec_send_timer = minetest.after(2, send_formspec)
+	formspec_send_timer = core.after(2, send_formspec)
 end
 
 function ctf_modebase.map_vote.start_vote()
@@ -121,7 +121,7 @@ function ctf_modebase.map_vote.start_vote()
 		NUM_MAPS_VOTE
 	) --select three maps at random
 
-	for _, player in pairs(minetest.get_connected_players()) do
+	for _, player in pairs(core.get_connected_players()) do
 		local pname = player:get_player_name()
 		if not ctf_teams.non_team_players[pname] then
 			show_mapchoose_form(pname)
@@ -131,8 +131,8 @@ function ctf_modebase.map_vote.start_vote()
 		end
 	end
 
-	timer = minetest.after(VOTING_TIME, ctf_modebase.map_vote.end_vote)
-	formspec_send_timer = minetest.after(2, send_formspec)
+	timer = core.after(VOTING_TIME, ctf_modebase.map_vote.end_vote)
+	formspec_send_timer = core.after(2, send_formspec)
 end
 
 function ctf_modebase.map_vote.end_vote()
@@ -145,8 +145,8 @@ function ctf_modebase.map_vote.end_vote()
 		formspec_send_timer = nil
 	end
 
-	for _, player in pairs(minetest.get_connected_players()) do
-		minetest.close_formspec(player:get_player_name(), "ctf_modebase:map_select")
+	for _, player in pairs(core.get_connected_players()) do
+		core.close_formspec(player:get_player_name(), "ctf_modebase:map_select")
 	end
 
 	local vote_counts = {}
@@ -185,9 +185,9 @@ function ctf_modebase.map_vote.end_vote()
 
 	local winner_name = ctf_modebase.map_catalog.map_names[winning_mapID]
 		or tostring(winning_mapID)
-	minetest.chat_send_all(S("Map voting is over. The next map will be @1", winner_name))
+	core.chat_send_all(S("Map voting is over. The next map will be @1", winner_name))
 
-	minetest.chat_send_all(S("Vote results:"))
+	core.chat_send_all(S("Vote results:"))
 	for _, mapID in pairs(map_sample) do
 		local map_name = ctf_modebase.map_catalog.map_names[mapID]
 			or ("Unknown (" .. tostring(mapID) .. ")")
@@ -205,7 +205,7 @@ function ctf_modebase.map_vote.end_vote()
 	ctf_modebase.start_match_after_map_vote()
 end
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	local pname = player:get_player_name()
 
 	if votes and not voted[pname] then
@@ -215,7 +215,7 @@ minetest.register_on_joinplayer(function(player)
 	end
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local pname = player:get_player_name()
 
 	if votes and not voted[pname] then

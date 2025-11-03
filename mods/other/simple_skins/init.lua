@@ -37,7 +37,7 @@ end
 -- load default catalog
 skins.register_skins(dofile(core.get_modpath("simple_skins") .. "/skins_list.lua"))
 
-minetest.register_on_mods_loaded(function()
+core.register_on_mods_loaded(function()
 	-- Cache sorting for better performance
 	local catalog = skins.catalog
 	local sorted_skin_ids = {}

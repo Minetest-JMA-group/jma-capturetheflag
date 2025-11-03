@@ -381,7 +381,7 @@ core.register_chatcommand("el_reset", {
 	func = function(name)
 		if not allow_reset[name] then
 			allow_reset[name] = true
-			minetest.after(30, function()
+			core.after(30, function()
 				allow_reset[name] = nil
 			end)
 			return true,

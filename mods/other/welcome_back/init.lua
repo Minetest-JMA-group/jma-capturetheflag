@@ -5,7 +5,7 @@ local msg_price = 8
 local msg_num_limit = 5
 local msg_interval_limit = 3600
 
-local storage = minetest.get_mod_storage()
+local storage = core.get_mod_storage()
 
 local function get_gamemode(param)
 	local opt_param, mode_param = ctf_modebase.match_mode(param)
@@ -44,31 +44,31 @@ end
 
 local function limit_reached(giver_name)
 	local table_key = "timestamp_table:" .. giver_name
-	local timestamp_table = minetest.deserialize(storage:get_string(table_key)) or {}
+	local timestamp_table = core.deserialize(storage:get_string(table_key)) or {}
 
 	timestamp_table = clear_old_times(timestamp_table, giver_name)
-	storage:set_string(table_key, minetest.serialize(timestamp_table))
+	storage:set_string(table_key, core.serialize(timestamp_table))
 	return #timestamp_table > msg_num_limit
 end
 
 local function record_timestamp(giver_name)
 	local table_key = "timestamp_table:" .. giver_name
-	local timestamp_table = minetest.deserialize(storage:get_string(table_key)) or {}
+	local timestamp_table = core.deserialize(storage:get_string(table_key)) or {}
 	table.insert(timestamp_table, os.time())
-	storage:set_string(table_key, minetest.serialize(timestamp_table))
+	storage:set_string(table_key, core.serialize(timestamp_table))
 end
 
 -- ********** Gift managing helpers **********
 
 local function load_gift(mode_name, receiver_name)
-	return minetest.deserialize(storage:get_string(mode_name .. ":" .. receiver_name))
+	return core.deserialize(storage:get_string(mode_name .. ":" .. receiver_name))
 		or {}
 end
 
 local function save_gift(score, giver_name, mode_name, receiver_name)
 	local gift_table = load_gift(mode_name, receiver_name)
 	gift_table[giver_name] = score + (gift_table[giver_name] or 0)
-	storage:set_string(mode_name .. ":" .. receiver_name, minetest.serialize(gift_table))
+	storage:set_string(mode_name .. ":" .. receiver_name, core.serialize(gift_table))
 end
 
 local function dispatch_gifts(receiver_name)
@@ -78,9 +78,9 @@ local function dispatch_gifts(receiver_name)
 			local old_receiver_ranks = mode_data.rankings:get(receiver_name)
 			local old_receiver_score = old_receiver_ranks.score or 0
 			mode_data.rankings:set(receiver_name, { score = old_receiver_score + score })
-			minetest.chat_send_player(
+			core.chat_send_player(
 				receiver_name,
-				minetest.colorize("#01D800", giver_name)
+				core.colorize("#01D800", giver_name)
 					.. string.format(
 						" has welcomed you with the %i score gift in mode %s!",
 						score,
@@ -94,7 +94,7 @@ end
 
 -- ********** REGISTRATIONS **********
 
-minetest.register_chatcommand("wb", {
+core.register_chatcommand("wb", {
 	description = string.format(
 		"Send a welcoming message to the player with a gift of %i score",
 		msg_price
@@ -150,11 +150,11 @@ minetest.register_chatcommand("wb", {
 		mode_data.rankings:set(giver_name, { score = old_giver_ranks.score - msg_price })
 		save_gift(msg_price, giver_name, mode_name, receiver_name)
 
-		if minetest.get_player_by_name(receiver_name) then
+		if core.get_player_by_name(receiver_name) then
 			dispatch_gifts(receiver_name)
 		end
 
-		minetest.log(
+		core.log(
 			"action",
 			string.format(
 				"Player %s welcomed player %s with %i more score in mode %s",
@@ -173,7 +173,7 @@ minetest.register_chatcommand("wb", {
 	end,
 })
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	local receiver_name = player:get_player_name()
 	dispatch_gifts(receiver_name)
 end)

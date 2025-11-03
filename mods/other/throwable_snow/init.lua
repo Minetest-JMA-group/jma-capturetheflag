@@ -1,5 +1,5 @@
 throwable_snow = {}
-local S = minetest.get_translator(minetest.get_current_modname())
+local S = core.get_translator(core.get_current_modname())
 
 function throwable_snow.on_hit_player(thrower, player)
 	hud_events.new(player, {
@@ -16,7 +16,7 @@ grenades.register_grenade("throwable_snow:snowball", {
 	stack_max = 99,
 	throw_cooldown = 0.9,
 	on_explode = function(def, obj, pos, name)
-		minetest.add_particlespawner({
+		core.add_particlespawner({
 			amount = 9,
 			time = 0.01,
 			minpos = pos,
@@ -35,7 +35,7 @@ grenades.register_grenade("throwable_snow:snowball", {
 			texture = "default_snow.png",
 		})
 
-		minetest.sound_play("default_snow_footstep", {
+		core.sound_play("default_snow_footstep", {
 			pos = pos,
 			gain = 0.8,
 			pitch = 3.0,
@@ -59,4 +59,4 @@ grenades.register_grenade("throwable_snow:snowball", {
 	}
 })
 
-minetest.override_item("default:snow", {drop = "throwable_snow:snowball 2"})
+core.override_item("default:snow", {drop = "throwable_snow:snowball 2"})

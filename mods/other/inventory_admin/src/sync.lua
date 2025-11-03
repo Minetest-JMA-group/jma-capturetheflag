@@ -1,7 +1,7 @@
 function inventory_admin.setup_detached_inventory(target_player_name)
     -- Create a detached inventory if it does not exist
     if not inventory_admin.detached_inventories[target_player_name] then
-        inventory_admin.detached_inventories[target_player_name] = minetest.create_detached_inventory(target_player_name .. "_inventory", {
+        inventory_admin.detached_inventories[target_player_name] = core.create_detached_inventory(target_player_name .. "_inventory", {
             -- Define the callback functions for inventory actions
             on_put = function(inv, listname, index, stack, player)
                 -- Sync the changes from the detached inventory to the player's inventory when items are put
@@ -32,9 +32,9 @@ function inventory_admin.setup_detached_inventory(target_player_name)
 end
 
 function inventory_admin.sync_player_to_detached_inventory(target_player_name)
-    local player = minetest.get_player_by_name(target_player_name)
+    local player = core.get_player_by_name(target_player_name)
     if not player then
-        minetest.log("error", "Player not found: " .. target_player_name)
+        core.log("error", "Player not found: " .. target_player_name)
         return
     end
 
@@ -43,7 +43,7 @@ function inventory_admin.sync_player_to_detached_inventory(target_player_name)
 
     -- Check if the detached inventory has been set up
     if not detached_inv then
-        minetest.log("error", "Detached inventory not found for player: " .. target_player_name)
+        core.log("error", "Detached inventory not found for player: " .. target_player_name)
         return
     end
 
@@ -57,9 +57,9 @@ end
 
 
 function inventory_admin.sync_inventory_to_player(target_player_name, listname, index, stack)
-    local player = minetest.get_player_by_name(target_player_name)
+    local player = core.get_player_by_name(target_player_name)
     if not player then
-        minetest.log("error", "Player not found: " .. target_player_name)
+        core.log("error", "Player not found: " .. target_player_name)
         return
     end
 

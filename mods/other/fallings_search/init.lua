@@ -3,7 +3,7 @@
 
 fallings_search = {}
 
-local fill_3d = dofile(minetest.get_modpath("fallings_search") .. "/fill_3d.lua")
+local fill_3d = dofile(core.get_modpath("fallings_search") .. "/fill_3d.lua")
 local moves_touch = {
 	{x = -1, y = 0, z = 0},
 	{x = 0, y = 0, z = 0},  -- FIXME should this be here?
@@ -26,7 +26,7 @@ function fallings_search.search_3d(can_go, startpos, apply_move, moves)
 	local visited = {}
 	local found = {}
 	local function on_visit(pos)
-		local vi = minetest.hash_node_position(pos)
+		local vi = core.hash_node_position(pos)
 		if visited[vi] then
 			return false
 		end

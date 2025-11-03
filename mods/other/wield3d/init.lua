@@ -9,12 +9,12 @@ local location = {
 
 local players = {}
 
-minetest.register_item("wield3d:hand", {
+core.register_item("wield3d:hand", {
 	type = "none",
 	wield_image = "blank.png",
 })
 
-minetest.register_entity("wield3d:entity", {
+core.register_entity("wield3d:entity", {
 	initial_properties = {
 		visual = "wielditem",
 		wield_item = "wield3d:hand",
@@ -27,9 +27,9 @@ minetest.register_entity("wield3d:entity", {
 		glow = 7,
 	},
 	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir, damage)
-		if minetest.is_player(puncher) then
+		if core.is_player(puncher) then
 			puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
-			minetest.log("warning", puncher:get_player_name() .. " is trying to damage non-pointable entity \"wield3d:entity\".")
+			core.log("warning", puncher:get_player_name() .. " is trying to damage non-pointable entity \"wield3d:entity\".")
 		end
 		return true
 	end
@@ -40,7 +40,7 @@ function wield3d.add_wielditem(player)
 	if wield3d.no_entity_attach[player_name] then
 		return
 	end
-	local entity = minetest.add_entity(player:get_pos(), "wield3d:entity")
+	local entity = core.add_entity(player:get_pos(), "wield3d:entity")
 	if not entity then return end
 
 	local setting = ctf_settings.get(player, "wield3d:use_old_wielditem_display")
@@ -85,28 +85,28 @@ local function update_entity(player)
 end
 
 local globalstep_timer = 0
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	globalstep_timer = globalstep_timer + dtime
 	if globalstep_timer < 0.5 then return end
 
 	globalstep_timer = 0
 
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		if players[player:get_player_name()] ~= nil then
 			update_entity(player)
 		end
 	end
 end)
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	local pname = player:get_player_name()
-	minetest.after(1.5, function()
-		if minetest.get_player_by_name(pname) then --checking if the player is still online
+	core.after(1.5, function()
+		if core.get_player_by_name(pname) then --checking if the player is still online
 			wield3d.add_wielditem(player)
 		end
 	end)
 end)
-minetest.register_on_leaveplayer(wield3d.remove_wielditem)
+core.register_on_leaveplayer(wield3d.remove_wielditem)
 
 
 ctf_settings.register("wield3d:use_old_wielditem_display", {

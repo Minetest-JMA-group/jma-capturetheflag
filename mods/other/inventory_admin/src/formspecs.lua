@@ -1,6 +1,6 @@
-local S = minetest.get_translator("mcl_chests")
-local F = minetest.formspec_escape
-local C = minetest.colorize
+local S = core.get_translator("mcl_chests")
+local F = core.formspec_escape
+local C = core.colorize
 
 
 -- Get the formspec for the inventory based on the game
@@ -12,7 +12,7 @@ function inventory_admin.get_player_inventory_formspec(target_player_name, admin
             "size[11.75,13]",  -- Adjust the height to accommodate the spacing
 
             -- Title for the target player's inventory
-            "label[0.375,0.375;", minetest.formspec_escape(target_player_name .. "'s Inventory"), "]",
+            "label[0.375,0.375;", core.formspec_escape(target_player_name .. "'s Inventory"), "]",
 
             -- Slot backgrounds for the target player's main inventory excluding the hotbar
             mcl_formspec.get_itemslot_bg_v4(0.375, 1, 9, 3),
@@ -53,7 +53,7 @@ function inventory_admin.get_player_inventory_formspec(target_player_name, admin
             "size[8,10]",  -- Width of 8 slots, and enough height to accommodate all slots and labels
 
             -- Title for the target player's inventory
-            "label[0.5,0;", minetest.formspec_escape(target_player_name .. "'s Inventory"), "]",
+            "label[0.5,0;", core.formspec_escape(target_player_name .. "'s Inventory"), "]",
 
             -- Singleplayer's complete inventory, including the hotbar in one block
             "list[detached:" .. target_player_name .. "_inventory;main;0,0.5;8,4;]",  -- 8 slots per row, 4 rows in total

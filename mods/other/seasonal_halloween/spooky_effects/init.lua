@@ -3,7 +3,7 @@ if os.date("%m") ~= "10" or tonumber(os.date("%d")) < 15 then return end
 spooky_effects = {}
 
 function spooky_effects.spawn_ghost(pos, vel, accel)
-	minetest.add_particle({
+	core.add_particle({
 		pos = pos,
 		velocity = vel or {x=math.random(-0.5, 0.5), y=3, z=math.random(-0.5, 0.5)},
 		acceleration = accel or {x=0, y=0.5, z=0},
@@ -27,7 +27,7 @@ function spooky_effects.spawn_angry_ghost(pos, target, vel, accel)
 		dest = target:get_pos():offset(0, 1.3, 0)
 	end
 
-	minetest.add_particle({
+	core.add_particle({
 		pos = pos,
 		velocity = vector.multiply(vector.direction(pos, dest), vel or 9),
 		acceleration = accel or {x=0, y=0, z=0},
@@ -41,6 +41,6 @@ function spooky_effects.spawn_angry_ghost(pos, target, vel, accel)
 	})
 end
 
-minetest.register_on_dieplayer(function(ded)
+core.register_on_dieplayer(function(ded)
 	spooky_effects.spawn_angry_ghost(ded:get_pos())
 end)

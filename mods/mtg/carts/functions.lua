@@ -39,9 +39,9 @@ function carts:velocity_to_dir(v)
 end
 
 function carts:is_rail(pos, railtype)
-	local node = minetest.get_node(pos).name
+	local node = core.get_node(pos).name
 	if node == "ignore" then
-		local vm = minetest.get_voxel_manip()
+		local vm = core.get_voxel_manip()
 		local emin, emax = vm:read_from_map(pos, pos)
 		local area = VoxelArea:new{
 			MinEdge = emin,
@@ -49,15 +49,15 @@ function carts:is_rail(pos, railtype)
 		}
 		local data = vm:get_data()
 		local vi = area:indexp(pos)
-		node = minetest.get_name_from_content_id(data[vi])
+		node = core.get_name_from_content_id(data[vi])
 	end
-	if minetest.get_item_group(node, "rail") == 0 then
+	if core.get_item_group(node, "rail") == 0 then
 		return false
 	end
 	if not railtype then
 		return true
 	end
-	return minetest.get_item_group(node, "connect_to_raillike") == railtype
+	return core.get_item_group(node, "connect_to_raillike") == railtype
 end
 
 function carts:check_front_up_down(pos, dir_, check_up, railtype)
@@ -232,7 +232,7 @@ function carts:register_rail(name, def_overwrite, railparams)
 		carts.railparams[name] = table.copy(railparams)
 	end
 
-	minetest.register_node(name, def)
+	core.register_node(name, def)
 end
 
 function carts:get_rail_groups(additional_groups)
@@ -241,7 +241,7 @@ function carts:get_rail_groups(additional_groups)
 		dig_immediate = 2,
 		attached_node = 1,
 		rail = 1,
-		connect_to_raillike = minetest.raillike_group("rail")
+		connect_to_raillike = core.raillike_group("rail")
 	}
 	if type(additional_groups) == "table" then
 		for k, v in pairs(additional_groups) do

@@ -1,5 +1,5 @@
-local modname = minetest.get_current_modname()
-local S = minetest.get_translator(modname)
+local modname = core.get_current_modname()
+local S = core.get_translator(modname)
 
 local COIN_ITEM = modname .. ":coin"
 local MAX_ATTEMPTS = 128
@@ -17,7 +17,7 @@ local function is_passable(name)
 		return false
 	end
 
-	local def = minetest.registered_nodes[name]
+	local def = core.registered_nodes[name]
 	if not def then
 		return false
 	end
@@ -46,7 +46,7 @@ local function is_solid_ground(name)
 		return false
 	end
 
-	local def = minetest.registered_nodes[name]
+	local def = core.registered_nodes[name]
 	if not def then
 		return false
 	end
@@ -103,12 +103,12 @@ local function find_surface_position()
 
 		column_min.x, column_min.y, column_min.z = x, minp.y - 1, z
 		column_max.x, column_max.y, column_max.z = x, maxp.y + 1, z
-		minetest.load_area(column_min, column_max)
+		core.load_area(column_min, column_max)
 
 		for y = maxp.y, minp.y - 1, -1 do
-			local ground = minetest.get_node({ x = x, y = y, z = z })
+			local ground = core.get_node({ x = x, y = y, z = z })
 			if is_solid_ground(ground.name) then
-				local above = minetest.get_node({ x = x, y = y + 1, z = z })
+				local above = core.get_node({ x = x, y = y + 1, z = z })
 				if is_passable(above.name) then
 					return { x = x + 0.5, y = y + 1, z = z + 0.5 }
 				end
@@ -131,7 +131,7 @@ local function teleport_player(player)
 	return true
 end
 
-minetest.register_craftitem(COIN_ITEM, {
+core.register_craftitem(COIN_ITEM, {
 	description = S("Teleport Coin"),
 	inventory_image = "default_mese_crystal_fragment.png^[brighten",
 	stack_max = 1,
@@ -145,7 +145,7 @@ minetest.register_craftitem(COIN_ITEM, {
 			itemstack:take_item()
 		else
 			if err and err ~= "" then
-				minetest.chat_send_player(user:get_player_name(), err)
+				core.chat_send_player(user:get_player_name(), err)
 			end
 		end
 
@@ -153,7 +153,7 @@ minetest.register_craftitem(COIN_ITEM, {
 	end,
 	on_drop = function(itemstack, dropper)
 		if dropper and dropper:is_player() then
-			minetest.chat_send_player(
+			core.chat_send_player(
 				dropper:get_player_name(),
 				S("The teleport coin refuses to leave you.")
 			)
@@ -162,7 +162,7 @@ minetest.register_craftitem(COIN_ITEM, {
 	end,
 })
 
-minetest.register_allow_player_inventory_action(function(player, action, inventory, info)
+core.register_allow_player_inventory_action(function(player, action, inventory, info)
 	if action ~= "take" then
 		return
 	end
@@ -172,7 +172,7 @@ minetest.register_allow_player_inventory_action(function(player, action, invento
 	end
 
 	if player and player:is_player() then
-		minetest.chat_send_player(
+		core.chat_send_player(
 			player:get_player_name(),
 			S("You cannot store the teleport coin elsewhere.")
 		)

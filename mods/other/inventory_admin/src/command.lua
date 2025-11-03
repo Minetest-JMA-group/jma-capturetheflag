@@ -4,14 +4,14 @@ inventory_admin.detached_inventories = {}
 function handle_player_inventory(admin_name, target_player_name)
     inventory_admin.setup_detached_inventory(target_player_name)
     inventory_admin.sync_player_to_detached_inventory(target_player_name)
-    minetest.show_formspec(admin_name, "inventory_admin:player_inventory",
+    core.show_formspec(admin_name, "inventory_admin:player_inventory",
         inventory_admin.get_player_inventory_formspec(target_player_name, admin_name))
     return true, "Showing inventory of " .. target_player_name
 end
 
 function handle_enderchest_inventory(admin_name, target_player_name)
     if inventory_admin.utils.is_mineclone2() then
-        minetest.show_formspec(admin_name, "inventory_admin:enderchest_inventory",
+        core.show_formspec(admin_name, "inventory_admin:enderchest_inventory",
             inventory_admin.get_enderchest_inventory_formspec(target_player_name))
         return true, "Showing enderchest inventory of " .. target_player_name
     else
@@ -21,7 +21,7 @@ end
 
 -- Modify the command_inventory function to handle the new parameters
 function inventory_admin.command_inventory(name, param)
-    local player = minetest.get_player_by_name(name)
+    local player = core.get_player_by_name(name)
     if not player then
         return false, "You need to be online to use this command."
     end
@@ -39,7 +39,7 @@ function inventory_admin.command_inventory(name, param)
             return false, "Invalid type. Use 'player' or 'ender'."
         end
 
-        local target_player = minetest.get_player_by_name(target_player_name)
+        local target_player = core.get_player_by_name(target_player_name)
         if not target_player then
             return false, "Target player not found."
         end

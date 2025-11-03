@@ -14,8 +14,8 @@ local function get_color(texture)
 	end
 end
 
-minetest.register_on_mods_loaded(function()
-	for name, def in pairs(minetest.registered_nodes) do
+core.register_on_mods_loaded(function()
+	for name, def in pairs(core.registered_nodes) do
 		if def.tiles then
 			for key, texture in ipairs(def.tiles) do
 				if type(texture) == "string" then
@@ -29,7 +29,7 @@ minetest.register_on_mods_loaded(function()
 				end
 			end
 
-			minetest.override_item(name, {tiles = def.tiles})
+			core.override_item(name, {tiles = def.tiles})
 		elseif def.special_tiles then
 			for key, texture in ipairs(def.special_tiles) do
 				if type(texture) == "string" then
@@ -43,13 +43,13 @@ minetest.register_on_mods_loaded(function()
 				end
 			end
 
-			minetest.override_item(name, {special_tiles = def.special_tiles})
+			core.override_item(name, {special_tiles = def.special_tiles})
 		end
 	end
 
 	if os.date("%m") == "10" then
 		local tools = {"sword", "pick", "axe", "shovel"}
-		for name, def in pairs(minetest.registered_tools) do
+		for name, def in pairs(core.registered_tools) do
 			for _, tool in ipairs(tools) do
 				if name:find(tool) then
 					local wield_image
@@ -58,7 +58,7 @@ minetest.register_on_mods_loaded(function()
 						wield_image = def.wield_image.."^(overlay_shovel.png^[transformR90)"
 					end
 
-					minetest.override_item(name, {
+					core.override_item(name, {
 						inventory_image = ("%s^overlay_%s.png"):format(def.inventory_image, tool),
 						wield_image = wield_image,
 					})
@@ -68,8 +68,8 @@ minetest.register_on_mods_loaded(function()
 			end
 		end
 
-		local water_source_tiles = minetest.registered_nodes["default:water_source"].tiles
-		local water_flowing_tiles = minetest.registered_nodes["default:water_flowing"].special_tiles
+		local water_source_tiles = core.registered_nodes["default:water_source"].tiles
+		local water_flowing_tiles = core.registered_nodes["default:water_flowing"].special_tiles
 
 		for _, v in pairs(water_source_tiles) do
 			v.name = "texture_changes_water_source_animated.png"
@@ -79,18 +79,18 @@ minetest.register_on_mods_loaded(function()
 			v.name = "texture_changes_water_flowing_animated.png"
 		end
 
-		minetest.override_item("default:water_source", {
+		core.override_item("default:water_source", {
 			tiles = water_source_tiles,
 			post_effect_color = {a = 150, r = 67, g = 13, b = 13},
 		})
-		minetest.override_item("default:water_flowing", {
+		core.override_item("default:water_flowing", {
 			tiles = {"texture_changes_water.png"},
 			special_tiles = water_flowing_tiles,
 			post_effect_color = {a = 150, r = 67, g = 13, b = 13},
 		})
 
-		minetest.override_item("default:ice", {tiles = {"texture_changes_ice.png"}})
-		minetest.override_item("default:cave_ice", {tiles = {"texture_changes_ice.png"}})
+		core.override_item("default:ice", {tiles = {"texture_changes_ice.png"}})
+		core.override_item("default:cave_ice", {tiles = {"texture_changes_ice.png"}})
 	end
 
 	local textures = {
@@ -136,7 +136,7 @@ minetest.register_on_mods_loaded(function()
 		return x
 	end
 
-	for name, def in pairs(minetest.registered_items) do
+	for name, def in pairs(core.registered_items) do
 		local update = false
 
 		if def.tiles then
@@ -162,7 +162,7 @@ minetest.register_on_mods_loaded(function()
 		end
 
 		if update then
-			minetest.override_item(name, {
+			core.override_item(name, {
 				tiles = def.tiles,
 				inventory_image = def.inventory_image,
 				wield_image = def.wield_image

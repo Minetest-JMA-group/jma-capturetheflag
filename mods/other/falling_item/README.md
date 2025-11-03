@@ -27,7 +27,7 @@ License: MIT
 
 falling_step() example
 
-minetest.override_item("default:gravel", {
+core.override_item("default:gravel", {
 	falling_step = function(self, pos, dtime)
 		print (self.node.name .. " falling!", dtime)
 	end

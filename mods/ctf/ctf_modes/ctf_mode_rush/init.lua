@@ -4,7 +4,7 @@ local features = ctf_modebase.features(rankings, recent_rankings)
 
 local MAX_REVIVES = 2
 
-local modpath = minetest.get_modpath(minetest.get_current_modname())
+local modpath = core.get_modpath(core.get_current_modname())
 local timer = dofile(modpath .. "/timer.lua")
 local spectator = dofile(modpath .. "/spectator.lua")
 
@@ -60,7 +60,7 @@ spectator.setup({
 })
 
 local function new_match_id()
-	return tostring(minetest.get_us_time())
+	return tostring(core.get_us_time())
 end
 
 local function store_initial_team(pname, team)
@@ -89,7 +89,7 @@ local function get_alive_teams()
 end
 
 local function update_flag_huds()
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		ctf_modebase.flag_huds.update_player(player)
 	end
 end
@@ -109,8 +109,8 @@ local function announce_team_defeat(team)
 
 	local color = ctf_teams.team[team] and ctf_teams.team[team].color or "white"
 	local message =
-		minetest.colorize(color, HumanReadable(team) .. " base has been defeated!")
-	minetest.chat_send_all(message)
+		core.colorize(color, HumanReadable(team) .. " base has been defeated!")
+	core.chat_send_all(message)
 
 	update_flag_huds()
 end
@@ -122,16 +122,16 @@ local function declare_winner(team)
 	state.winner_announced = true
 	timer.stop_round()
 
-	local connected = minetest.get_connected_players()
+	local connected = core.get_connected_players()
 	local winner_text
 
 	if team then
 		local color = ctf_teams.team[team] and ctf_teams.team[team].color or "white"
 		winner_text = HumanReadable(team) .. " Team Wins!"
-		minetest.chat_send_all(minetest.colorize(color, winner_text))
+		core.chat_send_all(core.colorize(color, winner_text))
 	else
 		winner_text = "No team survived!"
-		minetest.chat_send_all(minetest.colorize("orange", winner_text))
+		core.chat_send_all(core.colorize("orange", winner_text))
 	end
 
 	for name in pairs(state.participants) do
@@ -235,14 +235,14 @@ local function remove_flags()
 			local base_pos = vector.new(teamdef.flag_pos)
 			local top_pos = vector.add(base_pos, { x = 0, y = 1, z = 0 })
 
-			local node = minetest.get_node_or_nil(base_pos)
+			local node = core.get_node_or_nil(base_pos)
 			if node and node.name ~= "air" then
-				minetest.swap_node(base_pos, { name = "air" })
+				core.swap_node(base_pos, { name = "air" })
 			end
 
-			local top_node = minetest.get_node_or_nil(top_pos)
+			local top_node = core.get_node_or_nil(top_pos)
 			if top_node and top_node.name ~= "air" then
-				minetest.swap_node(top_pos, { name = "air" })
+				core.swap_node(top_pos, { name = "air" })
 			end
 		end
 	end
@@ -265,7 +265,7 @@ local function init_alive_players()
 end
 
 local function restore_all_players()
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		local name = player:get_player_name()
 		spectator.restore_privs(name)
 		spectator.disable_vanish(player)
@@ -401,7 +401,7 @@ ctf_modebase.register_mode("rush", {
 		state.match_id = new_match_id()
 		init_alive_players()
 
-		minetest.after(0, function()
+		core.after(0, function()
 			remove_flags()
 			update_flag_huds()
 			timer.update_round_huds()
@@ -443,8 +443,8 @@ ctf_modebase.register_mode("rush", {
 		store_initial_team(pname, new_team)
 
 		if state.eliminated[pname] then
-			minetest.after(0, function()
-				local current = minetest.get_player_by_name(pname)
+			core.after(0, function()
+				local current = core.get_player_by_name(pname)
 				if current then
 					spectator.make_spectator(current)
 					hud_events.new(pname, {
@@ -556,8 +556,8 @@ ctf_modebase.register_mode("rush", {
 		local pname = player:get_player_name()
 
 		if state.eliminated[pname] then
-			minetest.after(0, function()
-				local p = minetest.get_player_by_name(pname)
+			core.after(0, function()
+				local p = core.get_player_by_name(pname)
 				if not p then
 					return
 				end
@@ -605,7 +605,7 @@ ctf_modebase.register_mode("rush", {
 	get_chest_access = features.get_chest_access,
 })
 
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	if ctf_modebase.current_mode ~= "rush" then
 		return
 	end
@@ -614,7 +614,7 @@ minetest.register_globalstep(function(dtime)
 	spectator.on_globalstep(dtime)
 end)
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
 	local spec_state = spectator.get_spectator_state(name)
 	if not spec_state or not spec_state.match then
@@ -648,7 +648,7 @@ minetest.register_on_joinplayer(function(player)
 
 	local match_id = spec_state.match
 
-	minetest.after(0, function()
+	core.after(0, function()
 		if
 			not is_rush_active()
 			or state.match_id ~= match_id
@@ -657,7 +657,7 @@ minetest.register_on_joinplayer(function(player)
 			return
 		end
 
-		local current = minetest.get_player_by_name(name)
+		local current = core.get_player_by_name(name)
 		if not current then
 			return
 		end

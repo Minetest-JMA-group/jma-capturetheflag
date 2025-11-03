@@ -84,8 +84,8 @@ function ctf_healing.register_bandage(name, def)
 					})
 				end
 			elseif pointed_thing.type == "node" then
-				local node_pointed = minetest.get_node(pointed_thing.under)
-				local node_above = minetest.get_node(pointed_thing.under:offset(0, 1, 0))
+				local node_pointed = core.get_node(pointed_thing.under)
+				local node_above = core.get_node(pointed_thing.under:offset(0, 1, 0))
 				if node_pointed.name ~= "ctf_modebase:flag_captured_top" then
 					if node_pointed.name:find("ctf_modebase:flag_") then
 						ctf_modebase.flag_on_punch(
@@ -114,12 +114,12 @@ function ctf_healing.register_bandage(name, def)
 			local node
 
 			if pointed and pointed.under then
-				node = minetest.get_node(pointed.under)
-				pointed_def = minetest.registered_nodes[node.name]
+				node = core.get_node(pointed.under)
+				pointed_def = core.registered_nodes[node.name]
 			end
 
 			if pointed_def and pointed_def.on_rightclick then
-				return minetest.item_place(itemstack, user, pointed)
+				return core.item_place(itemstack, user, pointed)
 			else
 				return def.rightclick_func(itemstack, user, pointed, ...)
 			end
@@ -128,7 +128,7 @@ function ctf_healing.register_bandage(name, def)
 		tooldef.on_secondary_use = def.rightclick_func
 	end
 
-	minetest.register_tool(name, tooldef)
+	core.register_tool(name, tooldef)
 end
 
 local HEAL_PERCENT = 0.75
