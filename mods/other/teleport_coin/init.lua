@@ -102,15 +102,17 @@ local function find_surface_position()
 		local z = math.random(minp.z, maxp.z)
 
 		column_min.x, column_min.y, column_min.z = x, minp.y - 1, z
-		column_max.x, column_max.y, column_max.z = x, maxp.y + 1, z
+		column_max.x, column_max.y, column_max.z = x, maxp.y + 2, z
 		core.load_area(column_min, column_max)
 
 		for y = maxp.y, minp.y - 1, -1 do
 			local ground = core.get_node({ x = x, y = y, z = z })
 			if is_solid_ground(ground.name) then
 				local above = core.get_node({ x = x, y = y + 1, z = z })
-				if is_passable(above.name) then
-					return { x = x + 0.5, y = y + 1, z = z + 0.5 }
+				local top = core.get_node({ x = x, y = y + 2, z = z })
+
+				if is_passable(above.name) and is_passable(top.name) then
+					return { x = x, y = y + 1, z = z }
 				end
 			end
 		end
