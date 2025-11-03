@@ -602,6 +602,8 @@ ctf_modebase.register_mode("rush", {
 	on_flag_take = function() end,
 	on_flag_drop = function() end,
 	on_flag_capture = function() end,
+	on_flag_rightclick = function() end,
+	get_item_value = features.get_item_value,
 	get_chest_access = features.get_chest_access,
 })
 

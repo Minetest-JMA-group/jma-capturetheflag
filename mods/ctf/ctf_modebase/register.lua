@@ -165,7 +165,10 @@ end)
 
 function ctf_modebase.on_flag_rightclick(...)
 	if ctf_modebase.current_mode then
-		ctf_modebase:get_current_mode().on_flag_rightclick(...)
+		local current_mode = ctf_modebase:get_current_mode()
+		if current_mode and current_mode.on_flag_rightclick then
+			current_mode.on_flag_rightclick(...)
+		end
 	end
 end
 
