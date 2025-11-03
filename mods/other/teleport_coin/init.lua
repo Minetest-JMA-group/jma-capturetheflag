@@ -119,14 +119,60 @@ local function find_surface_position()
 	return nil, S("Unable to find a valid surface right now.")
 end
 
+local function spawn_teleport_effect(pos)
+	if not pos then
+		return
+	end
+
+	local spread = { x = 0.4, y = 0.3, z = 0.4 }
+
+	core.add_particlespawner({
+		amount = 18,
+		time = 0.25,
+		minpos = vector.subtract(pos, spread),
+		maxpos = vector.add(pos, spread),
+		minvel = { x = -0.5, y = 0.4, z = -0.5 },
+		maxvel = { x = 0.5, y = 1.2, z = 0.5 },
+		minacc = { x = 0, y = -2.8, z = 0 },
+		maxacc = { x = 0, y = -1.2, z = 0 },
+		minexptime = 0.35,
+		maxexptime = 0.65,
+		minsize = 1.4,
+		maxsize = 2.4,
+		texture = "default_item_smoke.png^[brighten",
+		glow = 6,
+	})
+
+	core.add_particlespawner({
+		amount = 10,
+		time = 0.15,
+		minpos = vector.subtract(pos, { x = 0.2, y = 0.1, z = 0.2 }),
+		maxpos = vector.add(pos, { x = 0.2, y = 0.4, z = 0.2 }),
+		minvel = { x = -0.2, y = 0.6, z = -0.2 },
+		maxvel = { x = 0.2, y = 1.0, z = 0.2 },
+		minexptime = 0.2,
+		maxexptime = 0.35,
+		minsize = 1.0,
+		maxsize = 1.6,
+		texture = "default_mese_crystal_fragment.png^[brighten",
+		glow = 8,
+	})
+end
+
 local function teleport_player(player)
+	local origin = player:get_pos()
 	local pos, err = find_surface_position()
 	if not pos then
 		return false, err
 	end
 
+	if origin then
+		spawn_teleport_effect(origin)
+	end
+
 	player:set_pos(pos)
 	player:set_velocity({ x = 0, y = 0, z = 0 })
+	spawn_teleport_effect(pos)
 
 	return true
 end
