@@ -55,6 +55,13 @@ local function is_solid_ground(name)
 		return false
 	end
 
+	local groups = def.groups
+	if groups then
+		if groups.barrier or groups.immortal then
+			return false
+		end
+	end
+
 	if def.damage_per_second and def.damage_per_second > 0 then
 		return false
 	end
