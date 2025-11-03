@@ -1,5 +1,5 @@
 local DEFAULT_DESPAWN_TIME = 60
-local DESPAWN_CHECK_DELAY = 1
+local DESPAWN_CHECK_DELAY = 2
 
 -- This table represents how long items take to respawn
 -- Values of "true" don't automatically despawn
