@@ -59,6 +59,10 @@ function spectator.get_spectator_state(name)
 		parsed.privs = {}
 	end
 
+	if type(parsed.team) ~= "string" or parsed.team == "" then
+		parsed.team = nil
+	end
+
 	return parsed
 end
 
@@ -77,6 +81,10 @@ function spectator.set_spectator_state(name, data)
 		match = data.match,
 		privs = data.privs,
 	}
+
+	if type(data.team) == "string" and data.team ~= "" then
+		payload.team = data.team
+	end
 
 	storage:set_string(key, minetest.serialize(payload))
 end
@@ -349,6 +357,7 @@ function spectator.make_spectator(player)
 	spectator.set_spectator_state(pname, {
 		match = state.match_id,
 		privs = state.saved_privs[pname],
+		team = state.initial_team[pname],
 	})
 end
 

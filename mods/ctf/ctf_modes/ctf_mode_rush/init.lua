@@ -64,6 +64,15 @@ local function new_match_id()
 end
 
 local function store_initial_team(pname, team)
+	if not team or team == "" then
+		state.initial_team[pname] = nil
+		return
+	end
+
+	if state.initial_team[pname] and state.eliminated[pname] then
+		return
+	end
+
 	state.initial_team[pname] = team
 end
 
@@ -402,7 +411,20 @@ ctf_modebase.register_mode("rush", {
 		reset_state()
 		features.on_match_end()
 	end,
-	team_allocator = features.team_allocator,
+	team_allocator = function(player)
+		local name
+		if type(player) == "string" then
+			name = player
+		elseif player and player.get_player_name then
+			name = player:get_player_name()
+		end
+
+		if name and state.eliminated[name] then
+			return
+		end
+
+		return features.team_allocator(player)
+	end,
 	on_allocplayer = function(player, new_team, old_team)
 		local pname = player:get_player_name()
 
@@ -607,11 +629,46 @@ minetest.register_on_joinplayer(function(player)
 		return
 	end
 
+	if type(spec_state.team) == "string" and spec_state.team ~= "" then
+		state.initial_team[name] = spec_state.team
+	end
+
 	if spec_state.privs and not state.saved_privs[name] then
 		state.saved_privs[name] = spec_state.privs
 	end
 
+	state.participants[name] = true
+	state.vanish_active[name] = nil
 	state.eliminated[name] = true
+	state.spectator_anchor[name] = nil
+	ctf_teams.remove_online_player(name)
+	ctf_teams.player_team[name] = nil
+	ctf_teams.non_team_players[name] = true
+
+	local match_id = spec_state.match
+
+	minetest.after(0, function()
+		if
+			not is_rush_active()
+			or state.match_id ~= match_id
+			or not state.eliminated[name]
+		then
+			return
+		end
+
+		local current = minetest.get_player_by_name(name)
+		if not current then
+			return
+		end
+
+		spectator.make_spectator(current)
+	end)
+
+	hud_events.new(name, {
+		text = "You have no revives left and are spectating this round.",
+		color = "warning",
+		quick = true,
+	})
 end)
 
 rush_api.is_spectator = spectator.is_spectator
