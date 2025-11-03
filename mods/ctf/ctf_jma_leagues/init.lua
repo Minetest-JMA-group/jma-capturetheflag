@@ -1,10 +1,10 @@
 ctf_jma_leagues = {
-	leagues = dofile(minetest.get_modpath("ctf_jma_leagues") .. "/leagues.lua"),
+	leagues = dofile(core.get_modpath("ctf_jma_leagues") .. "/leagues.lua"),
 	task_callbacks = {},
 	on_promote_callbacks = {},
 }
 
-local modstorage = minetest.get_mod_storage()
+local modstorage = core.get_mod_storage()
 local leagues_cache = {}
 local player_ctx = {}
 local storage_prefix = "current_league_"
@@ -55,7 +55,7 @@ function ctf_jma_leagues.evaluate_task(player_name, req)
 		result = {done = result, current = result and req.params.goal or 0, required = req.params.goal}
 	elseif type(result) ~= "table" or result.done == nil then
 		result = {done = false, error = "Invalid callback result"}
-		minetest.log("error", "Invalid callback result for task: " .. req.task_type)
+		core.log("error", "Invalid callback result for task: " .. req.task_type)
 	end
 
 	return result
@@ -127,15 +127,15 @@ function ctf_jma_leagues.update_league(player_name)
 
         local info = ctf_jma_leagues.leagues[next_league]
         if info then
-            minetest.chat_send_all(
-                minetest.colorize("#FFA500", "[Leagues]") ..
-                minetest.colorize("#00FF00", string.format(
+            core.chat_send_all(
+                core.colorize("#FFA500", "[Leagues]") ..
+                core.colorize("#00FF00", string.format(
                     ": %s advanced the %s!",
                     player_name,
                     info.display_name
                 ))
             )
-            hpbar.set_icon(minetest.get_player_by_name(player_name), info.icon_texture)
+            hpbar.set_icon(core.get_player_by_name(player_name), info.icon_texture)
         end
 
         for _, cb in ipairs(ctf_jma_leagues.on_promote_callbacks) do
@@ -152,7 +152,7 @@ function ctf_jma_leagues.reset_leaugue(player_name)
 		modstorage:set_string(key, "")
 	end
 	leagues_cache[player_name] = nil
-	local player = minetest.get_player_by_name(player_name)
+	local player = core.get_player_by_name(player_name)
 	if player then
 		hpbar.set_icon(player, "")
 	end
@@ -166,7 +166,7 @@ function ctf_jma_leagues.reset_all()
 end
 
 function ctf_jma_leagues.flush_cache(player_name, force)
-	if force or not minetest.get_player_by_name(player_name) then
+	if force or not core.get_player_by_name(player_name) then
 		leagues_cache[player_name] = nil
 		player_ctx[player_name] = nil
 	end
@@ -181,8 +181,8 @@ function ctf_jma_leagues.update_icon(player)
 end
 
 ctf_api.register_on_match_end(function()
-	minetest.after(1, function()
-		for _, p in pairs(minetest.get_connected_players()) do
+	core.after(1, function()
+		for _, p in pairs(core.get_connected_players()) do
 			local name = p:get_player_name()
 			player_ctx[name] = {}
 			ctf_jma_leagues.update_league(name)
@@ -195,18 +195,18 @@ ctf_chat.register_prefix(1, function(name, tcolor)
 	local league = ctf_jma_leagues.get_league(name)
 	if league ~= "none" then
 		local color = ctf_jma_leagues.leagues[league].color or "white"
-		return minetest.colorize(color, "[" .. HumanReadable(league) .. "]")
+		return core.colorize(color, "[" .. HumanReadable(league) .. "]")
 	end
 end)
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	local player_name = player:get_player_name()
 	player_ctx[player_name] = {}
 	ctf_jma_leagues.update_league(player_name)
 	ctf_jma_leagues.update_icon(player)
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local player_name = player:get_player_name()
 	leagues_cache[player_name] = nil
 	player_ctx[player_name] = nil

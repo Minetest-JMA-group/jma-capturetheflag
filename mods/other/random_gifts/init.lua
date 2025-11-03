@@ -80,19 +80,19 @@ local function show_formspec(player)
 		end
 	end
 
-	minetest.show_formspec(player:get_player_name(), fs_name, formspec)
+	core.show_formspec(player:get_player_name(), fs_name, formspec)
 end
 
 local function random_rgb_color()
     local r = math.random(0, 255)
     local g = math.random(0, 255)
     local b = math.random(0, 255)
-	return minetest.colorspec_to_colorstring({a=0, r=r, g=g, b=b})
+	return core.colorspec_to_colorstring({a=0, r=r, g=g, b=b})
 end
 
 random_gifts.random_rgb_color = random_rgb_color
 
-minetest.register_on_player_receive_fields(function(player, formname, fields)
+core.register_on_player_receive_fields(function(player, formname, fields)
 	if formname ~= fs_name then
 		return
 	end
@@ -100,7 +100,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	local player_name = player:get_player_name()
 	local box = open_boxes[player_name]
 	if not box then
-		minetest.close_formspec(player_name, fs_name)
+		core.close_formspec(player_name, fs_name)
 		return true
 	end
 
@@ -111,15 +111,15 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 
 	if not entity_exists(box.entity) then
 		open_boxes[player_name] = nil
-		minetest.close_formspec(player_name, fs_name)
+		core.close_formspec(player_name, fs_name)
 		return true
 	end
 
 	local box_pos = box.entity:get_pos()
 	if vector.distance(box_pos, player:get_pos()) > 5 then
 		open_boxes[player_name] = nil
-		minetest.close_formspec(player_name, fs_name)
-		minetest.chat_send_player(player_name, "You're too far away")
+		core.close_formspec(player_name, fs_name)
+		core.chat_send_player(player_name, "You're too far away")
 		return true
 	end
 
@@ -129,7 +129,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 			if not gift then
 				box.entity:remove()
 				open_boxes[player_name] = nil
-				minetest.close_formspec(player_name, fs_name)
+				core.close_formspec(player_name, fs_name)
 				return true
 			end
 
@@ -145,11 +145,11 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 			end
 
 			if stack then
-				local inv = minetest.get_inventory({type = "player", name = player_name})
+				local inv = core.get_inventory({type = "player", name = player_name})
 				local left_overs = inv:add_item("main", stack)
 				if left_overs:get_count() > 0 then
-					minetest.add_item(player:get_pos(), left_overs)
-					minetest.chat_send_player(player_name, "Your gift has fallen to the ground!")
+					core.add_item(player:get_pos(), left_overs)
+					core.chat_send_player(player_name, "Your gift has fallen to the ground!")
 				end
 			end
 
@@ -158,11 +158,11 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 			if not next(box.gifts) or remove_giftbox or gift.oneshot then
 				box.entity:remove()
 				open_boxes[player_name] = nil
-				minetest.close_formspec(player_name, fs_name)
+				core.close_formspec(player_name, fs_name)
 
 				-- particles from fireworks mod
 				-- https://github.com/KaylebJay/fireworks
-				minetest.add_particlespawner({
+				core.add_particlespawner({
 					amount = 10,
 					time = 0.001,
 					minpos = box_pos,
@@ -189,7 +189,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	return true
 end)
 
-minetest.register_entity("random_gifts:gift", {
+core.register_entity("random_gifts:gift", {
 	initial_properties = {
 		visual = "mesh",
 		textures = {"radom_gifts_chest.png"},
@@ -244,7 +244,7 @@ minetest.register_entity("random_gifts:gift", {
 
 	on_activate = function(self, staticdata, dtime_s)
 		-- self.object:set_properties({textures = "radom_gifts_chest.png"})
-		local par = minetest.add_entity(self.object:get_pos(), "random_gifts:parachute")
+		local par = core.add_entity(self.object:get_pos(), "random_gifts:parachute")
 		par:set_attach(self.object)
 		self.parachute = par
 
@@ -274,7 +274,7 @@ minetest.register_entity("random_gifts:gift", {
 			end
 			show_formspec(clicker)
 		else
-			minetest.chat_send_player(player_name, "Oops, that gift is empty, you'll have better luck next time!")
+			core.chat_send_player(player_name, "Oops, that gift is empty, you'll have better luck next time!")
 			self.object:remove()
 			return
 		end
@@ -296,7 +296,7 @@ function random_gifts.set_items(itemlist)
 	list = itemlist
 end
 
-minetest.register_entity("random_gifts:parachute", {
+core.register_entity("random_gifts:parachute", {
 	initial_properties = {
 		visual = "mesh",
 		textures = {"random_gifts_parachute.png"},
@@ -316,12 +316,12 @@ minetest.register_entity("random_gifts:parachute", {
 	end,
 })
 
-minetest.register_chatcommand("spawn_giftbox",{
+core.register_chatcommand("spawn_giftbox",{
 	privs = {dev = true},
 	func = function(name)
-		local player = minetest.get_player_by_name(name)
-		minetest.add_entity(vector.offset(player:get_pos(), 0, 1, 0), "random_gifts:gift")
+		local player = core.get_player_by_name(name)
+		core.add_entity(vector.offset(player:get_pos(), 0, 1, 0), "random_gifts:gift")
 	end
 })
 
-dofile(minetest.get_modpath("random_gifts") .. "/spawner.lua")
+dofile(core.get_modpath("random_gifts") .. "/spawner.lua")

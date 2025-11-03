@@ -66,7 +66,7 @@ function new_year_event.add_firework_count(player)
             if meta:get_int(COSMETIC_KEY) ~= 1 then
                 meta:set_int(COSMETIC_KEY, 1)
             end
-            minetest.chat_send_all(string.format("%s has completed the New Year fireworks event!", player:get_player_name()))
+            core.chat_send_all(string.format("%s has completed the New Year fireworks event!", player:get_player_name()))
         else
             hud_events.new(player:get_player_name(), {
 				text = string.format("[Event] %d/%d fireworks launched", firework_count, TARGET_FIREWORK_COUNT),

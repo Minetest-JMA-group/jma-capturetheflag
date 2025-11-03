@@ -1,10 +1,10 @@
-local backend = minetest.settings:get("ctf_rankings_backend") or "default"
+local backend = core.settings:get("ctf_rankings_backend") or "default"
 
 local rankings
 local top = ctf_core.include_files("top.lua")
 
 if backend == "redis" then
-	local env = minetest.request_insecure_environment()
+	local env = core.request_insecure_environment()
 	assert(
 		env,
 		"Please add 'ctf_rankings' to secure.trusted_mods if you want to use the redis backend"
@@ -21,7 +21,7 @@ end
 
 ctf_rankings = {
 	init = function()
-		return rankings(minetest.get_current_modname() .. "|", top:new())
+		return rankings(core.get_current_modname() .. "|", top:new())
 	end,
 
 	registered_on_rank_reset = {},

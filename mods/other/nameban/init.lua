@@ -1,15 +1,15 @@
 -- SPDX-License-Identifier: LGPL-2.1-only
 -- Copyright (c) 2023 Marko Petrović
 
-local storage = minetest.get_mod_storage()
-local db = minetest.deserialize(storage:get_string("database")) or {}
+local storage = core.get_mod_storage()
+local db = core.deserialize(storage:get_string("database")) or {}
 local mode = storage:get_int("mode") or 1
 local filter_on = storage:get_int("filter") or 1
 local LCSthreshold = storage:get_int("LCSthreshold") or 4
 
 local function make_logger(level)
 	return function(text, ...)
-		minetest.log(level, "[nameban] " .. text:format(...))
+		core.log(level, "[nameban] " .. text:format(...))
 	end
 end
 
@@ -17,7 +17,7 @@ local ACTION = make_logger("action")
 local WARNING = make_logger("warning")
 
 local function save_db()
-	storage:set_string("database", minetest.serialize(db))
+	storage:set_string("database", core.serialize(db))
 end
 
 local function findElement(data, string)
@@ -75,16 +75,16 @@ local function parse_players(name)
 end
 
 local function check_online_players()
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		local playername = player:get_player_name()
 		local msg = parse_players(playername)
 		if msg then
-			minetest.kick_player(playername, msg)
+			core.kick_player(playername, msg)
 		end
 	end
 end
 
-minetest.register_chatcommand("wordban", {
+core.register_chatcommand("wordban", {
 	description = "Add a word to the blacklist for what's allowed in player names",
 	params = "<word>",
 	privs = { ban = true },
@@ -109,7 +109,7 @@ minetest.register_chatcommand("wordban", {
 	end,
 })
 
-minetest.register_chatcommand("wordunban", {
+core.register_chatcommand("wordunban", {
 	description = "Remove a word from the blacklist for what's allowed in player names",
 	params = "<word>",
 	privs = { ban = true },
@@ -129,7 +129,7 @@ minetest.register_chatcommand("wordunban", {
 	end,
 })
 
-minetest.register_chatcommand("namelock", {
+core.register_chatcommand("namelock", {
 	description = "Lock a name so that no other player with a similar name may log in",
 	params = "<playername>",
 	privs = { ban = true },
@@ -155,7 +155,7 @@ minetest.register_chatcommand("namelock", {
 	end,
 })
 
-minetest.register_chatcommand("nameunlock", {
+core.register_chatcommand("nameunlock", {
 	description = "Unlock a name so that other players can use it as part of their username",
 	params = "<playername>",
 	privs = { ban = true },
@@ -176,7 +176,7 @@ minetest.register_chatcommand("nameunlock", {
 	end,
 })
 
-minetest.register_chatcommand("nameban_mode", {
+core.register_chatcommand("nameban_mode", {
 	description = "Set nameban mode of operation",
 	params = "<permissive/enforcing/filter/no_filter>",
 	privs = { dev = true },
@@ -220,7 +220,7 @@ minetest.register_chatcommand("nameban_mode", {
 	end,
 })
 
-minetest.register_chatcommand("nameban_lcs", {
+core.register_chatcommand("nameban_lcs", {
 	description = "Set minimal pattern length for LCS to be employed",
 	params = "<pattern length>",
 	privs = { dev = true },
@@ -236,4 +236,4 @@ minetest.register_chatcommand("nameban_lcs", {
 	end,
 })
 
-minetest.register_on_prejoinplayer(parse_players)
+core.register_on_prejoinplayer(parse_players)

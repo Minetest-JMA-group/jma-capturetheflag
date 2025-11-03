@@ -5,7 +5,7 @@ ranks = {}
 local registered   = {}
 
 -- Load mod storage
-local storage = minetest.get_mod_storage()
+local storage = core.get_mod_storage()
 
 ---
 --- API
@@ -13,8 +13,8 @@ local storage = minetest.get_mod_storage()
 
 -- [local function] Get colour
 local function get_colour(colour)
-	if type(colour) == "table" and minetest.rgba then
-		return minetest.rgba(colour.r, colour.g, colour.b, colour.a)
+	if type(colour) == "table" and core.rgba then
+		return core.rgba(colour.r, colour.g, colour.b, colour.a)
 	elseif type(colour) == "string" then
 		return colour
 	else
@@ -50,7 +50,7 @@ end
 -- [function] Get player rank
 function ranks.get_rank(name)
 	if type(name) ~= "string" then
-		name = minetest.get_player_by_name(name)
+		name = core.get_player_by_name(name)
 	end
 
 	local rank = storage:get_string(name)
@@ -62,7 +62,7 @@ end
 ctf_chat.register_prefix(0, function(name, tcolor)
 	local rank = ranks.get_player_prefix(name)
 	if rank then
-		return minetest.colorize(rank.color, rank.prefix)
+		return core.colorize(rank.color, rank.prefix)
 	end
 end)
 
@@ -81,7 +81,7 @@ function ranks.set_rank(name, rank)
 		name = name:get_player_name()
 	end
 
-	if registered[rank] and minetest.player_exists(name) then
+	if registered[rank] and core.player_exists(name) then
 		storage:set_string(name, rank)
 
 		-- Update nametag
@@ -120,13 +120,13 @@ end
 ---
 
 -- [privilege] Rank
-minetest.register_privilege("ranking", {
+core.register_privilege("ranking", {
 	description = "Permission to use /rank chatcommand ",
 	give_to_singleplayer = false,
 })
 
 -- Assign/update rank on join player
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
 
 	if ranks.get_rank(name) then
@@ -140,7 +140,7 @@ minetest.register_on_joinplayer(function(player)
 end)
 
 -- [chatcommand] /rank
-minetest.register_chatcommand("ranking", {
+core.register_chatcommand("ranking", {
 	description = "Set a player's rank",
 	params = "<player> <new rank> / \"list\" | username, rankname / list ranks",
 	privs = {ranking = true},
@@ -153,14 +153,14 @@ minetest.register_chatcommand("ranking", {
 		if #param == 1 and param[1] == "list" then
 			return true, "Available Ranks: "..ranks.list_plaintext()
 		elseif #param == 2 then
-			if minetest.player_exists(param[1]) == false then
+			if core.player_exists(param[1]) == false then
 					return false, "Player does not exist"
 			end
 
 			if ranks.get_def(param[2]) then
 				if ranks.set_rank(param[1], param[2]) then
 					if name ~= param[1] then
-						minetest.chat_send_player(param[1], name.." set your rank to "..param[2])
+						core.chat_send_player(param[1], name.." set your rank to "..param[2])
 					end
 
 					return true, "Set "..param[1].."'s rank to "..param[2]
@@ -180,7 +180,7 @@ minetest.register_chatcommand("ranking", {
 })
 
 -- [chatcommand] /getrank
-minetest.register_chatcommand("getrank", {
+core.register_chatcommand("getrank", {
 	description = "Get a player's rank. If no player is specified, your own rank is returned.",
 	params = "<name> | name of player",
 	func = function(name, param)
@@ -188,7 +188,7 @@ minetest.register_chatcommand("getrank", {
 			local rank = ranks.get_rank(param)
 			if rank then
 				return true, "Rank of " .. param .. ": " .. rank:gsub("^%l", string.upper)
-			elseif minetest.player_exists(param) then
+			elseif core.player_exists(param) then
 				return false, "Rank of " .. param .. ": No rank"
 			else
 				return false, "Player does not exist"
@@ -205,9 +205,9 @@ minetest.register_chatcommand("getrank", {
 ---
 
 -- Load default ranks
-dofile(minetest.get_modpath("ranks").."/ranks.lua")
+dofile(core.get_modpath("ranks").."/ranks.lua")
 
-local path = minetest.get_worldpath().."/ranks.lua"
+local path = core.get_worldpath().."/ranks.lua"
 -- Attempt to load per-world ranks
 if io.open(path) then
 	dofile(path)

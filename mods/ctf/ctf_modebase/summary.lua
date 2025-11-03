@@ -4,7 +4,7 @@ local winner = nil
 
 local player_sort_by = {}
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	player_sort_by[player:get_player_name()] = nil
 end)
 

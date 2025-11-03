@@ -37,7 +37,7 @@ hb.settings.alignment_pattern = hb.load_setting("hudbars_alignment_pattern", "st
 
 hb.settings.autohide_breath = hb.load_setting("hudbars_autohide_breath", "bool", true)
 
--- local sorting = minetest.settings:get("hudbars_sorting")
+-- local sorting = core.settings:get("hudbars_sorting")
 -- if sorting ~= nil then
 -- 	hb.settings.sorting = {}
 -- 	hb.settings.sorting_reverse = {}

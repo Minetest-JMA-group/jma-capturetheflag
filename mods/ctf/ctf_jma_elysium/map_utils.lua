@@ -226,7 +226,7 @@ core.register_chatcommand("el_restore_meta", {
 })
 
 local export_path = core.get_worldpath() .. "/maps_meta/"
-minetest.mkdir(export_path) -- make sure the directory exists
+core.mkdir(export_path) -- make sure the directory exists
 
 core.register_chatcommand("el_meta", {
 	params = "export|import <mapname>",

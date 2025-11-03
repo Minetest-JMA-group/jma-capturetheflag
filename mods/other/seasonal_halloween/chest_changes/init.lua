@@ -14,11 +14,11 @@ local function replace_textures(x)
 end
 
 
-local def = table.copy(minetest.registered_nodes["ctf_map:chest"])
+local def = table.copy(core.registered_nodes["ctf_map:chest"])
 for k, v in pairs(def.tiles) do
 	def.tiles[k] = replace_textures(v)
 end
-minetest.override_item("ctf_map:chest", {
+core.override_item("ctf_map:chest", {
 	tiles = def.tiles,
 	on_rightclick = function(pos, ...)
 		spooky_effects.spawn_ghost(pos)
@@ -29,11 +29,11 @@ minetest.override_item("ctf_map:chest", {
 	end,
 })
 
-local odef = table.copy(minetest.registered_nodes["ctf_map:chest_opened"])
+local odef = table.copy(core.registered_nodes["ctf_map:chest_opened"])
 for k, v in pairs(odef.tiles) do
 	odef.tiles[k] = replace_textures(v)
 end
-minetest.override_item("ctf_map:chest_opened", {
+core.override_item("ctf_map:chest_opened", {
 	tiles = odef.tiles,
 	on_metadata_inventory_take = function(pos, listname, index, stack, player, ...)
 		if math.random(1, 4) == 1 then

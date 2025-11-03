@@ -134,7 +134,7 @@ function ctf_modebase.flag_huds.update_player(player)
 end
 
 local function update()
-	for _, player in pairs(minetest.get_connected_players()) do
+	for _, player in pairs(core.get_connected_players()) do
 		ctf_modebase.flag_huds.update_player(player)
 	end
 end
@@ -146,7 +146,7 @@ local function update_timer(pname)
 		local timeleft = player_timers[pname]
 
 		if timeleft <= 1 then
-			ctf_modebase.drop_flags(minetest.get_player_by_name(pname))
+			ctf_modebase.drop_flags(core.get_player_by_name(pname))
 		else
 			player_timers[pname] = timeleft - 1
 
@@ -158,7 +158,7 @@ local function update_timer(pname)
 				),
 			})
 
-			minetest.after(1, update_timer, pname)
+			core.after(1, update_timer, pname)
 		end
 	end
 end

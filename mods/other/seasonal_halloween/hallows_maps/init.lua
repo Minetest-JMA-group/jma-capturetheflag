@@ -1,6 +1,6 @@
 if (os.date("%m") ~= "10" or tonumber(os.date("%d")) < 15) and os.date("%m") ~= "11" then return end
 
-ctf_map.register_maps_dir(minetest.get_modpath(minetest.get_current_modname()).."/maps/")
+ctf_map.register_maps_dir(core.get_modpath(core.get_current_modname()).."/maps/")
 
 local old_select_map_for_mode = ctf_modebase.map_catalog.select_map_for_mode
 local was_last = false

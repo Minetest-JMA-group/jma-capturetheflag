@@ -415,7 +415,7 @@ ctf_core.register_chatcommand_alias(
 		--- @return boolean, string
 		func = function(name, params)
 			--- @type string?, number?
-			local now = minetest.get_gametime()
+			local now = core.get_gametime()
 			if last_bounty_use[name] and now - last_bounty_use[name] < 5 then
 				local remaining = 5 - (now - last_bounty_use[name])
 				return false,

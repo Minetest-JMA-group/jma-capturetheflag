@@ -150,7 +150,7 @@ function ctf_teams.get_team_territory(teamname)
 	return current_map.teams[teamname].pos1, current_map.teams[teamname].pos2
 end
 
---- Like `minetest.chat_send_player()` but sends to all members of the given team
+--- Like `core.chat_send_player()` but sends to all members of the given team
 --- @param teamname Team Name of team
 --- @param message string message to send
 --- @return nil

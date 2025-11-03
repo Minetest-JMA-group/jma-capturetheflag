@@ -47,7 +47,7 @@ local function is_angle_different(old_angle, new_angle)
 	return abs(old_angle - new_angle) > angle_tolerance
 end
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	player_api.set_model(player, "character.b3d")
 	player:set_local_animation(nil, nil, nil, nil, 0)
 	local name = player:get_player_name()
@@ -59,7 +59,7 @@ minetest.register_on_joinplayer(function(player)
 	}
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	player_anim_data[player:get_player_name()] = nil
 end)
 
@@ -72,7 +72,7 @@ local player_attached = player_api.player_attached
 local models = player_api.registered_models
 
 local stab_slash_timer = {}
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	for p, timer in pairs(stab_slash_timer) do
 		timer.timeleft = timer.timeleft - dtime
 
@@ -98,7 +98,7 @@ function ctf_player.set_stab_slash_anim(anim_type, player, extra_time)
 end
 
 function player_api.globalstep(dtime)
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		local name = player:get_player_name()
 		local player_data = get_animation(player) or {}
 		local model = models[player_data.model]

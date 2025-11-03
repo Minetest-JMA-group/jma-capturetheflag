@@ -1,4 +1,4 @@
-local MODNAME = minetest.get_current_modname()
+local MODNAME = core.get_current_modname()
 local api = rawget(_G, MODNAME)
 
 function api.get_bullet_start_data(player)
@@ -11,7 +11,7 @@ function api.get_bullet_start_data(player)
 end
 
 function api.bulletcast(bullet, pos1, pos2, objects, liquids)
-	minetest.add_particle({
+	core.add_particle({
 		pos = pos1,
 		velocity = vector.multiply(vector.direction(pos1, pos2), bullet.particle_speed or 400),
 		acceleration = {x=0, y=0, z=0},
@@ -24,7 +24,7 @@ function api.bulletcast(bullet, pos1, pos2, objects, liquids)
 		glow = bullet.glow or 0
 	})
 
-	local raycast = minetest.raycast(pos1, pos2, objects, liquids)
+	local raycast = core.raycast(pos1, pos2, objects, liquids)
 	local bulletcast = {
 		raycast = raycast,
 		hit_object_or_node = function(self, options)
@@ -34,7 +34,7 @@ function api.bulletcast(bullet, pos1, pos2, objects, liquids)
 
 			for hitpoint in self.raycast do
 				if hitpoint.type == "node" then
-					if not options.node or options.node(minetest.registered_nodes[minetest.get_node(hitpoint.under).name]) then
+					if not options.node or options.node(core.registered_nodes[core.get_node(hitpoint.under).name]) then
 						return hitpoint
 					end
 				elseif hitpoint.type == "object" then
