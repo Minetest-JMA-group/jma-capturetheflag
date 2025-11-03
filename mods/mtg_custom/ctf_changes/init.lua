@@ -45,10 +45,15 @@ minetest.register_on_mods_loaded(function()
 	-- Unset falling group for all nodes
 
 	for name, def in pairs(minetest.registered_nodes) do
-		if def.groups then
-			def.groups.falling_node = nil
-			minetest.override_item(name, {groups = def.groups})
-		end
+        local mod_name, node_name = string.match(name, "(.*):(.*)")
+        if mod_name ~= "default" then
+            if node_name ~= "sand" and node_name ~= "silver_sand" and node_name ~= "gravel" and node_name ~= "desert_sand" then
+		        if def.groups then
+			        def.groups.falling_node = nil
+                    minetest.override_item(name, {groups = def.groups})
+                end
+            end
+        end
 
 	end
 
