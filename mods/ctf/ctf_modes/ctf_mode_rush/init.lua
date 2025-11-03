@@ -384,6 +384,7 @@ ctf_modebase.register_mode("rush", {
 			"default:sword_steel",
 			"default:pick_steel",
 			"default:torch 20",
+			"teleport_coin:coin",
 		}
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
