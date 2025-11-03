@@ -50,9 +50,6 @@ minetest.register_on_mods_loaded(function()
 			minetest.override_item(name, {groups = def.groups})
 		end
 
-		if name:find("fire:") and def.on_timer then
-			def.on_timer = nil
-		end
 	end
 
 	-- Set item type and tiers for give_initial_stuff
