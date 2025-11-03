@@ -64,9 +64,7 @@ local function new_match_id()
 end
 
 local function store_initial_team(pname, team)
-	if not state.initial_team[pname] then
-		state.initial_team[pname] = team
-	end
+	state.initial_team[pname] = team
 end
 
 local function get_alive_teams()
@@ -405,10 +403,20 @@ ctf_modebase.register_mode("rush", {
 		features.on_match_end()
 	end,
 	team_allocator = features.team_allocator,
-	on_allocplayer = function(player, new_team)
+	on_allocplayer = function(player, new_team, old_team)
 		local pname = player:get_player_name()
 
 		state.participants[pname] = true
+		if old_team and state.alive_players[old_team] then
+			state.alive_players[old_team][pname] = nil
+			state.spectator_anchor[pname] = nil
+			if not state.team_defeated[old_team] and not next(state.alive_players[old_team]) then
+				check_for_winner(old_team)
+			else
+				timer.update_round_huds()
+			end
+			spectator.reassign_team_spectators(old_team)
+		end
 		store_initial_team(pname, new_team)
 
 		if state.eliminated[pname] then
