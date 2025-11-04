@@ -2,7 +2,7 @@ local rankings = ctf_rankings.init()
 local recent_rankings = ctf_modebase.recent_rankings(rankings)
 local features = ctf_modebase.features(rankings, recent_rankings)
 
-local MAX_REVIVES = 2
+local MAX_REVIVES = 1
 
 local modpath = core.get_modpath(core.get_current_modname())
 local timer = dofile(modpath .. "/timer.lua")
