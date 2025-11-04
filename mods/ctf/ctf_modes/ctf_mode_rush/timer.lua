@@ -1,6 +1,6 @@
 local timer = {}
 
-timer.ROUND_DURATION = 120
+timer.ROUND_DURATION = 300
 timer.HUD_UPDATE_INTERVAL = 0.5
 
 local state
