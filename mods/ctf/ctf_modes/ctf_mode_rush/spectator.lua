@@ -3,6 +3,11 @@ local spectator = {}
 local RUSH_SPEC_KEY = "ctf_mode_rush:spectator_state"
 local storage = core.get_mod_storage()
 
+local SPECTATOR_INFO_FORMNAME = "ctf_mode_rush:spectator_info"
+local SPECTATOR_INFO_META_KEY = "ctf_mode_rush:hide_spectator_info"
+local SPECTATOR_INFO_CHECKBOX = "ctf_mode_rush_spectator_hide"
+local SPECTATOR_INFO_SHOW_DELAY = 0
+
 local function storage_key(name)
 	if type(name) ~= "string" or name == "" then
 		return
@@ -38,6 +43,77 @@ local function safe_deserialize(data)
 		return value
 	end
 end
+
+local function build_spectator_info_formspec(checked)
+	local checkbox_label = core.formspec_escape("Don't show this again")
+	local button_label = core.formspec_escape("Got it")
+
+	local info_text = table.concat({
+		"<style name=title color=#ffd166 size=20>",
+		"<style name=body color=#ffffff size=14>",
+		"<tag name=title><center>Rush Spectator Mode</center></tag>",
+		"<tag name=body>",
+		"- You are now flying alongside a teammate and can help by watching their surroundings.\n",
+		"- Stay within 12 nodes of them; drifting too far will pull you back to their position.\n",
+		"- You are invisible and cannot interact, so focus on scouting and sharing intel in team chat.\n",
+		"- Use fly and noclip controls to move smoothly above the action.",
+		"</tag>",
+	}, "\n")
+
+	return table.concat({
+		"formspec_version[4]",
+		"size[11,6.2]",
+		string.format(
+			"checkbox[7.2,0.3;%s;%s;%s]",
+			SPECTATOR_INFO_CHECKBOX,
+			checkbox_label,
+			checked and "true" or "false"
+		),
+		string.format("hypertext[0.4,0.9;10.2,4.2;info;%s]", info_text),
+		string.format("button_exit[4.4,5.4;2.2,0.8;spectator_info_ok;%s]", button_label),
+	})
+end
+
+local function show_spectator_info(player)
+	local pname = player:get_player_name()
+	core.after(SPECTATOR_INFO_SHOW_DELAY, function(name)
+		local target = core.get_player_by_name(name)
+		if not target then
+			return
+		end
+
+		core.show_formspec(name, SPECTATOR_INFO_FORMNAME, build_spectator_info_formspec(false))
+	end, pname)
+end
+
+local function maybe_show_spectator_info(player)
+	local meta = player:get_meta()
+	if meta:get_int(SPECTATOR_INFO_META_KEY) == 1 then
+		return
+	end
+
+	show_spectator_info(player)
+end
+
+ctf_core.register_on_formspec_input("^" .. SPECTATOR_INFO_FORMNAME .. "$", function(pname, formname, fields)
+	if formname ~= SPECTATOR_INFO_FORMNAME then
+		return
+	end
+
+	local player = PlayerObj(pname)
+	if not player then
+		return true
+	end
+
+	local hide_pref = fields[SPECTATOR_INFO_CHECKBOX]
+	if hide_pref == "true" then
+		player:get_meta():set_int(SPECTATOR_INFO_META_KEY, 1)
+	elseif hide_pref == "false" then
+		player:get_meta():set_int(SPECTATOR_INFO_META_KEY, 0)
+	end
+
+	return true
+end)
 
 function spectator.get_spectator_state(name)
 	local key = storage_key(name)
@@ -353,6 +429,8 @@ function spectator.make_spectator(player)
 	place_spectator_near_anchor(player)
 
 	player:set_hp(20)
+
+	maybe_show_spectator_info(player)
 
 	spectator.set_spectator_state(pname, {
 		match = state.match_id,
