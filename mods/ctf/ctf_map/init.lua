@@ -34,8 +34,6 @@ ctf_map = {
 	-- Table of map paths. Indexed by map's folder name
 	-- Doesn't include trailing '/'
 	map_path = {},
-
-	globalstep_function = nil,
 }
 
 function ctf_map.register_map(dirname, path_to_map)
