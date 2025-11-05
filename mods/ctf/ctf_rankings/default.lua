@@ -1,6 +1,6 @@
 return function(prefix, top)
 	local modstorage =
-		assert(minetest.get_mod_storage(), "Can only init rankings at runtime!")
+		assert(core.get_mod_storage(), "Can only init rankings at runtime!")
 
 	local function op_all(operation)
 		for k, v in pairs(modstorage:to_table()["fields"]) do
@@ -8,17 +8,17 @@ return function(prefix, top)
 		end
 	end
 
-	local timer = minetest.get_us_time()
+	local timer = core.get_us_time()
 	op_all(function(key, value)
-		local rank = minetest.parse_json(value)
+		local rank = core.parse_json(value)
 
 		if rank ~= nil and rank.score then
 			top:set(key, rank.score)
 		end
 	end)
-	minetest.log(
+	core.log(
 		"action",
-		"Sorted rankings database. Took " .. ((minetest.get_us_time() - timer) / 1e6)
+		"Sorted rankings database. Took " .. ((core.get_us_time() - timer) / 1e6)
 	)
 
 	return {
@@ -39,7 +39,7 @@ return function(prefix, top)
 				return false
 			end
 
-			return minetest.parse_json(rank_str)
+			return core.parse_json(rank_str)
 		end,
 		set = function(self, pname, newrankings, erase_unset)
 			pname = PlayerName(pname)
@@ -56,7 +56,7 @@ return function(prefix, top)
 			end
 
 			self.top:set(pname, newrankings.score or 0)
-			self.modstorage:set_string(pname, minetest.write_json(newrankings))
+			self.modstorage:set_string(pname, core.write_json(newrankings))
 		end,
 		add = function(self, pname, amounts)
 			pname = PlayerName(pname)
@@ -68,7 +68,7 @@ return function(prefix, top)
 			end
 
 			self.top:set(pname, newrankings.score or 0)
-			self.modstorage:set_string(pname, minetest.write_json(newrankings))
+			self.modstorage:set_string(pname, core.write_json(newrankings))
 		end,
 		del = function(self, pname)
 			pname = PlayerName(pname)

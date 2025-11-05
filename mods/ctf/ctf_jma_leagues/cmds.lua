@@ -1,10 +1,10 @@
-minetest.register_chatcommand("league", {
+core.register_chatcommand("league", {
 	params = "[player_name]",
 	description = "Show league progress",
 	func = function(name, param)
 		local player_name = param ~= "" and param or name
 
-		if not minetest.player_exists(player_name) then
+		if not core.player_exists(player_name) then
 			return false, "Player not found"
 		end
 
@@ -18,7 +18,7 @@ minetest.register_chatcommand("league", {
 		if not next_league then
 			ctf_jma_leagues.flush_cache(player_name)
 			return true, string.format("%s's current league: %s (max league reached)",
-				player_name, minetest.colorize(league_info.color, league_info.display_name))
+				player_name, core.colorize(league_info.color, league_info.display_name))
 		end
 
 		local next_league_info = ctf_jma_leagues.leagues[next_league]
@@ -29,7 +29,7 @@ minetest.register_chatcommand("league", {
 		if current_league == "none" then
 			msg = string.format("%s is on progress to %s: %d%% (%d/%d tasks completed)",
 				player_name,
-				minetest.colorize(next_league_info.color, next_league_info.display_name),
+				core.colorize(next_league_info.color, next_league_info.display_name),
 				math.floor(eval.total_percentage),
 				eval.tasks_completed,
 				eval.total_tasks
@@ -38,8 +38,8 @@ minetest.register_chatcommand("league", {
 			msg = string.format(
 				"%s is currently in %s\nProgress to %s: %d%% (%d/%d tasks completed)",
 				player_name,
-				minetest.colorize(league_info.color, league_info.display_name),
-				minetest.colorize(next_league_info.color, next_league_info.display_name),
+				core.colorize(league_info.color, league_info.display_name),
+				core.colorize(next_league_info.color, next_league_info.display_name),
 				math.floor(eval.total_percentage),
 				eval.tasks_completed,
 				eval.total_tasks
@@ -51,15 +51,15 @@ minetest.register_chatcommand("league", {
 			local result = task.result
 			local status, progress
 			if result.done then
-				status = minetest.colorize("#00ff00", "✓")
+				status = core.colorize("#00ff00", "✓")
 			elseif result.current and result.required then
-				status = minetest.colorize("#ffff00", "•••")
+				status = core.colorize("#ffff00", "•••")
 				progress = string.format("%s/%s", ctf_core.format_number(result.current), ctf_core.format_number(result.required))
 			elseif result.error then
-				status = minetest.colorize("#ff0000", "x")
+				status = core.colorize("#ff0000", "x")
 				progress = "Cannot be completed, please contact an admin"
 			else
-				status = minetest.colorize("#ff0000", "x")
+				status = core.colorize("#ff0000", "x")
 				progress = "0/" .. tostring(ctf_core.format_number(req.required) or "?")
 			end
 
@@ -75,7 +75,7 @@ minetest.register_chatcommand("league", {
 	end
 })
 
-minetest.register_chatcommand("league_reset", {
+core.register_chatcommand("league_reset", {
 	privs = {ctf_admin = true},
 	params = "Reset all (danger!) with <!> or <player_name>",
 	description = "Reset league progress",
@@ -85,7 +85,7 @@ minetest.register_chatcommand("league_reset", {
 		-- 	return true, "All players league progress has been reset."
 		-- end
 
-		if minetest.player_exists(param) then
+		if core.player_exists(param) then
 			if ctf_jma_leagues.get_league(param) == "none" then
 				return false, "Player is not in any league, no need to reset"
 			end

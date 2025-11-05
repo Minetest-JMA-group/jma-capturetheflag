@@ -41,7 +41,7 @@ ctf_modebase.register_mode("chaos", {
 		"bucket:bucket_water 1",
 		"rocket_launcher:launcher",
 		"rocket_launcher:rocket 5",
-		"heal_block:heal",
+		"ctf_healing:heal_block",
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,

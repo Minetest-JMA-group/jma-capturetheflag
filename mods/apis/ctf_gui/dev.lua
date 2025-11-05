@@ -1,8 +1,8 @@
 function ctf_gui.show_formspec_dev(player, formname, formspec, formcontext)
-	local filepath = minetest.get_worldpath().."/ctf_gui/"
+	local filepath = core.get_worldpath().."/ctf_gui/"
 	local filename = filepath.."file_edit.txt"
 
-	minetest.mkdir(filepath)
+	core.mkdir(filepath)
 
 	local file = assert(io.open(filename, "w"))
 
@@ -18,7 +18,7 @@ function ctf_gui.show_formspec_dev(player, formname, formspec, formcontext)
 			ctf_gui.show_formspec(player, formname, formspec)
 		end
 
-		minetest.after(1, function()
+		core.after(1, function()
 			local f = assert(io.open(filename, "r"))
 
 			formspec = f:read("*a")
@@ -28,7 +28,7 @@ function ctf_gui.show_formspec_dev(player, formname, formspec, formcontext)
 			if formspec:match("^exit") then
 				interval()
 			else
-				minetest.request_shutdown("Formspec dev requested shutdown", true)
+				core.request_shutdown("Formspec dev requested shutdown", true)
 			end
 		end)
 	end

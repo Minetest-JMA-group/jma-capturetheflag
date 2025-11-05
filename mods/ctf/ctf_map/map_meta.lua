@@ -1,10 +1,10 @@
 local CURRENT_MAP_VERSION = "3"
 local BARRIER_Y_SIZE = 16
 
-local modname = minetest.get_current_modname()
+local modname = core.get_current_modname()
 
 function ctf_map.skybox_exists(subdir)
-	local list = minetest.get_dir_list(subdir, true)
+	local list = core.get_dir_list(subdir, true)
 	return table.indexof(list, "skybox") ~= -1
 end
 
@@ -34,7 +34,7 @@ function ctf_map.load_map_meta(idx, dirname)
 		return
 	end
 
-	minetest.log(
+	core.log(
 		"info",
 		"load_map_meta: Loading map meta from '" .. dirname .. "/map.conf'"
 	)
@@ -59,7 +59,7 @@ function ctf_map.load_map_meta(idx, dirname)
 		off_start_z + (row * map_spacing) -- Z offset based on row
 	)
 
-	minetest.log(
+	core.log(
 		"info",
 		string.format(
 			"Map %s placed at (%d, %d, %d)",
@@ -122,7 +122,7 @@ function ctf_map.load_map_meta(idx, dirname)
 		local i = 1
 		while meta:get("team." .. i) do
 			local tname = meta:get("team." .. i)
-			local tpos = minetest.string_to_pos(meta:get("team." .. i .. ".pos"))
+			local tpos = core.string_to_pos(meta:get("team." .. i .. ".pos"))
 
 			map.teams[tname] = {
 				enabled = true,
@@ -136,10 +136,10 @@ function ctf_map.load_map_meta(idx, dirname)
 
 		-- Read custom chest zones from config
 		i = 1
-		minetest.log("verbose", "Parsing chest zones of " .. map.name .. "...")
+		core.log("verbose", "Parsing chest zones of " .. map.name .. "...")
 		while meta:get("chests." .. i .. ".from") do
-			local from = minetest.string_to_pos(meta:get("chests." .. i .. ".from"))
-			local to = minetest.string_to_pos(meta:get("chests." .. i .. ".to"))
+			local from = core.string_to_pos(meta:get("chests." .. i .. ".from"))
+			local to = core.string_to_pos(meta:get("chests." .. i .. ".to"))
 			assert(
 				from and to,
 				"Positions needed for chest zone " .. i .. " in map " .. map.name
@@ -167,7 +167,7 @@ function ctf_map.load_map_meta(idx, dirname)
 	else
 		-- If new items are added also remember to change the table in mapedit_gui.lua
 		-- The version number should be updated if you change an item
-		local size = minetest.deserialize(meta:get("size"))
+		local size = core.deserialize(meta:get("size"))
 
 		offset.y = -size.y / 2
 
@@ -184,7 +184,7 @@ function ctf_map.load_map_meta(idx, dirname)
 			hint = meta:get("hint"),
 			license = meta:get("license"),
 			others = meta:get("others"),
-			initial_stuff = minetest.deserialize(meta:get("initial_stuff")),
+			initial_stuff = core.deserialize(meta:get("initial_stuff")),
 			treasures = meta:get("treasures"),
 			skybox = meta:get("skybox"),
 			start_time = tonumber(meta:get("start_time")),
@@ -192,10 +192,10 @@ function ctf_map.load_map_meta(idx, dirname)
 			phys_speed = tonumber(meta:get("phys_speed")),
 			phys_jump = tonumber(meta:get("phys_jump")),
 			phys_gravity = tonumber(meta:get("phys_gravity")),
-			chests = minetest.deserialize(meta:get("chests")),
-			teams = minetest.deserialize(meta:get("teams")),
-			barrier_area = minetest.deserialize(meta:get("barrier_area")),
-			game_modes = minetest.deserialize(meta:get("game_modes")),
+			chests = core.deserialize(meta:get("chests")),
+			teams = core.deserialize(meta:get("teams")),
+			barrier_area = core.deserialize(meta:get("barrier_area")),
+			game_modes = core.deserialize(meta:get("game_modes")),
 			enable_shadows = tonumber(meta:get("enable_shadows") or "0.26"),
 		}
 
@@ -227,7 +227,7 @@ function ctf_map.load_map_meta(idx, dirname)
 		map.skybox = dirname
 		map.skybox_forced = true
 	elseif map.skybox ~= "none" and table.indexof(ctf_map.skyboxes, map.skybox) == -1 then
-		minetest.log(
+		core.log(
 			"warning",
 			'Unable to load skybox "' .. map.skybox .. '". Back to "none"'
 		)
@@ -238,10 +238,10 @@ function ctf_map.load_map_meta(idx, dirname)
 end
 
 function ctf_map.save_map(mapmeta)
-	local path = minetest.get_worldpath() .. "/schems/" .. mapmeta.dirname .. "/"
-	minetest.mkdir(path)
+	local path = core.get_worldpath() .. "/schems/" .. mapmeta.dirname .. "/"
+	core.mkdir(path)
 
-	minetest.chat_send_all(minetest.colorize(ctf_map.CHAT_COLOR, "Saving Map..."))
+	core.chat_send_all(core.colorize(ctf_map.CHAT_COLOR, "Saving Map..."))
 
 	-- Write to .conf
 	local meta = Settings(path .. "map.conf")
@@ -265,17 +265,17 @@ function ctf_map.save_map(mapmeta)
 			mapmeta.teams[id] = nil
 		else
 			local flagpos =
-				minetest.find_node_near(def.flag_pos, 3, { "group:flag_bottom" }, true)
+				core.find_node_near(def.flag_pos, 3, { "group:flag_bottom" }, true)
 
 			if not flagpos then
 				flagpos = def.flag_pos
-				minetest.chat_send_all(
-					minetest.colorize(
+				core.chat_send_all(
+					core.colorize(
 						"red",
 						"Failed to find flag for team "
 							.. id
 							.. ". Node at given position: "
-							.. dump(minetest.get_node(flagpos).name)
+							.. dump(core.get_node(flagpos).name)
 					)
 				)
 			end
@@ -321,7 +321,7 @@ function ctf_map.save_map(mapmeta)
 			for b, rep in pairs(ctf_map.barrier_nodes) do
 				if v == b then
 					barrier_found = true
-					tmp.reps[i] = minetest.get_name_from_content_id(rep)
+					tmp.reps[i] = core.get_name_from_content_id(rep)
 				end
 			end
 		end
@@ -347,14 +347,14 @@ function ctf_map.save_map(mapmeta)
 	end
 
 	meta:set("map_version", CURRENT_MAP_VERSION)
-	meta:set("size", minetest.serialize(vector.subtract(mapmeta.pos2, mapmeta.pos1)))
+	meta:set("size", core.serialize(vector.subtract(mapmeta.pos2, mapmeta.pos1)))
 	meta:set("enabled", mapmeta.enabled and "true" or "false")
 	meta:set("name", mapmeta.name)
 	meta:set("author", mapmeta.author)
 	meta:set("hint", mapmeta.hint)
 	meta:set("license", mapmeta.license)
 	meta:set("others", mapmeta.others)
-	meta:set("initial_stuff", minetest.serialize(mapmeta.initial_stuff))
+	meta:set("initial_stuff", core.serialize(mapmeta.initial_stuff))
 	meta:set("treasures", mapmeta.treasures or "")
 	meta:set("skybox", mapmeta.skybox)
 	meta:set("start_time", mapmeta.start_time)
@@ -362,27 +362,27 @@ function ctf_map.save_map(mapmeta)
 	meta:set("phys_speed", mapmeta.phys_speed)
 	meta:set("phys_jump", mapmeta.phys_jump)
 	meta:set("phys_gravity", mapmeta.phys_gravity)
-	meta:set("chests", minetest.serialize(mapmeta.chests))
-	meta:set("teams", minetest.serialize(mapmeta.teams))
-	meta:set("barrier_area", minetest.serialize(barrier_area))
-	meta:set("game_modes", minetest.serialize(mapmeta.game_modes))
+	meta:set("chests", core.serialize(mapmeta.chests))
+	meta:set("teams", core.serialize(mapmeta.teams))
+	meta:set("barrier_area", core.serialize(barrier_area))
+	meta:set("game_modes", core.serialize(mapmeta.game_modes))
 	meta:set("enable_shadows", mapmeta.enable_shadows)
 
 	meta:write()
 
 	local filepath = path .. "map.mts"
-	if minetest.create_schematic(mapmeta.pos1, mapmeta.pos2, nil, filepath) then
-		minetest.chat_send_all(
-			minetest.colorize(
+	if core.create_schematic(mapmeta.pos1, mapmeta.pos2, nil, filepath) then
+		core.chat_send_all(
+			core.colorize(
 				ctf_map.CHAT_COLOR,
 				"Saved Map '" .. mapmeta.name .. "' to " .. path
 			)
 		)
-		minetest.chat_send_all(
-			minetest.colorize(
+		core.chat_send_all(
+			core.colorize(
 				ctf_map.CHAT_COLOR,
 				'To play, move it to "'
-					.. minetest.get_modpath(modname)
+					.. core.get_modpath(modname)
 					.. "/maps/"
 					.. mapmeta.dirname
 					.. ", "
@@ -392,12 +392,12 @@ function ctf_map.save_map(mapmeta)
 			)
 		)
 	else
-		minetest.chat_send_all(
-			minetest.colorize(ctf_map.CHAT_COLOR, "Map Saving Failed!")
+		core.chat_send_all(
+			core.colorize(ctf_map.CHAT_COLOR, "Map Saving Failed!")
 		)
 	end
 
 	local f = assert(io.open(path .. "barriers.data", "wb"))
-	f:write(minetest.compress(minetest.serialize(barriers), "deflate"))
+	f:write(core.compress(core.serialize(barriers), "deflate"))
 	f:close()
 end

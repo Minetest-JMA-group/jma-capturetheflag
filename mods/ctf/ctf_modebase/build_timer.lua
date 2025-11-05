@@ -7,7 +7,7 @@ local timer = nil
 ctf_modebase.build_timer = {}
 
 local function timer_func(time_left)
-	for _, player in pairs(minetest.get_connected_players()) do
+	for _, player in pairs(core.get_connected_players()) do
 		local time_str = "Removing Barrier..."
 
 		if time_left > 0 then
@@ -54,7 +54,7 @@ local function timer_func(time_left)
 		return
 	end
 
-	timer = minetest.after(1, timer_func, time_left - 1)
+	timer = core.after(1, timer_func, time_left - 1)
 end
 
 function ctf_modebase.build_timer.finish()
@@ -68,12 +68,12 @@ function ctf_modebase.build_timer.finish()
 			timer = nil
 			hud:remove_all()
 			local text = "Build time is over!"
-			minetest.chat_send_all(text)
+			core.chat_send_all(text)
 			ctf_modebase.announce(text)
 
 			ctf_modebase.on_match_start()
 
-			minetest.sound_play("ctf_modebase_build_time_over", {
+			core.sound_play("ctf_modebase_build_time_over", {
 				gain = 1.0,
 				pitch = 1.0,
 			}, true)
@@ -88,7 +88,7 @@ function ctf_modebase.build_timer.finish()
 end
 
 ctf_api.register_on_new_match(function()
-	timer = minetest.after(
+	timer = core.after(
 		1,
 		timer_func,
 		ctf_modebase:get_current_mode().build_timer or DEFAULT_BUILD_TIME
@@ -104,8 +104,8 @@ ctf_api.register_on_match_end(function()
 	hud:remove_all()
 end)
 
-local old_protected = minetest.is_protected
-minetest.is_protected = function(pos, pname, ...)
+local old_protected = core.is_protected
+core.is_protected = function(pos, pname, ...)
 	if timer == nil then
 		return old_protected(pos, pname, ...)
 	end
@@ -125,11 +125,11 @@ minetest.is_protected = function(pos, pname, ...)
 	end
 end
 
-minetest.register_chatcommand("ctf_start", {
+core.register_chatcommand("ctf_start", {
 	description = "Skip build time",
 	privs = { ctf_admin = true },
 	func = function(name, param)
-		minetest.log("action", string.format("[ctf_admin] %s ran /ctf_start", name))
+		core.log("action", string.format("[ctf_admin] %s ran /ctf_start", name))
 
 		ctf_modebase.build_timer.finish()
 

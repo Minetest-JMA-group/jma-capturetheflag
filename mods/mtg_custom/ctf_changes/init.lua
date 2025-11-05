@@ -14,14 +14,14 @@ local disabled_ores = {
 }
 
 for from, to in pairs(disabled_ores) do
-	minetest.register_alias_force(from, to)
+	core.register_alias_force(from, to)
 end
 
-minetest.override_chatcommand("clearinv", {
+core.override_chatcommand("clearinv", {
 	privs = {server = true},
 })
 
-minetest.register_on_mods_loaded(function()
+core.register_on_mods_loaded(function()
 
 	-- Remove Unneeded ABMs
 
@@ -61,7 +61,7 @@ minetest.register_on_mods_loaded(function()
 	local tiers = {"wood", "stone", "steel", "mese", "diamond"}
 	local tool_categories = {"pickaxe", "shovel", "axe"}
 	local other_categories = {sword = "melee"}
-	for name, def in pairs(minetest.registered_tools) do
+	for name, def in pairs(core.registered_tools) do
 		local new_category = nil
 
 		for _, tcat in pairs(tool_categories) do
@@ -94,7 +94,7 @@ minetest.register_on_mods_loaded(function()
 			end
 		end
 
-		minetest.override_item(name, {
+		core.override_item(name, {
 			groups = def.groups,
 			_g_category = new_category,
 			tool_capabilities = def.tool_capabilities,
@@ -108,24 +108,24 @@ minetest.register_on_mods_loaded(function()
 	}
 
 	for _, name in pairs(drop_self) do
-		minetest.override_item(name, {drop = name})
+		core.override_item(name, {drop = name})
 	end
 end)
 
-minetest.override_item("default:apple", {
+core.override_item("default:apple", {
 	on_use = function(itemstack, user, ...)
 		if not COOLDOWN:get(user) then
 			COOLDOWN:set(user, 0.2)
 
-			return minetest.item_eat(3)(itemstack, user, ...)
+			return core.item_eat(3)(itemstack, user, ...)
 		end
 	end,
 	after_place_node = nil,
 	stack_max = 60,
 	on_place = function(itemstack, placer, pointed_thing)
 		local under = pointed_thing.under
-		local node = minetest.get_node(under)
-		local udef = minetest.registered_nodes[node.name]
+		local node = core.get_node(under)
+		local udef = core.registered_nodes[node.name]
 		if udef and udef.on_rightclick and not (placer and placer:is_player() and placer:get_player_control().sneak) then
 				udef.on_rightclick(under, node, placer, itemstack, pointed_thing)
 		end
@@ -134,11 +134,11 @@ minetest.override_item("default:apple", {
 })
 
 local function furnace_on_destruct(pos)
-	local inv = minetest.get_inventory({ type = "node", pos = pos })
+	local inv = core.get_inventory({ type = "node", pos = pos })
 	if not inv then return end
 	for _, list in pairs(inv:get_lists()) do
 		for _, item in ipairs(list) do
-			minetest.add_item(pos, item)
+			core.add_item(pos, item)
 		end
 	end
 end
@@ -148,12 +148,12 @@ for _, name in pairs({
 	"xpanes:door_steel_bar",
 }) do
 	for _, variant in pairs({"_a", "_b", "_c", "_d"}) do
-		local old_on_construct = minetest.registered_nodes[name..variant].on_construct
+		local old_on_construct = core.registered_nodes[name..variant].on_construct
 
-		minetest.override_item(name..variant, {
+		core.override_item(name..variant, {
 			on_construct = function(pos, ...)
-				minetest.after(0, function()
-					local meta = minetest.get_meta(pos)
+				core.after(0, function()
+					local meta = core.get_meta(pos)
 
 					meta:set_string("owner", "")
 					meta:set_string("infotext", "")
@@ -169,46 +169,46 @@ for _, name in pairs({
 	"doors:trapdoor_steel",
 	"xpanes:trapdoor_steel_bar",
 }) do
-	local old_after_place_node = minetest.registered_nodes[name].after_place_node
+	local old_after_place_node = core.registered_nodes[name].after_place_node
 
-	minetest.override_item(name, {
+	core.override_item(name, {
 		after_place_node = function(pos, placer, ...)
-			local meta = minetest.get_meta(pos)
+			local meta = core.get_meta(pos)
 
 			local ret = old_after_place_node and old_after_place_node(pos, placer, ...)
 
 			meta:set_string("owner", "")
 			meta:set_string("infotext", "")
 
-			return ret or minetest.is_creative_enabled(placer:get_player_name())
+			return ret or core.is_creative_enabled(placer:get_player_name())
 		end
 	})
 end
 
-minetest.override_item("default:furnace", {
+core.override_item("default:furnace", {
 	can_dig = function() return true end,
 	on_destruct = furnace_on_destruct,
 })
 
-minetest.override_item("default:furnace_active", {
+core.override_item("default:furnace_active", {
 	can_dig = function() return true end,
 	on_destruct = furnace_on_destruct,
 })
 
-minetest.override_item("default:chest", {
+core.override_item("default:chest", {
 	on_rightclick = function() return end,
 })
 
-minetest.override_item("default:chest_locked", {
+core.override_item("default:chest_locked", {
 	on_rightclick = function() return end,
 	protected = false,
 })
 
-minetest.register_on_mods_loaded(function()
+core.register_on_mods_loaded(function()
 	for nodename, value in pairs(node_fall_damage_factors) do
-		local groups_temp = minetest.registered_items[nodename].groups
+		local groups_temp = core.registered_items[nodename].groups
 		groups_temp.fall_damage_add_percent = value
-		minetest.override_item(nodename, {
+		core.override_item(nodename, {
 			groups = groups_temp,
 		})
 	end
@@ -216,3 +216,4 @@ end)
 
 dofile(minetest.get_modpath("ctf_changes") .. "/ctf_lava.lua")
 dofile(minetest.get_modpath("ctf_changes") .. "/item_despawning.lua")
+dofile(core.get_modpath("ctf_changes") .. "/ctf_lava.lua")

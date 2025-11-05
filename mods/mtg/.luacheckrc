@@ -22,11 +22,10 @@ read_globals = {
 	math = { fields = { "sign" } }
 }
 
--- Overwrites minetest.handle_node_drops
-files["mods/creative/init.lua"].globals = { "minetest" }
+files["mods/creative/init.lua"].globals = { "core" }
 
--- Overwrites minetest.calculate_knockback
-files["mods/player_api/api.lua"].globals = { "minetest" }
+-- Overwrites core.calculate_knockback
+files["mods/player_api/api.lua"].globals = { "core" }
 
 -- Don't report on legacy definitions of globals.
 files["mods/default/legacy.lua"].global = false

@@ -1,6 +1,14 @@
 local spectator = {}
 
 local RUSH_SPEC_KEY = "ctf_mode_rush:spectator_state"
+local storage = core.get_mod_storage()
+
+local function storage_key(name)
+	if type(name) ~= "string" or name == "" then
+		return
+	end
+	return RUSH_SPEC_KEY .. ":" .. name
+end
 local MAX_SPECTATOR_DISTANCE = 12
 local MIN_SPECTATOR_ALTITUDE = 2
 local SPECTATOR_BOUND_CHECK_INTERVAL = 0.5
@@ -25,14 +33,19 @@ local function safe_deserialize(data)
 		return
 	end
 
-	local ok, value = pcall(minetest.deserialize, data)
+	local ok, value = pcall(core.deserialize, data)
 	if ok then
 		return value
 	end
 end
 
-function spectator.get_spectator_state(meta)
-	local raw = meta:get_string(RUSH_SPEC_KEY)
+function spectator.get_spectator_state(name)
+	local key = storage_key(name)
+	if not key then
+		return
+	end
+
+	local raw = storage:get_string(key)
 	if raw == "" then
 		return
 	end
@@ -46,12 +59,21 @@ function spectator.get_spectator_state(meta)
 		parsed.privs = {}
 	end
 
+	if type(parsed.team) ~= "string" or parsed.team == "" then
+		parsed.team = nil
+	end
+
 	return parsed
 end
 
-function spectator.set_spectator_state(meta, data)
+function spectator.set_spectator_state(name, data)
+	local key = storage_key(name)
+	if not key then
+		return
+	end
+
 	if not data or (not data.match and (not data.privs or next(data.privs) == nil)) then
-		meta:set_string(RUSH_SPEC_KEY, "")
+		storage:set_string(key, "")
 		return
 	end
 
@@ -60,7 +82,11 @@ function spectator.set_spectator_state(meta, data)
 		privs = data.privs,
 	}
 
-	meta:set_string(RUSH_SPEC_KEY, minetest.serialize(payload))
+	if type(data.team) == "string" and data.team ~= "" then
+		payload.team = data.team
+	end
+
+	storage:set_string(key, core.serialize(payload))
 end
 
 local function get_player_score(pname)
@@ -91,7 +117,7 @@ local function select_anchor_for_team(team)
 	local best_score = -math.huge
 
 	for pname in pairs(alive) do
-		local player_obj = minetest.get_player_by_name(pname)
+		local player_obj = core.get_player_by_name(pname)
 		if player_obj and player_obj:get_hp() > 0 then
 			local score = get_player_score(pname)
 			if score > best_score then
@@ -111,7 +137,7 @@ local function place_spectator_near_anchor(player)
 		return
 	end
 
-	local anchor = minetest.get_player_by_name(anchor_name)
+	local anchor = core.get_player_by_name(anchor_name)
 	if not anchor then
 		return
 	end
@@ -147,15 +173,15 @@ local function assign_spectator_anchor(pname)
 			anchor,
 			MAX_SPECTATOR_DISTANCE
 		)
-		minetest.chat_send_player(pname, minetest.colorize(SPECTATOR_CHAT_COLOR, msg))
-		local player = minetest.get_player_by_name(pname)
+		core.chat_send_player(pname, core.colorize(SPECTATOR_CHAT_COLOR, msg))
+		local player = core.get_player_by_name(pname)
 		if player then
 			place_spectator_near_anchor(player)
 		end
 	elseif not anchor and previous then
-		minetest.chat_send_player(
+		core.chat_send_player(
 			pname,
-			minetest.colorize(SPECTATOR_CHAT_COLOR, "No teammates available to spectate.")
+			core.colorize(SPECTATOR_CHAT_COLOR, "No teammates available to spectate.")
 		)
 	end
 
@@ -175,7 +201,7 @@ end
 function spectator.enforce_spectator_bounds(pname)
 	ensure_state()
 
-	local spectator_obj = minetest.get_player_by_name(pname)
+	local spectator_obj = core.get_player_by_name(pname)
 	if not spectator_obj then
 		return
 	end
@@ -194,13 +220,13 @@ function spectator.enforce_spectator_bounds(pname)
 		return
 	end
 
-	local anchor = minetest.get_player_by_name(anchor_name)
+	local anchor = core.get_player_by_name(anchor_name)
 	if not anchor then
 		anchor_name = assign_spectator_anchor(pname)
 		if not anchor_name then
 			return
 		end
-		anchor = minetest.get_player_by_name(anchor_name)
+		anchor = core.get_player_by_name(anchor_name)
 		if not anchor then
 			return
 		end
@@ -212,7 +238,7 @@ function spectator.enforce_spectator_bounds(pname)
 		if not anchor_name then
 			return
 		end
-		anchor = minetest.get_player_by_name(anchor_name)
+		anchor = core.get_player_by_name(anchor_name)
 		if not anchor then
 			return
 		end
@@ -274,29 +300,24 @@ local function remove_player_from_team(name)
 	ctf_teams.non_team_players[name] = true
 end
 
-function spectator.restore_privs(name, player)
+function spectator.restore_privs(name)
 	ensure_state()
 
 	local privs = state.saved_privs[name]
-	local ref = player or minetest.get_player_by_name(name)
-
-	if not privs and ref then
-		local spec_state = spectator.get_spectator_state(ref:get_meta())
+	if not privs then
+		local spec_state = spectator.get_spectator_state(name)
 		if spec_state then
 			privs = spec_state.privs
 		end
 	end
 
 	if not privs then
-		privs = minetest.get_player_privs(name)
+		privs = core.get_player_privs(name)
 	end
 
-	minetest.set_player_privs(name, privs)
+	core.set_player_privs(name, privs)
 	state.saved_privs[name] = nil
-
-	if ref then
-		spectator.set_spectator_state(ref:get_meta(), nil)
-	end
+	spectator.set_spectator_state(name, nil)
 end
 
 function spectator.make_spectator(player)
@@ -315,7 +336,7 @@ function spectator.make_spectator(player)
 	end
 
 	if not state.saved_privs[pname] then
-		state.saved_privs[pname] = minetest.get_player_privs(pname)
+		state.saved_privs[pname] = core.get_player_privs(pname)
 	end
 
 	local privs = table.copy(state.saved_privs[pname])
@@ -324,7 +345,7 @@ function spectator.make_spectator(player)
 	privs.fly = true
 	privs.noclip = true
 
-	minetest.set_player_privs(pname, privs)
+	core.set_player_privs(pname, privs)
 
 	remove_player_from_team(pname)
 	apply_vanish(player)
@@ -333,10 +354,10 @@ function spectator.make_spectator(player)
 
 	player:set_hp(20)
 
-	local meta = player:get_meta()
-	spectator.set_spectator_state(meta, {
+	spectator.set_spectator_state(pname, {
 		match = state.match_id,
 		privs = state.saved_privs[pname],
+		team = state.initial_team[pname],
 	})
 end
 
@@ -365,14 +386,10 @@ local function update_saved_priv_snapshot(target, modifier)
 	end
 
 	local snapshot = state.saved_privs[target]
+	local spec_state
 
 	if not snapshot then
-		local player = minetest.get_player_by_name(target)
-		if not player then
-			return
-		end
-
-		local spec_state = spectator.get_spectator_state(player:get_meta())
+		spec_state = spectator.get_spectator_state(target)
 		if not spec_state or not spec_state.match then
 			return
 		end
@@ -384,14 +401,10 @@ local function update_saved_priv_snapshot(target, modifier)
 
 	state.saved_privs[target] = snapshot
 
-	local player = minetest.get_player_by_name(target)
-	if player then
-		local meta = player:get_meta()
-		local spec_state = spectator.get_spectator_state(meta) or {}
-		spec_state.match = spec_state.match or state.match_id
-		spec_state.privs = snapshot
-		spectator.set_spectator_state(meta, spec_state)
-	end
+	spec_state = spec_state or spectator.get_spectator_state(target) or {}
+	spec_state.match = spec_state.match or state.match_id
+	spec_state.privs = snapshot
+	spectator.set_spectator_state(target, spec_state)
 end
 
 local function parse_priv_param(param)
@@ -460,7 +473,7 @@ local function record_priv_change(target, privs, grant)
 
 	update_saved_priv_snapshot(target, function(snapshot)
 		if privs == "all" then
-			for name in pairs(minetest.registered_privileges) do
+			for name in pairs(core.registered_privileges) do
 				if grant then
 					snapshot[name] = true
 				else
@@ -501,7 +514,7 @@ local function install_priv_hooks()
 
 	priv_hooks_installed = true
 
-	minetest.after(0, function()
+	core.after(0, function()
 		local grant_wrapper = create_priv_wrapper(true, function(_, param)
 			return parse_priv_param(param)
 		end)
@@ -521,28 +534,28 @@ local function install_priv_hooks()
 			end
 		end)
 
-		local grant_def = minetest.registered_chatcommands.grant
+		local grant_def = core.registered_chatcommands.grant
 		if grant_def and type(grant_def.func) == "function" then
 			grant_def.func = grant_wrapper(grant_def.func)
 		end
 
-		local revoke_def = minetest.registered_chatcommands.revoke
+		local revoke_def = core.registered_chatcommands.revoke
 		if revoke_def and type(revoke_def.func) == "function" then
 			revoke_def.func = revoke_wrapper(revoke_def.func)
 		end
 
-		local grantme_def = minetest.registered_chatcommands.grantme
+		local grantme_def = core.registered_chatcommands.grantme
 		if grantme_def and type(grantme_def.func) == "function" then
 			grantme_def.func = grantme_wrapper(grantme_def.func)
 		end
 
-		local revokeme_def = minetest.registered_chatcommands.revokeme
+		local revokeme_def = core.registered_chatcommands.revokeme
 		if revokeme_def and type(revokeme_def.func) == "function" then
 			revokeme_def.func = revokeme_wrapper(revokeme_def.func)
 		end
 
-		local old_register_chatcommand = minetest.register_chatcommand
-		function minetest.register_chatcommand(name, def)
+		local old_register_chatcommand = core.register_chatcommand
+		function core.register_chatcommand(name, def)
 			if name == "grant" and def and type(def.func) == "function" then
 				def.func = grant_wrapper(def.func)
 			elseif name == "revoke" and def and type(def.func) == "function" then
@@ -555,8 +568,8 @@ local function install_priv_hooks()
 			return old_register_chatcommand(name, def)
 		end
 
-		local old_override_chatcommand = minetest.override_chatcommand
-		function minetest.override_chatcommand(name, def)
+		local old_override_chatcommand = core.override_chatcommand
+		function core.override_chatcommand(name, def)
 			if name == "grant" and def and type(def.func) == "function" then
 				def.func = grant_wrapper(def.func)
 			elseif name == "revoke" and def and type(def.func) == "function" then

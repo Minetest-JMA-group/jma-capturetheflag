@@ -8,7 +8,7 @@ local landmine_globalstep_counter = 0.0
 local LANDMINE_COUNTER_THRESHOLD = 0.025
 
 local function is_self_landmine(object_ref, pos)
-	local meta = minetest.get_meta(pos)
+	local meta = core.get_meta(pos)
 	local team = meta:get_string("pteam")
 	local placer = meta:get_string("placer")
 	local pname = object_ref:get_player_name()
@@ -26,12 +26,12 @@ local function is_self_landmine(object_ref, pos)
 end
 
 local function landmine_explode(pos)
-	local near_objs = minetest.get_objects_inside_radius(pos, 3)
-	local meta = minetest.get_meta(pos)
+	local near_objs = core.get_objects_inside_radius(pos, 3)
+	local meta = core.get_meta(pos)
 	local placer = meta:get_string("placer")
-	local placerobj = placer and minetest.get_player_by_name(placer)
+	local placerobj = placer and core.get_player_by_name(placer)
 
-	minetest.add_particlespawner({
+	core.add_particlespawner({
 		amount = 20,
 		time = 0.5,
 		minpos = vector.subtract(pos, 3),
@@ -50,7 +50,7 @@ local function landmine_explode(pos)
 		texture = "grenades_smoke.png",
 	})
 
-	minetest.add_particle({
+	core.add_particle({
 		pos = pos,
 		velocity = { x = 0, y = 0, z = 0 },
 		acceleration = { x = 0, y = 0, z = 0 },
@@ -64,7 +64,7 @@ local function landmine_explode(pos)
 		glow = 10,
 	})
 
-	minetest.sound_play("ctf_landmine_explosion", {
+	core.sound_play("ctf_landmine_explosion", {
 		pos = pos,
 		gain = 0.9,
 		max_hear_distance = 16,
@@ -85,7 +85,7 @@ local function landmine_explode(pos)
 			end
 		end
 	end
-	minetest.remove_node(pos)
+	core.remove_node(pos)
 	for idx, pos_ in ipairs(landmines) do
 		if pos_ == pos then
 			table.remove(landmines, idx)
@@ -94,7 +94,7 @@ local function landmine_explode(pos)
 	end
 end
 
-minetest.register_node("ctf_landmine:landmine", {
+core.register_node("ctf_landmine:landmine", {
 	description = S("Landmine") .. "\n" .. S(
 		"A trap that explodes when stepped on except for team mates."
 	) .. "\n" .. S("Effective defensive tool for securing your base."),
@@ -140,10 +140,10 @@ minetest.register_node("ctf_landmine:landmine", {
 			end
 		end
 
-		return minetest.item_place(itemstack, placer, pointed_thing)
+		return core.item_place(itemstack, placer, pointed_thing)
 	end,
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
-		local meta = minetest.get_meta(pos)
+		local meta = core.get_meta(pos)
 		local name = placer:get_player_name()
 		local pteam = ctf_teams.get(placer)
 
@@ -166,7 +166,7 @@ minetest.register_node("ctf_landmine:landmine", {
 	end,
 })
 
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	if #landmines == 0 then
 		return
 	end
@@ -176,7 +176,7 @@ minetest.register_globalstep(function(dtime)
 	end
 	landmine_globalstep_counter = 0.0
 	for _idx, pos in pairs(landmines) do
-		local near_objs = minetest.get_objects_in_area({
+		local near_objs = core.get_objects_in_area({
 			x = pos.x - 0.5,
 			y = pos.y - 0.5,
 			z = pos.z - 0.5,

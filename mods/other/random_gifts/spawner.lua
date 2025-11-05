@@ -6,7 +6,7 @@ local function spawn_giftbox()
 		return
 	end
 
-	local spawn_amount = math.max(20, math.min(#minetest.get_connected_players(), 40))
+	local spawn_amount = math.max(20, math.min(#core.get_connected_players(), 40))
 
 	local vm = VoxelManip()
 	local pos1, pos2 = vm:read_from_map(ctf_map.current_map.pos1, ctf_map.current_map.pos2)
@@ -22,16 +22,16 @@ local function spawn_giftbox()
 				air_nodes = air_nodes + 1
 			end
 			if air_nodes == 3 then
-				minetest.add_entity(npos, "random_gifts:gift")
+				core.add_entity(npos, "random_gifts:gift")
 				break
 			end
 		end
 	end
-	timer = minetest.after(spawn_interval, spawn_giftbox)
+	timer = core.after(spawn_interval, spawn_giftbox)
 end
 
 function random_gifts.run_spawn_timer()
-	timer = minetest.after(10, spawn_giftbox)
+	timer = core.after(10, spawn_giftbox)
 end
 
 function random_gifts.stop_spawn_timer()

@@ -1,13 +1,13 @@
-if os.date("%m") ~= "10" or tonumber(os.date("%d")) < 15 or not minetest.get_modpath("server_cosmetics") then return end
+if os.date("%m") ~= "10" or tonumber(os.date("%d")) < 15 or not core.get_modpath("server_cosmetics") then return end
 
 local META_KEY = "server_cosmetics:lanterns:"..os.date("%Y")
 local COSMETIC_KEY = "server_cosmetics:entity:hallows_hat:"..os.date("%Y")
 local REQUIRED_LANTERNS = 66
 
 local dig_func = function(score, item) return function(pos, _, digger)
-	minetest.remove_node(pos)
+	core.remove_node(pos)
 	if not digger or not digger:is_player() then
-		minetest.add_item(pos, item)
+		core.add_item(pos, item)
 		return
 	end
 
@@ -42,12 +42,12 @@ local dig_func = function(score, item) return function(pos, _, digger)
 			quick = true,
 		})
 
-		minetest.add_item(pos, item)
+		core.add_item(pos, item)
 	end
 end end
 
 -- jack 'o lantern
-minetest.register_node("hallows_hat_event:jackolantern", {
+core.register_node("hallows_hat_event:jackolantern", {
 	description = "Jack 'O Lantern\nGives 1 lantern point when dug",
 	tiles = {
 		"hallows_hat_event_pumpkin_top.png", "hallows_hat_event_pumpkin_top.png",
@@ -62,7 +62,7 @@ minetest.register_node("hallows_hat_event:jackolantern", {
 	on_dig = dig_func(1, "hallows_hat_event:jackolantern"),
 })
 
-minetest.register_node("hallows_hat_event:jackolantern_on", {
+core.register_node("hallows_hat_event:jackolantern_on", {
 	description = "Jack 'O Lantern\nGives 5 lantern points when dug",
 	tiles = {
 		"hallows_hat_event_pumpkin_top.png", "hallows_hat_event_pumpkin_top.png",
@@ -82,19 +82,19 @@ minetest.register_node("hallows_hat_event:jackolantern_on", {
 
 -- Add jack 'o lanterns around the map on load
 
-local ID_AIR = minetest.CONTENT_AIR
-local ID_IGNORE = minetest.CONTENT_IGNORE
-local ID_WATER = minetest.get_content_id("default:water_source")
+local ID_AIR = core.CONTENT_AIR
+local ID_IGNORE = core.CONTENT_IGNORE
+local ID_WATER = core.get_content_id("default:water_source")
 ctf_api.register_on_new_match(function()
 	local spawn_amount = math.floor(math.max(
 		8,
 		math.min(
 			REQUIRED_LANTERNS + (ctf_map.current_map.dirname == "pumpkin_hills" and 10 or 0),
-			3 * #minetest.get_connected_players() * (ctf_map.current_map.dirname == "pumpkin_hills" and 1.6 or 1)
+			3 * #core.get_connected_players() * (ctf_map.current_map.dirname == "pumpkin_hills" and 1.6 or 1)
 		)
 	))
 
-	minetest.after(5, function()
+	core.after(5, function()
 		local vm = VoxelManip()
 		local pos1, pos2 = vm:read_from_map(ctf_map.current_map.pos1, ctf_map.current_map.pos2)
 		local data = vm:get_data()
@@ -145,8 +145,8 @@ ctf_api.register_on_new_match(function()
 			random_count = random_count - 1
 		end
 
-		local REG_ID = minetest.get_content_id("hallows_hat_event:jackolantern")
-		local ON_ID = minetest.get_content_id("hallows_hat_event:jackolantern_on")
+		local REG_ID = core.get_content_id("hallows_hat_event:jackolantern")
+		local ON_ID = core.get_content_id("hallows_hat_event:jackolantern_on")
 
 		for _, pos in ipairs(place_positions) do
 			if math_random(1, 10) ~= 2 then
@@ -159,7 +159,7 @@ ctf_api.register_on_new_match(function()
 		end
 
 		if #place_positions < spawn_amount then
-			minetest.log("error",
+			core.log("error",
 				string.format("[MAP] Couldn't place %d from %d chests", spawn_amount - #place_positions, spawn_amount)
 			)
 		end
@@ -171,7 +171,7 @@ ctf_api.register_on_new_match(function()
 end)
 
 sfinv.register_page("hallows_hat_event:progress", {
-	title = minetest.colorize("orange", "Event!"),
+	title = core.colorize("orange", "Event!"),
 	is_in_nav = function(self, player)
 		local meta = player:get_meta()
 

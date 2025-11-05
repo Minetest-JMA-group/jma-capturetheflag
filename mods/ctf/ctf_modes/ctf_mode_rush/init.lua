@@ -2,9 +2,9 @@ local rankings = ctf_rankings.init()
 local recent_rankings = ctf_modebase.recent_rankings(rankings)
 local features = ctf_modebase.features(rankings, recent_rankings)
 
-local MAX_REVIVES = 2
+local MAX_REVIVES = 1
 
-local modpath = minetest.get_modpath(minetest.get_current_modname())
+local modpath = core.get_modpath(core.get_current_modname())
 local timer = dofile(modpath .. "/timer.lua")
 local spectator = dofile(modpath .. "/spectator.lua")
 
@@ -60,13 +60,20 @@ spectator.setup({
 })
 
 local function new_match_id()
-	return tostring(minetest.get_us_time())
+	return tostring(core.get_us_time())
 end
 
 local function store_initial_team(pname, team)
-	if not state.initial_team[pname] then
-		state.initial_team[pname] = team
+	if not team or team == "" then
+		state.initial_team[pname] = nil
+		return
 	end
+
+	if state.initial_team[pname] and state.eliminated[pname] then
+		return
+	end
+
+	state.initial_team[pname] = team
 end
 
 local function get_alive_teams()
@@ -81,9 +88,8 @@ local function get_alive_teams()
 	return alive
 end
 
-
 local function update_flag_huds()
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		ctf_modebase.flag_huds.update_player(player)
 	end
 end
@@ -103,8 +109,8 @@ local function announce_team_defeat(team)
 
 	local color = ctf_teams.team[team] and ctf_teams.team[team].color or "white"
 	local message =
-		minetest.colorize(color, HumanReadable(team) .. " base has been defeated!")
-	minetest.chat_send_all(message)
+		core.colorize(color, HumanReadable(team) .. " base has been defeated!")
+	core.chat_send_all(message)
 
 	update_flag_huds()
 end
@@ -116,20 +122,24 @@ local function declare_winner(team)
 	state.winner_announced = true
 	timer.stop_round()
 
-	local connected = minetest.get_connected_players()
+	local connected = core.get_connected_players()
 	local winner_text
 
 	if team then
 		local color = ctf_teams.team[team] and ctf_teams.team[team].color or "white"
 		winner_text = HumanReadable(team) .. " Team Wins!"
-		minetest.chat_send_all(minetest.colorize(color, winner_text))
+		core.chat_send_all(core.colorize(color, winner_text))
 	else
 		winner_text = "No team survived!"
-		minetest.chat_send_all(minetest.colorize("orange", winner_text))
+		core.chat_send_all(core.colorize("orange", winner_text))
 	end
 
 	for name in pairs(state.participants) do
-		if team and state.initial_team[name] == team and state.eliminated[name] ~= true then
+		if
+			team
+			and state.initial_team[name] == team
+			and state.eliminated[name] ~= true
+		then
 			award_score(name, 500)
 		else
 			award_score(name, 50)
@@ -191,6 +201,14 @@ end
 
 timer.set_timeout_handler(end_round_due_to_time)
 
+ctf_api.register_on_match_start(function()
+	if ctf_modebase.current_mode ~= "rush" or not state.match_id or state.round_timer_active then
+		return
+	end
+
+	timer.start_round(timer.ROUND_DURATION)
+end)
+
 local function check_for_winner(team)
 	local alive = state.alive_players[team]
 	if not alive or next(alive) then
@@ -217,14 +235,14 @@ local function remove_flags()
 			local base_pos = vector.new(teamdef.flag_pos)
 			local top_pos = vector.add(base_pos, { x = 0, y = 1, z = 0 })
 
-			local node = minetest.get_node_or_nil(base_pos)
+			local node = core.get_node_or_nil(base_pos)
 			if node and node.name ~= "air" then
-				minetest.swap_node(base_pos, { name = "air" })
+				core.swap_node(base_pos, { name = "air" })
 			end
 
-			local top_node = minetest.get_node_or_nil(top_pos)
+			local top_node = core.get_node_or_nil(top_pos)
 			if top_node and top_node.name ~= "air" then
-				minetest.swap_node(top_pos, { name = "air" })
+				core.swap_node(top_pos, { name = "air" })
 			end
 		end
 	end
@@ -247,9 +265,9 @@ local function init_alive_players()
 end
 
 local function restore_all_players()
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		local name = player:get_player_name()
-		spectator.restore_privs(name, player)
+		spectator.restore_privs(name)
 		spectator.disable_vanish(player)
 		if state.initial_team[name] then
 			ctf_teams.non_team_players[name] = nil
@@ -258,8 +276,7 @@ local function restore_all_players()
 		state.spectator_anchor[name] = nil
 		state.revives_left[name] = nil
 		timer.clear_round_hud(name)
-		local meta = player:get_meta()
-		spectator.set_spectator_state(meta, nil)
+		spectator.set_spectator_state(name, nil)
 	end
 	state.match_id = nil
 	state.spectator_anchor = {}
@@ -270,7 +287,6 @@ end
 local function is_rush_active()
 	return ctf_modebase.current_mode == "rush"
 end
-
 
 ctf_modebase.register_mode("rush", {
 	hp_regen = 0.3,
@@ -351,7 +367,7 @@ ctf_modebase.register_mode("rush", {
 		"default:wood 80",
 		"default:torch 30",
 		"ctf_teams:door_steel 2",
-		"heal_block:heal",
+		"ctf_healing:heal_block",
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,
@@ -368,6 +384,7 @@ ctf_modebase.register_mode("rush", {
 			"default:sword_steel",
 			"default:pick_steel",
 			"default:torch 20",
+			"teleport_coin:coin",
 		}
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
@@ -383,9 +400,8 @@ ctf_modebase.register_mode("rush", {
 
 		state.match_id = new_match_id()
 		init_alive_players()
-		timer.start_round(timer.ROUND_DURATION)
 
-		minetest.after(0, function()
+		core.after(0, function()
 			remove_flags()
 			update_flag_huds()
 			timer.update_round_huds()
@@ -396,16 +412,39 @@ ctf_modebase.register_mode("rush", {
 		reset_state()
 		features.on_match_end()
 	end,
-	team_allocator = features.team_allocator,
-	on_allocplayer = function(player, new_team)
+	team_allocator = function(player)
+		local name
+		if type(player) == "string" then
+			name = player
+		elseif player and player.get_player_name then
+			name = player:get_player_name()
+		end
+
+		if name and state.eliminated[name] then
+			return
+		end
+
+		return features.team_allocator(player)
+	end,
+	on_allocplayer = function(player, new_team, old_team)
 		local pname = player:get_player_name()
 
 		state.participants[pname] = true
+		if old_team and state.alive_players[old_team] then
+			state.alive_players[old_team][pname] = nil
+			state.spectator_anchor[pname] = nil
+			if not state.team_defeated[old_team] and not next(state.alive_players[old_team]) then
+				check_for_winner(old_team)
+			else
+				timer.update_round_huds()
+			end
+			spectator.reassign_team_spectators(old_team)
+		end
 		store_initial_team(pname, new_team)
 
 		if state.eliminated[pname] then
-			minetest.after(0, function()
-				local current = minetest.get_player_by_name(pname)
+			core.after(0, function()
+				local current = core.get_player_by_name(pname)
 				if current then
 					spectator.make_spectator(current)
 					hud_events.new(pname, {
@@ -427,7 +466,7 @@ ctf_modebase.register_mode("rush", {
 		state.alive_players[new_team] = state.alive_players[new_team] or {}
 		state.alive_players[new_team][pname] = true
 
-		spectator.restore_privs(pname, player)
+		spectator.restore_privs(pname)
 		spectator.disable_vanish(player)
 		spectator.reassign_team_spectators(new_team)
 		timer.update_round_huds()
@@ -517,8 +556,8 @@ ctf_modebase.register_mode("rush", {
 		local pname = player:get_player_name()
 
 		if state.eliminated[pname] then
-			minetest.after(0, function()
-				local p = minetest.get_player_by_name(pname)
+			core.after(0, function()
+				local p = core.get_player_by_name(pname)
 				if not p then
 					return
 				end
@@ -563,10 +602,12 @@ ctf_modebase.register_mode("rush", {
 	on_flag_take = function() end,
 	on_flag_drop = function() end,
 	on_flag_capture = function() end,
+	on_flag_rightclick = function() end,
+	get_item_value = features.get_item_value,
 	get_chest_access = features.get_chest_access,
 })
 
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	if ctf_modebase.current_mode ~= "rush" then
 		return
 	end
@@ -575,32 +616,62 @@ minetest.register_globalstep(function(dtime)
 	spectator.on_globalstep(dtime)
 end)
 
-minetest.register_on_joinplayer(function(player)
-	local meta = player:get_meta()
-	local spec_state = spectator.get_spectator_state(meta)
+core.register_on_joinplayer(function(player)
+	local name = player:get_player_name()
+	local spec_state = spectator.get_spectator_state(name)
 	if not spec_state or not spec_state.match then
 		return
 	end
 
-	local name = player:get_player_name()
-
-	if not is_rush_active() or not state.match_id or spec_state.match ~= state.match_id then
-		spectator.restore_privs(name, player)
+	if
+		not is_rush_active()
+		or not state.match_id
+		or spec_state.match ~= state.match_id
+	then
+		spectator.restore_privs(name)
 		return
 	end
 
-	--[[state.eliminated[name] = true
-	state.saved_privs[name] = spec_state.privs
+	if type(spec_state.team) == "string" and spec_state.team ~= "" then
+		state.initial_team[name] = spec_state.team
+	end
+
+	if spec_state.privs and not state.saved_privs[name] then
+		state.saved_privs[name] = spec_state.privs
+	end
+
+	state.participants[name] = true
+	state.vanish_active[name] = nil
+	state.eliminated[name] = true
+	state.spectator_anchor[name] = nil
+	ctf_teams.remove_online_player(name)
+	ctf_teams.player_team[name] = nil
 	ctf_teams.non_team_players[name] = true
 
-	minetest.after(0, function()
-		local current = minetest.get_player_by_name(name)
+	local match_id = spec_state.match
+
+	core.after(0, function()
+		if
+			not is_rush_active()
+			or state.match_id ~= match_id
+			or not state.eliminated[name]
+		then
+			return
+		end
+
+		local current = core.get_player_by_name(name)
 		if not current then
 			return
 		end
 
 		spectator.make_spectator(current)
-	end)]]
+	end)
+
+	hud_events.new(name, {
+		text = "You have no revives left and are spectating this round.",
+		color = "warning",
+		quick = true,
+	})
 end)
 
 rush_api.is_spectator = spectator.is_spectator

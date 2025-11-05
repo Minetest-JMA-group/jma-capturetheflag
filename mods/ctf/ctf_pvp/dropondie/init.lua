@@ -6,19 +6,19 @@ local function drop_list(pos, player, list)
 	local is_player = pname ~= ""
 	local inv = player:get_inventory()
 	for _, item in ipairs(inv:get_list(list)) do
-		if minetest.registered_items[item:get_name()].stack_max == 1 then
+		if core.registered_items[item:get_name()].stack_max == 1 then
 			if is_player then
 				local meta = item:get_meta()
 				meta:set_string("dropped_by", pname)
 			end
 		end
 
-		local obj = minetest.add_item(pos, item)
+		local obj = core.add_item(pos, item)
 		if obj then
 			local random_velocity = {
 				x = math.random(-1, 1),
 				y = 5,
-				z = math.random(-1, 1)
+				z = math.random(-1, 1),
 			}
 
 			local final_velocity = vector.add(vector.divide(vel, 2), random_velocity)
@@ -31,7 +31,9 @@ local function drop_list(pos, player, list)
 end
 
 function dropondie.drop_all(player)
-	if not ctf_teams.get(player) then return end
+	if not ctf_teams.get(player) then
+		return
+	end
 
 	ctf_modebase.player.remove_bound_items(player)
 	ctf_modebase.player.remove_initial_stuff(player)
@@ -43,6 +45,6 @@ function dropondie.drop_all(player)
 end
 
 if ctf_core.settings.server_mode ~= "mapedit" then
-	minetest.register_on_dieplayer(dropondie.drop_all)
-	minetest.register_on_leaveplayer(dropondie.drop_all)
+	core.register_on_dieplayer(dropondie.drop_all)
+	core.register_on_leaveplayer(dropondie.drop_all)
 end

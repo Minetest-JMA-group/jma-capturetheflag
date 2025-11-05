@@ -1,6 +1,6 @@
 local timer = {}
 
-timer.ROUND_DURATION = 120
+timer.ROUND_DURATION = 300
 timer.HUD_UPDATE_INTERVAL = 0.5
 
 local state
@@ -113,7 +113,7 @@ function timer.clear_round_hud(name)
 		return
 	end
 
-	local player = minetest.get_player_by_name(name)
+	local player = core.get_player_by_name(name)
 	if player then
 		player:hud_remove(handle)
 	end
@@ -132,12 +132,17 @@ end
 function timer.update_round_huds()
 	ensure_state()
 
+	if not state.round_timer_active then
+		timer.clear_all_round_huds()
+		return
+	end
+
 	if not config.is_mode_active() or not state.match_id then
 		timer.clear_all_round_huds()
 		return
 	end
 
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		update_round_hud_for_player(player)
 	end
 end

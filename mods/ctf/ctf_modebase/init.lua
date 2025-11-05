@@ -51,7 +51,7 @@ ctf_gui.old_init()
 local S = core.get_translator(core.get_current_modname())
 -- Can be added to by other mods, like irc
 function ctf_modebase.announce(msg)
-	minetest.log("action", msg)
+	core.log("action", msg)
 end
 
 ctf_core.include_files(
@@ -82,11 +82,11 @@ ctf_core.include_files(
 	"map_vote.lua"
 )
 
-minetest.register_on_mods_loaded(function()
+core.register_on_mods_loaded(function()
 	table.sort(ctf_modebase.modelist)
 
 	if ctf_rankings.do_reset then
-		minetest.register_on_joinplayer(function(player)
+		core.register_on_joinplayer(function(player)
 			skybox.clear(player)
 
 			player:set_moon({
@@ -113,7 +113,7 @@ minetest.register_on_mods_loaded(function()
 			})
 		end)
 	elseif ctf_core.settings.server_mode == "play" then
-		minetest.after(0.2, ctf_modebase.start_new_match)
+		core.after(0.2, ctf_modebase.start_new_match)
 	end
 
 	for _, name in pairs(ctf_modebase.modelist) do
@@ -135,11 +135,11 @@ minetest.register_on_mods_loaded(function()
 	end
 end)
 
-minetest.override_chatcommand("pulverize", {
+core.override_chatcommand("pulverize", {
 	privs = { creative = true },
 })
 
-minetest.register_chatcommand("mode", {
+core.register_chatcommand("mode", {
 	description = S("Prints the current mode and matches played"),
 	func = function(name)
 		local mode = ctf_modebase.current_mode
@@ -157,7 +157,7 @@ minetest.register_chatcommand("mode", {
 	end,
 })
 
-minetest.register_chatcommand("match", {
+core.register_chatcommand("match", {
 	description = S("Shows current match information"),
 	func = function(name)
 		local mode = ctf_modebase.current_mode

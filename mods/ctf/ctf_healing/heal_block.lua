@@ -4,11 +4,11 @@
 local BREAK_REWARD_PER_HP = 0.1
 local HEAL_DIG_REWARD_BASE = 20
 
-minetest.register_node("heal_block:heal", {
+core.register_node("ctf_healing:heal_block", {
 	description = "Healing Block\n"
 		.. "A block that heals players within a 3-block radius.\n"
 		.. "Place it on your team's territory to keep your allies healthy nearby.\n"
-		.. minetest.colorize(
+		.. core.colorize(
 			"yellow",
 			"Warning: breaking this block will result in its loss, so defend it wisely!"
 		),
@@ -20,7 +20,7 @@ minetest.register_node("heal_block:heal", {
 	walkable = true,
 	tiles = {
 		{
-			name = "heal_block_top.png",
+			name = "ctf_healing_heal_block_top.png",
 			align_style = "repeat",
 			scale = 1,
 			position = { x = 0, y = 0, z = 0.5 },
@@ -48,22 +48,22 @@ minetest.register_node("heal_block:heal", {
 				return
 			end
 		end
-		minetest.item_place(itemstack, placer, pointed_thing)
+		core.item_place(itemstack, placer, pointed_thing)
 		return itemstack
 	end,
 
 	after_place_node = function(pos, placer)
-		minetest.get_node_timer(pos):start(1)
+		core.get_node_timer(pos):start(1)
 		local pteam = ctf_teams.get(placer)
 		if pteam then
-			minetest.get_meta(pos):set_string("team", pteam)
+			core.get_meta(pos):set_string("team", pteam)
 		end
 	end,
 
 	on_timer = function(pos)
 		local meta = core.get_meta(pos)
 		local healed_points = meta:get_int("healed_points")
-		for _, player in ipairs(minetest.get_objects_inside_radius(pos, 3)) do
+		for _, player in ipairs(core.get_objects_inside_radius(pos, 3)) do
 			if player:is_player() then
 				local pteam = ctf_teams.get(player:get_player_name())
 				if pteam and pteam == meta:get_string("team") then

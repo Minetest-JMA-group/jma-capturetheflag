@@ -1,6 +1,6 @@
 local hud = mhud.init()
 
--- healing_players[pname] = {hp = hp_at_healing_start, after = minetest.after id}
+-- healing_players[pname] = {hp = hp_at_healing_start, after = core.after id}
 local healing_players = {}
 
 local REGEN_PER_SEC = 3 -- Amount of HP healed per second
@@ -10,7 +10,7 @@ local MEDKIT_CAPACITY = 50 -- Amount of HP a medkit can heal
 local WEAR_PER_SEC = math.floor(MAX_WEAR / (MEDKIT_CAPACITY / REGEN_PER_SEC))
 
 local function stop_medkit_heal(playername, interrupt_reason)
-	local player = minetest.get_player_by_name(playername)
+	local player = core.get_player_by_name(playername)
 
 	if player then
 		if interrupt_reason then
@@ -37,8 +37,8 @@ local function stop_medkit_heal(playername, interrupt_reason)
 end
 
 local function medkit_heal(playername)
-	healing_players[playername].after = minetest.after(1, function()
-		local player = minetest.get_player_by_name(playername)
+	healing_players[playername].after = core.after(1, function()
+		local player = core.get_player_by_name(playername)
 
 		if not player then
 			return stop_medkit_heal(playername)
@@ -51,8 +51,8 @@ local function medkit_heal(playername)
 
 		-- In case teammates manage to place blocks inside the player while they're healing
 		local pos = player:get_pos():offset(0, 0.1, 0)
-		local node_0 = minetest.get_node(pos).name
-		local node_1 = minetest.get_node(pos:offset(0, 1, 0)).name
+		local node_0 = core.get_node(pos).name
+		local node_1 = core.get_node(pos:offset(0, 1, 0)).name
 
 		if
 			(
@@ -61,10 +61,10 @@ local function medkit_heal(playername)
 				and not node_0:match("door")
 				and not node_0:match("fence")
 				and node_0 ~= "default:snow"
-				and minetest.registered_nodes[node_0].walkable
+				and core.registered_nodes[node_0].walkable
 			)
 			or (
-				minetest.registered_nodes[node_1].walkable
+				core.registered_nodes[node_1].walkable
 				and not node_1:match("door")
 				and not node_1:match("fence")
 			)
@@ -94,7 +94,7 @@ local function start_medkit_heal(playername)
 		return
 	end
 
-	local player = minetest.get_player_by_name(playername)
+	local player = core.get_player_by_name(playername)
 
 	if not player then
 		return
@@ -114,8 +114,8 @@ local function start_medkit_heal(playername)
 
 	-- Prevent players from using medkits while inside nodes
 	local pos = player:get_pos():offset(0, 0.1, 0)
-	local node_0 = minetest.get_node(pos).name
-	local node_1 = minetest.get_node(pos:offset(0, 1, 0)).name
+	local node_0 = core.get_node(pos).name
+	local node_1 = core.get_node(pos:offset(0, 1, 0)).name
 
 	if
 		(
@@ -124,10 +124,10 @@ local function start_medkit_heal(playername)
 			and not node_0:match("door")
 			and not node_0:match("fence")
 			and node_0 ~= "default:snow"
-			and minetest.registered_nodes[node_0].walkable
+			and core.registered_nodes[node_0].walkable
 		)
 		or (
-			minetest.registered_nodes[node_1].walkable
+			core.registered_nodes[node_1].walkable
 			and not node_1:match("door")
 			and not node_1:match("fence")
 		)
@@ -153,7 +153,7 @@ local function start_medkit_heal(playername)
 	medkit_heal(playername)
 end
 
-minetest.register_on_punchplayer(function(player, hitter, _, _, _, damage)
+core.register_on_punchplayer(function(player, hitter, _, _, _, damage)
 	if player and hitter and player:get_hp() > 0 and damage > 0 then
 		local pname = player:get_player_name()
 		local hname = hitter:is_player() and hitter:get_player_name()
@@ -176,7 +176,7 @@ minetest.register_on_punchplayer(function(player, hitter, _, _, _, damage)
 	end
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local pname = player:get_player_name()
 
 	if not healing_players[pname] then
@@ -190,7 +190,7 @@ minetest.register_on_leaveplayer(function(player)
 	healing_players[pname] = nil
 end)
 
-minetest.register_tool("ctf_healing:medkit", {
+core.register_tool("ctf_healing:medkit", {
 	description = "Medkit",
 	inventory_image = "ctf_healing_medkit.png",
 	on_use = function(itemstack, user, pointed_thing)

@@ -1,5 +1,5 @@
 if os.date("%m") ~= "12" or tonumber(os.date("%d")) < 11 or tonumber(os.date("%d")) > 25
-	or not minetest.get_modpath("server_cosmetics") then return end
+	or not core.get_modpath("server_cosmetics") then return end
 
 local META_KEY = "server_cosmetics:snowballs:"..os.date("%Y")
 local COSMETIC_KEY = "server_cosmetics:entity:santa_hat:"..os.date("%Y")
@@ -43,7 +43,7 @@ local function EAT_FUNC(amount)
 			local team = ctf_teams.get(user)
 
 			if team then
-				minetest.add_item(ctf_map.current_map.teams[team].flag_pos, itemstack:get_name())
+				core.add_item(ctf_map.current_map.teams[team].flag_pos, itemstack:get_name())
 
 				itemstack:set_count(itemstack:get_count() - 1)
 				return itemstack
@@ -54,7 +54,7 @@ local function EAT_FUNC(amount)
 	end
 end
 
-minetest.override_item("winterize:present", {
+core.override_item("winterize:present", {
 	drop = {
 		max_items = 2,
 		items = {
@@ -69,7 +69,7 @@ minetest.override_item("winterize:present", {
 	},
 })
 
-minetest.register_craftitem("santa_hat_event:cookie", {
+core.register_craftitem("santa_hat_event:cookie", {
 	description = "A Cookie (Leftclick to eat)",
 	inventory_image = "santa_hat_event_cookie.png",
 	on_use = EAT_FUNC(1),
@@ -78,7 +78,7 @@ minetest.register_craftitem("santa_hat_event:cookie", {
 function winterize.get_present_count()
 	local cookie_count = 2
 
-	for _, p in pairs(minetest.get_connected_players()) do
+	for _, p in pairs(core.get_connected_players()) do
 		if p:get_meta():get_int(COSMETIC_KEY) ~= 1 then
 			cookie_count = cookie_count + 1
 		end

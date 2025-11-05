@@ -1,7 +1,7 @@
 local redis = require("redis")
 local client = redis.connect(
 	"127.0.0.1",
-	tonumber(minetest.settings:get("ctf_rankings_redis_server_port")) or 6379
+	tonumber(core.settings:get("ctf_rankings_redis_server_port")) or 6379
 )
 assert(client:ping(), "Redis server not found!")
 
@@ -12,17 +12,17 @@ return function(prefix, top)
 		end
 	end
 
-	local timer = minetest.get_us_time()
+	local timer = core.get_us_time()
 	op_all(function(noprefix_key, value)
-		local rank = minetest.parse_json(value)
+		local rank = core.parse_json(value)
 
 		if rank ~= nil and rank.score then
 			top:set(noprefix_key, rank.score)
 		end
 	end)
-	minetest.log(
+	core.log(
 		"action",
-		"Sorted rankings database. Took " .. ((minetest.get_us_time() - timer) / 1e6)
+		"Sorted rankings database. Took " .. ((core.get_us_time() - timer) / 1e6)
 	)
 
 	return {
@@ -41,7 +41,7 @@ return function(prefix, top)
 				return false
 			end
 
-			return minetest.parse_json(rank_str)
+			return core.parse_json(rank_str)
 		end,
 		set = function(self, pname, newrankings, erase_unset)
 			pname = PlayerName(pname)
@@ -58,7 +58,7 @@ return function(prefix, top)
 			end
 
 			self.top:set(pname, newrankings.score or 0)
-			client:set(self.prefix .. pname, minetest.write_json(newrankings))
+			client:set(self.prefix .. pname, core.write_json(newrankings))
 		end,
 		add = function(self, pname, amounts)
 			pname = PlayerName(pname)
@@ -70,7 +70,7 @@ return function(prefix, top)
 			end
 
 			self.top:set(pname, newrankings.score or 0)
-			client:set(self.prefix .. pname, minetest.write_json(newrankings))
+			client:set(self.prefix .. pname, core.write_json(newrankings))
 		end,
 		del = function(self, pname)
 			pname = PlayerName(pname)

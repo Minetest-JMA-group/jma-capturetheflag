@@ -23,7 +23,7 @@ sfinv.register_page(page_name, {
 		if context.leagues_info_page then
 			local info_formspec =
 				"box[0,0;10.47,9.5;#222222]" ..
-				"hypertext[0.2,0.2;10.07,9.1;;" .. minetest.formspec_escape(info_text) .. "]" ..
+				"hypertext[0.2,0.2;10.07,9.1;;" .. core.formspec_escape(info_text) .. "]" ..
 				"button[4.285,9.9;1.9,0.9;ok;OK]" ..
 				"image_button[9.97,10.85;0.5,0.5;ctf_map_trans.png;about;;false;false]" ..
 				"tooltip[about;Made with love by Nanowolf4\nJMA 2025]"
@@ -113,8 +113,8 @@ sfinv.register_page(page_name, {
 			string.format("box[0,0;%.2f,0.25;#00cc00]", bar_width) ..
 			"box[0,5.05;10.47,5.3;#202232]" ..
 			"box[0,0.35;10.47,4.6;#111111]" ..
-			"hypertext[0.15,0.35;10.17,4.6;;" .. minetest.formspec_escape(h) .. "]" ..
-			"hypertext[0.15,5.05;10.17,5.3;;" .. minetest.formspec_escape(t) .. "]" ..
+			"hypertext[0.15,0.35;10.17,4.6;;" .. core.formspec_escape(h) .. "]" ..
+			"hypertext[0.15,5.05;10.17,5.3;;" .. core.formspec_escape(t) .. "]" ..
 			"image_button[0.15,10.47;0.8,0.8;ctf_jma_leagues_refresh.png;refresh;;false;]" ..
 			"tooltip[refresh;Refresh the leagues overview]" ..
 			"image_button[1.05,10.47;0.8,0.8;ctf_jma_leagues_question.png;show_info_page;;false;]"
@@ -124,9 +124,9 @@ sfinv.register_page(page_name, {
 		-- 		"Tip: Complete tasks to progress through leagues. " ..
 		-- 		"Each league unlocks new rewards!" ..
 		-- 	"</style>"
-		-- 	formspec = formspec .. "hypertext[0.15,10.5;10.17,0.8;;" .. minetest.formspec_escape(tip) .. "]"
+		-- 	formspec = formspec .. "hypertext[0.15,10.5;10.17,0.8;;" .. core.formspec_escape(tip) .. "]"
 		-- end
-		-- minetest.show_formspec(name, "ctf_jma_leagues:history", formspec)
+		-- core.show_formspec(name, "ctf_jma_leagues:history", formspec)
 		return sfinv.make_formspec_v7(player, context, formspec)
 	end,
 
@@ -150,8 +150,8 @@ sfinv.register_page(page_name, {
 			return true, true
 		elseif fields.about then
 			if math.random(1, 100) == 1 then
-				minetest.chat_send_player(name, "(.0_0.) ???")
-				minetest.get_inventory({type="player", name = name}):add_item("main", "default:sword_wood 1")
+				core.chat_send_player(name, "(.0_0.) ???")
+				core.get_inventory({type="player", name = name}):add_item("main", "default:sword_wood 1")
 			end
 		end
 		return true
@@ -160,14 +160,14 @@ sfinv.register_page(page_name, {
 
 -- Update sfinv page when player is promoted (if this page is open)
 ctf_jma_leagues.register_on_promote(function(player_name, current, next_league)
-	local player = minetest.get_player_by_name(player_name)
+	local player = core.get_player_by_name(player_name)
 	if not player then return end
 	if sfinv.get_page(player) == page_name then
 		sfinv.set_page(player, page_name)
 	end
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local name = player:get_player_name()
 	cooldowns[name] = nil
 end)
