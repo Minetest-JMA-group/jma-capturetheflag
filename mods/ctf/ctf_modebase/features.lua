@@ -584,7 +584,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					pname,
 					{ kill_assists = 1, score = math.ceil(killscore / #hitters) }
 				)
-				local healers = ctf_combat_mode.get_healer(pname)
+				local healers = ctf_combat_mode.get_healers(pname)
 				for _, healer in ipairs(healers) do
 					recent_rankings.add(
 						healer,
