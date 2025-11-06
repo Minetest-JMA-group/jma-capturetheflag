@@ -584,6 +584,13 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					pname,
 					{ kill_assists = 1, score = math.ceil(killscore / #hitters) }
 				)
+				local healers = ctf_combat_mode.get_healer(pname)
+				for _, healer in ipairs(healers) do
+					recent_rankings.add(
+						healer,
+						{ score = math.ceil(killscore / #hitters / #healers) }
+					)
+				end
 			end
 
 			-- share kill score with healers
@@ -720,20 +727,17 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			if loading_screen_time then
 				local total_time = (core.get_us_time() - loading_screen_time) / 1e6
 
-				core.after(
-					math.abs(LOADING_SCREEN_TARGET_TIME - total_time),
-					function()
-						hud:clear_all()
-						set_playertags_state(PLAYERTAGS_ON)
+				core.after(math.abs(LOADING_SCREEN_TARGET_TIME - total_time), function()
+					hud:clear_all()
+					set_playertags_state(PLAYERTAGS_ON)
 
-						for _, player in ipairs(core.get_connected_players()) do
-							core.close_formspec(
-								player:get_player_name(),
-								"ctf_modebase:summary"
-							)
-						end
+					for _, player in ipairs(core.get_connected_players()) do
+						core.close_formspec(
+							player:get_player_name(),
+							"ctf_modebase:summary"
+						)
 					end
-				)
+				end)
 			end
 		end,
 		on_match_end = function()
@@ -963,8 +967,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			)
 
 			core.chat_send_all(
-				core.colorize(tcolor, pname)
-					.. core.colorize(FLAG_MESSAGE_COLOR, text)
+				core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text)
 			)
 			ctf_modebase.announce(
 				string.format("Player %s (team %s)%s", pname, pteam, text)
@@ -998,8 +1001,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			)
 
 			core.chat_send_all(
-				core.colorize(tcolor, pname)
-					.. core.colorize(FLAG_MESSAGE_COLOR, text)
+				core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text)
 			)
 			ctf_modebase.announce(
 				string.format("Player %s (team %s)%s", pname, pteam, text)
@@ -1073,8 +1075,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			})
 
 			core.chat_send_all(
-				core.colorize(tcolor, pname)
-					.. core.colorize(FLAG_MESSAGE_COLOR, text)
+				core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text)
 			)
 
 			ctf_modebase.announce(
