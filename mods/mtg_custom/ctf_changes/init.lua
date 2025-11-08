@@ -1,5 +1,7 @@
 local COOLDOWN = ctf_core.init_cooldowns()
 
+local DISALLOW_MOD_ABMS = {"fire", "flowers", "tnt"}
+
 local node_fall_damage_factors = {
 	["default:snowblock"] = -14, -- From a height of 13 blocks you take 5 damage
 	["default:snow"] = -10, -- From a height of 13 blocks you take 6 damage
@@ -20,6 +22,40 @@ core.override_chatcommand("clearinv", {
 })
 
 core.register_on_mods_loaded(function()
+
+	-- Remove Unneeded ABMs
+
+	local remove_list = {}
+
+	for key, abm in pairs(minetest.registered_abms) do
+		for _, mod in pairs(DISALLOW_MOD_ABMS) do
+			if abm.mod_origin == mod then
+				table.insert(remove_list, key)
+				break
+			end
+		end
+	end
+
+	local removed = 0
+	for _, key in pairs(remove_list) do
+		table.remove(minetest.registered_abms, key - removed)
+		removed = removed + 1
+	end
+
+	-- Unset falling group for all nodes
+
+	for name, def in pairs(minetest.registered_nodes) do
+        local mod_name, node_name = string.match(name, "(.*):(.*)")
+        if mod_name ~= "default" then
+            if node_name ~= "sand" and node_name ~= "silver_sand" and node_name ~= "gravel" and node_name ~= "desert_sand" then
+		        if def.groups then
+			        def.groups.falling_node = nil
+                    minetest.override_item(name, {groups = def.groups})
+                end
+            end
+        end
+
+	end
 
 	-- Set item type and tiers for give_initial_stuff
 	local tiers = {"wood", "stone", "steel", "mese", "diamond"}
@@ -178,4 +214,6 @@ core.register_on_mods_loaded(function()
 	end
 end)
 
+dofile(minetest.get_modpath("ctf_changes") .. "/ctf_lava.lua")
+dofile(minetest.get_modpath("ctf_changes") .. "/item_despawning.lua")
 dofile(core.get_modpath("ctf_changes") .. "/ctf_lava.lua")
