@@ -222,9 +222,6 @@ core.register_node("ctf_map:damage_glass", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	on_ranged_shoot = function(pos, node, shooter, type)
-		if type == "pistol" then
-			return
-		end
 
 		if not damage_node_dig(pos, node, shooter) then
 			return core.dig_node(pos)
