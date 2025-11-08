@@ -168,8 +168,8 @@ crafting.register_recipe({
 })
 
 crafting.register_recipe({
-	output = "ctf_map:damage_glass",
-	items  = { "default:glass", "ctf_map:spike" },
+	output = "ctf_map:damage_glass 6",
+	items  = { "default:glass 6", "ctf_map:spike" },
 	always_known = false,
 })
 
