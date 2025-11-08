@@ -71,7 +71,8 @@ ctf_core.include_files(
 	"commands.lua",
 	"register.lua",
 	"team_chest.lua",
-	"team_door.lua"
+	"team_door.lua",
+	"parties.lua"
 )
 
 core.register_on_mods_loaded(function()
@@ -111,6 +112,7 @@ core.register_on_mods_loaded(function()
 	end)
 
 	core.register_on_leaveplayer(function(player, timed_out, ...)
+		ctf_teams.check_and_clear_party_info(player)
 		local pteam = ctf_teams.get(player)
 
 		if not pteam then
