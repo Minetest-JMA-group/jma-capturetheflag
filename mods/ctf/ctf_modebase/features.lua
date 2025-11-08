@@ -604,13 +604,22 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			-- share kill score with healers
 			-- here we give the direct healers a share, and other
 			-- healers(healers of healers) up to some depth also some score
-			-- TODO: in future, calculate max_dpeth in a way that all healers
+			--
+			-- The computation method: For instance mazes and shangul heal ANAND
+			-- who in turn has healed savilli and savilli has got a kill now.
+			-- There are a total of 16 + 8 + 8 = 32 parts now. ANAND gets
+			-- 16/32(=1/2) killscore while mazes and shangul each get 8/32(=1/4) of it.
+			-- Now imagining if there is also Kat healing mazes, we'll have
+			-- 16 + 8 + 8 + 4 = 36 parts. Kat gets 4/36 of it, ANAND 16/36 and so on.
+			-- TODO: in future, calculate max_depth in a way that all healers
 			-- will get a score as long as their reward is >= 1.0
 			-- @type { [PlayerName]: number }
+			--
+			-- -- Farooq fkz at riseup dot net
 			local max_depth = 3
 			local healers, all_parts = ctf_combat_mode.get_all_healers(killer, max_depth)
 			for healer, depth in pairs(healers) do
-				local divider = (max_depth - depth + 1) / all_parts
+				local divider = 2 ^ (max_depth - depth + 1) / all_parts
 				local healer_reward = math.ceil(killscore * divider)
 				recent_rankings.add(healer, { score = healer_reward })
 			end
