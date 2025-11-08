@@ -21,6 +21,7 @@ return {
 	{ itemname = "default:apple", chance = 45, amount = 5 },
 	{ itemname = "default:torch", chance = 42, amount = 50 },
 	{ itemname = "ctf_map:damage_cobble", chance = 25, amount = 30 },
+	{ itemname = "ctf_map:damage_glass", chance = 25, amount = 30 },
 	{ itemname = "default:obsidian", chance = 10, amount = 25 },
 
 	--ranged
@@ -63,6 +64,7 @@ return {
 	{ itemname = "ctf_map:unwalkable_cobble", chance = 20, amount = 5 },
 	{ itemname = "ctf_map:spike", chance = 20, amount = 15 },
 	{ itemname = "ctf_map:damage_cobble", chance = 20, amount = 30 },
+	{ itemname = "ctf_map:damage_glass", chance = 20, amount = 30 },
 	{ itemname = "ctf_map:reinforced_cobble", chance = 20, amount = 5 },
 
 	{ itemname = "ctf_ranged:ammo", chance = 43, amount = 5 },
