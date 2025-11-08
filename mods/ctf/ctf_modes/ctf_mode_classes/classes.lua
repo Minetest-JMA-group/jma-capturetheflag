@@ -19,6 +19,7 @@ local class_props = {
 			"ctf_ranged:rifle",
 			"ctf_ranged:assault_rifle",
 			"ctf_ranged:sniper_magnum",
+			"ctf_healing:medical_furnace",
 		},
 	},
 	support = {
@@ -28,6 +29,7 @@ local class_props = {
 		items = {
 			"ctf_mode_classes:support_bandage",
 			"ctf_mode_classes:support_paxel",
+			"ctf_healing:medical_furnace",
 			"default:cobble 99",
 		},
 		disallowed_items = {
@@ -51,6 +53,7 @@ local class_props = {
 		},
 		disallowed_items = {
 			"ctf_melee:",
+			"ctf_healing:medical_furnace",
 		},
 		disallowed_items_markup = {
 			["ctf_melee:"] = "default_tool_steelsword.png^ctf_modebase_group.png",
