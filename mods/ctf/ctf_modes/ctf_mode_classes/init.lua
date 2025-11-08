@@ -102,6 +102,12 @@ ctf_modebase.register_mode("classes", {
 			max_stacks = 2,
 			rarity = 0.2,
 		},
+		["ctf_map:damage_glass"] = {
+			min_count = 5,
+			max_count = 20,
+			max_stacks = 2,
+			rarity = 0.2,
+		},
 		["ctf_map:reinforced_cobble"] = {
 			min_count = 5,
 			max_count = 25,
@@ -146,6 +152,7 @@ ctf_modebase.register_mode("classes", {
 		"default:shovel_mese",
 		"default:shovel_diamond",
 		"ctf_map:damage_cobble",
+		"ctf_map:damage_glass",
 		"ctf_map:spike",
 		"ctf_map:reinforced_cobble 2",
 		"ctf_map:reinforced_glass 4",
@@ -156,6 +163,7 @@ ctf_modebase.register_mode("classes", {
 		"default:cobble 80",
 		"default:wood 80",
 		"ctf_map:damage_cobble 20",
+		"ctf_map:damage_glass 20",
 		"ctf_map:reinforced_cobble 20",
 		"default:torch 30",
 		"ctf_teams:door_steel 2",

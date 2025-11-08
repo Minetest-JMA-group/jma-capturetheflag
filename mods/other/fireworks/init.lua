@@ -24,7 +24,10 @@ local random_items = {
 	{itemname = "default:apple", chance = 20, amount = 8},
 	{itemname = "default:diamond", chance = 5, amount = 2},
 	{itemname = "default:torch", chance = 42, amount = 15},
+
 	{itemname = "ctf_map:damage_cobble", chance = 25, amount = 30},
+	{itemname = "ctf_map:damage_glass", chance = 25, amount = 30},
+
 	{itemname = "default:obsidian", chance = 22, amount = 10},
 
 	{itemname = "rocket_launcher:launcher", chance = 12, amount = 1},

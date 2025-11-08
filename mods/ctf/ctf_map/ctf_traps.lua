@@ -141,10 +141,10 @@ core.register_on_player_hpchange(function(player, hp_change, reason)
 end, true)
 
 --
--- Damage Cobble
+-- Damage Nodes
 --
 
-local function damage_cobble_dig(pos, node, digger)
+local function damage_node_dig(pos, node, digger)
 	if not digger:is_player() then
 		return
 	end
@@ -165,25 +165,29 @@ local function damage_cobble_dig(pos, node, digger)
 		return
 	end
 
+    local damage_groups = { fleshy = 7 }
+
+    if node.name == "ctf_map:damage_cobble" then
+        damage_groups.damage_cobble = 1
+    elseif node.name == "ctf_map:damage_glass" then
+        damage_groups.damage_glass = 1
+	end
+
+    -- Apply damage
 	local placerobj = core.get_player_by_name(placer_name)
 
-	if placerobj then
-		digger:punch(placerobj, 10, {
-			damage_groups = {
-				fleshy = 7,
-				damage_cobble = 1,
-			},
-		})
-	else
-		digger:set_hp(digger:get_hp() - 7)
-	end
+    if placerobj then
+        digger:punch(placerobj, 10, { damage_groups = damage_groups })
+    else
+        digger:set_hp(digger:get_hp() - 7)
+    end
 
 	core.remove_node(pos)
 	return true
 end
 
 core.register_node("ctf_map:damage_cobble", {
-	description = "Damage Cobble\n(Damages any enemy that breaks it)",
+	description = "Damage Cobble",
 	tiles = { "ctf_map_damage_cobble.png" },
 	is_ground_content = false,
 	walkable = true,
@@ -193,12 +197,38 @@ core.register_node("ctf_map:damage_cobble", {
 			return
 		end
 
-		if not damage_cobble_dig(pos, node, shooter) then
+		if not damage_node_dig(pos, node, shooter) then
 			return core.dig_node(pos)
 		end
 	end,
 	on_dig = function(pos, node, digger)
-		if not damage_cobble_dig(pos, node, digger) then
+		if not damage_node_dig(pos, node, digger) then
+			return core.node_dig(pos, node, digger)
+		end
+	end,
+	after_place_node = function(pos, placer, itemstack, pointed_thing)
+		local meta = core.get_meta(pos)
+		meta:set_string("placer", placer:get_player_name())
+	end,
+})
+
+core.register_node("ctf_map:damage_glass", {
+	description = "Damage Glass",
+	tiles = { "default_glass.png^[colorize:#B00000:180^default_glass_detail.png", "default_glass_detail.png" },
+	groups = { cracky = 3 },
+	sounds = default.node_sound_glass_defaults(),
+	drawtype = "glasslike_framed_optional",
+	use_texture_alpha = "clip",
+	paramtype = "light",
+	sunlight_propagates = true,
+	on_ranged_shoot = function(pos, node, shooter, type)
+
+		if not damage_node_dig(pos, node, shooter) then
+			return core.dig_node(pos)
+		end
+	end,
+	on_dig = function(pos, node, digger)
+		if not damage_node_dig(pos, node, digger) then
 			return core.node_dig(pos, node, digger)
 		end
 	end,

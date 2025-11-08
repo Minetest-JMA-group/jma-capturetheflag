@@ -168,6 +168,12 @@ crafting.register_recipe({
 })
 
 crafting.register_recipe({
+	output = "ctf_map:damage_glass 6",
+	items  = { "default:glass 6", "ctf_map:spike" },
+	always_known = false,
+})
+
+crafting.register_recipe({
 	output = "ctf_map:reinforced_cobble 2",
 	items = { "default:cobble 6", "default:steel_ingot" },
 	always_known = false,

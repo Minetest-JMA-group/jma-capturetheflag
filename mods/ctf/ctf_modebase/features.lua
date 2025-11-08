@@ -372,6 +372,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		knockback_grenade = "ctf_mode_nade_fight_knockback_grenade.png",
 		black_hole_grenade = "ctf_mode_nade_fight_black_hole_grenade.png",
 		damage_cobble = "ctf_map_damage_cobble.png",
+		damage_glass = "default_glass.png^[colorize:#B00000:180^default_glass_detail.png",
 		landmine = "ctf_landmine_landmine.png",
 		spike = "ctf_map_spike.png",
 	}
