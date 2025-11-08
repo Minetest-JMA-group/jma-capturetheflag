@@ -174,6 +174,12 @@ crafting.register_recipe({
 })
 
 crafting.register_recipe({
+	output = "ctf_map:reinforced_glass 4",
+	items  = { "default:glass 6", "default:steel_ingot" },
+	always_known = false,
+})
+
+crafting.register_recipe({
 	output = "ctf_landmine:landmine",
 	items = { "default:steel_ingot", "grenades:frag" },
 	always_known = false,

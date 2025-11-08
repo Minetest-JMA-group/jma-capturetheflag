@@ -114,7 +114,12 @@ ctf_modebase.register_mode("nade_fight", {
 			max_stacks = 2,
 			rarity = 0.2,
 		},
-
+		["ctf_map:reinforced_glass"] = {
+			min_count = 5,
+			max_count = 10,
+			max_stacks = 2,
+			rarity = 0.2,
+		},
 		["ctf_ranged:ammo"] = {
 			min_count = 3,
 			max_count = 10,
@@ -145,6 +150,7 @@ ctf_modebase.register_mode("nade_fight", {
 		"ctf_map:damage_cobble",
 		"ctf_map:spike",
 		"ctf_map:reinforced_cobble 2",
+		"ctf_map:reinforced_glass 4",
 	},
 	physics = { sneak_glitch = true, new_move = false },
 	blacklisted_nodes = { "default:apple" },

@@ -208,10 +208,25 @@ core.register_node("ctf_map:damage_cobble", {
 	end,
 })
 
+--
+-- Reinforced Nodes
+--
+
 core.register_node("ctf_map:reinforced_cobble", {
 	description = "Reinforced Cobblestone",
 	tiles = { "ctf_map_reinforced_cobble.png" },
 	is_ground_content = false,
 	groups = { cracky = 1, stone = 2 },
 	sounds = default.node_sound_stone_defaults(),
+})
+
+core.register_node("ctf_map:reinforced_glass", {
+	description = "Reinforced Glass",
+	tiles = {"default_glass.png^[colorize:#000:140^default_glass_detail.png", "default_glass_detail.png"},
+	groups = {cracky = 2},
+	sounds = default.node_sound_glass_defaults(),
+	drawtype = "glasslike_framed_optional",
+	use_texture_alpha = "clip",
+	paramtype = "light",
+	sunlight_propagates = true,
 })
