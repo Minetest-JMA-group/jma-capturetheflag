@@ -222,7 +222,7 @@ core.register_node("ctf_map:reinforced_cobble", {
 
 core.register_node("ctf_map:reinforced_glass", {
 	description = "Reinforced Glass",
-	tiles = {"default_glass.png^[colorize:#000:140^default_glass_detail.png", "default_glass_detail.png"},
+	tiles = { "default_glass.png^[colorize:#000:140^default_glass_detail.png", "default_glass_detail.png" },
 	groups = {cracky = 2},
 	sounds = default.node_sound_glass_defaults(),
 	drawtype = "glasslike_framed_optional",
