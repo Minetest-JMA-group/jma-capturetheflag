@@ -10,10 +10,7 @@ playertag = {
 	no_entity_attach = {}
 }
 
-local codepoint
-if core.global_exists("algorithms") and algorithms.codepoint then
-	codepoint = algorithms.codepoint
-end
+local codepoint = utf8_simple.codepoint
 local function add_entity_tag(player, old_observers, readded)
 	local player_name = player:get_player_name()
 	-- Hide fixed nametag
@@ -51,7 +48,7 @@ local function add_entity_tag(player, old_observers, readded)
 	local i = 0
 	for idx, char, bidx in utf8_simple.chars(player_name) do
 		local n = "_"
-		if #char > 1 and codepoint then
+		if #char > 1 then
 			local code = codepoint(char)
 			n = "U-"..string.format("%04X", code)
 		elseif char:byte() > 96 and char:byte() < 123 or char:byte() > 47 and char:byte() < 58 or char == "-" then
