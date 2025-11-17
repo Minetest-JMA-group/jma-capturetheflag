@@ -73,8 +73,9 @@ function ctf_modebase.start_match_after_map_vote()
 					cmd_text
 				)
 			)
-
-			chat_lib.send_message_to_privileged(msg, { "ctf_admin", "server" })
+			if chat_lib and chat_lib.send_message_to_privileged then
+				chat_lib.send_message_to_privileged(msg, { "ctf_admin", "server" })
+			end
 		end
 	end)
 end
