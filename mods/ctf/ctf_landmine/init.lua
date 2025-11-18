@@ -6,6 +6,11 @@ local landmines = {
 
 local landmine_globalstep_counter = 0.0
 local LANDMINE_COUNTER_THRESHOLD = 0.025
+--- @type boolean shows if it's build time
+local should_landmine_explode = false
+
+ctf_api.register_on_match_start(function() should_landmine_explode = true end)
+ctf_api.register_on_match_end(function() should_landmine_explode = false end)
 
 local function is_self_landmine(object_ref, pos)
 	local meta = core.get_meta(pos)
@@ -168,6 +173,9 @@ core.register_node("ctf_landmine:landmine", {
 
 core.register_globalstep(function(dtime)
 	if #landmines == 0 then
+		return
+	end
+	if not should_landmine_explode then
 		return
 	end
 	landmine_globalstep_counter = landmine_globalstep_counter + dtime
