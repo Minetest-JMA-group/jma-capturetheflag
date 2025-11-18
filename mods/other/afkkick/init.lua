@@ -58,7 +58,16 @@ core.register_globalstep(function(dtime)
 		if player then
 			-- Check if this player is doing an action
 			local control = player:get_player_control()
-			if control.up or control.down or control.left or control.right or control.jump or control.sneak or control.dig or control.place then
+			if
+				control.up
+				or control.down
+				or control.left
+				or control.right
+				or control.jump
+				or control.sneak
+				or control.dig
+				or control.place
+			then
 				players[playerName]["lastAction"] = currGameTime
 			end
 
@@ -70,9 +79,13 @@ core.register_globalstep(function(dtime)
 
 				-- Warn player if he/she has less than WARN_TIME seconds to move or be kicked
 				if players[playerName]["lastAction"] + MAX_INACTIVE_TIME - WARN_TIME < currGameTime then
-					core.chat_send_player(playerName, core.colorize("#FF8C00",
-                        S("[Warning], you have @1 seconds to move or be kicked for inactivity",
-                    tostring(players[playerName]["lastAction"] + MAX_INACTIVE_TIME - currGameTime + 1))))
+					local time_left = players[playerName]["lastAction"] + MAX_INACTIVE_TIME - currGameTime + 1
+					hud_events.new(playerName, {
+						text = S("[Warning], you have @1 seconds to move "
+									.. "or be kicked for inactivity", time_left),
+						color = "warning",
+						channel = 3
+					})
 				end
 			end
 		end
