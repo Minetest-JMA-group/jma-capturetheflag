@@ -123,7 +123,13 @@ end
 local ALL_HEALERS_DEFAULT_MAX_DEPTH = 3
 --- Get all healers of a player recursively. That is, if ANAND healed
 --- Kat and Kat healed savilli, the Knight, both ANAND and Kat are the
---- healers. Note that the depth matters. And ANAND has d=1
+--- healers. Note that the depth matters. And ANAND has d=1.
+---
+--- Also each healer has a "part" in this which is later used by
+--- ctf_modebase to calculate score. "part" of a healer is
+--- `2^(max_depth - depth + 1)` where `^` is "to the power of".
+---
+--- The second value this function returns is the sum of all parts.
 --- @param player PlayerName | ObjectRef
 --- @param max_depth? integer
 --- @return {[PlayerName]: number}, number
@@ -139,8 +145,9 @@ function ctf_combat_mode.get_all_healers(player, max_depth)
 	local function get_recursively(player2, depth)
 		local healers_this = ctf_combat_mode.get_healers(player2)
 		for _, healer in ipairs(healers_this) do
-			healers2[healer] = depth
-			parts = parts + 2 ^ (max_depth - depth + 1)
+			healer_part = 2 ^ (max_depth - depth + 1)
+			healers2[healer] = healer_part
+			parts = parts + healer_part
 			if depth < max_depth then
 				get_recursively(healer, depth + 1)
 			end
