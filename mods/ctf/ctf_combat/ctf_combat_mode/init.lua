@@ -145,7 +145,7 @@ function ctf_combat_mode.get_all_healers(player, max_depth)
 	local function get_recursively(player2, depth)
 		local healers_this = ctf_combat_mode.get_healers(player2)
 		for _, healer in ipairs(healers_this) do
-			healer_part = 2 ^ (max_depth - depth + 1)
+			local healer_part = 2 ^ (max_depth - depth + 1)
 			healers2[healer] = healer_part
 			parts = parts + healer_part
 			if depth < max_depth then
