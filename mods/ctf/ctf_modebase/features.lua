@@ -938,11 +938,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			-- here for future use. For instanace if we wanted to calculate value
 			-- of an item depending on how many of the same item already exists in
 			local value = default_item_value[itemname]
-			if value == nil then
-				return 0
-			else
-				return value
-			end
+			return value or 0
 		end,
 		on_flag_take = function(player, teamname)
 			local pname = player:get_player_name()
