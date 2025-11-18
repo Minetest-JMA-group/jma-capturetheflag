@@ -181,6 +181,13 @@ local function update_playertags(time)
 	end
 end
 
+--- Compute logarithm base 2 of x
+--- @param x number
+--- @return number
+local function lg(x)
+	return math.log(x) / math.log(2)
+end
+
 local PLAYERTAGS_OFF = false
 local PLAYERTAGS_ON = true
 local function set_playertags_state(state)
@@ -595,9 +602,24 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			end
 
 			-- share kill score with healers
-			local healers = ctf_combat_mode.get_healers(killer)
-			for _, pname in ipairs(healers) do
-				recent_rankings.add(pname, { score = math.ceil(killscore / #healers) })
+			-- here we give the direct healers a share, and other
+			-- healers(healers of healers) up to some depth also some score
+			--
+			-- The computation method: For instance mazes and shangul heal ANAND
+			-- who in turn has healed savilli and savilli has got a kill now.
+			-- There are a total of 16 + 8 + 8 = 32 parts now. ANAND gets
+			-- 16/32(=1/2) killscore while mazes and shangul each get 8/32(=1/4) of it.
+			-- Now imagining if there is also Kat healing mazes, we'll have
+			-- 16 + 8 + 8 + 4 = 36 parts. Kat gets 4/36 of it, ANAND 16/36 and so on.
+			-- TODO: in future, calculate max_depth in a way that all healers
+			-- will get a score as long as their reward is >= 1.0
+			--
+			-- -- Farooq fkz at riseup dot net
+			local max_depth = 3
+			local healers, all_parts = ctf_combat_mode.get_all_healers(killer, max_depth)
+			for healer, part in pairs(healers) do
+				local healer_reward = math.ceil(killscore * part / all_parts)
+				recent_rankings.add(healer, { score = healer_reward }, false)
 			end
 
 			if ctf_combat_mode.is_only_hitter(killer, player) then
