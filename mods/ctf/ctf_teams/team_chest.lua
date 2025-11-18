@@ -319,6 +319,11 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				if pname and cur_mode then
 					local item_name = stack:get_name()
 					local score = cur_mode.get_item_value(item_name, pos)
+					core.debug(
+						"We are supposed to give score for "
+							.. item_name(" and its value is ")
+							.. tostring(score)
+					)
 					if score > 0 then
 						local item_desc = stack:get_short_description()
 						if item_desc == "" then
