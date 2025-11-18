@@ -317,7 +317,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				local cur_mode = ctf_modebase:get_current_mode()
 				if pname and cur_mode then
 					local item_name = stack:get_name()
-					local score = cur_mode:get_item_value(item_name, pos)
+					local score = cur_mode.get_item_value(item_name, pos)
 					if score > 0 then
 						local item_desc = stack:get_short_description()
 						if item_desc == "" then
