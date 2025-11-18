@@ -315,7 +315,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			local pname = player:get_player_name()
 			if dropped_by ~= pname and dropped_by ~= "" and dropteam then
 				local cur_mode = ctf_modebase:get_current_mode()
-				if pname and cur_mode and cur_mode.get_item_value then
+				if pname and cur_mode then
 					local item_name = stack:get_name()
 					local score = cur_mode:get_item_value(item_name, pos)
 					if score > 0 then
@@ -324,7 +324,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 							item_desc = item_name
 						end
 
-						cur_mode.recent_rankings.add(pname, { score = score }, true)
+						cur_mode.recent_rankings.add(pname, { score = score })
 						cmsg.push_message_player(
 							player,
 							string.format("+ %s: %s", score, item_desc)
