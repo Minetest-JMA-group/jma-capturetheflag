@@ -1106,6 +1106,14 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				end
 			end
 
+			local max_depth = 4
+			local healers, all_parts = ctf_combat_mode.get_all_healers(pname, max_depth)
+			for healer, part in pairs(healers) do
+				local healer_reward = math.ceil(capture_reward * part / all_parts)
+				recent_rankings.add(healer, { score = healer_reward }, false)
+			end
+
+
 			recent_rankings.add(
 				pname,
 				{ score = capture_reward, flag_captures = #teamnames }
