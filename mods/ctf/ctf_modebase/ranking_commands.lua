@@ -117,6 +117,14 @@ core.register_chatcommand("donate", {
 
 		dmessage = (dmessage and dmessage ~= "") and (":" .. dmessage) or ""
 
+		if dmessage and filter then
+			local result, violation_type = filter.check_message(dmessage)
+			if not result then
+				filter.on_violation(name, dmessage, violation_type)
+				return false, ""
+			end
+		end
+
 		if not pname then
 			return false, "You should provide the player name!"
 		end
