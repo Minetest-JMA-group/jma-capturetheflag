@@ -185,13 +185,13 @@ core.register_globalstep(function(dtime)
 	landmine_globalstep_counter = 0.0
 	for _idx, pos in pairs(landmines) do
 		local near_objs = core.get_objects_in_area({
-			x = pos.x - 0.5,
-			y = pos.y - 0.5,
-			z = pos.z - 0.5,
+			x = pos.x - 0.75,
+			y = pos.y - 0.75,
+			z = pos.z - 0.75,
 		}, {
-			x = pos.x + 0.5,
-			y = pos.y - 0.3,
-			z = pos.z + 0.5,
+			x = pos.x + 0.75,
+			y = pos.y - 0.6,
+			z = pos.z + 0.75,
 		})
 		local must_explode = false
 		for _, obj in pairs(near_objs) do
