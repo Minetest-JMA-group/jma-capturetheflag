@@ -596,7 +596,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				for _, healer in ipairs(healers) do
 					recent_rankings.add(
 						healer,
-						{ score = math.ceil(killscore / #hitters / #healers) }
+						{ score = math.ceil(killscore / #hitters / #healers / 2) }
 					)
 				end
 			end
