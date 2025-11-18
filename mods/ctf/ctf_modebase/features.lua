@@ -613,15 +613,13 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			-- 16 + 8 + 8 + 4 = 36 parts. Kat gets 4/36 of it, ANAND 16/36 and so on.
 			-- TODO: in future, calculate max_depth in a way that all healers
 			-- will get a score as long as their reward is >= 1.0
-			-- @type { [PlayerName]: number }
 			--
 			-- -- Farooq fkz at riseup dot net
 			local max_depth = 3
 			local healers, all_parts = ctf_combat_mode.get_all_healers(killer, max_depth)
-			for healer, depth in pairs(healers) do
-				local divider = 2 ^ (max_depth - depth + 1) / all_parts
-				local healer_reward = math.ceil(killscore * divider)
-				recent_rankings.add(healer, { score = healer_reward })
+			for healer, part in pairs(healers) do
+				local healer_reward = math.ceil(killscore * part / all_parts)
+				recent_rankings.add(healer, { score = healer_reward }, false)
 			end
 
 			if ctf_combat_mode.is_only_hitter(killer, player) then
