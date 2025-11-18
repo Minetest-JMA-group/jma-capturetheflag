@@ -300,19 +300,20 @@ for _, team in ipairs(ctf_teams.teamlist) do
 		end
 
 		function def.on_metadata_inventory_put(pos, listname, index, stack, player)
+			local meta = stack:get_meta()
+			local dropped_by = meta:get_string("dropped_by")
+			local pname = player:get_player_name()
 			core.log(
 				"action",
 				string.format(
-					"%s puts %s to team chest at %s",
-					player:get_player_name(),
+					"%s puts %s to team chest at %s. Dropped by is: %s",
+					pname,
 					stack:to_string(),
-					core.pos_to_string(pos)
+					core.pos_to_string(pos),
+					dropped_by or "<EMPTY_STRING>"
 				)
 			)
-			local meta = stack:get_meta()
-			local dropped_by = meta:get_string("dropped_by")
 			local dropteam = ctf_teams.get(dropped_by)
-			local pname = player:get_player_name()
 			if dropped_by ~= pname and dropped_by ~= "" and dropteam then
 				local cur_mode = ctf_modebase:get_current_mode()
 				if pname and cur_mode then
