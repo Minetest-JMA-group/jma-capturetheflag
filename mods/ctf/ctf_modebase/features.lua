@@ -363,8 +363,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local teams_left
 
 	local function calculate_killscore(player)
+		local pname = PlayerName(player)
 		local match_rank = recent_rankings.players()[player] or {}
-		local kd = (match_rank.kills or 1) / (match_rank.deaths or 1)
+		local match_kd = (match_rank.kills or 1) / (match_rank.deaths or 1)
+		local overall_rank = rankings:get(pname)
+		local overall_kd = (overall_rank.kills or 1) / (overall_rank.deaths or 1)
+		local kd = (1 * overall_kd + 2 * match_kd) / 3
 		local flag_multiplier = 1
 		for tname, carrier in pairs(ctf_modebase.flag_taken) do
 			if carrier.p == player then
@@ -1108,7 +1112,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				local healer_reward = math.ceil(capture_reward * part / all_parts)
 				recent_rankings.add(healer, { score = healer_reward }, false)
 			end
-
 
 			recent_rankings.add(
 				pname,
