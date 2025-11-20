@@ -165,22 +165,22 @@ local function damage_node_dig(pos, node, digger)
 		return
 	end
 
-    local damage_groups = { fleshy = 7 }
+	local damage_groups = { fleshy = 7 }
 
-    if node.name == "ctf_map:damage_cobble" then
-        damage_groups.damage_cobble = 1
-    elseif node.name == "ctf_map:damage_glass" then
-        damage_groups.damage_glass = 1
+	if node.name == "ctf_map:damage_cobble" then
+		damage_groups.damage_cobble = 1
+	elseif node.name == "ctf_map:damage_glass" then
+		damage_groups.damage_glass = 1
 	end
 
-    -- Apply damage
+	-- Apply damage
 	local placerobj = core.get_player_by_name(placer_name)
 
-    if placerobj then
-        digger:punch(placerobj, 10, { damage_groups = damage_groups })
-    else
-        digger:set_hp(digger:get_hp() - 7)
-    end
+	if placerobj then
+		digger:punch(placerobj, 10, { damage_groups = damage_groups })
+	else
+		digger:set_hp(digger:get_hp() - 7)
+	end
 
 	core.remove_node(pos)
 	return true
@@ -214,7 +214,10 @@ core.register_node("ctf_map:damage_cobble", {
 
 core.register_node("ctf_map:damage_glass", {
 	description = "Damage Glass",
-	tiles = { "default_glass.png^[colorize:#B00000:180^default_glass_detail.png", "default_glass_detail.png" },
+	tiles = {
+		"default_glass.png^[colorize:#B00000:180^default_glass_detail.png",
+		"default_glass_detail.png",
+	},
 	groups = { cracky = 3 },
 	sounds = default.node_sound_glass_defaults(),
 	drawtype = "glasslike_framed_optional",
@@ -222,7 +225,6 @@ core.register_node("ctf_map:damage_glass", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	on_ranged_shoot = function(pos, node, shooter, type)
-
 		if not damage_node_dig(pos, node, shooter) then
 			return core.dig_node(pos)
 		end
@@ -252,7 +254,10 @@ core.register_node("ctf_map:reinforced_cobble", {
 
 core.register_node("ctf_map:reinforced_glass", {
 	description = "Reinforced Glass",
-	tiles = { "default_glass.png^[colorize:#000:140^default_glass_detail.png", "default_glass_detail.png" },
+	tiles = {
+		"default_glass.png^[colorize:#000:140^default_glass_detail.png",
+		"default_glass_detail.png",
+	},
 	groups = { cracky = 2 },
 	sounds = default.node_sound_glass_defaults(),
 	drawtype = "glasslike_framed_optional",
