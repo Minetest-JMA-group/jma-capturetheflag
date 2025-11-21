@@ -125,7 +125,8 @@ ctf_core.include_files(
 	"map_functions.lua",
 	"editor_functions.lua",
 	"mapedit_gui.lua",
-	"ctf_traps.lua"
+	"ctf_traps.lua",
+	"map_api.lua"
 )
 
 local directory = core.get_modpath(core.get_current_modname()) .. "/maps/"
