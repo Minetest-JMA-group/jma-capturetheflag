@@ -1,12 +1,21 @@
 local VOTING_TIME = 20
 local NUM_MAPS_VOTE = 3
 
+local RESHUFFLE = "%RESHUFFLE%"
+
 local map_sample = nil
 local timer = nil
 local formspec_send_timer = nil
 local votes = nil
 local voted = nil
 local voters_count = nil
+
+--- @type boolean Has a reshuffle happened once during this vote?
+local done_reshuffle_once = false
+
+ctf_api.register_on_match_start(function()
+	done_reshuffle_once = false
+end)
 
 local S = core.get_translator(core.get_current_modname())
 ctf_modebase.map_vote = {}
@@ -36,11 +45,8 @@ local function show_mapchoose_form(player)
 	for idx, mapID in ipairs(map_sample) do
 		local image_texture = ctf_modebase.map_catalog.maps[mapID].dirname
 			.. "_screenshot.png"
-		local image_path = string.format(
-			"%s/textures/%s",
-			core.get_modpath("ctf_map"),
-			image_texture
-		)
+		local image_path =
+			string.format("%s/textures/%s", core.get_modpath("ctf_map"), image_texture)
 
 		if ctf_core.file_exists(image_path) then
 			elements["map_image_" .. idx] = {
@@ -78,6 +84,17 @@ local function show_mapchoose_form(player)
 			)
 		end,
 	}
+	if not done_reshuffle_once then
+		elements["reshuffle_button"] = {
+			type = "button",
+			label = S("Reshuffle"),
+			pos = { x = (i / 2) - 6.5, y = 8 },
+			size = { x = 3, y = 0.6 },
+			func = function(playername, fields, field_name)
+				player_vote(playername, RESHUFFLE)
+			end,
+		}
+	end
 
 	elements["abstain_button"] = {
 		type = "button",
@@ -147,6 +164,23 @@ function ctf_modebase.map_vote.end_vote()
 
 	for _, player in pairs(core.get_connected_players()) do
 		core.close_formspec(player:get_player_name(), "ctf_modebase:map_select")
+	end
+
+	local reshuffle_votes = 0
+	local other_votes = 0
+	for pname, vote in pairs(votes) do
+		if vote == RESHUFFLE then
+			reshuffle_votes = reshuffle_votes + 1
+		else
+			other_votes = other_votes + 1
+		end
+	end
+
+	if reshuffle_votes >= other_votes then
+		done_reshuffle_once = true
+		core.chat_send_all(S("A reshuffle has been requested by majority of players."))
+		ctf_modebase.map_vote.start_vote()
+		return
 	end
 
 	local vote_counts = {}
