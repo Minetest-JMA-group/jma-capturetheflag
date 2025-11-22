@@ -14,9 +14,7 @@ local function storage_key(name)
 	end
 	return RUSH_SPEC_KEY .. ":" .. name
 end
-local MAX_SPECTATOR_DISTANCE = 12
-local MIN_SPECTATOR_ALTITUDE = 2
-local SPECTATOR_BOUND_CHECK_INTERVAL = 0.5
+
 local SPECTATOR_CHAT_COLOR = "#8f7bb9"
 
 local state
@@ -53,10 +51,8 @@ local function build_spectator_info_formspec(checked)
 		"<style name=body color=#ffffff size=14>",
 		"<tag name=title><center>Rush Spectator Mode</center></tag>",
 		"<tag name=body>",
-		"- You are now flying alongside a teammate and can help by watching their surroundings.\n",
-		"- Stay within 12 nodes of them; drifting too far will pull you back to their position.\n",
-		"- You are invisible and cannot interact, so focus on scouting and sharing intel in team chat.\n",
-		"- Use fly and noclip controls to move smoothly above the action.",
+		"- You are now following your teammates in third person view and can help by watching their surroundings.\n",
+		"- You are invisible and cannot interact, so focus on scouting and sharing intel in team chat.",
 		"</tag>",
 	}, "\n")
 
@@ -232,119 +228,7 @@ local function place_spectator_near_anchor(player)
 	player:set_pos(vector.add(anchor_pos, offset))
 end
 
-local function assign_spectator_anchor(pname)
-	local team = state.initial_team[pname]
-	if not team then
-		state.spectator_anchor[pname] = nil
-		return nil
-	end
-
-	local previous = state.spectator_anchor[pname]
-	local anchor = select_anchor_for_team(team)
-	state.spectator_anchor[pname] = anchor
-
-	if anchor and anchor ~= previous then
-		local msg = string.format(
-			"Spectating %s. Stay within %d nodes.",
-			anchor,
-			MAX_SPECTATOR_DISTANCE
-		)
-		core.chat_send_player(pname, core.colorize(SPECTATOR_CHAT_COLOR, msg))
-		local player = core.get_player_by_name(pname)
-		if player then
-			place_spectator_near_anchor(player)
-		end
-	elseif not anchor and previous then
-		core.chat_send_player(
-			pname,
-			core.colorize(SPECTATOR_CHAT_COLOR, "No teammates available to spectate.")
-		)
-	end
-
-	return anchor
-end
-
 function spectator.reassign_team_spectators(team)
-	ensure_state()
-
-	for pname, eliminated in pairs(state.eliminated) do
-		if eliminated and state.initial_team[pname] == team then
-			assign_spectator_anchor(pname)
-		end
-	end
-end
-
-function spectator.enforce_spectator_bounds(pname)
-	ensure_state()
-
-	local spectator_obj = core.get_player_by_name(pname)
-	if not spectator_obj then
-		return
-	end
-
-	local team = state.initial_team[pname]
-	if not team then
-		return
-	end
-
-	local anchor_name = state.spectator_anchor[pname]
-	if not anchor_name or not (state.alive_players[team] and state.alive_players[team][anchor_name]) then
-		anchor_name = assign_spectator_anchor(pname)
-	end
-
-	if not anchor_name then
-		return
-	end
-
-	local anchor = core.get_player_by_name(anchor_name)
-	if not anchor then
-		anchor_name = assign_spectator_anchor(pname)
-		if not anchor_name then
-			return
-		end
-		anchor = core.get_player_by_name(anchor_name)
-		if not anchor then
-			return
-		end
-	end
-
-	local best_now = select_anchor_for_team(team)
-	if best_now and best_now ~= anchor_name then
-		anchor_name = assign_spectator_anchor(pname)
-		if not anchor_name then
-			return
-		end
-		anchor = core.get_player_by_name(anchor_name)
-		if not anchor then
-			return
-		end
-	end
-
-	local anchor_pos = anchor:get_pos()
-	local spec_pos = spectator_obj:get_pos()
-	if not anchor_pos or not spec_pos then
-		return
-	end
-
-	local displacement = vector.subtract(spec_pos, anchor_pos)
-	local distance = vector.length(displacement)
-
-	if distance <= MAX_SPECTATOR_DISTANCE then
-		return
-	end
-
-	if distance == 0 then
-		displacement = { x = MAX_SPECTATOR_DISTANCE, y = MIN_SPECTATOR_ALTITUDE + 1, z = 0 }
-	else
-		displacement = vector.multiply(displacement, MAX_SPECTATOR_DISTANCE / distance)
-	end
-
-	if displacement.y < MIN_SPECTATOR_ALTITUDE then
-		displacement.y = MIN_SPECTATOR_ALTITUDE
-	end
-
-	local target = vector.add(anchor_pos, displacement)
-	spectator_obj:set_pos(target)
 end
 
 function spectator.disable_vanish(player)
@@ -396,42 +280,62 @@ function spectator.restore_privs(name)
 	spectator.set_spectator_state(name, nil)
 end
 
+function specatator_set_inv(player)
+	local inv = player:get_inventory()
+	inv:set_list("main", {})
+
+	inv:add_item("main", {name = "spectator_teleport:item", count = 1})
+end
+
 function spectator.make_spectator(player)
 	ensure_state()
-
 	local pname = player:get_player_name()
 	local team = state.initial_team[pname]
-
 	if team and state.alive_players[team] then
 		state.alive_players[team][pname] = nil
 	end
 	timer.update_round_huds()
-
 	if state.eliminated[pname] ~= true then
 		state.eliminated[pname] = true
 	end
-
 	if not state.saved_privs[pname] then
 		state.saved_privs[pname] = core.get_player_privs(pname)
 	end
-
 	local privs = table.copy(state.saved_privs[pname])
 	privs.interact = nil
 	privs.fast = nil
 	privs.fly = true
 	privs.noclip = true
-
 	core.set_player_privs(pname, privs)
-
 	remove_player_from_team(pname)
 	apply_vanish(player)
-	assign_spectator_anchor(pname)
-	place_spectator_near_anchor(player)
+
+	specatator_set_inv(player)
+
+	local best_player = select_anchor_for_team(team)
+	if best_player then
+		local target = core.get_player_by_name(best_player)
+		if target then
+			player:set_detach()
+			player:set_attach(target, "", {x=0, y=0, z=0}, {x=0, y=0, z=0})
+			player:set_pos(target:get_pos())
+
+			if player.set_camera then
+				player:set_camera({mode = "third"})
+			else
+				return nil
+			end
+		end
+	else
+		hud_events.new(pname, {
+			quick = true,
+			text = "No teammate found!",
+			color = "warning",
+		})
+	end
 
 	player:set_hp(20)
-
 	maybe_show_spectator_info(player)
-
 	spectator.set_spectator_state(pname, {
 		match = state.match_id,
 		privs = state.saved_privs[pname],
@@ -677,19 +581,6 @@ function spectator.reset()
 end
 
 function spectator.on_globalstep(dtime)
-	ensure_state()
-
-	bound_timer = bound_timer + dtime
-	if bound_timer < SPECTATOR_BOUND_CHECK_INTERVAL then
-		return
-	end
-
-	bound_timer = bound_timer - SPECTATOR_BOUND_CHECK_INTERVAL
-	for pname, eliminated in pairs(state.eliminated) do
-		if eliminated then
-			spectator.enforce_spectator_bounds(pname)
-		end
-	end
 end
 
 return spectator
