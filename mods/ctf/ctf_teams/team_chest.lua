@@ -331,7 +331,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 							item_desc = item_name
 						end
 
-						cur_mode.recent_rankings.add(pname, { score = score })
+						cur_mode.recent_rankings.add(pname, { score = score }, true)
 						cmsg.push_message_player(
 							player,
 							string.format("+ %s: %s", score, item_desc)
