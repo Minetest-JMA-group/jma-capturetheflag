@@ -69,14 +69,23 @@ local function show_mapchoose_form(player)
 		}
 		i = i + 7
 	end
+	local buttons_size_x = 3
+	local gap_between_buttons = 0.5
+	local start_pos = i / 2
+	if done_reshuffle_once then
+		start_pos = start_pos - buttons_size_x - gap_between_buttons
+	else
+		-- 1.5 is number of buttons which are in one half of the screen(horizontally)
+		start_pos = start_pos - 1.5 * buttons_size_x - gap_between_buttons
+	end
 
 	-- Add quit button
 	elements["quit_button"] = {
 		type = "button",
 		exit = true,
 		label = S("Exit Game"),
-		pos = { x = (i / 2) + 0.5, y = 8 },
-		size = { x = 3, y = 0.6 },
+		pos = { x = start_pos, y = 8 },
+		size = { x = buttons_size_x, y = 0.6 },
 		func = function(playername, fields, field_name)
 			core.kick_player(
 				playername,
@@ -84,24 +93,27 @@ local function show_mapchoose_form(player)
 			)
 		end,
 	}
+
+	start_pos = start_pos + buttons_size_x + gap_between_buttons
 	if not done_reshuffle_once then
 		elements["reshuffle_button"] = {
 			type = "button",
 			label = S("Reshuffle"),
-			pos = { x = (i / 2) - 6.5, y = 8 },
-			size = { x = 3, y = 0.6 },
+			pos = { x = start_pos, y = 8 },
+			size = { x = buttons_size_x, y = 0.6 },
 			func = function(playername, fields, field_name)
 				player_vote(playername, RESHUFFLE)
 			end,
 		}
+		start_pos = start_pos + buttons_size_x + gap_between_buttons
 	end
 
 	elements["abstain_button"] = {
 		type = "button",
 		exit = true,
 		label = S("Abstain"),
-		pos = { x = (i / 2) - 3.5, y = 8 },
-		size = { x = 3, y = 0.6 },
+		pos = { x = start_pos, y = 8 },
+		size = { x = buttons_size_x, y = 0.6 },
 		func = function(playername, fields, field_name)
 			player_vote(playername, nil)
 		end,
