@@ -188,7 +188,7 @@ function ctf_modebase.map_vote.end_vote()
 		end
 	end
 
-	if reshuffle_votes >= other_votes then
+	if (reshuffle_votes + 3) >= other_votes then
 		done_reshuffle_once = true
 		core.chat_send_all(S("A reshuffle has been requested by majority of players."))
 		ctf_modebase.map_vote.start_vote()
