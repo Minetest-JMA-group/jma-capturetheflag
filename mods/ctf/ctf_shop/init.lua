@@ -23,7 +23,7 @@ ctf_settings.register("ctf_shop:automatic_shop_display", {
     default = "true",
 })
 
-local max_coins = 128
+local max_coins = 120
 local start_coin_amount = 40
 local coins_per_minute = 3
 
@@ -44,35 +44,35 @@ end)
 
 local shop_items = {
     --nodes
-    {item_string = "default:steelblock 64", price = 40, modes = all_modes},
+    {item_string = "default:steelblock 32", price = 40, modes = all_modes},
     --{item_string = "default:mese 64", price = 40, modes = all_modes},
-    {item_string = "default:obsidian 64", price = 20, modes = all_modes},
-    {item_string = "ctf_map:reinforced_cobble 64", price = 20, modes = all_modes},
-    {item_string = "ctf_map:damage_cobble 64", price = 15, modes = all_modes},
+    {item_string = "default:obsidian 32", price = 20, modes = all_modes},
+    {item_string = "ctf_map:reinforced_cobble 40", price = 20, modes = all_modes},
+    {item_string = "ctf_map:damage_cobble 20", price = 15, modes = all_modes},
     {item_string = "default:stonebrick 64", price = 10, modes = all_modes},
-    {item_string = "default:obsidian_glass 64", price = 5, modes = all_modes},
-    {item_string = "xpanes:obsidian_pane_flat 64", price = 5, modes = all_modes},
+    {item_string = "default:obsidian_glass 32", price = 5, modes = all_modes},
+    {item_string = "xpanes:obsidian_pane_flat 32", price = 5, modes = all_modes},
 
-    {item_string = "default:acacia_tree 64", price = 5, modes = all_modes},
-    {item_string = "default:acacia_wood 64", price = 5, modes = all_modes},
-    {item_string = "default:aspen_tree 64", price = 5, modes = all_modes},
-    {item_string = "default:aspen_wood 64", price = 5, modes = all_modes},
-    {item_string = "default:pine_tree 64", price = 5, modes = all_modes},
-    {item_string = "default:pine_wood 64", price = 5, modes = all_modes},
-    {item_string = "default:tree 64", price = 5, modes = all_modes},
-    {item_string = "default:wood 64", price = 5, modes = all_modes},
+    {item_string = "default:acacia_tree 32", price = 5, modes = all_modes},
+    {item_string = "default:acacia_wood 32", price = 5, modes = all_modes},
+    {item_string = "default:aspen_tree 32", price = 5, modes = all_modes},
+    {item_string = "default:aspen_wood 32", price = 5, modes = all_modes},
+    {item_string = "default:pine_tree 32", price = 5, modes = all_modes},
+    {item_string = "default:pine_wood 32", price = 5, modes = all_modes},
+    {item_string = "default:tree 32", price = 5, modes = all_modes},
+    {item_string = "default:wood 32", price = 5, modes = all_modes},
 
-    {item_string = "ctf_healing:heal_block", price = 40, modes = all_modes},
-    {item_string = "ctf_landmine:landmine 64", price = 40, modes = all_modes},
+    {item_string = "ctf_healing:heal_block", price = 100, modes = all_modes},
+    {item_string = "ctf_landmine:landmine 20", price = 40, modes = all_modes},
     {item_string = "ctf_teams:door_steel 4", price = 20, modes = all_modes},
-    {item_string = "ctf_map:spike 64", price = 20, modes = all_modes},
-    {item_string = "xpanes:bar_flat 64", price = 10, modes = all_modes},
+    {item_string = "ctf_map:spike 25", price = 20, modes = all_modes},
+    {item_string = "xpanes:bar_flat 32", price = 10, modes = all_modes},
 
     --healing
     {item_string = "ctf_healing:medkit", price = 20, modes = all_modes},
-    {item_string = "easter_egg:egg", price = 15, modes = all_modes},
+    {item_string = "easter_egg:egg", price = 25, modes = all_modes},
     {item_string = "ctf_healing:bandage", price = 15, modes = all_modes},
-    {item_string = "ctf_map:apple 60", price = 40, modes = all_modes},
+    {item_string = "ctf_map:apple 32", price = 40, modes = all_modes},
     {item_string = "farming:bread 16", price = 95, modes = all_modes},
     --diamond
     --{item_string = "ctf_melee:sword_diamond", price = 40, modes = all_modes},
@@ -90,16 +90,15 @@ local shop_items = {
     {item_string = "default:axe_steel", price = 10, modes = all_modes},
     {item_string = "default:shovel_steel", price = 5, modes = all_modes},
     --weapons
-    {item_string = "ctf_ranged:sniper_magnum_loaded", price = 90, modes = all_modes},
-    {item_string = "ctf_ranged:shotgun_loaded", price = 80, modes = all_modes},
-    {item_string = "ctf_ranged:assault_rifle_loaded", price = 40, modes = all_modes},
-    {item_string = "ctf_ranged:rifle_loaded", price = 55, modes = all_modes},
+    {item_string = "ctf_ranged:sniper_magnum_loaded", price = 120, modes = all_modes},
+    {item_string = "ctf_ranged:shotgun_loaded", price = 120, modes = all_modes},
+    {item_string = "ctf_ranged:assault_rifle_loaded", price = 50, modes = all_modes},
+    {item_string = "ctf_ranged:rifle_loaded", price = 40, modes = all_modes},
     {item_string = "ctf_ranged:pistol_loaded", price = 10, modes = all_modes},
     --nice to have
-    {item_string = "ctf_ranged:ammo 8", price = 15, modes = all_modes},
+    {item_string = "ctf_ranged:ammo 5", price = 15, modes = all_modes},
     {item_string = "grenades:frag", price = 25, modes = all_modes},
-    {item_string = "wind_charges:wind_charge 64", price = 30, modes = all_modes},
-    {item_string = "bucket:bucket_water", price = 20, modes = all_modes},
+    {item_string = "wind_charges:wind_charge 32", price = 30, modes = all_modes},
     {item_string = "grenades:poison", price = 25, modes = all_modes},
     {item_string = "grenades:smoke", price = 15, modes = all_modes},
 }
