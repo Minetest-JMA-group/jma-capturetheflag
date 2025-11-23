@@ -98,6 +98,7 @@ local function show_mapchoose_form(player)
 	if not done_reshuffle_once then
 		elements["reshuffle_button"] = {
 			type = "button",
+			exit = true,
 			label = S("Reshuffle"),
 			pos = { x = start_pos, y = 8 },
 			size = { x = buttons_size_x, y = 0.6 },
