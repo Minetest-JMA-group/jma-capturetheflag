@@ -1,7 +1,7 @@
 local modname = core.get_current_modname()
 local S = core.get_translator(modname)
 
-local TELEPORT_ITEM = modname .. ":item"
+local TELEPORT_ITEM = "spectator_teleport:item"
 
 -- saves player: list, index
 local teleport_data = {}

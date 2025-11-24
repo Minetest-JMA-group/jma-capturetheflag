@@ -49,11 +49,12 @@ local function build_spectator_info_formspec(checked)
 	local info_text = table.concat({
 		"<style name=title color=#ffd166 size=20>",
 		"<style name=body color=#ffffff size=14>",
-		"<tag name=title><center>Rush Spectator Mode</center></tag>",
+		"<tag name=title><center>Rush Spectator Mode</center>",
 		"<tag name=body>",
-		"- You are now following your teammates in third person view and can help by watching their surroundings.\n",
-		"- You are invisible and cannot interact, so focus on scouting and sharing intel in team chat.",
-		"</tag>",
+		"- Observe your Teammates and their surroundings to support them!\n",
+		"- Use the item to switch between Teammates and watch them.\n",
+		"- Warn your Teammates from Enemies!\n",
+		"- Communicate constantly - good warnings save lives!",
 	}, "\n")
 
 	return table.concat({
