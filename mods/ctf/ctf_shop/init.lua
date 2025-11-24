@@ -111,43 +111,86 @@ local function show_shop_formspec(player_name)
         players_coins[player_name] = start_coin_amount
     end
 
-    if minetest.check_player_privs(player_name, {dev = true}) ~= true then
+    if not minetest.check_player_privs(player_name, {dev = true}) then
         players_is_dev_mode[player_name] = nil
     end
 
-    local formspec_string = "formspec_version[4]size[8,12]label[0.3,0.4;Shop]" ..
-                            "label[6.9,0.4;" .. players_coins[player_name] .. "]image[7.3,0.1;0.55,0.55;ctf_shop_coin.png]"
+    local coins = players_coins[player_name]
 
+    local formspec = {
+        "formspec_version[4]",
+        "size[11,12]",
+        "bgcolor[#1e1e1e;true]",
+        "box[0,0;11,1.2;#2d2d2d]",
+
+        "hypertext[0.4,0.15;10,1;title;<center><style size=25 color=#FFD700><b>CTF Shop</b></style></center>]",
+        "hypertext[0.4,0.85;10,1;info;<style size=14 color=#CCCCCC>Browse items and buy them with coins.</style>]",
+
+        "hypertext[7.95,0.6;2.2,1;coins;<right><style size=18 color=#FFD700><b>"
+            .. minetest.formspec_escape(tostring(coins))
+            .. "</b></style></right>]",
+        "image[10.1,0.45;0.7,0.7;ctf_shop_coin.png]"
+    }
+
+    -- Dev mode checkbox
     if minetest.check_player_privs(player_name, {dev = true}) then
-        formspec_string = formspec_string .. "checkbox[2.8,0.4;dev_mode_check;Developer Test Mode;" .. tostring(players_is_dev_mode[player_name] == true) .. "]"
+        table.insert(formspec,
+            "checkbox[0.4,0.85;dev_mode_check;Developer Test Mode;" ..
+            tostring(players_is_dev_mode[player_name] == true) .. "]"
+        )
     end
 
     local current_mode = ctf_modebase.current_mode
     local current_y = 0
 
-    local container_width = 7.4
-	local container_height = 9.7
-	local scrollbar_width = 0.2
-	local y_size = 0.7
+    local container_width = 10.3
+    local container_height = 9.8
+    local scrollbar_width = 0.25
+    local y_size = 0.9
 
-	formspec_string = formspec_string ..
-		"scrollbar[7.75,1.0;" .. scrollbar_width .. "," .. container_height .. ";vertical;item_scrollbar;" .. (players_scroll[player_name] or "0") .. "]" ..
-		"scroll_container[0.3,1.0;" .. container_width .. "," .. container_height .. ";item_scrollbar;vertical;0.1;0.2]"
+    table.insert(formspec,
+        "scrollbar[10.7,2.0;" .. scrollbar_width .. "," .. container_height ..
+        ";vertical;item_scrollbar;" .. (players_scroll[player_name] or "0") .. "]"
+    )
 
+    table.insert(formspec,
+        "scroll_container[0.4,2.0;" .. container_width .. "," .. container_height ..
+        ";item_scrollbar;vertical;0.1;0.2]"
+    )
+
+    -- Items
     for shop_item_id, shop_item in ipairs(shop_items) do
         if contains(shop_item.modes, current_mode) then
-            formspec_string = formspec_string .. "item_image[0," .. current_y .. ";" .. y_size .. "," .. y_size .. ";" .. shop_item.item_string .. "]"--item image
-            formspec_string = formspec_string .. "button[6.7," .. current_y .. ";" .. y_size .. "," .. y_size .. ";buy_item_button_" .. shop_item_id .. ";+]"
-            formspec_string = formspec_string .. "label[3.5," .. current_y + 0.36 .. ";" .. shop_item.price .. "]"
-            formspec_string = formspec_string .. "image[3.8," .. current_y + 0.075 .. ";0.55,0.55;ctf_shop_coin.png]"
-            current_y = current_y + y_size + 0.1
+
+            table.insert(formspec,
+                "item_image[0," .. current_y .. ";" .. y_size .. "," .. y_size ..
+                ";" .. shop_item.item_string .. "]"
+            )
+
+            table.insert(formspec,
+                "button[9," .. current_y ..
+                ";1.2,0.9;buy_item_button_" .. shop_item_id .. ";Buy]"
+            )
+
+            table.insert(formspec,
+                "hypertext[3.2," .. current_y+0.2 .. ";4,1;price;<style color=#CCCCCC>Price: " ..
+                minetest.formspec_escape(tostring(shop_item.price)) .. "</style>]"
+            )
+
+            table.insert(formspec,
+                "image[5.8," .. (current_y+0.15) ..
+                ";0.55,0.55;ctf_shop_coin.png]"
+            )
+
+            current_y = current_y + y_size + 0.15
         end
     end
-    formspec_string = formspec_string .. "scroll_container_end[]"
 
+    table.insert(formspec, "scroll_container_end[]")
 
-    formspec_string = formspec_string .. "button_exit[0.3,10.9;7.4,0.8;close_button;Close]"
-    minetest.show_formspec(player_name, "ctf_shop:shop_formspec", formspec_string)
+    table.insert(formspec, "button_exit[0.4,11.0;10.3,0.9;close_button;Close]")
+
+    minetest.show_formspec(player_name, "ctf_shop:shop_formspec", table.concat(formspec))
 end
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
