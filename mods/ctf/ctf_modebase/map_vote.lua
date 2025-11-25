@@ -178,31 +178,26 @@ function ctf_modebase.map_vote.end_vote()
 	for _, player in pairs(core.get_connected_players()) do
 		core.close_formspec(player:get_player_name(), "ctf_modebase:map_select")
 	end
-
+	local vote_counts = {}
 	local reshuffle_votes = 0
 	local other_votes = 0
-	for pname, vote in pairs(votes) do
-		if vote == RESHUFFLE then
+	for _, mapID in pairs(votes) do
+		if mapID == RESHUFFLE then
 			reshuffle_votes = reshuffle_votes + 1
 		else
+			vote_counts[mapID] = (vote_counts[mapID] or 0) + 1
 			other_votes = other_votes + 1
 		end
 	end
 
+	votes = nil
+	voted = nil
 	if (2 * reshuffle_votes) >= other_votes then
 		done_reshuffle_once = true
 		core.chat_send_all(S("A reshuffle has been requested by majority of players."))
 		ctf_modebase.map_vote.start_vote()
 		return
 	end
-
-	local vote_counts = {}
-	for _, mapID in pairs(votes) do
-		vote_counts[mapID] = (vote_counts[mapID] or 0) + 1
-	end
-
-	votes = nil
-	voted = nil
 
 	--find the maximum amount of votes
 	local max_votes = 0
