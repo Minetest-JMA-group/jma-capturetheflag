@@ -104,7 +104,7 @@ local shop_items = {
     {item_string = "grenades:smoke", price = 15, modes = modes_all},
 }
 
-local max_items_per_page = 12
+local max_items_per_page = 11
 
 local players_is_dev_mode = {}
 local players_last_page = {}
@@ -143,9 +143,11 @@ local function show_shop_formspec(player_name, page)
     if not current_mode then
         return
     end
+
     if type(page) ~= "number" then
         page = 1
     end
+
     local max_pages = get_max_pages()
     page = math.max(1, math.min(max_pages, page))
     players_last_page[player_name] = page
@@ -154,36 +156,63 @@ local function show_shop_formspec(player_name, page)
         players_coins[player_name] = start_coin_amount
     end
 
-    if minetest.check_player_privs(player_name, {dev = true}) ~= true then
+    if not minetest.check_player_privs(player_name, {dev = true}) then
         players_is_dev_mode[player_name] = nil
     end
 
-    local formspec_string = "formspec_version[4]size[8,12]label[0.3,0.4;Shop]" ..
-                            "label[6.9,0.4;" .. players_coins[player_name] .. "]image[7.3,0.1;0.55,0.55;ctf_shop_coin.png]"
+    local coins = players_coins[player_name]
+
+    local formspec = {
+        "formspec_version[4]",
+        "size[11,12]",
+        "bgcolor[#1e1e1e;true]",
+        "box[0,0;11,1.2;#2d2d2d]",
+
+        "hypertext[0.4,0.15;10,1;title;<center><style size=25 color=#FFD700><b>CTF Shop</b></style></center>]",
+        "hypertext[0.4,0.85;10,1;info;<style size=14 color=#CCCCCC>Browse items and buy them with coins.</style>]",
+
+        "hypertext[7.95,0.6;2.2,1;coins;<right><style size=18 color=#FFD700><b>"
+            .. minetest.formspec_escape(tostring(coins))
+            .. "</b></style></right>]",
+        "image[10.1,0.45;0.7,0.7;ctf_shop_coin.png]"
+    }
 
     if minetest.check_player_privs(player_name, {dev = true}) then
-        formspec_string = formspec_string .. "checkbox[2.8,0.4;dev_mode_check;Developer Test Mode;" .. tostring(players_is_dev_mode[player_name] == true) .. "]"
+        table.insert(formspec,
+            "checkbox[0.4,0.85;dev_mode_check;Developer Test Mode;" ..
+            tostring(players_is_dev_mode[player_name] == true) .. "]"
+        )
     end
 
-    local current_y = 0.9
-
-	local y_size = 0.7
+    local current_y = 1.5
+    local y_size = 0.68
 
     for shop_item_id, shop_item in pairs(get_items_of_page(page, current_mode)) do
-        formspec_string = formspec_string .. "item_image[0.3," .. current_y .. ";" .. y_size .. "," .. y_size .. ";" .. shop_item.item_string .. "]"--item image
-        formspec_string = formspec_string .. "button[7.0," .. current_y .. ";" .. y_size .. "," .. y_size .. ";buy_item_button_" .. shop_item_id .. ";+]"
-        formspec_string = formspec_string .. "label[3.7," .. current_y + 0.36 .. ";" .. shop_item.price .. "]"
-        formspec_string = formspec_string .. "image[4.1," .. current_y + 0.075 .. ";0.55,0.55;ctf_shop_coin.png]"
-        current_y = current_y + y_size + 0.1
+        table.insert(formspec,
+            "item_image[0.3," .. current_y .. ";" .. y_size .. "," .. y_size .. ";" .. shop_item.item_string .. "]"
+        )
+        table.insert(formspec,
+            "button[10.0," .. current_y .. ";" .. y_size .. "," .. y_size .. ";buy_item_button_" .. shop_item_id .. ";+]"
+        )
+        table.insert(formspec,
+            "hypertext[3.5," .. current_y+0.2 .. ";4,1;price;<style color=#CCCCCC>Price: " ..
+            minetest.formspec_escape(tostring(shop_item.price)) .. "</style>]"
+        )
+        table.insert(formspec,
+            "image[5.5," .. (current_y+0.075) .. ";0.55,0.55;ctf_shop_coin.png]"
+        )
+        current_y = current_y + y_size + 0.15
     end
 
-    formspec_string = formspec_string .. "label[3.85,10.6;" .. page .. "/" .. max_pages .. "]"
-    formspec_string = formspec_string .. "button_exit[1.3,10.9;5.4,0.8;close_button;Close]"
+    table.insert(formspec, "label[5.25,10.6;" .. page .. "/" .. max_pages .. "]")
+    table.insert(formspec, "button[0.3,10.9;0.8,0.8;previous_page_button;<]")
+    table.insert(formspec, "button[10,10.9;0.8,0.8;next_page_button;>]")
 
-    formspec_string = formspec_string .. "button[0.3,10.9;0.8,0.8;previous_page_button;<]"
-    formspec_string = formspec_string .. "button[6.9,10.9;0.8,0.8;next_page_button;>]"
-    minetest.show_formspec(player_name, "ctf_shop:shop_formspec", formspec_string)
+    table.insert(formspec, "button_exit[1.3,10.9;8.5,0.8;close_button;Close]")
+
+    minetest.show_formspec(player_name, "ctf_shop:shop_formspec", table.concat(formspec))
 end
+
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
     if formname ~= "ctf_shop:shop_formspec" then
