@@ -22,8 +22,8 @@ ctf_settings.register("ctf_shop:automatic_shop_display", {
     description = "Enables the automatic display of the shop as soon as a new match begins.",
     default = "true",
 })
-
-local max_coins = 120
+--Note: The most expensive item is currently set to 150 coins, please adjust the price if changes at max_coins are being made
+local max_coins = 150
 local start_coin_amount = 40
 local coins_per_minute = 3
 
@@ -91,7 +91,7 @@ local shop_items = {
     {item_string = "default:shovel_steel", price = 5, modes = modes_all},
     --weapons
     --{item_string = "ctf_ranged:sniper_magnum_loaded", price = 120, modes = modes_all},
-    --{item_string = "ctf_ranged:shotgun_loaded", price = 120, modes = modes_all},
+    {item_string = "ctf_ranged:shotgun_loaded", price = 150, modes = modes_all},
     {item_string = "ctf_ranged:assault_rifle_loaded", price = 60, modes = modes_all},
     {item_string = "ctf_ranged:rifle_loaded", price = 50, modes = modes_all},
     {item_string = "ctf_ranged:pistol_loaded", price = 15, modes = modes_all},
