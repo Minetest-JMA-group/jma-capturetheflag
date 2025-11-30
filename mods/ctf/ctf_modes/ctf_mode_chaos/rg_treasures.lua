@@ -73,6 +73,7 @@ return {
 	{ itemname = "ctf_healing:medkit", chance = 10, amount = 1 },
 
 	{ itemname = "grenades:smoke", chance = 20, amount = 1 },
+	{ itemname = "flashbang:grenade", chance = 20, amount = 1 },
 	{ itemname = "grenades:poison", chance = 10, amount = 1 },
 	--functions
 	--things
