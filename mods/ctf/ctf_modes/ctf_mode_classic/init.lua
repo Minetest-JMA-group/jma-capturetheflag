@@ -6,15 +6,15 @@ local old_bounty_reward_func = ctf_modebase.bounties.bounty_reward_func
 local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 ctf_modebase.register_mode("classic", {
 	treasures = {
-		["default:ladder_wood"] = {max_count = 20, rarity = 0.3, max_stacks = 5, },
-		["default:torch"] = {max_count = 20, rarity = 0.3, max_stacks = 5, },
+		["default:ladder_wood"] = { max_count = 20, rarity = 0.3, max_stacks = 5, },
+		["default:torch"] = { max_count = 20, rarity = 0.3, max_stacks = 5, },
 
-		["default:cobble"] = {min_count = 20, max_count = 99, rarity = 0.3,	max_stacks = 2, },
-		["default:wood"] = {min_count = 20,	max_count = 99, rarity = 0.2, max_stacks = 2,},
+		["default:cobble"] = { min_count = 20, max_count = 99, rarity = 0.3,	max_stacks = 2, },
+		["default:wood"] = { min_count = 20,	max_count = 99, rarity = 0.2, max_stacks = 2,},
 
 		["ctf_teams:door_steel"] = { rarity = 0.2, max_stacks = 3 },
 
-		["wind_charges:wind_charge"] = {min_count = 4, max_count = 8, rarity = 0.4,	max_stacks = 1, },
+		["wind_charges:wind_charge"] = { min_count = 4, max_count = 8, rarity = 0.4,	max_stacks = 1, },
 
 		["default:pick_steel"] = { rarity = 0.4, max_stacks = 3 },
 		["default:shovel_steel"] = { rarity = 0.4, max_stacks = 2 },
@@ -27,15 +27,15 @@ ctf_modebase.register_mode("classic", {
 		["ctf_ranged:shotgun_loaded"] = { rarity = 0.05 },
 		["ctf_ranged:assault_rifle_loaded"] = { rarity = 0.05 },
 
-		["ctf_ranged:ammo"] = {min_count = 3, max_count = 10, rarity = 0.3,	max_stacks = 2, },
-		["default:apple"] = {min_count = 6,	max_count = 18,	rarity = 0.2, max_stacks = 2, },
+		["ctf_ranged:ammo"] = { min_count = 3, max_count = 10, rarity = 0.3,	max_stacks = 2, },
+		["default:apple"] = { min_count = 6,	max_count = 18,	rarity = 0.2, max_stacks = 2, },
 
 		["grenades:frag"] = { rarity = 0.1, max_stacks = 1 },
 		["grenades:smoke"] = { rarity = 0.2, max_stacks = 2 },
 
 		["default:water_source"] = { rarity = 0.2, max_stacks = 1 },
 		["easter_egg:egg"] = { rarity = 0.03, max_stacks = 1 },
-		["ctf_landmine:landmine"] = {min_count = 1,	max_count = 10,	max_stacks = 1,	rarity = 0.3, },
+		["ctf_landmine:landmine"] = { min_count = 1,	max_count = 10,	max_stacks = 1,	rarity = 0.3, },
 		["boats:boat"] = { min_count = 1, max_count = 1, max_stacks = 1, rarity = 0.09 },
 	},
 	crafts = {
