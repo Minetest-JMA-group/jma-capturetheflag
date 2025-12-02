@@ -1,49 +1,58 @@
+--- @alias GameMode table
+
 ctf_modebase = {
-	-- Table containing all registered modes and their definitions
+	--- Table containing all registered modes and their definitions
+	--- @type { [string]: GameMode }
 	modes = {}, ---@type table
 
-	-- Same as ctf_modebase.modes but in list form
-	modelist = {}, ---@type list
+	--- Same as ctf_modebase.modes but in list form
+	--- @type GameMode[]
+	modelist = {},
 
-	-- Name of the mode currently being played. On server start this will be false
-	current_mode = false, ---@type string
+	--- Name of the mode currently being played. On server start this will be false
+	--- @type string?
+	current_mode = nil,
 
-	-- Players can hit, heal, etc
-	match_started = false, ---@type boolean
+	--- Players can hit, heal, etc
+	--- @type boolean
+	match_started = false,
 
-	-- For team allocator
-	in_game = false, ---@type boolean
+	--- For team allocator
+	--- @type boolean
+	in_game = false,
 
-	-- Get the mode def of the current mode. On server start this will return false
+	--- Get the mode def of the current mode.
+	--- On server start, this will return nil
+	--- @return GameMode?
 	get_current_mode = function(self)
 		return self.current_mode and self.modes[self.current_mode]
 	end,
 
-	-- Amount of matches played since this mode won the last vote
-	current_mode_matches_played = 0, ---@type integer
+	--- Amount of matches played since this mode won the last vote
+	--- @type integer
+	current_mode_matches_played = 0,
 
 	-- How many matches will be played for the current mode
-	current_mode_matches = 5, ---@type integer
+	--- @type integer
+	current_mode_matches = 5,
 
-	-- taken_flags[Player Name] = list of team names
+	--- @type { [Team]: FlagCarrier }
 	taken_flags = {},
 
-	-- team_flag_takers[Team name][Player Name] = list of team names
+	--- @type { [Team]: {[PlayerName]: Team[] }}
 	team_flag_takers = {},
 
-	-- flag_taken[Team Name] = Name of thief
+	--- @type { [Team]: PlayerName }
 	flag_taken = {},
 
-	--flag_captured[Team name] = true if captured, otherwise nil
+	--- @type { [Team]: boolean? }
 	flag_captured = {},
 
-	flag_attempt_history = {
-		-- ["player"] = {time0, time1, time2, ...}
-	},
+	--- @type { [PlayerName]: (number[])?}
+	flag_attempt_history = {},
 
-	player_on_flag_attempt_streak = {
-		-- ["player"] = streak index
-	},
+	--- @type { [PlayerName]: number? }
+	player_on_flag_attempt_streak = {},
 }
 
 ctf_gui.old_init()

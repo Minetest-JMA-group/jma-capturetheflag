@@ -1,3 +1,5 @@
+--- @alias FlagCarrier { name: PlayerName, team: Team }
+
 -- this is table of streaks.
 -- mega streak means 4 or 5 attempt in less than 10 minutes
 ctf_modebase.flag_attempt_streaks = {
@@ -153,7 +155,7 @@ function ctf_modebase.flag_on_punch(puncher, nodepos, node)
 			ctf_modebase.taken_flags[pname] = {}
 		end
 		table.insert(ctf_modebase.taken_flags[pname], target_team)
-		ctf_modebase.flag_taken[target_team] = { p = pname, t = pteam }
+		ctf_modebase.flag_taken[target_team] = { name = pname, team = pteam }
 
 		if ctf_modebase.flag_attempt_history[pname] == nil then
 			ctf_modebase.flag_attempt_history[pname] = {}

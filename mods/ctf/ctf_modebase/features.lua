@@ -364,6 +364,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 	local function calculate_killscore(player)
 		local pname = PlayerName(player)
+		local pteam = ctf_teams.get(pname)
+		if not pteam then
+			return 0
+		end
 		local match_rank = recent_rankings.players()[player] or {}
 		local match_kd = (match_rank.kills or 1) / (match_rank.deaths or 1)
 		local overall_rank = rankings:get(pname)
@@ -373,6 +377,11 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		for tname, carrier in pairs(ctf_modebase.flag_taken) do
 			if carrier.p == player then
 				flag_multiplier = flag_multiplier + 0.25
+			end
+		end
+		for tname, carrier in pairs(ctf_modebase.flag_taken) do
+			if carrier.t == pteam then
+				flag_multiplier = flag_multiplier * 2
 			end
 		end
 		return math.max(1, math.ceil(kd * 7 * flag_multiplier))
