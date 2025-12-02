@@ -375,7 +375,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				flag_multiplier = flag_multiplier + 0.25
 			end
 		end
-		return math.max(1, math.round(kd * 7 * flag_multiplier))
+		return math.max(1, math.ceil(kd * 7 * flag_multiplier))
 	end
 
 	local damage_group_textures = {
