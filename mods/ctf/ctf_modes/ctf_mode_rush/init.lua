@@ -298,28 +298,10 @@ ctf_modebase.register_mode("rush", {
 	vote_title_suffix = " (Test Phase)",
 	vote_max_rounds = 0,
 	treasures = {
-		["default:cobble"] = {
-			min_count = 30,
-			max_count = 99,
-			rarity = 0.25,
-			max_stacks = 2,
-		},
-		["default:wood"] = {
-			min_count = 20,
-			max_count = 80,
-			rarity = 0.25,
-			max_stacks = 2,
-		},
-		["default:ladder_wood"] = {
-			max_count = 16,
-			rarity = 0.35,
-			max_stacks = 4,
-		},
-		["default:torch"] = {
-			max_count = 20,
-			rarity = 0.3,
-			max_stacks = 4,
-		},
+		["default:cobble"] = { min_count = 30, max_count = 99, rarity = 0.25, max_stacks = 2, },
+		["default:wood"] = { min_count = 20, max_count = 80, rarity = 0.25, max_stacks = 2, },
+		["default:ladder_wood"] = { max_count = 16, rarity = 0.35, max_stacks = 4, },
+		["default:torch"] = { max_count = 20, rarity = 0.3, max_stacks = 4, },
 		["default:pick_steel"] = { rarity = 0.35, max_stacks = 2 },
 		["ctf_melee:sword_steel"] = { rarity = 0.25, max_stacks = 2 },
 		["ctf_melee:sword_mese"] = { rarity = 0.08, max_stacks = 1 },
@@ -327,39 +309,18 @@ ctf_modebase.register_mode("rush", {
 		["ctf_ranged:rifle_loaded"] = { rarity = 0.2, max_stacks = 1 },
 		["ctf_ranged:shotgun_loaded"] = { rarity = 0.1, max_stacks = 1 },
 		["ctf_ranged:assault_rifle_loaded"] = { rarity = 0.08, max_stacks = 1 },
-		["ctf_ranged:ammo"] = {
-			min_count = 3,
-			max_count = 12,
-			rarity = 0.3,
-			max_stacks = 2,
-		},
-		["ctf_healing:bandage"] = {
-			min_count = 1,
-			max_count = 3,
-			rarity = 0.35,
-			max_stacks = 2,
-		},
+		["ctf_ranged:ammo"] = { min_count = 3, max_count = 12, rarity = 0.3, max_stacks = 2, },
+	
+		["ctf_healing:bandage"] = {	min_count = 1, max_count = 3, rarity = 0.35, max_stacks = 2, },
 		["ctf_healing:medkit"] = { rarity = 0.07, max_stacks = 1 },
+	
 		["grenades:frag"] = { rarity = 0.18, max_stacks = 2 },
 		["grenades:smoke"] = { rarity = 0.2, max_stacks = 2 },
-		["wind_charges:wind_charge"] = {
-			min_count = 3,
-			max_count = 6,
-			rarity = 0.25,
-			max_stacks = 1,
-		},
-		["default:apple"] = {
-			min_count = 4,
-			max_count = 12,
-			rarity = 0.25,
-			max_stacks = 2,
-		},
-		["ctf_landmine:landmine"] = {
-			min_count = 1,
-			max_count = 4,
-			rarity = 0.12,
-			max_stacks = 1,
-		},
+	
+		["wind_charges:wind_charge"] = { min_count = 3, max_count = 6, rarity = 0.25, max_stacks = 1, },
+		["default:apple"] = { min_count = 4, max_count = 12, rarity = 0.25,	max_stacks = 2, },
+		["ctf_landmine:landmine"] = { min_count = 1, max_count = 4, rarity = 0.12, max_stacks = 1, },
+	
 		["boats:boat"] = { min_count = 1, max_count = 1, rarity = 0.05, max_stacks = 1 },
 	},
 	team_chest_items = {
