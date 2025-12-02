@@ -34,7 +34,6 @@ local default_item_value = {
 	["default:shovel_mese"] = 1,
 	["ctf_ranged:pistol"] = 1,
 }
-
 ctf_core.testing = {
 	-- This is here temporarily, I'm modifying it with //lua and a code minimizer on the main server-
 	-- -so I don't need to restart for every little change
@@ -69,6 +68,8 @@ ctf_core.testing = {
 			)
 	end,
 }
+
+local S = core.get_translator(core.get_current_modname())
 
 local hud = mhud.init()
 local LOADING_SCREEN_TARGET_TIME = 5
@@ -362,8 +363,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local team_list
 	local teams_left
 
-	local function calculate_killscore(player)
+	local function calculate_killscore(player, killer)
 		local pname = PlayerName(player)
+		local killer_name = PlayerName(killer)
 		local pteam = ctf_teams.get(pname)
 		if not pteam then
 			return 0
@@ -373,17 +375,28 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local overall_rank = rankings:get(pname)
 		local overall_kd = (overall_rank.kills or 1) / (overall_rank.deaths or 1)
 		local kd = (1 * overall_kd + 2 * match_kd) / 3
-		local flag_multiplier = 1
+
+		local val_per_flag = 0.25
+		local val_to_add = 0
+		local is_killer_flag_thief = false
 		for tname, carrier in pairs(ctf_modebase.flag_taken) do
-			if carrier.p == player then
-				flag_multiplier = flag_multiplier + 0.25
+			if tname == pteam then
+				-- Since we've got their flag, now it's
+				-- much more important to kill our thief.
+				-- Right?
+				val_per_flag = 0.5
+			end
+			if carrier.name == player then
+				val_to_add = val_to_add + 1
+			end
+			if carrier.name == killer_name then
+				is_killer_flag_thief = true
 			end
 		end
-		for tname, carrier in pairs(ctf_modebase.flag_taken) do
-			if carrier.t == pteam then
-				flag_multiplier = flag_multiplier * 2
-			end
+		if val_to_add > 0 and is_killer_flag_thief then
+			val_to_add = val_to_add * 2
 		end
+		local flag_multiplier = 1 + val_to_add * val_per_flag
 		return math.max(1, math.ceil(kd * 7 * flag_multiplier))
 	end
 
@@ -581,7 +594,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end
 
 		if killer then
-			local killscore = calculate_killscore(player)
+			local killscore = calculate_killscore(player, killer)
 
 			local rewards = { kills = 1, score = killscore }
 			local bounty = ctf_modebase.bounties.claim(player, killer)
