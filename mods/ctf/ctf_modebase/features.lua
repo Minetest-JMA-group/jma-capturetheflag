@@ -400,6 +400,59 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		return math.max(1, math.ceil(kd * 7 * flag_multiplier))
 	end
 
+	--- @param team Team?
+	--- @param target_teams Team[]
+	--- @return number
+	local function calculate_capture_reward(team, target_teams)
+		local team_scores = recent_rankings.teams()
+		local capture_reward = 0
+		for _, lost_team in ipairs(target_teams) do
+			local score = ((team_scores[lost_team] or {}).score or 0) / 4
+			score = math.max(10, math.min(900, score))
+			capture_reward = capture_reward + score
+		end
+		return capture_reward
+	end
+
+	--- @param team Team
+	--- @param drop_point Vec2
+	--- @param drop_reason "timeout" | "death"
+	--- @param target_teams Team[]
+	--- @return number
+	local function calculate_attempt_reward(team, drop_point, drop_reason, target_teams)
+		local capture_reward = calculate_capture_reward(team, target_teams)
+		if drop_reason == "death" then
+			-- Calculate how much the thief got close to self flag and
+			-- give rewards accordingly.
+			local map_size = ctf_map.current_map.size
+			local map_size_scalar = math.sqrt(map_size.x * map_size.z)
+			local self_flag = ctf_map.current_map.teams[team].flag_pos
+			local dist_to_self_flag = vector.distance(self_flag, drop_point)
+			-- If it's sooo close to self flag, give 3/4 of capture reward
+			if dist_to_self_flag < map_size_scalar / 20 then
+				return math.ceil(capture_reward * 3 / 4)
+			end
+			-- If it's very very far from self flag, give only 1/12
+			if dist_to_self_flag > map_size_scalar / 20 then
+				return math.ceil(capture_reward / 12)
+			end
+			-- Here we make it into 5 parts. If the thief
+			-- go so close to our(only 20% away) flag, we give 1/2 of score.
+			-- If they were too far away(80% away), we give 1/5 score.
+			-- If somewhere in between, we give 1/3 score.
+			if dist_to_self_flag < 1 * map_size_scalar / 5 then
+				return math.ceil(capture_reward / 2)
+			elseif dist_to_self_flag > 1 * map_size_scalar / 5 then
+				return math.ceil(capture_reward / 5)
+			else
+				return math.ceil(capture_reward / 3)
+			end
+		else
+			-- If the reason is timeout, then give 1/3 of the cap reward
+			return capture_reward / 3
+		end
+	end
+
 	local damage_group_textures = {
 		grenade = "grenades_frag.png",
 		knockback_grenade = "ctf_mode_nade_fight_knockback_grenade.png",
@@ -943,13 +996,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				return worst_players.t
 			end
 		end,
-		can_take_flag = function(player, teamname)
-			if not ctf_modebase.match_started then
-				tp_player_near_flag(player)
-
-				return "You can't take the enemy flag during build time!"
-			end
-		end,
 		--- How much does an item values in score, when you put
 		--- it in teamchest? Currently, it is used when someone dies
 		--- and a teammate puts it back in teamchest. Also it is possible
@@ -965,6 +1011,13 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			-- of an item depending on how many of the same item already exists in
 			local value = default_item_value[itemname]
 			return value or 0
+		end,
+		can_take_flag = function(player, teamname)
+			if not ctf_modebase.match_started then
+				tp_player_near_flag(player)
+
+				return "You can't take the enemy flag during build time!"
+			end
 		end,
 		on_flag_take = function(player, teamname)
 			local pname = player:get_player_name()
@@ -1006,9 +1059,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			)
 
 			celebrate_team(ctf_teams.get(pname))
-
-			recent_rankings.add(pname, { score = 30, flag_attempts = 1 })
-
+			recent_rankings.add(pname, {
+				flag_attempts = 1,
+			}, false)
 			ctf_modebase.flag_huds.track_capturer(pname, FLAG_CAPTURE_TIMER)
 		end,
 		on_flag_drop = function(player, teamnames, pteam)
@@ -1035,6 +1088,14 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			core.chat_send_all(
 				core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text)
 			)
+			recent_rankings.add(pname, {
+				score = calculate_attempt_reward(
+					pteam,
+					player:get_pos(),
+					"death",
+					teamnames
+				),
+			}, false)
 			ctf_modebase.announce(
 				string.format("Player %s (team %s)%s", pname, pteam, text)
 			)
@@ -1052,6 +1113,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		on_flag_capture = function(player, teamnames)
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(pname)
+			if not pteam then
+				core.log("error", "Someone is capping a flag but is not a teammember :/")
+			end
 			local tcolor = ctf_teams.team[pteam].color
 
 			playertag.set(player, playertag.TYPE_ENTITY)
@@ -1065,12 +1129,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			ctf_modebase.flag_huds.untrack_capturer(pname)
 
 			local team_scores = recent_rankings.teams()
-			local capture_reward = 0
-			for _, lost_team in ipairs(teamnames) do
-				local score = ((team_scores[lost_team] or {}).score or 0) / 4
-				score = math.max(10, math.min(900, score))
-				capture_reward = capture_reward + score
-			end
+			local capture_reward = calculate_capture_reward(pteam, teamnames)
 
 			local text = string.format(
 				" has captured the flag in "
