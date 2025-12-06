@@ -1227,6 +1227,22 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				if many_teams then
 					capture_text = "Player %s captured the last flag"
 				end
+				-- there might be some unclaimed player bounties, here we return
+				-- the points to their contributors
+				local current_mode = ctf_modebase:get_current_mode()
+				for _, bounty in
+					pairs(ctf_modebase.bounties.get_unclaimed_player_bounties())
+				do
+					for bounty_donator, bounty_amount in pairs(bounty.contributors) do
+						recent_rankings.add(
+							bounty_donator,
+							{ score = bounty_amount },
+							true
+						)
+					end
+				end
+
+				ctf_modebase.bounties.clear_player_bounties()
 
 				ctf_modebase.summary.set_winner(
 					string.format(capture_text, core.colorize(tcolor, pname))
