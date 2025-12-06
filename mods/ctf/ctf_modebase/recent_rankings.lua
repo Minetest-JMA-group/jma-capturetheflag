@@ -3,7 +3,11 @@ ctf_modebase.recent_rankings = function(rankings)
 	local rankings_teams = {}
 
 	return {
-		add = function(player, amounts, no_hud)
+		--- @param player PlayerName | ObjectRef
+		--- @param amounts table
+		--- @param no_hud boolean?
+		--- @param even_if_no_match boolean?
+		add = function(player, amounts, no_hud, even_if_no_match)
 			player = PlayerName(player)
 
 			if not no_hud then
@@ -19,6 +23,10 @@ ctf_modebase.recent_rankings = function(rankings)
 				end
 
 				hud_events.new(player, { text = hud_text:sub(1, -4) })
+			end
+
+			if not even_if_no_match and not ctf_modebase.match_started then
+				return
 			end
 
 			if not rankings_players[player] then
@@ -44,6 +52,8 @@ ctf_modebase.recent_rankings = function(rankings)
 
 			rankings:add(player, amounts)
 		end,
+		--- @param player PlayerName | ObjectRef
+		--- @return table
 		get = function(player)
 			player = PlayerName(player)
 			return rankings_players[player] or {}
