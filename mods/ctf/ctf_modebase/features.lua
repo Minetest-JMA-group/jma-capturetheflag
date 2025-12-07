@@ -1019,6 +1019,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				return "You can't take the enemy flag during build time!"
 			end
 		end,
+		calculate_capture_reward = calculate_capture_reward,
+		calculate_killscore = calculate_killscore,
 		on_flag_take = function(player, teamname)
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(player)
