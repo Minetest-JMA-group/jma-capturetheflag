@@ -1,4 +1,5 @@
 --- @alias Vec3 { x: number, y: number, z: number }
+--- @alias Vec2 { x: number, y: number }
 
 --- @type { [string]: number }
 local default_item_value = {
@@ -182,13 +183,6 @@ local function update_playertags(time)
 	end
 end
 
---- Compute logarithm base 2 of x
---- @param x number
---- @return number
-local function lg(x)
-	return math.log(x) / math.log(2)
-end
-
 local PLAYERTAGS_OFF = false
 local PLAYERTAGS_ON = true
 local function set_playertags_state(state)
@@ -240,7 +234,7 @@ function ctf_modebase.show_loading_screen()
 				position = { x = 0.5, y = 0.5 },
 				alignment = { x = "center", y = "up" },
 				text_scale = 2,
-				text = "Loading Next Map...",
+				text = S("Loading Next Map..."),
 				color = 0x7ec5ff,
 				z_index = 1002,
 			})
@@ -337,14 +331,14 @@ end
 
 ctf_settings.register("ctf_modebase:flag_notifications", {
 	type = "bool",
-	label = "Show flag event messages",
-	description = "Toggle visibility of HUD messages about flag-related events",
+	label = S("Show flag event messages"),
+	description = S("Toggle visibility of HUD messages about flag-related events"),
 	default = "true",
 })
 
 ctf_settings.register("ctf_modebase:teammate_nametag_style", {
 	type = "list",
-	description = "Controls what style of nametag to use for teammates.",
+	description = S("Controls what style of nametag to use for teammates."),
 	list = { "Minetest Nametag: Full", "Minetest Nametag: Symbol", "Entity Nametag" },
 	default = "1",
 	on_change = function(player, new_value)
@@ -711,26 +705,26 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 	local function can_punchplayer(player, hitter)
 		if not ctf_modebase.match_started then
-			return false, "The match hasn't started yet!"
+			return false, S("The match hasn't started yet!")
 		end
 
 		local pname, hname = player:get_player_name(), hitter:get_player_name()
 		local pteam, hteam = ctf_teams.get(player), ctf_teams.get(hitter)
 
 		if not ctf_modebase.remove_respawn_immunity(hitter) then
-			return false, "You can't attack while immune"
+			return false, S("You can't attack while immune")
 		end
 
 		if not pteam then
-			return false, pname .. " is not in a team!"
+			return false, S("@1 is not in a team!", pname)
 		end
 
 		if not hteam then
-			return false, "You are not in a team!"
+			return false, S("You are not in a team!")
 		end
 
 		if pteam == hteam and pname ~= hname then
-			return false, pname .. " is on your team!"
+			return false, S("@1 is on your team!")
 		end
 
 		return true
@@ -1016,7 +1010,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			if not ctf_modebase.match_started then
 				tp_player_near_flag(player)
 
-				return "You can't take the enemy flag during build time!"
+				return S("You can't take the enemy flag during build time!")
 			end
 		end,
 		calculate_capture_reward = calculate_capture_reward,
@@ -1133,37 +1127,43 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local team_scores = recent_rankings.teams()
 			local capture_reward = calculate_capture_reward(pteam, teamnames)
 
-			local text = string.format(
-				" has captured the flag in "
-					.. ctf_map.get_duration()
-					.. " and got %d points",
+			local text = S(
+				"@1 has captured the flag in @2 and got @3!",
+				pname,
+				ctf_map.get_duration(),
 				capture_reward
 			)
 			local teamnames_readable = HumanReadable(teamnames)
-			local flag_or_flags = " flag!"
+			local flag_or_flags = S("flag")
 			if many_teams then
-				text = string.format(
-					" has captured the flag of team(s) %s in "
-						.. ctf_map.get_duration()
-						.. " and got %d points",
+				text = S(
+					"@1 has captured the flag of team(s) @2 in @3 and got @4 points!",
+					pname,
 					teamnames_readable,
+					ctf_map.get_duration(),
 					capture_reward
 				)
-				flag_or_flags = " flags!"
+				flag_or_flags = S("flags")
 			end
 
 			flag_event_notify(pname, pteam, teamnames, {
-				text = "You have captured: " .. teamnames_readable .. flag_or_flags,
+				text = S("You have captured: @1 @2!", teamnames_readable, flag_or_flags),
 				color = "success",
 			}, {
-				text = "Your teammate "
-					.. pname
-					.. " has captured: "
-					.. teamnames_readable
-					.. flag_or_flags,
+				text = S(
+					"Your teammate @1 has captured: @2 @3!",
+					pname,
+					teamnames_readable,
+					flag_or_flags
+				),
 				color = "success",
-			}, { text = pname .. " has captured your flag!", color = "warning" }, {
-				text = pname .. " has captured: " .. teamnames_readable .. flag_or_flags,
+			}, { text = S("@1 has captured your flag!", pname), color = "warning" }, {
+				text = S(
+					"@1 has captured: @2 @3!",
+					pname,
+					teamnames_readable,
+					flag_or_flags
+				),
 				color = "light",
 			})
 
@@ -1171,9 +1171,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text)
 			)
 
-			ctf_modebase.announce(
-				string.format("Player %s (team %s)%s", pname, pteam, text)
-			)
+			ctf_modebase.announce(S("Player @1 (team @2)@3", pname, pteam, text))
 
 			local team_score = team_scores[pteam].score
 			for teammate in pairs(ctf_teams.online_players[pteam].players) do
@@ -1203,7 +1201,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			local streak_idx = ctf_modebase.player_on_flag_attempt_streak[pname]
 			if streak_idx then
-				local streak_bonus = 0
+				local streak_bonus
 				if streak_bonus_received[pname] then
 					streak_bonus = math.floor(
 						math.abs(streak_bonus_received[pname] - streak_idx * 20)
@@ -1214,7 +1212,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				streak_bonus_received[pname] = streak_bonus
 
 				hud_events.new(pname, {
-					text = "Streak Bonus +" .. streak_bonus,
+					text = S("Streak Bonus +@1", streak_bonus),
 					color = "info",
 					quick = true,
 				})
@@ -1225,13 +1223,13 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			teams_left = teams_left - #teamnames
 
 			if teams_left <= 1 then
-				local capture_text = "Player %s captured"
+				local capture_text = "Player @1 captured"
 				if many_teams then
-					capture_text = "Player %s captured the last flag"
+					capture_text = "Player @1 captured the last flag"
 				end
+				capture_text = S(capture_text, pname)
 				-- there might be some unclaimed player bounties, here we return
 				-- the points to their contributors
-				local current_mode = ctf_modebase:get_current_mode()
 				for _, bounty in
 					pairs(ctf_modebase.bounties.get_unclaimed_player_bounties())
 				do
@@ -1250,7 +1248,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					string.format(capture_text, core.colorize(tcolor, pname))
 				)
 
-				local win_text = HumanReadable(pteam) .. " Team Wins!"
+				local win_text = S("@1 Team Wins!", HumanReadable(pteam))
 
 				core.chat_send_all(core.colorize(pteam, win_text))
 
@@ -1348,21 +1346,20 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		get_chest_access = function(pname)
 			local rank = rankings:get(pname)
 
-			local deny_pro = "You need to have more than 1.4 kills per death, "
-				.. "5 captures, and at least 8,000 score to access the pro section."
+			local deny_pro = S("You need to have more than 1.4 kills per death, ")
+				.. S("5 captures, and at least 8,000 score to access the pro section.")
 			if rank then
 				local captures_needed = math.max(0, 5 - (rank.flag_captures or 0))
 				local score_needed = math.max(math.max(0, 8000 - (rank.score or 0)))
 				local current_kd = math.floor((rank.kills or 0) / (rank.deaths or 1) * 10)
 				current_kd = current_kd / 10
 				deny_pro = deny_pro
-					.. " You still need "
-					.. captures_needed
-					.. " captures, "
-					.. score_needed
-					.. " score, and your kills per death is "
-					.. current_kd
-					.. "."
+					.. S(
+						" You still need @1 captures, @2 score and your KD is @3.",
+						captures_needed,
+						score_needed,
+						current_kd
+					)
 
 				if is_pro(core.get_player_by_name(pname), rank) then
 					return true, true
