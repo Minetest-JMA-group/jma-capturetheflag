@@ -16,6 +16,7 @@ if core.settings:get("random_messages_disabled") == "true" then
 end
 
 local messages = {
+	S("You get more score for killing a flag thief than if they didn't have the flag"),
 	S(
 		"Want someone dead on enemy team for real? Try putting a bounty of 16 score on them: /bo targetName 16"
 	),
