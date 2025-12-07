@@ -17,6 +17,9 @@ end
 
 local messages = {
 	S(
+		"Want someone dead on enemy team for real? Try putting a bounty of 16 score on them: /bo targetName 16"
+	),
+	S(
 		"A group of medics and knights are closing in? Target the medic(s) with shooter's grenade!"
 	),
 	S("You get more attempt score the closer you get to your own flag"),
