@@ -93,7 +93,7 @@ function ctf_modebase.map_chosen(map, ...)
 			})
 
 			hud:change(p, "loading_text", {
-				text = "Loading Map: " .. map.name .. "...",
+				text = S("Loading Map: @1...", map.name),
 			})
 		end
 	end
