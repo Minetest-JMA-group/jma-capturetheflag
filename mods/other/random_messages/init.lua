@@ -4,6 +4,11 @@ arsdragonfly@gmail.com
 6/19/2013
 --]]
 
+local MAP_SUBMISSION_URL = "https://discord.gg/KuUXcBuG5M"
+local DISCORD_SERVER = "https://ctf.jma-sig.de"
+
+local S = core.get_translator(core.get_current_modname())
+
 random_messages = {}
 
 if core.settings:get("random_messages_disabled") == "true" then
@@ -11,15 +16,26 @@ if core.settings:get("random_messages_disabled") == "true" then
 end
 
 local messages = {
-	"To talk only with your team, start your messages with /t. For example, /t Hello team!",
-	"Use apples to quickly restore your health.",
-	"Moving or fighting can prevent an inactivity kick.",
-	"Earn more score by killing more than you die, healing teammates with bandages, or capturing the flag.",
-	"You gain more score the better the opponent you defeat.",
-	"Find weapons in chests or mine and use furnaces to craft stronger swords.",
-	"Use team doors (steel) to prevent the enemy from entering your base.",
-	"Sprint by pressing the sprint key (E) when you have stamina.",
-	"Want to submit your own map? Visit https://discord.gg/KuUXcBuG5M to get involved.",
+	S(
+		"A group of medics and knights are closing in? Target the medic(s) with shooter's grenade!"
+	),
+	S("You get more attempt score the closer you get to your own flag"),
+	S(
+		"If someone walks into your spike and dies, you get a kill. But a bug in kill log, shows the incorrect weapon. Sometimes hands or torches. Funny?"
+	),
+	S(
+		"To talk only with your team, start your messages with /t. For example, /t Hello team!"
+	),
+	S("Use apples to quickly restore your health."),
+	S("Moving or fighting can prevent an inactivity kick."),
+	S(
+		"Earn more score by killing more than you die, healing teammates with bandages, or capturing the flag."
+	),
+	S("You gain more score the better the opponent you defeat."),
+	S("Find weapons in chests or mine and use furnaces to craft stronger swords."),
+	S("Use team doors (steel) to prevent the enemy from entering your base."),
+	S("Sprint by pressing the sprint key (E) when you have stamina."),
+	S("Want to submit your own map? Visit @1 to get involved.", MAP_SUBMISSION_URL),
 	"Using limited resources to build structures that don't strengthen your base's defenses is discouraged.",
 	"To report misbehaving players to moderators, please use /report <name> <action> or send the report on Discord: ctf.jma-sig.de",
 	"Swearing, trolling, and being rude will not be tolerated, and strict action will be taken.",
@@ -41,19 +57,21 @@ local messages = {
 	"To check someone's team, use /team player <player_name>.",
 	"To check all team members, use /team.",
 	"You can capture multiple enemy flags at once!",
-	"Consider joining our Discord server at https://discord.gg/SSd9XcCqZk",
+	S("Consider joining our Discord server at @1", DISCORD_SERVER),
 	"You can press sneak while jumping to jump up two blocks.",
-	"Use /donate <playername> <score> to reward a teammate for their work.",
+	S("Use /donate <playername> <score> to reward a teammate for their work."),
 	"A medic and knight working together can wreak havoc on the enemy team(s).",
 	"Check/news to see our recent updates and rules, you will also figure out how to get the [PRO] tag at that page.",
-	"Join us on Discord: https://ctf.jma-sig.de",
+	S("Join us on Discord: @1", DISCORD_SERVER),
 	"Use /news to see the server news",
 	"Please avoid or refrain from introducing any other potentially offensive or inappropriate topics.",
 	"Stuck? Use /killme to return to base",
 	"Strengthen your defense: build walls, set obstacles, and traps to secure your base.",
-	"Want to get a new skin? Send it to us at https://discord.gg/SSd9XcCqZk",
+	S("Want to get a new skin? Send it to us at @1", DISCORD_SERVER),
 	"Try modern HUD instead of hearts/arrows (in the in-game settings)",
-	"It is recommended that you avoid sharing personal information such as your address, phone number, or other confidential data to ensure your safety and privacy.",
+	S(
+		"It is recommended that you avoid sharing personal information such as your address, phone number, or other confidential data to ensure your safety and privacy."
+	),
 	-- connection, fps, minetest issues
 	"To ensure smooth gameplay, we recommend updating to the latest version of Minetest",
 	"If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
@@ -63,13 +81,19 @@ local messages = {
 	"Your VPS service is being blocked? Contact our server staff so we can whitelist you",
 	"Check your connection latency to the server with /ping",
 	--translator usage tips
-	"Overcoming a language barrier? Use a translator in the chat by adding %<language code> after your message, e.g, %en or %ен",
-	"Set your preferred language for in-game translator using /lang <lang code> . For example, use /lang en",
-	"Use /b to translate the last message to your preferred language",
+	S(
+		"Overcoming a language barrier? Use a translator in the chat by adding %<language code> after your message, e.g, %en or %ен"
+	),
+	S(
+		"Set your preferred language for in-game translator using /lang <lang code> . For example, use /lang en"
+	),
+	S("Use /b to translate the last message to your preferred language"),
 	--other
-	"Want to send a nice welcoming message with the 8 score gift? Use /wb <mode:technical modename> <playername>",
+	S(
+		"Want to send a nice welcoming message with the 8 score gift? Use /wb <mode:technical modename> <playername>"
+	),
 	"To report a player sending inappropriate private messages to you, use /report playername PM reason",
-	"The chaos mode is active on weekends only.",
+	S("The chaos mode is active on weekends only."),
 	"Use /change_vote <questionID> to change your vote on the poll. Check question ID with /list_questions",
 	"Keep the team door closed to stop enemies from getting in",
 	"Use /rules to read the server rules",
