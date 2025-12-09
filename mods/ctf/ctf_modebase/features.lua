@@ -724,7 +724,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end
 
 		if pteam == hteam and pname ~= hname then
-			return false, S("@1 is on your team!")
+			return false, S("@1 is on your team!", pname)
 		end
 
 		return true
