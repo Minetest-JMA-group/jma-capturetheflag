@@ -79,6 +79,7 @@ function ctf_modebase.update_wear.start_update(
 	end
 
 	wear_timers[pname][item_id] = {
+		d = down,
 		c = cancel_callback,
 		t = core.after(1, function()
 			wear_timers[pname][item_id] = nil
@@ -147,8 +148,8 @@ ctf_api.register_on_match_end(function()
 	item_pos_cache = {} -- Clear the cache on match end
 end)
 
-function ctf_modebase.update_wear.cancel_player_updates(pname, force)
-	pname = PlayerName(pname)
+function ctf_modebase.update_wear.cancel_player_updates(player, force)
+	pname = PlayerName(player)
 
 	if not force and ctf_teams.non_team_players[pname] then
 		return
@@ -160,16 +161,20 @@ function ctf_modebase.update_wear.cancel_player_updates(pname, force)
 				timer.c(item_id)
 			end
 			timer.t:cancel()
+
+			local pinv = player:get_inventory()
+			local pos, stack = ctf_modebase.update_wear.find_item_by_id(pinv, item_id)
+			if timer.d then
+				stack:set_wear(0)
+			else
+				stack:set_wear(65534)
+			end
+			pinv:set_stack("main", pos, stack)
+
+
 		end
 
 		wear_timers[pname] = nil
 	end
 end
 
-core.register_on_dieplayer(function(player)
-	ctf_modebase.update_wear.cancel_player_updates(player)
-end)
-
-core.register_on_leaveplayer(function(player)
-	ctf_modebase.update_wear.cancel_player_updates(player, true)
-end)

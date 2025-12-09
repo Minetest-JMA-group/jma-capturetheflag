@@ -37,6 +37,7 @@ function dropondie.drop_all(player)
 
 	ctf_modebase.player.remove_bound_items(player)
 	ctf_modebase.player.remove_initial_stuff(player)
+	ctf_modebase.update_wear.cancel_player_updates(player)
 
 	local pos = player:get_pos()
 	pos.y = math.floor(pos.y + 0.5)
