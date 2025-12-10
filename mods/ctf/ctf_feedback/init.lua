@@ -50,32 +50,34 @@ local function can_send_feedback(pname)
 	return false, "ratelimit"
 end
 
---- Generate a random new integer Id
---- @return integer
-local function get_new_id()
-	return math.floor(10000 + math.random() * 50000)
-end
-
 local io = nil
 
 --- @param pname PlayerName
 --- @param feedback string
---- @return boolean
+--- @return boolean, ("length" | "ratelimit" | "playtime")?
 local function record_feedback(pname, feedback)
 	core.debug(
 		"Got feedback from " .. pname .. ". Length is " .. tonumber(string.len(feedback))
 	)
+	local can_send, reason = can_send_feedback(pname)
+	if not can_send then
+		return can_send, reason
+	end
+	if string.len(feedback) > FEEDBACK_MAX_LENGTH then
+		return false, "length"
+	end
 	if io then
-		local id = get_new_id()
-		local filename = pname .. "." .. tostring(id)
-		local file = io.open(feedbacks_path .. "/" .. filename, "w")
+		local file
+		if type(feedbacks_path) == "string" then
+			file = io.open(feedbacks_path .. "/" .. pname .. ".txt", "a+")
+		else
+			file = io.tmpfile()
+		end
+		file:write("\n\n")
 		file:write(feedback)
 		file:close()
 	else
 		core.debug("not recording feedback cuz there is no insecure env")
-	end
-	if not can_send_feedback(pname) then
-		return false
 	end
 	if last_feedback_times[pname] == nil then
 		last_feedback_times[pname] = os.time()
@@ -86,45 +88,64 @@ local function record_feedback(pname, feedback)
 	return true
 end
 
-if type(feedbacks_path) == "string" then
-	local insecure_env = core.request_insecure_environment()
-	io = insecure_env.io
-	core.register_chatcommand("feedback", {
-		params = S("[Your feedback]"),
-		description = S("Write developers and server admins a feedback about the game."),
-		func = function(pname, params)
-			if params ~= "" then
-				if record_feedback(pname, params) then
-					return true, S("Thanks! Your feedback has been recorded!")
-				else
-					return true, S("You can send at most 2 feedbacks per hour")
-				end
-			end
-			core.show_formspec(
-				pname,
-				FORMNAME,
-				"formspec_version[4]size[6.6,8]"
-					.. "box[0,0;6.6,8;#000000BB]"
-					.. "textarea[0.2,0.6;6,6;feedback;Feedback;Your feedback here]"
-					.. "button_exit[1,6.9;2,0.8;quit;Cancel]"
-					.. "button[3.4,6.9;2,0.8;submit;Submit]"
-			)
-		end,
-	})
-
-	core.register_on_player_receive_fields(function(player, formname, fields)
-		local pname = player:get_player_name()
-		if formname ~= FORMNAME then
-			return
-		end
-		if not fields.submit then
-			return
-		end
-		core.close_formspec(pname, formname)
-		if record_feedback(pname, fields.feedback) then
-			return true, S("Thanks! Your feedback has been recorded!")
-		else
-			return true, S("You can send at most 2 feedbacks per hour")
-		end
-	end)
+if type(feedbacks_path) ~= "string" then
+	core.log(
+		"warning",
+		"ctf_feedback_path must be a string. using temporary files as a fallback"
+	)
 end
+
+local insecure_env = core.request_insecure_environment()
+io = insecure_env.io
+core.register_chatcommand("feedback", {
+	params = S("[Your feedback]"),
+	description = S("Write developers and server admins a feedback about the game."),
+	func = function(pname, params)
+		if params ~= "" then
+			if record_feedback(pname, params) then
+				return true, S("Thanks! Your feedback has been recorded!")
+			else
+				return true, S("You can send at most 2 feedbacks per hour")
+			end
+		end
+		core.show_formspec(
+			pname,
+			FORMNAME,
+			"formspec_version[4]size[6.6,8]"
+				.. "box[0,0;6.6,8;#000000BB]"
+				.. "textarea[0.2,0.6;6,6;feedback;Feedback;Your feedback here]"
+				.. "button_exit[1,6.9;2,0.8;quit;Cancel]"
+				.. "button[3.4,6.9;2,0.8;submit;Submit]"
+		)
+	end,
+})
+
+core.register_on_player_receive_fields(function(player, formname, fields)
+	local pname = player:get_player_name()
+	if formname ~= FORMNAME then
+		return
+	end
+	if not fields.submit then
+		return
+	end
+	local status, reason = record_feedback(pname, fields.feedback)
+	local message
+	local close = true
+	if status then
+		message = S("Thanks! Your feedback has been recorded!")
+	else
+		if reason == "playtime" then
+			message = S("You don't have enough playtime to send a feedback")
+		elseif reason == "ratelimit" then
+			message = S("You can send at most 2 feedbacks per hour")
+		else
+			message =
+				S("Your feedback is too long. Maximum length is @1", FEEDBACK_MAX_LENGTH)
+			close = false
+		end
+	end
+	if close then
+		core.close_formspec(pname, formname)
+	end
+	return true, message
+end)
