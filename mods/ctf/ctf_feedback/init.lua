@@ -74,6 +74,7 @@ local function record_feedback(pname, feedback)
 			file = io.tmpfile()
 		end
 		file:write("\n\n")
+
 		file:write(feedback)
 		file:close()
 	else
