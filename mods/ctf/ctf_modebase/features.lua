@@ -1137,8 +1137,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local flag_or_flags = S("flag")
 			if many_teams then
 				text = S(
-					"@1 has captured the flag of team(s) @2 in @3 and got @4 points!",
-					pname,
+					" has captured the flag of team(s) @1 in @2 and got @3 points!",
 					teamnames_readable,
 					ctf_map.get_duration(),
 					capture_reward
@@ -1157,13 +1156,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					flag_or_flags
 				),
 				color = "success",
-			}, { text = S("@1 has captured your flag!", pname), color = "warning" }, {
-				text = S(
-					"@1 has captured: @2 @3!",
-					pname,
-					teamnames_readable,
-					flag_or_flags
-				),
+			}, { text = S(" has captured your flag!"), color = "warning" }, {
+				text = S(" has captured: @1 @2!", teamnames_readable, flag_or_flags),
 				color = "light",
 			})
 
