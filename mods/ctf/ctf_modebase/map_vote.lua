@@ -235,7 +235,7 @@ function ctf_modebase.map_vote.end_vote()
 			or ("Unknown (" .. tostring(mapID) .. ")")
 		local count = vote_counts[mapID] or 0
 		if count == 1 then
-			core.chat_send_all(S("A vote for @1", map_name))
+			core.chat_send_all(S("1 vote for @1", map_name))
 		elseif count == 0 then
 			core.chat_send_all(S("No vote for @1", map_name))
 		else
