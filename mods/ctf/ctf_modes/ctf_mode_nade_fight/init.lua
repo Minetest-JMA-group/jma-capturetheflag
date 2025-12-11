@@ -142,6 +142,7 @@ ctf_modebase.register_mode("nade_fight", {
 		},
 
 		["grenades:smoke"] = { rarity = 0.2, max_stacks = 3 },
+		["flashbang:grenade"] = { rarity = 0.2, max_stacks = 3 },
 		["grenades:poison"] = { rarity = 0.1, max_stacks = 2 },
 		["default:water_source"] = { rarity = 0.2, max_stacks = 1 },
 		["easter_egg:egg"] = { rarity = 0.03, max_stacks = 1 },
