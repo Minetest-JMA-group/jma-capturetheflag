@@ -16,6 +16,7 @@ if core.settings:get("random_messages_disabled") == "true" then
 end
 
 local messages = {
+	S("You can give feedback to server admin and game developers using /feedback"),
 	S(
 		"Heal the flag thief on your team, and when they capture, you will also get a reward."
 	),
