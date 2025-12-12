@@ -54,7 +54,7 @@ local io = nil
 
 --- @param pname PlayerName
 --- @param feedback string
---- @return boolean, ("length" | "ratelimit" | "playtime")?
+--- @return boolean, ("length" | "ratelimit" | "playtime" | "server")?
 local function record_feedback(pname, feedback)
 	core.debug(
 		"Got feedback from " .. pname .. ". Length is " .. tonumber(string.len(feedback))
@@ -69,19 +69,38 @@ local function record_feedback(pname, feedback)
 	if io then
 		local file
 		if type(feedbacks_path) == "string" then
-			file = io.open(feedbacks_path .. "/" .. pname .. ".txt", "a+")
+			local cannot_open_reason
+			local this_feedback_path = feedbacks_path .. "/" .. pname .. ".txt"
+			local open_mode = "a+" -- append at the end of the file
+			core.debug(
+				"opening file '" .. this_feedback_path .. "' in this mode: " .. open_mode
+			)
+			file, cannot_open_reason = io.open(this_feedback_path, open_mode)
+			if not file then
+				file = io.tmpfile()
+				core.log(
+					"warning",
+					"[ctf_feedback] falled back to tmpfile cuz could not open a file"
+				)
+				core.log(
+					"warning",
+					"[ctf_feedback] the error is " .. tostring(cannot_open_reason)
+				)
+			end
 		else
 			file = io.tmpfile()
 		end
-		if not file then
-			file = io.tmpfile()
-		end
-		file:write("\n\n")
+		if file then
+			file:write("\n\n")
 
-		file:write(feedback)
-		file:close()
+			file:write(feedback)
+			file:close()
+		else
+			core.log("warning", "[ctf_feedback] file is nil. cannot record feedback")
+			return false, "server"
+		end
 	else
-		core.debug("not recording feedback cuz there is no insecure env")
+		core.debug("[ctf_feedback] not recording feedback cuz there is no insecure env")
 	end
 	if last_feedback_times[pname] == nil then
 		last_feedback_times[pname] = os.time()
