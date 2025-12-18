@@ -28,6 +28,18 @@ function ctf_jma_leagues.get_league(player_name)
 	return l
 end
 
+function ctf_jma_leagues.get_league_counts()
+	local counts = {}
+	local data = modstorage:to_table().fields
+	for key, value in pairs(data) do
+		if key:find("^current_league_") then
+			local league = value ~= "" and value or "none"
+			counts[league] = (counts[league] or 0) + 1
+		end
+	end
+	return counts
+end
+
 function ctf_jma_leagues.check_requirements(player_name, league)
 	for _, req in ipairs(league.requirements or {}) do
 		local result = ctf_jma_leagues.evaluate_task(player_name, req)
