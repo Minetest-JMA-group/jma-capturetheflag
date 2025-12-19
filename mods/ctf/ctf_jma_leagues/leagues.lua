@@ -111,7 +111,7 @@ return {
 		display_name = "Mese League",
 		icon_texture = "ctf_jma_leagues_mese.png",
 		order = 8,
-		color = "#D0FF00",
+		color = "#eeff00",
 		requirements = {
 			{task_type = "kills", params = {goal = 1500, mode_name = "total"}, description = "Reach 1500 kills"},
 			{task_type = "kill_assists", params = {goal = 840, mode_name = "total"}, description = "Reach 840 kill assists"},
