@@ -28,12 +28,10 @@ function ctf_teams.is_allowed_in_team_chest(listname, stack)
 		return false
 	end
 
-	for _, itemstring in ipairs(blacklist) do
-		if stack:get_name():match(itemstring) then
-			return false
-		end
-	end
-
+	-- Allow placing any item in the team chest (except the helper slot).
+	-- Blacklisted items are no longer blocked here; they will be
+	-- destroyed when actually put into the chest in
+	-- `on_metadata_inventory_put` so players can attempt to deposit them.
 	return true
 end
 
@@ -302,6 +300,39 @@ for _, team in ipairs(ctf_teams.teamlist) do
 		function def.on_metadata_inventory_put(pos, listname, index, stack, player)
 			local meta = stack:get_meta()
 			local dropped_by = meta:get_string("dropped_by")
+
+			-- If this item matches an entry in the blacklist, destroy it
+			-- immediately (remove from chest inventory) and notify/log.
+			for _, itemstring in ipairs(blacklist) do
+				if stack:get_name():match(itemstring) then
+					local pname = player and player:get_player_name() or "<unknown>"
+					core.log(
+						"action",
+						string.format(
+							"%s tried to put blacklisted item %s into team chest at %s - destroyed",
+							pname,
+							stack:to_string(),
+							core.pos_to_string(pos)
+						)
+					)
+
+					if player then
+						hud_events.new(player, {
+							quick = true,
+							text = S("Item destroyed"),
+							color = "warning",
+						})
+					end
+
+					local inv = core.get_inventory({ type = "node", pos = pos })
+					-- Remove the inserted stack from the chest
+					inv:remove_item(listname, stack)
+
+					-- Ensure any dropped_by metadata cleared on the (now removed) item
+					-- (no further action needed since it's removed)
+					return
+				end
+			end
 			local pname = player:get_player_name()
 			core.log(
 				"action",
