@@ -2,7 +2,27 @@ ctf_player_info = {}
 
 ctf_gui.init()
 
-local storage = core.get_mod_storage()
+local texture_config_path = core.get_worldpath() .. "/ctf_player_textures.conf"
+
+local function load_texture_config()
+	local file = io.open(texture_config_path, "r")
+	if not file then
+		return {}
+	end
+	local content = file:read("*a")
+	file:close()
+	return core.deserialize(content) or {}
+end
+
+local function save_texture_config(data)
+	local file = io.open(texture_config_path, "w")
+	if file then
+		file:write(core.serialize(data))
+		file:close()
+	end
+end
+
+local texture_data = load_texture_config()
 
 local modes = {"classes", "classic", "nade_fight", "chaos", "rush"}
 local mode_names = {"Classes", "Classic", "Nade", "Chaos", "Rush"}
@@ -94,13 +114,29 @@ local function show_player_info(name, target_name)
 	local target_player = core.get_player_by_name(target_name)
 	local is_online = target_player ~= nil
 
+	-- Check if player exists (online or has rank data)
+	if not is_online then
+		local found = false
+		for _, mode_name in ipairs(ctf_modebase.modelist) do
+			local mode_data = ctf_modebase.modes[mode_name]
+			if mode_data and mode_data.rankings and mode_data.rankings:get(target_name) then
+				found = true
+				break
+			end
+		end
+		if not found then
+			core.chat_send_player(name, "Player '" .. target_name .. "' not found!")
+			return
+		end
+	end
+
 	local league = ctf_jma_leagues.get_league(target_name)
 
 	local skin_texture
 	if is_online then
 		skin_texture = target_player:get_properties().textures[1] .. ",blank.png"
 	else
-		local stored = core.deserialize(storage:get_string(target_name))
+		local stored = texture_data[target_name]
 		local texture = stored and stored[1] or "character.png"
 		skin_texture = texture .. ",blank.png"
 	end
@@ -140,10 +176,11 @@ end
 core.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
 	local textures = player:get_properties().textures
-	storage:set_string(name, core.serialize(textures))
+	texture_data[name] = textures
+	save_texture_config(texture_data)
 end)
 
-core.register_chatcommand("player", {
+core.register_chatcommand("player_info", {
 	params = "[name]",
 	description = "Show player information",
 	func = function(name, param)
@@ -156,15 +193,4 @@ core.register_chatcommand("player", {
 	end,
 })
 
-core.register_chatcommand("p", {
-	params = "[name]",
-	description = "Show player information",
-	func = function(name, param)
-		local target = param:trim()
-		if target == "" then
-			target = name
-		end
-		show_player_info(name, target)
-		return true
-	end,
-})
+core.register_chatcommand("pi", core.registered_chatcommands["player_info"])
