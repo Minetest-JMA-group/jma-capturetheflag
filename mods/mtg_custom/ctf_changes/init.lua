@@ -114,10 +114,14 @@ end)
 
 core.override_item("default:apple", {
 	on_use = function(itemstack, user, ...)
+		-- Prevent wasting food (listen, it's annoying)
+		if user:get_hp() == user:get_properties().hp_max then
+			return
+		end
 		if not COOLDOWN:get(user) then
 			COOLDOWN:set(user, 0.2)
 
-			return core.item_eat(3)(itemstack, user, ...)
+			return minetest.item_eat(3)(itemstack, user, ...)
 		end
 	end,
 	after_place_node = nil,
@@ -131,6 +135,17 @@ core.override_item("default:apple", {
 		end
 		return nil
 	end
+})
+
+core.override_item("default:blueberries", {
+	on_use = function(itemstack, user, ...)
+		-- Prevent wasting food (listen, it's annoying)
+		if user:get_hp() == user:get_properties().hp_max then
+			return
+		end
+		
+		return minetest.item_eat(3)(itemstack, user, ...)
+	end,
 })
 
 local function furnace_on_destruct(pos)
@@ -214,6 +229,5 @@ core.register_on_mods_loaded(function()
 	end
 end)
 
-dofile(minetest.get_modpath("ctf_changes") .. "/ctf_lava.lua")
-dofile(minetest.get_modpath("ctf_changes") .. "/item_despawning.lua")
+dofile(core.get_modpath("ctf_changes") .. "/item_despawning.lua")
 dofile(core.get_modpath("ctf_changes") .. "/ctf_lava.lua")
