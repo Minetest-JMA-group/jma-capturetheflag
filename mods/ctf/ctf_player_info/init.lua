@@ -91,7 +91,7 @@ local function generate_formspec(tab, skin_texture, target_name, league, is_onli
 			if type(value) == "number" then
 				formspec = formspec ..
 					"label[5.2," .. y .. ";" ..
-					core.colorize("#7fdfff", key .. ": ") .. value .. "]"
+					core.colorize("#7fdfff", key .. ": ") .. math.floor(value + 0.5) .. "]"
 				y = y + 0.45
 			end
 		end
@@ -194,3 +194,4 @@ core.register_chatcommand("player_info", {
 })
 
 core.register_chatcommand("pi", core.registered_chatcommands["player_info"])
+
