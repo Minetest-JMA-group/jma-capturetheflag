@@ -194,4 +194,3 @@ core.register_chatcommand("player_info", {
 })
 
 core.register_chatcommand("pi", core.registered_chatcommands["player_info"])
-
