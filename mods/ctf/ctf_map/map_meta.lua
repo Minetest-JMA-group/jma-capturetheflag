@@ -57,15 +57,20 @@ local function is_map_currently_available(map)
     return available
 end
 
+-- calc_flag_center() calculates the center of a map from the positions of the flags.
 local function calc_flag_center(map)
     local flag_center = vector.zero()
     local flag_count = 0
+
     for _, team in pairs(map.teams) do
         flag_center = flag_center + team.flag_pos
         flag_count = flag_count + 1
     end
-    if flag_count == 0 then return vector.zero() end
-    flag_center = flag_center:apply(function(value) return value / flag_count end)
+
+    flag_center = flag_center:apply(function(value)
+        return value / flag_count
+    end)
+
     return flag_center
 end
 

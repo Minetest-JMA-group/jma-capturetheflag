@@ -105,16 +105,13 @@ function ctf_modebase.map_catalog.sample_map_for_mode(mode, n)
 end
 
 
--- Nachdem alle Maps registriert sind (z.B. am Ende von init.lua)
+-- After all maps are registered
 minetest.after(0, function()
-local filtered = {}
-for dirname, map in pairs(ctf_map.registered_maps_meta or ctf_map.registered_maps) do
-	if map.currently_available then
-		filtered[dirname] = map
+	local filtered = {}
+	for dirname, map in pairs(ctf_map.registered_maps_meta or ctf_map.registered_maps) do
+		if map.currently_available then
+			filtered[dirname] = map
 		end
-		end
-		-- Ersetze die Liste für den Vote
-		ctf_map.available_maps = filtered
-		-- Oder falls es ctf_modebase.map_catalog.maps heißt:
-		-- ctf_modebase.map_catalog.maps = filtered
-		end)
+	end
+	ctf_map.available_maps = filtered
+end)
