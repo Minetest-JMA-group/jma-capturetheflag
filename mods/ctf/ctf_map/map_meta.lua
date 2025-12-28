@@ -1,403 +1,368 @@
 local CURRENT_MAP_VERSION = "3"
 local BARRIER_Y_SIZE = 16
-
 local modname = core.get_current_modname()
 
 function ctf_map.skybox_exists(subdir)
-	local list = core.get_dir_list(subdir, true)
-	return table.indexof(list, "skybox") ~= -1
+    local list = core.get_dir_list(subdir, true)
+    return table.indexof(list, "skybox") ~= -1
+end
+
+local function is_map_currently_available(map)
+    local current_players = #core.get_connected_players()
+
+    local min_p = map.min_players or 1
+    local max_p = map.max_players or 32
+
+    if current_players < min_p or current_players > max_p then
+        core.log("info", "Map '" .. (map.name or map.dirname) ..
+                 "' skipped: " .. current_players .. " players not in range [" .. min_p .. "-" .. max_p .. "]")
+        return false
+    end
+
+    local start_str = map.seasonal_start
+    local end_str = map.seasonal_end
+
+    if not start_str or not end_str or start_str == "" or end_str == "" then
+        return true
+    end
+
+    local sm, sd = start_str:match("^(%d+)%.(%d+)$")
+    local em, ed = end_str:match("^(%d+)%.(%d+)$")
+    if not sm or not em then
+        return true
+    end
+
+    sm, sd = tonumber(sm), tonumber(sd)
+    em, ed = tonumber(em), tonumber(ed)
+
+    local cm = tonumber(os.date("%m"))
+    local cd = tonumber(os.date("%d"))
+
+    local function num(m, d) return m * 100 + d end
+    local curr = num(cm, cd)
+    local start = num(sm, sd)
+    local ending = num(em, ed)
+
+    local available
+    if start <= ending then
+        available = curr >= start and curr <= ending
+    else
+        available = curr >= start or curr <= ending
+    end
+
+    if not available then
+        core.log("info", "Map '" .. (map.name or map.dirname) ..
+                 "' skipped: outside seasonal window " .. start_str .. " - " .. end_str)
+    end
+    return available
 end
 
 -- calc_flag_center() calculates the center of a map from the positions of the flags.
 local function calc_flag_center(map)
-	local flag_center = vector.zero()
-	local flag_count = 0
+    local flag_center = vector.zero()
+    local flag_count = 0
 
-	for _, team in pairs(map.teams) do
-		flag_center = flag_center + team.flag_pos
-		flag_count = flag_count + 1
-	end
+    for _, team in pairs(map.teams) do
+        flag_center = flag_center + team.flag_pos
+        flag_count = flag_count + 1
+    end
 
-	flag_center = flag_center:apply(function(value)
-		return value / flag_count
-	end)
+    flag_center = flag_center:apply(function(value)
+        return value / flag_count
+    end)
 
-	return flag_center
+    return flag_center
 end
 
 function ctf_map.load_map_meta(idx, dirname)
-	assert(ctf_map.map_path[dirname], "Map " .. dirname .. " not found")
-	local meta = Settings(ctf_map.map_path[dirname] .. "/map.conf")
+    assert(ctf_map.map_path[dirname], "Map " .. dirname .. " not found")
+    local meta = Settings(ctf_map.map_path[dirname] .. "/map.conf")
+    if not meta then
+        return
+    end
 
-	if not meta then
-		-- Missing map.conf
-		return
-	end
+    core.log("info", "load_map_meta: Loading map meta from '" .. dirname .. "/map.conf'")
 
-	core.log(
-		"info",
-		"load_map_meta: Loading map meta from '" .. dirname .. "/map.conf'"
-	)
+    local maps_per_row = math.ceil(math.sqrt(#ctf_map.registered_maps))
+    local row = math.floor((idx - 1) / maps_per_row)
+    local col = (idx - 1) % maps_per_row
+    local map_spacing = 608
+    local total_width = maps_per_row * map_spacing
+    local off_start_x = -(total_width / 2)
+    local off_start_z = -(total_width / 2)
+    local offset = vector.new(
+        off_start_x + (col * map_spacing),
+        0,
+        off_start_z + (row * map_spacing)
+    )
 
-	local map
-	-- Calculate grid dimensions for map placement
-	local maps_per_row = math.ceil(math.sqrt(#ctf_map.registered_maps)) -- Number of maps per row
-	local row = math.floor((idx - 1) / maps_per_row) -- Current row index
-	local col = (idx - 1) % maps_per_row -- Current column index
+    core.log("info", string.format("Map %s placed at (%d, %d, %d)", dirname, offset.x, offset.y, offset.z))
 
-	-- Calculate offsets for x and z axes
-	local map_spacing = 608 -- Spacing between maps (multiple of 16, size of a mapblock)
-	local total_width = maps_per_row * map_spacing -- Total width of the grid
+    local map
 
-	-- Calculate starting offsets for x and z axes
-	local off_start_x = -(total_width / 2)
-	local off_start_z = -(total_width / 2)
+    if not meta:get("map_version") then
+        if not meta:get("r") then
+            return
+        end
+        local mapr = meta:get("r")
+        local maph = meta:get("h")
+        local start_time = meta:get("start_time")
+        local time_speed = meta:get("time_speed")
+        local initial_stuff = meta:get("initial_stuff")
+        offset.y = -maph / 2
+        local offset_to_new = vector.new(mapr, maph / 2, mapr)
+        local pos1 = offset
+        local pos2 = vector.add(offset, vector.new(mapr * 2, maph, mapr * 2))
 
-	local offset = vector.new(
-		off_start_x + (col * map_spacing), -- X offset based on column
-		0,
-		off_start_z + (row * map_spacing) -- Z offset based on row
-	)
+        map = {
+            pos1 = pos1,
+            pos2 = pos2,
+            rotation = meta:get("rotation"),
+            offset = offset,
+            size = vector.subtract(pos2, pos1),
+            enabled = not meta:get("disabled", false),
+            dirname = dirname,
+            name = meta:get("name"),
+            author = meta:get("author"),
+            hint = meta:get("hint"),
+            license = meta:get("license"),
+            others = meta:get("others"),
+            base_node = meta:get("base_node"),
+            initial_stuff = initial_stuff and initial_stuff:split(","),
+            treasures = meta:get("treasures"),
+            skybox = "none",
+            start_time = start_time and tonumber(start_time) or ctf_map.DEFAULT_START_TIME,
+            time_speed = time_speed and tonumber(time_speed) or 1,
+            phys_speed = tonumber(meta:get("phys_speed")),
+            phys_jump = tonumber(meta:get("phys_jump")),
+            phys_gravity = tonumber(meta:get("phys_gravity")),
+            min_players = 1,
+            max_players = 32,
+            seasonal_start = "01.01",
+            seasonal_end = "12.31",
+            chests = {},
+            teams = {},
+            barrier_area = { pos1 = pos1, pos2 = pos2 },
+            barriers = false,
+        }
 
-	core.log(
-		"info",
-		string.format(
-			"Map %s placed at (%d, %d, %d)",
-			dirname,
-			offset.x,
-			offset.y,
-			offset.z
-		)
-	)
+        local i = 1
+        while meta:get("team." .. i) do
+            local tname = meta:get("team." .. i)
+            local tpos = core.string_to_pos(meta:get("team." .. i .. ".pos"))
+            map.teams[tname] = {
+                enabled = true,
+                flag_pos = vector.add(offset, vector.add(tpos, offset_to_new)),
+                pos1 = vector.new(),
+                pos2 = vector.new(),
+            }
+            i = i + 1
+        end
 
-	if not meta:get("map_version") then
-		if not meta:get("r") then
-			-- Missing or empty map.conf
-			return
-		end
+        i = 1
+        core.log("verbose", "Parsing chest zones of " .. map.name .. "...")
+        while meta:get("chests." .. i .. ".from") do
+            local from = core.string_to_pos(meta:get("chests." .. i .. ".from"))
+            local to = core.string_to_pos(meta:get("chests." .. i .. ".to"))
+            assert(from and to, "Positions needed for chest zone " .. i .. " in map " .. map.name)
+            from, to = vector.sort(from, to)
+            map.chests[i] = {
+                pos1 = vector.add(offset, vector.add(from, offset_to_new)),
+                pos2 = vector.add(offset, vector.add(to, offset_to_new)),
+                amount = tonumber(meta:get("chests." .. i .. ".n") or "20"),
+            }
+            i = i + 1
+        end
+        if i == 1 then
+            map.chests[i] = {
+                pos1 = map.pos1,
+                pos2 = map.pos2,
+                amount = ctf_map.DEFAULT_CHEST_AMOUNT,
+            }
+        end
+    else
+        local size = core.deserialize(meta:get("size"))
+        offset.y = -size.y / 2
+        map = {
+            map_version = CURRENT_MAP_VERSION,
+            pos1 = offset,
+            pos2 = vector.add(offset, size),
+            offset = offset,
+            size = size,
+            dirname = dirname,
+            enabled = meta:get("enabled") == "true",
+            name = meta:get("name"),
+            author = meta:get("author"),
+            hint = meta:get("hint"),
+            license = meta:get("license"),
+            others = meta:get("others"),
+            initial_stuff = core.deserialize(meta:get("initial_stuff")),
+            treasures = meta:get("treasures"),
+            skybox = meta:get("skybox"),
+            start_time = tonumber(meta:get("start_time")),
+            time_speed = tonumber(meta:get("time_speed")),
+            phys_speed = tonumber(meta:get("phys_speed")),
+            phys_jump = tonumber(meta:get("phys_jump")),
+            phys_gravity = tonumber(meta:get("phys_gravity")),
+            min_players = tonumber(meta:get("min_players")) or 1,
+            max_players = tonumber(meta:get("max_players")) or 32,
+            seasonal_start = meta:get("seasonal_start") or "01.01",
+            seasonal_end = meta:get("seasonal_end") or "12.31",
+            chests = core.deserialize(meta:get("chests")),
+            teams = core.deserialize(meta:get("teams")),
+            barrier_area = core.deserialize(meta:get("barrier_area")),
+            game_modes = core.deserialize(meta:get("game_modes")),
+            enable_shadows = tonumber(meta:get("enable_shadows") or "0.26"),
+        }
 
-		local mapr = meta:get("r")
-		local maph = meta:get("h")
-		local start_time = meta:get("start_time")
-		local time_speed = meta:get("time_speed")
-		local initial_stuff = meta:get("initial_stuff")
+        for id, def in pairs(map.chests) do
+            map.chests[id].pos1 = vector.add(offset, def.pos1)
+            map.chests[id].pos2 = vector.add(offset, def.pos2)
+        end
+        for id, def in pairs(map.teams) do
+            map.teams[id].flag_pos = vector.add(offset, def.flag_pos)
+            map.teams[id].pos1 = vector.add(offset, def.pos1)
+            map.teams[id].pos2 = vector.add(offset, def.pos2)
+        end
+        if map.barrier_area then
+            map.barrier_area.pos1 = vector.add(offset, map.barrier_area.pos1)
+            map.barrier_area.pos2 = vector.add(offset, map.barrier_area.pos2)
+        else
+            map.barrier_area = { pos1 = map.pos1, pos2 = map.pos2 }
+        end
+    end
 
-		offset.y = -maph / 2
+    map.currently_available = is_map_currently_available(map)
 
-		local offset_to_new = vector.new(mapr, maph / 2, mapr)
+    map.flag_center = calc_flag_center(map)
 
-		local pos1 = offset
-		local pos2 = vector.add(offset, vector.new(mapr * 2, maph, mapr * 2))
+    if ctf_map.skybox_exists(ctf_map.map_path[dirname]) then
+        skybox.add({ dirname, "#ffffff", [5] = "png" })
+        map.skybox = dirname
+        map.skybox_forced = true
+    elseif map.skybox ~= "none" and table.indexof(ctf_map.skyboxes, map.skybox) == -1 then
+        core.log("warning", 'Unable to load skybox "' .. map.skybox .. '". Back to "none"')
+        map.skybox = "none"
+    end
 
-		map = {
-			pos1 = pos1,
-			pos2 = pos2,
-			rotation = meta:get("rotation"),
-			offset = offset,
-			size = vector.subtract(pos2, pos1),
-			enabled = not meta:get("disabled", false),
-			dirname = dirname,
-			name = meta:get("name"),
-			author = meta:get("author"),
-			hint = meta:get("hint"),
-			license = meta:get("license"),
-			others = meta:get("others"),
-			base_node = meta:get("base_node"),
-			initial_stuff = initial_stuff and initial_stuff:split(","),
-			treasures = meta:get("treasures"),
-			skybox = "none",
-			start_time = start_time and tonumber(start_time)
-				or ctf_map.DEFAULT_START_TIME,
-			time_speed = time_speed and tonumber(time_speed) or 1,
-			phys_speed = tonumber(meta:get("phys_speed")),
-			phys_jump = tonumber(meta:get("phys_jump")),
-			phys_gravity = tonumber(meta:get("phys_gravity")),
-			chests = {},
-			teams = {},
-			barrier_area = { pos1 = pos1, pos2 = pos2 },
-			barriers = false,
-		}
-
-		-- Read teams from config
-		local i = 1
-		while meta:get("team." .. i) do
-			local tname = meta:get("team." .. i)
-			local tpos = core.string_to_pos(meta:get("team." .. i .. ".pos"))
-
-			map.teams[tname] = {
-				enabled = true,
-				flag_pos = vector.add(offset, vector.add(tpos, offset_to_new)),
-				pos1 = vector.new(),
-				pos2 = vector.new(),
-			}
-
-			i = i + 1
-		end
-
-		-- Read custom chest zones from config
-		i = 1
-		core.log("verbose", "Parsing chest zones of " .. map.name .. "...")
-		while meta:get("chests." .. i .. ".from") do
-			local from = core.string_to_pos(meta:get("chests." .. i .. ".from"))
-			local to = core.string_to_pos(meta:get("chests." .. i .. ".to"))
-			assert(
-				from and to,
-				"Positions needed for chest zone " .. i .. " in map " .. map.name
-			)
-
-			from, to = vector.sort(from, to)
-
-			map.chests[i] = {
-				pos1 = vector.add(offset, vector.add(from, offset_to_new)),
-				pos2 = vector.add(offset, vector.add(to, offset_to_new)),
-				amount = tonumber(meta:get("chests." .. i .. ".n") or "20"),
-			}
-
-			i = i + 1
-		end
-
-		-- Add default chest zone if none given
-		if i == 1 then
-			map.chests[i] = {
-				pos1 = map.pos1,
-				pos2 = map.pos2,
-				amount = ctf_map.DEFAULT_CHEST_AMOUNT,
-			}
-		end
-	else
-		-- If new items are added also remember to change the table in mapedit_gui.lua
-		-- The version number should be updated if you change an item
-		local size = core.deserialize(meta:get("size"))
-
-		offset.y = -size.y / 2
-
-		map = {
-			map_version = CURRENT_MAP_VERSION,
-			pos1 = offset,
-			pos2 = vector.add(offset, size),
-			offset = offset,
-			size = size,
-			dirname = dirname,
-			enabled = meta:get("enabled") == "true",
-			name = meta:get("name"),
-			author = meta:get("author"),
-			hint = meta:get("hint"),
-			license = meta:get("license"),
-			others = meta:get("others"),
-			initial_stuff = core.deserialize(meta:get("initial_stuff")),
-			treasures = meta:get("treasures"),
-			skybox = meta:get("skybox"),
-			start_time = tonumber(meta:get("start_time")),
-			time_speed = tonumber(meta:get("time_speed")),
-			phys_speed = tonumber(meta:get("phys_speed")),
-			phys_jump = tonumber(meta:get("phys_jump")),
-			phys_gravity = tonumber(meta:get("phys_gravity")),
-			chests = core.deserialize(meta:get("chests")),
-			teams = core.deserialize(meta:get("teams")),
-			barrier_area = core.deserialize(meta:get("barrier_area")),
-			game_modes = core.deserialize(meta:get("game_modes")),
-			enable_shadows = tonumber(meta:get("enable_shadows") or "0.26"),
-		}
-
-		for id, def in pairs(map.chests) do
-			map.chests[id].pos1 = vector.add(offset, def.pos1)
-			map.chests[id].pos2 = vector.add(offset, def.pos2)
-		end
-
-		for id, def in pairs(map.teams) do
-			map.teams[id].flag_pos = vector.add(offset, def.flag_pos)
-
-			map.teams[id].pos1 = vector.add(offset, def.pos1)
-			map.teams[id].pos2 = vector.add(offset, def.pos2)
-		end
-
-		if map.barrier_area then
-			map.barrier_area.pos1 = vector.add(offset, map.barrier_area.pos1)
-			map.barrier_area.pos2 = vector.add(offset, map.barrier_area.pos2)
-		else
-			map.barrier_area = { pos1 = map.pos1, pos2 = map.pos2 }
-		end
-	end
-
-	map.flag_center = calc_flag_center(map)
-
-	if ctf_map.skybox_exists(ctf_map.map_path[dirname]) then
-		skybox.add({ dirname, "#ffffff", [5] = "png" })
-
-		map.skybox = dirname
-		map.skybox_forced = true
-	elseif map.skybox ~= "none" and table.indexof(ctf_map.skyboxes, map.skybox) == -1 then
-		core.log(
-			"warning",
-			'Unable to load skybox "' .. map.skybox .. '". Back to "none"'
-		)
-		map.skybox = "none"
-	end
-
-	return map
+    return map
 end
 
 function ctf_map.save_map(mapmeta)
-	local path = core.get_worldpath() .. "/schems/" .. mapmeta.dirname .. "/"
-	core.mkdir(path)
+    local path = core.get_worldpath() .. "/schems/" .. mapmeta.dirname .. "/"
+    core.mkdir(path)
+    core.chat_send_all(core.colorize(ctf_map.CHAT_COLOR, "Saving Map..."))
 
-	core.chat_send_all(core.colorize(ctf_map.CHAT_COLOR, "Saving Map..."))
+    local meta = Settings(path .. "map.conf")
+    mapmeta.pos1, mapmeta.pos2 = vector.sort(mapmeta.pos1, mapmeta.pos2)
+    if not mapmeta.offset then
+        mapmeta.offset = mapmeta.pos1
+    end
 
-	-- Write to .conf
-	local meta = Settings(path .. "map.conf")
+    for id, def in pairs(mapmeta.chests) do
+        def.pos1, def.pos2 = vector.sort(def.pos1, def.pos2)
+        mapmeta.chests[id].pos1 = vector.subtract(def.pos1, mapmeta.offset)
+        mapmeta.chests[id].pos2 = vector.subtract(def.pos2, mapmeta.offset)
+    end
 
-	mapmeta.pos1, mapmeta.pos2 = vector.sort(mapmeta.pos1, mapmeta.pos2)
+    for id, def in pairs(mapmeta.teams) do
+        if not def.enabled then
+            mapmeta.teams[id] = nil
+        else
+            local flagpos = core.find_node_near(def.flag_pos, 3, { "group:flag_bottom" }, true)
+            if not flagpos then
+                flagpos = def.flag_pos
+                core.chat_send_all(core.colorize("red", "Failed to find flag for team " .. id ..
+                    ". Node at given position: " .. dump(core.get_node(flagpos).name)))
+            end
+            mapmeta.teams[id].flag_pos = vector.subtract(flagpos, mapmeta.offset)
+            mapmeta.teams[id].pos1 = vector.subtract(def.pos1, mapmeta.offset)
+            mapmeta.teams[id].pos2 = vector.subtract(def.pos2, mapmeta.offset)
+        end
+    end
 
-	if not mapmeta.offset then
-		mapmeta.offset = mapmeta.pos1
-	end
+    local barriers = {}
+    local pos1, pos2 = mapmeta.pos1:copy(), mapmeta.pos2:copy()
+    local barrier_area = { pos1 = pos1:subtract(mapmeta.offset), pos2 = pos2:subtract(mapmeta.offset) }
 
-	for id, def in pairs(mapmeta.chests) do
-		def.pos1, def.pos2 = vector.sort(def.pos1, def.pos2)
+    if pos1.y > pos2.y then
+        local t = pos2
+        pos2 = pos1
+        pos1 = t
+    end
+    if pos1.y + BARRIER_Y_SIZE < pos2.y then
+        pos2.y = pos1.y + BARRIER_Y_SIZE
+    end
 
-		mapmeta.chests[id].pos1 = vector.subtract(def.pos1, mapmeta.offset)
-		mapmeta.chests[id].pos2 = vector.subtract(def.pos2, mapmeta.offset)
-	end
+    local queue_break = false
+    while true do
+        local tmp = { reps = {} }
+        local vm = VoxelManip()
+        pos1, pos2 = vm:read_from_map(pos1, pos2)
+        tmp.pos1, tmp.pos2 = pos1:subtract(mapmeta.offset), pos2:subtract(mapmeta.offset)
+        local data = vm:get_data()
+        local barrier_found = false
+        for i, v in ipairs(data) do
+            for b, rep in pairs(ctf_map.barrier_nodes) do
+                if v == b then
+                    barrier_found = true
+                    tmp.reps[i] = core.get_name_from_content_id(rep)
+                end
+            end
+        end
+        tmp.max = #data
+        if barrier_found then
+            table.insert(barriers, tmp)
+        end
+        if queue_break then break end
+        if pos2.y + BARRIER_Y_SIZE < mapmeta.pos2.y then
+            pos1.y = pos2.y + 1
+            pos2.y = pos2.y + BARRIER_Y_SIZE
+        else
+            pos1.y = pos2.y + 1
+            pos2.y = mapmeta.pos2.y
+            queue_break = true
+        end
+    end
 
-	for id, def in pairs(mapmeta.teams) do
-		-- Remove team from the list if not enabled
-		if not def.enabled then
-			mapmeta.teams[id] = nil
-		else
-			local flagpos =
-				core.find_node_near(def.flag_pos, 3, { "group:flag_bottom" }, true)
+    meta:set("map_version", CURRENT_MAP_VERSION)
+    meta:set("size", core.serialize(vector.subtract(mapmeta.pos2, mapmeta.pos1)))
+    meta:set("enabled", mapmeta.enabled and "true" or "false")
+    meta:set("name", mapmeta.name)
+    meta:set("author", mapmeta.author)
+    meta:set("hint", mapmeta.hint)
+    meta:set("license", mapmeta.license)
+    meta:set("others", mapmeta.others)
+    meta:set("initial_stuff", core.serialize(mapmeta.initial_stuff))
+    meta:set("treasures", mapmeta.treasures or "")
+    meta:set("skybox", mapmeta.skybox)
+    meta:set("start_time", mapmeta.start_time)
+    meta:set("time_speed", mapmeta.time_speed)
+    meta:set("phys_speed", mapmeta.phys_speed)
+    meta:set("phys_jump", mapmeta.phys_jump)
+    meta:set("phys_gravity", mapmeta.phys_gravity)
+    meta:set("min_players", mapmeta.min_players)
+    meta:set("max_players", mapmeta.max_players)
+    meta:set("seasonal_start", mapmeta.seasonal_start)
+    meta:set("seasonal_end", mapmeta.seasonal_end)
+    meta:set("chests", core.serialize(mapmeta.chests))
+    meta:set("teams", core.serialize(mapmeta.teams))
+    meta:set("barrier_area", core.serialize(barrier_area))
+    meta:set("game_modes", core.serialize(mapmeta.game_modes))
+    meta:set("enable_shadows", mapmeta.enable_shadows)
+    meta:write()
 
-			if not flagpos then
-				flagpos = def.flag_pos
-				core.chat_send_all(
-					core.colorize(
-						"red",
-						"Failed to find flag for team "
-							.. id
-							.. ". Node at given position: "
-							.. dump(core.get_node(flagpos).name)
-					)
-				)
-			end
+    local filepath = path .. "map.mts"
+    if core.create_schematic(mapmeta.pos1, mapmeta.pos2, nil, filepath) then
+        core.chat_send_all(core.colorize(ctf_map.CHAT_COLOR, "Saved Map '" .. mapmeta.name .. "' to " .. path))
+        core.chat_send_all(core.colorize(ctf_map.CHAT_COLOR,
+            'To play, move it to "' .. core.get_modpath(modname) .. "/maps/" .. mapmeta.dirname ..
+            '", start a normal ctf game, and run "/ctf_next -f ' .. mapmeta.dirname .. '"'))
+    else
+        core.chat_send_all(core.colorize(ctf_map.CHAT_COLOR, "Map Saving Failed!"))
+    end
 
-			mapmeta.teams[id].flag_pos = vector.subtract(flagpos, mapmeta.offset)
-
-			mapmeta.teams[id].pos1 = vector.subtract(def.pos1, mapmeta.offset)
-			mapmeta.teams[id].pos2 = vector.subtract(def.pos2, mapmeta.offset)
-		end
-	end
-
-	-- Calculate where barriers are
-	local barriers = {}
-	local pos1, pos2 = mapmeta.pos1:copy(), mapmeta.pos2:copy()
-	local barrier_area =
-		{ pos1 = pos1:subtract(mapmeta.offset), pos2 = pos2:subtract(mapmeta.offset) }
-
-	if pos1.y > pos2.y then
-		local t = pos2
-		pos2 = pos1
-		pos1 = t
-	end
-
-	if pos1.y + BARRIER_Y_SIZE < pos2.y then
-		pos2.y = pos1.y + BARRIER_Y_SIZE
-	end
-
-	local queue_break = false
-	while true do
-		local tmp = {
-			-- pos1 = pos1
-			-- pos2 = pos2
-			-- max = #data
-			reps = {},
-		}
-		local vm = VoxelManip()
-		pos1, pos2 = vm:read_from_map(pos1, pos2)
-		tmp.pos1, tmp.pos2 = pos1:subtract(mapmeta.offset), pos2:subtract(mapmeta.offset)
-
-		local data = vm:get_data()
-		local barrier_found = false
-		for i, v in ipairs(data) do
-			for b, rep in pairs(ctf_map.barrier_nodes) do
-				if v == b then
-					barrier_found = true
-					tmp.reps[i] = core.get_name_from_content_id(rep)
-				end
-			end
-		end
-
-		tmp.max = #data
-
-		if barrier_found then
-			table.insert(barriers, tmp)
-		end
-
-		if queue_break then
-			break
-		end
-
-		if pos2.y + BARRIER_Y_SIZE < mapmeta.pos2.y then
-			pos1.y = pos2.y + 1
-			pos2.y = pos2.y + BARRIER_Y_SIZE
-		else
-			pos1.y = pos2.y + 1
-			pos2.y = mapmeta.pos2.y
-			queue_break = true
-		end
-	end
-
-	meta:set("map_version", CURRENT_MAP_VERSION)
-	meta:set("size", core.serialize(vector.subtract(mapmeta.pos2, mapmeta.pos1)))
-	meta:set("enabled", mapmeta.enabled and "true" or "false")
-	meta:set("name", mapmeta.name)
-	meta:set("author", mapmeta.author)
-	meta:set("hint", mapmeta.hint)
-	meta:set("license", mapmeta.license)
-	meta:set("others", mapmeta.others)
-	meta:set("initial_stuff", core.serialize(mapmeta.initial_stuff))
-	meta:set("treasures", mapmeta.treasures or "")
-	meta:set("skybox", mapmeta.skybox)
-	meta:set("start_time", mapmeta.start_time)
-	meta:set("time_speed", mapmeta.time_speed)
-	meta:set("phys_speed", mapmeta.phys_speed)
-	meta:set("phys_jump", mapmeta.phys_jump)
-	meta:set("phys_gravity", mapmeta.phys_gravity)
-	meta:set("chests", core.serialize(mapmeta.chests))
-	meta:set("teams", core.serialize(mapmeta.teams))
-	meta:set("barrier_area", core.serialize(barrier_area))
-	meta:set("game_modes", core.serialize(mapmeta.game_modes))
-	meta:set("enable_shadows", mapmeta.enable_shadows)
-
-	meta:write()
-
-	local filepath = path .. "map.mts"
-	if core.create_schematic(mapmeta.pos1, mapmeta.pos2, nil, filepath) then
-		core.chat_send_all(
-			core.colorize(
-				ctf_map.CHAT_COLOR,
-				"Saved Map '" .. mapmeta.name .. "' to " .. path
-			)
-		)
-		core.chat_send_all(
-			core.colorize(
-				ctf_map.CHAT_COLOR,
-				'To play, move it to "'
-					.. core.get_modpath(modname)
-					.. "/maps/"
-					.. mapmeta.dirname
-					.. ", "
-					.. 'start a normal ctf game, and run "/ctf_next -f '
-					.. mapmeta.dirname
-					.. '"'
-			)
-		)
-	else
-		core.chat_send_all(
-			core.colorize(ctf_map.CHAT_COLOR, "Map Saving Failed!")
-		)
-	end
-
-	local f = assert(io.open(path .. "barriers.data", "wb"))
-	f:write(core.compress(core.serialize(barriers), "deflate"))
-	f:close()
+    local f = assert(io.open(path .. "barriers.data", "wb"))
+    f:write(core.compress(core.serialize(barriers), "deflate"))
+    f:close()
 end
