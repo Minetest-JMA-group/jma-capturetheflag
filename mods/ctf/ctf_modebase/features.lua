@@ -405,7 +405,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			score = math.max(10, math.min(900, score))
 			capture_reward = capture_reward + score
 		end
-		return capture_reward
+		return math.ceil(capture_reward)
 	end
 
 	--- @param team Team
