@@ -405,7 +405,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			score = math.max(10, math.min(900, score))
 			capture_reward = capture_reward + score
 		end
-		return capture_reward
+		return math.ceil(capture_reward)
 	end
 
 	--- @param team Team
@@ -1128,7 +1128,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local capture_reward = calculate_capture_reward(pteam, teamnames)
 
 			local text = S(
-				" has captured the flag in @1 and got @2!",
+				" has captured the flag in @1 and got @2 points!",
 				ctf_map.get_duration(),
 				capture_reward
 			)
