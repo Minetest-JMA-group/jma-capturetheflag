@@ -42,10 +42,11 @@ local function can_send_feedback(pname)
 	end
 	local timestamp = last_feedback_times[pname]
 	if math.abs(os.time() - timestamp) <= ONE_HOUR then
-		return true
-	end
-	if not used_followup_feedback[pname] then
-		return true
+		if used_followup_feedback[pname] then
+			return false, "ratelimit"
+		else
+			return true
+		end
 	end
 	return false, "ratelimit"
 end
@@ -107,6 +108,8 @@ local function record_feedback(pname, feedback)
 	elseif math.abs(os.time() - last_feedback_times[pname]) <= ONE_HOUR then
 		used_followup_feedback[pname] = true
 		last_feedback_times[pname] = os.time()
+	else
+		used_followup_feedback[pname] = nil
 	end
 	return true
 end
