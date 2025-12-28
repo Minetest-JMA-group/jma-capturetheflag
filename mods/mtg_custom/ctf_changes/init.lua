@@ -27,7 +27,7 @@ core.register_on_mods_loaded(function()
 
 	local remove_list = {}
 
-	for key, abm in pairs(minetest.registered_abms) do
+	for key, abm in pairs(core.registered_abms) do
 		for _, mod in pairs(DISALLOW_MOD_ABMS) do
 			if abm.mod_origin == mod then
 				table.insert(remove_list, key)
@@ -38,19 +38,19 @@ core.register_on_mods_loaded(function()
 
 	local removed = 0
 	for _, key in pairs(remove_list) do
-		table.remove(minetest.registered_abms, key - removed)
+		table.remove(core.registered_abms, key - removed)
 		removed = removed + 1
 	end
 
 	-- Unset falling group for all nodes
 
-	for name, def in pairs(minetest.registered_nodes) do
+	for name, def in pairs(core.registered_nodes) do
         local mod_name, node_name = string.match(name, "(.*):(.*)")
         if mod_name ~= "default" then
             if node_name ~= "sand" and node_name ~= "silver_sand" and node_name ~= "gravel" and node_name ~= "desert_sand" then
 		        if def.groups then
 			        def.groups.falling_node = nil
-                    minetest.override_item(name, {groups = def.groups})
+                    core.override_item(name, {groups = def.groups})
                 end
             end
         end
@@ -121,7 +121,7 @@ core.override_item("default:apple", {
 		if not COOLDOWN:get(user) then
 			COOLDOWN:set(user, 0.2)
 
-			return minetest.item_eat(3)(itemstack, user, ...)
+			return core.item_eat(3)(itemstack, user, ...)
 		end
 	end,
 	after_place_node = nil,
@@ -144,7 +144,7 @@ core.override_item("default:blueberries", {
 			return
 		end
 		
-		return minetest.item_eat(3)(itemstack, user, ...)
+		return core.item_eat(3)(itemstack, user, ...)
 	end,
 })
 
