@@ -38,6 +38,22 @@ git clone --recursive https://github.com/Minetest-JMA-group/jma-capturetheflag.g
   * https://marketplace.visualstudio.com/items?itemName=sumneko.lua
   * https://marketplace.visualstudio.com/items?itemName=dwenegar.vscode-luacheck
 
+## Contributing
+
+Contributions to JMA CTF are very welcome. In issues, you can find something to work on. Note that issues with "Undecided" label means the staff team haven't come to a conclusion if the change is fit for the game. Discussion on them is welcome. But please don't work on them as with rejection, your time and effort will be wasted.
+
+When submitting changes:
+
+ - Do one logical thing in a PR
+ - Comments, variable names, function names and such these MUST be in English.
+ - Code quality and implementation details are very important. We won't merge your patches just because the feature you added works. But it also must be idiomatic and well written. If you aren't an experienced developer, don't worry about this! Simply ask on the issue what is the best way to make some change. And then create a draft PR. So we can see your changes before they complete to put you in a good way.
+
+Apart from the issues, there are two other important changes you can send patches for(the most important first):
+
+ - Using Lua Language Server type hints. Please add proper type hints for the variables, function parameters, return types and so on.
+ - Using Luanti's translation API for the game. The game has a history before Luanti had this.
+ - Translating the game into your language. Note that if you want to translate a mod, the mod must already be using the translation API.
+
 ## License
 
 Created by [rubenwardy](https://rubenwardy.com/).
@@ -49,6 +65,12 @@ Check out [mods/](mods/) to see all the installed mods and their respective lice
 Licenses where not specified:
 Code: LGPLv2.1+
 Textures: CC-BY-SA 3.0
+
+### Credits
+
+JMA CTF game is a fork of "main" CTF game which currently is in hands of LoneWolfHT in [this repository](https://github.com/MT-CTF/capturetheflag). We have our own server and our philosophies both in game developement and management are very different than main CTF game. We are far more open to changes. But this also means that sometimes the game could become worse by adding a new feature it doesn't fit, till we fix it!
+
+You can check the git repository for a full history of commits and their authors.
 
 ### Textures
 
