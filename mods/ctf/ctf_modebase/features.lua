@@ -1155,8 +1155,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					flag_or_flags
 				),
 				color = "success",
-			}, { text = S(" has captured your flag!"), color = "warning" }, {
-				text = S(" has captured: @1 @2!", teamnames_readable, flag_or_flags),
+			}, { text = S("@1 has captured your flag!", pname), color = "warning" }, {
+				text = S("@1 has captured: @2 @3!", pname, teamnames_readable, flag_or_flags),
 				color = "light",
 			})
 
