@@ -1,40 +1,29 @@
-local filepath = minetest.get_worldpath() .. "/server_status.json"
+--Created by Fhelron | Email: fhelron@danielschlep.de | XMPP/Jabber: fhelron@jmaminetest.mooo.com | License: CC-BY-SA-4.0
+
+--default values (overriding this when the settings exist)
+local UPDATE_INTERVAL = tonumber(minetest.settings:get("server_status.update_interval")) or 20
+local FILEPATH = minetest.settings:get("server_status.filepath") or (minetest.get_worldpath() .. "/server_status.json")
+
 local timer = 0
 
 local function write_server_status()
     local uptime_seconds = minetest.get_server_uptime()
 
-    -- days, hours, minutes
-    local days = math.floor(uptime_seconds / 86400)
-    local remaining_seconds = uptime_seconds % 86400
-    local hours = math.floor(remaining_seconds / 3600)
-    local minutes = math.floor((remaining_seconds % 3600) / 60)
-
-    -- format
-    local uptime_str
-    if days > 0 then
-        uptime_str = string.format("%dd, %02dh, %02dmin", days, hours, minutes)
-    elseif hours > 0 then
-        uptime_str = string.format("%dh, %02dmin", hours, minutes)
-    else
-        uptime_str = string.format("%dmin", minutes)
-    end
-
     local max_lag = minetest.get_server_max_lag()
     local max_lag_str = string.format("%.3f", max_lag)
+
     local player_count = #minetest.get_connected_players()
 
     --Gameinfo details
     local map = ctf_map.current_map
-    local mode = HumanReadable(ctf_modebase.current_mode)
+    local authors = (type(map) == "table" and map.author) or "unknown"
+    local mode = ctf_modebase.current_mode
     local time_elapsed = ctf_map.get_duration()
     --helping variables
     local matches_played = ctf_modebase.current_mode_matches_played
     local total_matches = ctf_modebase.current_mode_matches
     --write the 2 above together in one variable
     local match_info = "Round " .. matches_played  .. " of " .. total_matches
-    --
-    local authors = map.author
 
     if time_elapsed == "-" then
         time_elapsed = "Build time - Match not started yet"
@@ -46,7 +35,7 @@ local function write_server_status()
 
 
     local status = {
-        uptime = uptime_str,
+        uptime = uptime_seconds,
         max_lag = max_lag_str,
         player_count = player_count,
         map_name = map and map.name or "unknown",
@@ -55,8 +44,8 @@ local function write_server_status()
         matches = match_info,
         -- collect player names
         players = {},
-        -- authors
-        authors = map and map.author or "unknown",
+        --authors
+        authors = authors,
     }
 
     -- add the player names to the players table
@@ -65,19 +54,19 @@ local function write_server_status()
         end
 
     -- write
-    local file = io.open(filepath, "w")
+    local file = io.open(FILEPATH, "w")
     if file then
         file:write(minetest.serialize(status))
         file:close()
-        minetest.log("action", "server_status geschrieben")
+        core.log("action", "server_status written")
     else
-        minetest.log("error", "Konnte server_status.json nicht öffnen")
+        core.log("error", "Can't open the server_status")
     end
 end
 
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
     timer = timer + dtime
-    if timer >= 20 then
+    if timer >= UPDATE_INTERVAL then
         write_server_status()
         timer = 0
     end
