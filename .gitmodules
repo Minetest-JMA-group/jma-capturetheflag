@@ -7,6 +7,3 @@
 [submodule "mods/shared"]
 	path = mods/shared
 	url = https://codeberg.org/minetest-jma-group/jma-shared
-[submodule "mods/shared_private"]
-	path = mods/shared_private
-	url = git@github.com:Minetest-JMA-group/jma-shared-private.git
