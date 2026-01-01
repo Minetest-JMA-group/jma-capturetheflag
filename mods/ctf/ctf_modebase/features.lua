@@ -1,4 +1,5 @@
 --- @alias Vec3 { x: number, y: number, z: number }
+--- @alias Vec2 { x: number, y: number }
 
 --- @type { [string]: number }
 local default_item_value = {
@@ -34,7 +35,6 @@ local default_item_value = {
 	["default:shovel_mese"] = 1,
 	["ctf_ranged:pistol"] = 1,
 }
-
 ctf_core.testing = {
 	-- This is here temporarily, I'm modifying it with //lua and a code minimizer on the main server-
 	-- -so I don't need to restart for every little change
@@ -70,6 +70,8 @@ ctf_core.testing = {
 	end,
 }
 
+local S = core.get_translator(core.get_current_modname())
+
 local hud = mhud.init()
 local LOADING_SCREEN_TARGET_TIME = 5
 local loading_screen_time
@@ -91,7 +93,7 @@ function ctf_modebase.map_chosen(map, ...)
 			})
 
 			hud:change(p, "loading_text", {
-				text = "Loading Map: " .. map.name .. "...",
+				text = S("Loading Map: @1...", map.name),
 			})
 		end
 	end
@@ -181,13 +183,6 @@ local function update_playertags(time)
 	end
 end
 
---- Compute logarithm base 2 of x
---- @param x number
---- @return number
-local function lg(x)
-	return math.log(x) / math.log(2)
-end
-
 local PLAYERTAGS_OFF = false
 local PLAYERTAGS_ON = true
 local function set_playertags_state(state)
@@ -239,7 +234,7 @@ function ctf_modebase.show_loading_screen()
 				position = { x = 0.5, y = 0.5 },
 				alignment = { x = "center", y = "up" },
 				text_scale = 2,
-				text = "Loading Next Map...",
+				text = S("Loading Next Map..."),
 				color = 0x7ec5ff,
 				z_index = 1002,
 			})
@@ -336,14 +331,14 @@ end
 
 ctf_settings.register("ctf_modebase:flag_notifications", {
 	type = "bool",
-	label = "Show flag event messages",
-	description = "Toggle visibility of HUD messages about flag-related events",
+	label = S("Show flag event messages"),
+	description = S("Toggle visibility of HUD messages about flag-related events"),
 	default = "true",
 })
 
 ctf_settings.register("ctf_modebase:teammate_nametag_style", {
 	type = "list",
-	description = "Controls what style of nametag to use for teammates.",
+	description = S("Controls what style of nametag to use for teammates."),
 	list = { "Minetest Nametag: Full", "Minetest Nametag: Symbol", "Entity Nametag" },
 	default = "1",
 	on_change = function(player, new_value)
@@ -362,20 +357,94 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local team_list
 	local teams_left
 
-	local function calculate_killscore(player)
+	local function calculate_killscore(player, killer)
 		local pname = PlayerName(player)
+		local killer_name = PlayerName(killer)
+		local pteam = ctf_teams.get(pname)
+		if not pteam then
+			return 0
+		end
 		local match_rank = recent_rankings.players()[player] or {}
 		local match_kd = (match_rank.kills or 1) / (match_rank.deaths or 1)
 		local overall_rank = rankings:get(pname)
 		local overall_kd = (overall_rank.kills or 1) / (overall_rank.deaths or 1)
 		local kd = (1 * overall_kd + 2 * match_kd) / 3
-		local flag_multiplier = 1
+
+		local val_per_flag = 0.25
+		local val_to_add = 0
+		local is_killer_flag_thief = false
 		for tname, carrier in pairs(ctf_modebase.flag_taken) do
-			if carrier.p == player then
-				flag_multiplier = flag_multiplier + 0.25
+			if tname == pteam then
+				-- Since we've got their flag, now it's
+				-- much more important to kill our thief.
+				-- Right?
+				val_per_flag = 0.5
+			end
+			if carrier.name == player then
+				val_to_add = val_to_add + 1
+			end
+			if carrier.name == killer_name then
+				is_killer_flag_thief = true
 			end
 		end
-		return math.max(1, math.round(kd * 7 * flag_multiplier))
+		if val_to_add > 0 and is_killer_flag_thief then
+			val_to_add = val_to_add * 2
+		end
+		local flag_multiplier = 1 + val_to_add * val_per_flag
+		return math.max(1, math.ceil(kd * 7 * flag_multiplier))
+	end
+
+	--- @param team Team?
+	--- @param target_teams Team[]
+	--- @return number
+	local function calculate_capture_reward(team, target_teams)
+		local team_scores = recent_rankings.teams()
+		local capture_reward = 0
+		for _, lost_team in ipairs(target_teams) do
+			local score = ((team_scores[lost_team] or {}).score or 0) / 4
+			score = math.max(10, math.min(900, score))
+			capture_reward = capture_reward + score
+		end
+		return math.ceil(capture_reward)
+	end
+
+	--- @param team Team
+	--- @param drop_point Vec2
+	--- @param drop_reason "timeout" | "death"
+	--- @param target_teams Team[]
+	--- @return number
+	local function calculate_attempt_reward(team, drop_point, drop_reason, target_teams)
+		local capture_reward = calculate_capture_reward(team, target_teams)
+		if drop_reason == "death" then
+			-- Calculate how much the thief got close to self flag and
+			-- give rewards accordingly.
+			local map_size = ctf_map.current_map.size
+			local map_size_scalar = math.sqrt(map_size.x * map_size.z)
+			local self_flag = ctf_map.current_map.teams[team].flag_pos
+			local dist_to_self_flag = vector.distance(self_flag, drop_point)
+			-- If it's sooo close to self flag, give 3/4 of capture reward
+			if dist_to_self_flag < map_size_scalar / 20 then
+				return math.ceil(capture_reward * 3 / 4)
+			end
+			-- If it's very very far from self flag, give only 1/12
+			if dist_to_self_flag > map_size_scalar / 20 then
+				return math.ceil(capture_reward / 12)
+			end
+			-- Here we make it into 5 parts. If the thief
+			-- go so close to our(only 20% away) flag, we give 1/2 of score.
+			-- If they were too far away(80% away), we give 1/5 score.
+			-- If somewhere in between, we give 1/3 score.
+			if dist_to_self_flag < 1 * map_size_scalar / 5 then
+				return math.ceil(capture_reward / 2)
+			elseif dist_to_self_flag > 1 * map_size_scalar / 5 then
+				return math.ceil(capture_reward / 5)
+			else
+				return math.ceil(capture_reward / 3)
+			end
+		else
+			-- If the reason is timeout, then give 1/3 of the cap reward
+			return capture_reward / 3
+		end
 	end
 
 	local damage_group_textures = {
@@ -572,7 +641,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end
 
 		if killer then
-			local killscore = calculate_killscore(player)
+			local killscore = calculate_killscore(player, killer)
 
 			local rewards = { kills = 1, score = killscore }
 			local bounty = ctf_modebase.bounties.claim(player, killer)
@@ -636,26 +705,26 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 	local function can_punchplayer(player, hitter)
 		if not ctf_modebase.match_started then
-			return false, "The match hasn't started yet!"
+			return false, S("The match hasn't started yet!")
 		end
 
 		local pname, hname = player:get_player_name(), hitter:get_player_name()
 		local pteam, hteam = ctf_teams.get(player), ctf_teams.get(hitter)
 
 		if not ctf_modebase.remove_respawn_immunity(hitter) then
-			return false, "You can't attack while immune"
+			return false, S("You can't attack while immune")
 		end
 
 		if not pteam then
-			return false, pname .. " is not in a team!"
+			return false, S("@1 is not in a team!", pname)
 		end
 
 		if not hteam then
-			return false, "You are not in a team!"
+			return false, S("You are not in a team!")
 		end
 
 		if pteam == hteam and pname ~= hname then
-			return false, pname .. " is on your team!"
+			return false, S("@1 is on your team!", pname)
 		end
 
 		return true
@@ -921,13 +990,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				return worst_players.t
 			end
 		end,
-		can_take_flag = function(player, teamname)
-			if not ctf_modebase.match_started then
-				tp_player_near_flag(player)
-
-				return "You can't take the enemy flag during build time!"
-			end
-		end,
 		--- How much does an item values in score, when you put
 		--- it in teamchest? Currently, it is used when someone dies
 		--- and a teammate puts it back in teamchest. Also it is possible
@@ -944,6 +1006,15 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local value = default_item_value[itemname]
 			return value or 0
 		end,
+		can_take_flag = function(player, teamname)
+			if not ctf_modebase.match_started then
+				tp_player_near_flag(player)
+
+				return S("You can't take the enemy flag during build time!")
+			end
+		end,
+		calculate_capture_reward = calculate_capture_reward,
+		calculate_killscore = calculate_killscore,
 		on_flag_take = function(player, teamname)
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(player)
@@ -984,9 +1055,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			)
 
 			celebrate_team(ctf_teams.get(pname))
-
-			recent_rankings.add(pname, { score = 30, flag_attempts = 1 })
-
+			recent_rankings.add(pname, {
+				flag_attempts = 1,
+			}, false)
 			ctf_modebase.flag_huds.track_capturer(pname, FLAG_CAPTURE_TIMER)
 		end,
 		on_flag_drop = function(player, teamnames, pteam)
@@ -1013,6 +1084,14 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			core.chat_send_all(
 				core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text)
 			)
+			recent_rankings.add(pname, {
+				score = calculate_attempt_reward(
+					pteam,
+					player:get_pos(),
+					"death",
+					teamnames
+				),
+			}, false)
 			ctf_modebase.announce(
 				string.format("Player %s (team %s)%s", pname, pteam, text)
 			)
@@ -1030,6 +1109,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		on_flag_capture = function(player, teamnames)
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(pname)
+			if not pteam then
+				core.log("error", "Someone is capping a flag but is not a teammember :/")
+			end
 			local tcolor = ctf_teams.team[pteam].color
 
 			playertag.set(player, playertag.TYPE_ENTITY)
@@ -1043,44 +1125,38 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			ctf_modebase.flag_huds.untrack_capturer(pname)
 
 			local team_scores = recent_rankings.teams()
-			local capture_reward = 0
-			for _, lost_team in ipairs(teamnames) do
-				local score = ((team_scores[lost_team] or {}).score or 0) / 4
-				score = math.max(10, math.min(900, score))
-				capture_reward = capture_reward + score
-			end
+			local capture_reward = calculate_capture_reward(pteam, teamnames)
 
-			local text = string.format(
-				" has captured the flag in "
-					.. ctf_map.get_duration()
-					.. " and got %d points",
+			local text = S(
+				" has captured the flag in @1 and got @2 points!",
+				ctf_map.get_duration(),
 				capture_reward
 			)
 			local teamnames_readable = HumanReadable(teamnames)
-			local flag_or_flags = " flag!"
+			local flag_or_flags = S("flag")
 			if many_teams then
-				text = string.format(
-					" has captured the flag of team(s) %s in "
-						.. ctf_map.get_duration()
-						.. " and got %d points",
+				text = S(
+					" has captured the flag of team(s) @1 in @2 and got @3 points!",
 					teamnames_readable,
+					ctf_map.get_duration(),
 					capture_reward
 				)
-				flag_or_flags = " flags!"
+				flag_or_flags = S("flags")
 			end
 
 			flag_event_notify(pname, pteam, teamnames, {
-				text = "You have captured: " .. teamnames_readable .. flag_or_flags,
+				text = S("You have captured: @1 @2!", teamnames_readable, flag_or_flags),
 				color = "success",
 			}, {
-				text = "Your teammate "
-					.. pname
-					.. " has captured: "
-					.. teamnames_readable
-					.. flag_or_flags,
+				text = S(
+					"Your teammate @1 has captured: @2 @3!",
+					pname,
+					teamnames_readable,
+					flag_or_flags
+				),
 				color = "success",
-			}, { text = pname .. " has captured your flag!", color = "warning" }, {
-				text = pname .. " has captured: " .. teamnames_readable .. flag_or_flags,
+			}, { text = S("@1 has captured your flag!", pname), color = "warning" }, {
+				text = S("@1 has captured: @2 @3!", pname, teamnames_readable, flag_or_flags),
 				color = "light",
 			})
 
@@ -1088,9 +1164,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text)
 			)
 
-			ctf_modebase.announce(
-				string.format("Player %s (team %s)%s", pname, pteam, text)
-			)
+			ctf_modebase.announce(S("Player @1 (team @2)@3", pname, pteam, text))
 
 			local team_score = team_scores[pteam].score
 			for teammate in pairs(ctf_teams.online_players[pteam].players) do
@@ -1120,7 +1194,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			local streak_idx = ctf_modebase.player_on_flag_attempt_streak[pname]
 			if streak_idx then
-				local streak_bonus = 0
+				local streak_bonus
 				if streak_bonus_received[pname] then
 					streak_bonus = math.floor(
 						math.abs(streak_bonus_received[pname] - streak_idx * 20)
@@ -1131,7 +1205,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				streak_bonus_received[pname] = streak_bonus
 
 				hud_events.new(pname, {
-					text = "Streak Bonus +" .. streak_bonus,
+					text = S("Streak Bonus +@1", streak_bonus),
 					color = "info",
 					quick = true,
 				})
@@ -1142,16 +1216,32 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			teams_left = teams_left - #teamnames
 
 			if teams_left <= 1 then
-				local capture_text = "Player %s captured"
+				local capture_text = "Player @1 captured"
 				if many_teams then
-					capture_text = "Player %s captured the last flag"
+					capture_text = "Player @1 captured the last flag"
 				end
+				capture_text = S(capture_text, pname)
+				-- there might be some unclaimed player bounties, here we return
+				-- the points to their contributors
+				for _, bounty in
+					pairs(ctf_modebase.bounties.get_unclaimed_player_bounties())
+				do
+					for bounty_donator, bounty_amount in pairs(bounty.contributors) do
+						recent_rankings.add(
+							bounty_donator,
+							{ score = bounty_amount },
+							true
+						)
+					end
+				end
+
+				ctf_modebase.bounties.clear_player_bounties()
 
 				ctf_modebase.summary.set_winner(
 					string.format(capture_text, core.colorize(tcolor, pname))
 				)
 
-				local win_text = HumanReadable(pteam) .. " Team Wins!"
+				local win_text = S("@1 Team Wins!", HumanReadable(pteam))
 
 				core.chat_send_all(core.colorize(pteam, win_text))
 
@@ -1249,21 +1339,20 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		get_chest_access = function(pname)
 			local rank = rankings:get(pname)
 
-			local deny_pro = "You need to have more than 1.4 kills per death, "
-				.. "5 captures, and at least 8,000 score to access the pro section."
+			local deny_pro = S("You need to have more than 1.4 kills per death, ")
+				.. S("5 captures, and at least 8,000 score to access the pro section.")
 			if rank then
 				local captures_needed = math.max(0, 5 - (rank.flag_captures or 0))
 				local score_needed = math.max(math.max(0, 8000 - (rank.score or 0)))
 				local current_kd = math.floor((rank.kills or 0) / (rank.deaths or 1) * 10)
 				current_kd = current_kd / 10
 				deny_pro = deny_pro
-					.. " You still need "
-					.. captures_needed
-					.. " captures, "
-					.. score_needed
-					.. " score, and your kills per death is "
-					.. current_kd
-					.. "."
+					.. S(
+						" You still need @1 captures, @2 score and your KD is @3.",
+						captures_needed,
+						score_needed,
+						current_kd
+					)
 
 				if is_pro(core.get_player_by_name(pname), rank) then
 					return true, true

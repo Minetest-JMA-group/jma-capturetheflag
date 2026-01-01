@@ -232,6 +232,10 @@ function ctf_jma_elysium.join(player, joined_callback)
 		if not inv:contains_item("main", "ctf_jma_elysium:pvp_off") then
 			inv:add_item("main", "ctf_jma_elysium:pvp_off")
 		end
+		if not inv:contains_item("main", "default:pick_steel") then
+			inv:add_item("main", "default:pick_steel")
+		end
+
 
 		-- Daytime always
 		skybox.clear(player)

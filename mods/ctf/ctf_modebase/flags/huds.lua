@@ -46,15 +46,15 @@ local function get_flag_status(you)
 	local other_thieves = {}
 
 	for tname, player in pairs(ctf_modebase.flag_taken) do
-		if player.t == teamname then
-			your_thieves[player.p] = true
+		if player.team == teamname then
+			your_thieves[player.name] = true
 		else
-			other_thieves[player.p] = true
+			other_thieves[player.name] = true
 		end
 	end
 
 	if enemy_thief then
-		enemy_thief = enemy_thief.p
+		enemy_thief = enemy_thief.name
 	end
 
 	your_thieves = concat_players(your_thieves)
