@@ -103,6 +103,9 @@ core.register_tool("ctf_map:adminpick", {
 			core.remove_node(pointed_thing.under)
 		end
 	end,
+	on_drop = function(itemstack, dropper)
+		return itemstack
+	end,
 })
 
 core.register_privilege("ctf_map_editor", {
