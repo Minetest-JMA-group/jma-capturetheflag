@@ -1,18 +1,21 @@
---Created by Fhelron | Email: fhelron@danielschlep.de | XMPP/Jabber: fhelron@jmaminetest.mooo.com | License: CC-BY-SA-4.0
+--Created by Fhelron
+--Email: fhelron@danielschlep.de
+--XMPP/Jabber: fhelron@jmaminetest.mooo.com
+--License: LGPL-3-or-later
 
 --default values (overriding this when the settings exist)
-local UPDATE_INTERVAL = tonumber(minetest.settings:get("server_status.update_interval")) or 20
-local FILEPATH = minetest.settings:get("server_status.filepath") or (minetest.get_worldpath() .. "/server_status.json")
+local UPDATE_INTERVAL = tonumber(core.settings:get("server_status.update_interval")) or 20
+local FILEPATH = core.settings:get("server_status.filepath") or (core.get_worldpath() .. "/server_status.json")
 
 local timer = 0
 
 local function write_server_status()
-    local uptime_seconds = minetest.get_server_uptime()
+    local uptime_seconds = core.get_server_uptime()
 
     local max_lag = minetest.get_server_max_lag()
     local max_lag_str = string.format("%.3f", max_lag)
 
-    local player_count = #minetest.get_connected_players()
+    local player_count = #core.get_connected_players()
 
     --Gameinfo details
     local map = ctf_map.current_map
@@ -41,7 +44,8 @@ local function write_server_status()
         map_name = map and map.name or "unknown",
         mode = mode,
         time_elapsed = time_elapsed,
-        matches = match_info,
+        matches_played = matches_played,
+        total_matches = total_matches,
         -- collect player names
         players = {},
         --authors
@@ -49,14 +53,14 @@ local function write_server_status()
     }
 
     -- add the player names to the players table
-    for _, player in ipairs(minetest.get_connected_players()) do
+    for _, player in ipairs(core.get_connected_players()) do
         table.insert(status.players, player:get_player_name())
         end
 
     -- write
     local file = io.open(FILEPATH, "w")
     if file then
-        file:write(minetest.serialize(status))
+        file:write(core.serialize(status))
         file:close()
         core.log("action", "server_status written")
     else
