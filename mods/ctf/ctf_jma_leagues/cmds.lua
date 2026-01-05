@@ -96,3 +96,23 @@ core.register_chatcommand("league_reset", {
 		end
 	end
 })
+
+core.register_chatcommand("league_player", {
+	params = "",
+	description = "Show number of players in each league",
+	func = function(name, param)
+		local counts = ctf_jma_leagues.get_league_counts()
+		local msg = "Players per league:\n"
+		local sorted_leagues = {}
+		for k, info in pairs(ctf_jma_leagues.leagues) do
+			table.insert(sorted_leagues, {name = k, order = info.order})
+		end
+		table.sort(sorted_leagues, function(a, b) return a.order < b.order end)
+		for _, v in ipairs(sorted_leagues) do
+			local count = counts[v.name] or 0
+			local info = ctf_jma_leagues.leagues[v.name]
+			msg = msg .. string.format("%s: %d\n", core.colorize(info.color, info.display_name), count)
+		end
+		return true, msg
+	end
+})
