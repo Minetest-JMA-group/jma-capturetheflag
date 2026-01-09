@@ -45,11 +45,7 @@ local messages = {
 	S("Sprint by pressing the sprint key (E) when you have stamina."),
 	S("Want to submit your own map? Visit @1 to get involved.", MAP_SUBMISSION_URL),
 	"Using limited resources to build structures that don't strengthen your base's defenses is discouraged.",
-	"To report misbehaving players to moderators, please use /report <name> <action> or send the report on Discord: ctf.jma-sig.de",
-	"Swearing, trolling, and being rude will not be tolerated, and strict action will be taken.",
-	"Trapping teammates on purpose is strictly against the rules, and you will be kicked immediately.",
 	"Help your team claim victory by storing extra weapons in the team chest, and never taking more than you need.",
-	"Excessive spawn-killing is a direct violation of the rules - appropriate punishments will be given.",
 	"Use /r to check your rank and other statistics.",
 	"Use /r <playername> to check the rankings of another player.",
 	"Use bandages on teammates to heal them by 3-4 HP if their health is below 15 HP.",
@@ -72,7 +68,6 @@ local messages = {
 	"Check/news to see our recent updates and rules, you will also figure out how to get the [PRO] tag at that page.",
 	S("Join us on Discord: @1", DISCORD_SERVER),
 	"Use /news to see the server news",
-	"Please avoid or refrain from introducing any other potentially offensive or inappropriate topics.",
 	"Stuck? Use /killme to return to base",
 	"Strengthen your defense: build walls, set obstacles, and traps to secure your base.",
 	S("Want to get a new skin? Send it to us at @1", DISCORD_SERVER),
@@ -83,7 +78,6 @@ local messages = {
 	-- connection, fps, minetest issues
 	"To ensure smooth gameplay, we recommend updating to the latest version of Minetest",
 	"If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
-	"You can find our Terms Of Service and the privacy policy on our GitHub page: https://github.com/Minetest-JMA-group/information/",
 	"Having a stable internet connection is crucial as it minimizes lag, ensuring smoother multiplayer interactions",
 	"If you can't open chests, exit then rejoin the game",
 	"Your VPS service is being blocked? Contact our server staff so we can whitelist you",
@@ -100,16 +94,26 @@ local messages = {
 	S(
 		"Want to send a nice welcoming message with the 8 score gift? Use /wb <mode:technical modename> <playername>"
 	),
-	"To report a player sending inappropriate private messages to you, use /report playername PM reason",
 	S("The chaos mode is active on weekends only."),
 	"Use /change_vote <questionID> to change your vote on the poll. Check question ID with /list_questions",
 	"Keep the team door closed to stop enemies from getting in",
-	"Use /rules to read the server rules",
 	"You can claim the crown as a reward for joining our Discord server",
 	"Use /e to send emojis into the air",
 	"You have problems exiting the game? Use /kickme to get disconnected from the server",
 	"Want to check match status? Type /match to see current mode, map details and teams info",
 	"Want to enter Elysium? Heal 100 HP and capture 1 flag to unlock access for 24 hours! Check progress with /eprogress",
+
+	--Security & rules related messages
+	"Use /rules to read the server rules",
+	"You can report player who don't behave to the server staff my using /report <name> <action>.",
+	"You can find our Terms Of Service and the privacy policy on our GitHub page: https://github.com/Minetest-JMA-group/information/",
+	"It is recommended that you avoid sharing personal information such as your address, phone number, or other confidential data to ensure your safety and privacy."
+	"Please avoid or refrain from introducing any other potentially offensive or inappropriate topics.",
+	"Excessive spawn-killing is a direct violation of the rules - appropriate punishments will be given.",
+	"Using a unofficial client builds or modified clients which gives unfair game advantage is strictly forbidden and will result in a ban. ",
+	"Swearing, trolling, and being rude will not be tolerated, and strict action will be taken.",
+	"Trapping teammates on purpose is strictly against the rules, doing so will result in a ban.",
+	S("To report misbehaving players to moderators, please use /report <name> <action> or send the report on Discord: @1", DISCORD_SERVER),
 }
 
 local MESSAGE_INTERVAL = tonumber(core.settings:get("random_messages_interval")) or 120
