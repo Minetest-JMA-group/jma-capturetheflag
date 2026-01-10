@@ -482,6 +482,6 @@ core.register_chatcommand("el_kick", {
 			target,
 			S("[Elysium] You have been kicked by an admin. Bye!")
 		)
-		return true, S("Player @1 has been kicked from Elysium.")
+		return true, S("Player @1 has been kicked from Elysium.", target)
 	end,
 })
