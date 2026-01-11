@@ -64,6 +64,7 @@ ctf_modebase.register_mode("classic", {
 		},
 
 		["grenades:frag"] = { rarity = 0.1, max_stacks = 1 },
+		["flashbang:grenade"] = { rarity = 0.2, max_stacks = 2 },
 		["grenades:smoke"] = { rarity = 0.2, max_stacks = 2 },
 
 		["default:water_source"] = { rarity = 0.2, max_stacks = 1 },
