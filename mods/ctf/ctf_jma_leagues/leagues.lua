@@ -3,7 +3,7 @@ return {
 		display_name = "Grass League",
 		icon_texture = "ctf_jma_leagues_grass.png",
 		order = 1,
-		color = "#71aa34",
+		color = "#43741c",
 		requirements = {
 			{task_type = "kills", params = {goal = 25, mode_name = "total"}, description = "Reach 25 kills"},
 			{task_type = "score", params = {goal = 200, mode_name = "total"}, description = "Reach 200 score"},
@@ -15,7 +15,7 @@ return {
 		display_name = "Wood League",
 		icon_texture = "ctf_jma_leagues_wood.png",
 		order = 2,
-		color = "#a05b53",
+		color = "#85693c",
 		requirements = {
 			{task_type = "kills", params = {goal = 60, mode_name = "total"}, description = "Reach 60 kills"},
 			{task_type = "playtime", params = {goal = 60}, description = "Play for 1 hour"},
@@ -30,7 +30,7 @@ return {
 		display_name = "Stone League",
 		icon_texture = "ctf_jma_leagues_stone.png",
 		order = 3,
-		color = "#a0938e",
+		color = "#615e5d",
 		requirements = {
 			{task_type = "kills", params = {goal = 100, mode_name = "total"}, description = "Reach 100 kills"},
 			{task_type = "kill_assists", params = {goal = 95, mode_name = "total"}, description = "Reach 95 kill assists"},
@@ -46,7 +46,7 @@ return {
 		display_name = "Obsidian League",
 		icon_texture = "ctf_jma_leagues_obsidian.png",
 		order = 4,
-		color = "#564064",
+		color = "#252525",
 		requirements = {
 			{task_type = "kills", params = {goal = 400, mode_name = "total"}, description = "Reach 400 kills"},
 			{task_type = "kill_assists", params = {goal = 180, mode_name = "total"}, description = "Reach 180 kill assists"},
@@ -62,7 +62,7 @@ return {
 		display_name = "Steel League",
 		icon_texture = "ctf_jma_leagues_steel.png",
 		order = 5,
-		color = "#cfc6b8",
+		color = "#d1d1d1",
 		requirements = {
 			{task_type = "kills", params = {goal = 700, mode_name = "total"}, description = "Reach 700 kills"},
 			{task_type = "kill_assists", params = {goal = 300, mode_name = "total"}, description = "Reach 300 kill assists"},
@@ -78,7 +78,7 @@ return {
 		display_name = "Bronze League",
 		icon_texture = "ctf_jma_leagues_bronze.png",
 		order = 6,
-		color = "#bf7958",
+		color = "#ca7710",
 		requirements = {
 			{task_type = "kills", params = {goal = 900, mode_name = "total"}, description = "Reach 900 kills"},
 			{task_type = "kill_assists", params = {goal = 360, mode_name = "total"}, description = "Reach 360 kill assists"},
@@ -94,7 +94,7 @@ return {
 		display_name = "Gold League",
 		icon_texture = "ctf_jma_leagues_gold.png",
 		order = 7,
-		color = "#f4b41b",
+		color = "#f4cd39",
 		requirements = {
 			{task_type = "kills", params = {goal = 1000, mode_name = "total"}, description = "Reach 1000 kills"},
 			{task_type = "kill_assists", params = {goal = 600, mode_name = "total"}, description = "Reach 600 kill assists"},
@@ -111,7 +111,7 @@ return {
 		display_name = "Mese League",
 		icon_texture = "ctf_jma_leagues_mese.png",
 		order = 8,
-		color = "#eea160",
+		color = "#e6e600",
 		requirements = {
 			{task_type = "kills", params = {goal = 1500, mode_name = "total"}, description = "Reach 1500 kills"},
 			{task_type = "kill_assists", params = {goal = 840, mode_name = "total"}, description = "Reach 840 kill assists"},
@@ -127,7 +127,7 @@ return {
 		display_name = "Diamond League",
 		icon_texture = "ctf_jma_leagues_diamond.png",
 		order = 9,
-		color = "#8aebf1",
+		color = "#79d9f1",
 		requirements = {
 			{task_type = "kills", params = {goal = 3000, mode_name = "total"}, description = "Reach 3000 kills"},
 			{task_type = "kill_assists", params = {goal = 1200, mode_name = "total"}, description = "Reach 1200 kill assists"},
