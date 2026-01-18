@@ -122,7 +122,9 @@ if type(feedbacks_path) ~= "string" then
 end
 
 local insecure_env = core.request_insecure_environment()
-io = insecure_env.io
+if insecure_env then
+	io = insecure_env.io
+end
 core.register_chatcommand("feedback", {
 	params = S("[Your feedback]"),
 	description = S("Write developers and server admins a feedback about the game."),
