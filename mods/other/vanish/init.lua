@@ -117,6 +117,9 @@ function vanish.off(player)
 	vanish.old_properties[name] = nil
 	vanish.old_nametag[name] = nil
 	vanish.old_armor_groups[name] = nil
+	if player.set_camera then
+		player:set_camera({mode = "any"})
+	end
 end
 
 minetest.register_privilege("vanish", "Allows to make players invisible")
