@@ -461,6 +461,8 @@ minetest.register_on_joinplayer(function(player)
 	local ss = spectator.get_spectator_state(pname)
 	if ss and ss.match == state.match_id then
 		-- Restore privileges first
+		if pname.set_camera then
+			pname:set_camera({mode = "any"})
 		core.set_player_privs(pname, ss.privs)
 		-- Turn player back into a spectator
 		spectator.make_spectator(player)
