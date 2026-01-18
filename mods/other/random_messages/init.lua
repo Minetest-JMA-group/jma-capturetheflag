@@ -107,7 +107,7 @@ local messages = {
 	"Use /rules to read the server rules",
 	"You can report player who don't behave to the server staff my using /report <name> <action>.",
 	"You can find our Terms Of Service and the privacy policy on our GitHub page: https://github.com/Minetest-JMA-group/information/",
-	"It is recommended that you avoid sharing personal information such as your address, phone number, or other confidential data to ensure your safety and privacy."
+	"It is recommended that you avoid sharing personal information such as your address, phone number, or other confidential data to ensure your safety and privacy.",
 	"Please avoid or refrain from introducing any other potentially offensive or inappropriate topics.",
 	"Excessive spawn-killing is a direct violation of the rules - appropriate punishments will be given.",
 	"Using a unofficial client builds or modified clients which gives unfair game advantage is strictly forbidden and will result in a ban. ",
