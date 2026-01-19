@@ -29,27 +29,27 @@ function vanish.on(player, options)
 	player:override_day_night_ratio(1)
 	player:set_pos(vector.add(pos, {x=0, y=1, z=0}))
 	player:set_properties({
-		visual = "node",
-		-- collisionbox = {-0.01, 0, -0.01, 0.01, 0, 0.01},
-		selectionbox = {-0.001, 0, -0.001, 0.001, 0, 0.001},
+		visual          = "node",
+		selectionbox    = {-0.001, 0, -0.001, 0.001, 0, 0.001},
 		show_on_minimap = false,
-		pointable = options.pointable,
-		visual_size = {x=0, y=0},
-		node = {name = "ignore", param1=0, param2=0},
-		is_visible = options.is_visible,
-		hp_max = 5000,
+		pointable       = options.pointable or false,
+		visual_size     = {x=0, y=0},
+		node            = {name = "ignore"},
+		is_visible      = options.is_visible or false,
+		hp_max          = 20,
 	})
-	player:set_hp(5000)
-	player:set_nametag_attributes{
-		text = "\0",
-		color = {a = 0, r = 0, g = 0, b = 0}
-	}
 
-	local armor_groups = table.copy(vanish.old_armor_groups[name])
+	player:set_hp(20)
+
+	-- immortal
+	local armor_groups = table.copy(vanish.old_armor_groups[name] or {})
 	armor_groups.immortal = 1
 	player:set_armor_groups(armor_groups)
 
-	-- player:set_eye_offset({x=0, y=-4, z=0},{x=0, y=-4, z=0})
+	player:set_nametag_attributes{
+		text  = "\0",
+		color = {a = 0, r = 0, g = 0, b = 0}
+	}
 
 	hpbar.no_entity_attach[name] = true
 	playertag.no_entity_attach[name] = true
