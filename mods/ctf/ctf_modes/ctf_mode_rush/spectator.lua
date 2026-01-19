@@ -1,48 +1,34 @@
---------------------------------------------------------------------------------
--- CTF-Mode Rush – Spectator module (fixed + camera reset on new match)
---------------------------------------------------------------------------------
 local spectator = {}
 
--- ----------------------------------------------------------------------
 -- Constants & storage
--- ----------------------------------------------------------------------
 local RUSH_SPEC_KEY = "ctf_mode_rush:spectator_state"
 local storage = core.get_mod_storage()
 local SPECTATOR_INFO_FORMNAME = "ctf_mode_rush:spectator_info"
 local SPECTATOR_INFO_META_KEY = "ctf_mode_rush:hide_spectator_info"
 local SPECTATOR_INFO_CHECKBOX = "ctf_mode_rush_spectator_hide"
 local SPECTATOR_INFO_SHOW_DELAY = 0
-
 local function storage_key(name)
     if type(name) ~= "string" or name == "" then return end
     return RUSH_SPEC_KEY .. ":" .. name
 end
-
 local SPECTATOR_CHAT_COLOR = "#8f7bb9"
-
--- ----------------------------------------------------------------------
 -- Runtime variables (filled by spectator.setup)
--- ----------------------------------------------------------------------
 local state
 local timer
 local rankings
 local recent_rankings
 local bound_timer = 0
 local priv_hooks_installed = false
-
 local function ensure_state()
     if not state then error("spectator not initialised") end
 end
-
 local function safe_deserialize(data)
     if data == "" then return end
     local ok, val = pcall(core.deserialize, data)
     if ok then return val end
 end
 
---------------------------------------------------------------------------------
 -- Forms & UI helpers
---------------------------------------------------------------------------------
 local function build_spectator_info_formspec(checked)
     local checkbox_label = core.formspec_escape("Don't show this again")
     local button_label = core.formspec_escape("Got it")
@@ -56,7 +42,6 @@ local function build_spectator_info_formspec(checked)
         "- Warn teammates about enemies.\n",
         "- Constant communication saves lives!",
     }, "\n")
-
     return table.concat({
         "formspec_version[4]",
         "size[11,6.2]",
@@ -70,7 +55,6 @@ local function build_spectator_info_formspec(checked)
         string.format("button_exit[4.4,5.4;2.2,0.8;spectator_info_ok;%s]", button_label),
     })
 end
-
 local function show_spectator_info(player)
     local pname = player:get_player_name()
     core.after(SPECTATOR_INFO_SHOW_DELAY, function(name)
@@ -80,16 +64,14 @@ local function show_spectator_info(player)
         end
     end, pname)
 end
-
 local function maybe_show_spectator_info(player)
     if player:get_meta():get_int(SPECTATOR_INFO_META_KEY) == 1 then return end
     show_spectator_info(player)
 end
-
 ctf_core.register_on_formspec_input("^" .. SPECTATOR_INFO_FORMNAME .. "$",
     function(pname, formname, fields)
         if formname ~= SPECTATOR_INFO_FORMNAME then return end
-        local player = minetest.get_player_by_name(pname)
+        local player = core.get_player_by_name(pname)
         if not player then return true end
         if fields[SPECTATOR_INFO_CHECKBOX] == "true" then
             player:get_meta():set_int(SPECTATOR_INFO_META_KEY, 1)
@@ -99,9 +81,7 @@ ctf_core.register_on_formspec_input("^" .. SPECTATOR_INFO_FORMNAME .. "$",
         return true
     end)
 
---------------------------------------------------------------------------------
--- Spectator state persistence
---------------------------------------------------------------------------------
+-- Spectator state
 function spectator.get_spectator_state(name)
     local key = storage_key(name)
     if not key then return end
@@ -113,7 +93,6 @@ function spectator.get_spectator_state(name)
     parsed.team = type(parsed.team) == "string" and parsed.team ~= "" and parsed.team or nil
     return parsed
 end
-
 function spectator.set_spectator_state(name, data)
     local key = storage_key(name)
     if not key then return end
@@ -126,9 +105,7 @@ function spectator.set_spectator_state(name, data)
     storage:set_string(key, core.serialize(payload))
 end
 
---------------------------------------------------------------------------------
 -- Helper utilities
---------------------------------------------------------------------------------
 local function get_player_score(pname)
     if recent_rankings then
         local rec = recent_rankings.get(pname)
@@ -140,7 +117,6 @@ local function get_player_score(pname)
     end
     return 0
 end
-
 local function select_anchor_for_team(team)
     local alive = state.alive_players[team]
     if not alive then return nil end
@@ -155,9 +131,7 @@ local function select_anchor_for_team(team)
     return best
 end
 
---------------------------------------------------------------------------------
 -- Vanish handling
---------------------------------------------------------------------------------
 function spectator.disable_vanish(player)
     ensure_state()
     local name = player:get_player_name()
@@ -166,7 +140,6 @@ function spectator.disable_vanish(player)
     end
     state.vanish_active[name] = nil
 end
-
 local function apply_vanish(player)
     local name = player:get_player_name()
     if state.vanish_active[name] then return end
@@ -174,15 +147,12 @@ local function apply_vanish(player)
     state.vanish_active[name] = true
 end
 
---------------------------------------------------------------------------------
 -- Team / privilege helpers
---------------------------------------------------------------------------------
 local function remove_player_from_team(name)
     ctf_teams.remove_online_player(name)
     ctf_teams.player_team[name] = nil
     ctf_teams.non_team_players[name] = true
 end
-
 function spectator.restore_privs(name)
     ensure_state()
     local privs = state.saved_privs[name]
@@ -195,34 +165,27 @@ function spectator.restore_privs(name)
     state.saved_privs[name] = nil
     spectator.set_spectator_state(name, nil)
 end
-
-local function specatator_set_inv(player)
+local function spectator_set_inv(player)
     local inv = player:get_inventory()
     inv:set_list("main", {})
     inv:add_item("main", { name = "spectator_teleport:item", count = 1 })
 end
 
---------------------------------------------------------------------------------
 -- Core spectator creation
---------------------------------------------------------------------------------
 function spectator.make_spectator(player)
     ensure_state()
     local pname = player:get_player_name()
     local team = state.initial_team[pname]
-
-    -- remove from alive list
+    -- remove from alive players list
     if team and state.alive_players[team] then
         state.alive_players[team][pname] = nil
     end
-
     timer.update_round_huds()
     state.eliminated[pname] = true
-
     -- store original privs once
     if not state.saved_privs[pname] then
         state.saved_privs[pname] = core.get_player_privs(pname)
     end
-
     -- give spectator privs
     local privs = table.copy(state.saved_privs[pname])
     privs.interact = true
@@ -230,12 +193,10 @@ function spectator.make_spectator(player)
     privs.fly = true
     privs.noclip = true
     core.set_player_privs(pname, privs)
-
     remove_player_from_team(pname)
     apply_vanish(player)
-    specatator_set_inv(player)
-
-    -- attach to best teammate
+    spectator_set_inv(player)  -- Fixed typo
+    -- attach to "best" teammate
     local best = select_anchor_for_team(team)
     if best then
         local target = core.get_player_by_name(best)
@@ -254,10 +215,8 @@ function spectator.make_spectator(player)
             color = "warning",
         })
     end
-
     player:set_hp(20)
     maybe_show_spectator_info(player)
-
     -- persist state
     spectator.set_spectator_state(pname, {
         match = state.match_id,
@@ -265,12 +224,10 @@ function spectator.make_spectator(player)
         team = state.initial_team[pname],
     })
 end
-
 function spectator.is_spectator(name)
     ensure_state()
     return state.eliminated[name] == true
 end
-
 function spectator.for_each_spectator(cb)
     ensure_state()
     for pname, elim in pairs(state.eliminated) do
@@ -278,68 +235,16 @@ function spectator.for_each_spectator(cb)
     end
 end
 
---------------------------------------------------------------------------------
--- normal mode
---------------------------------------------------------------------------------
-function spectator.restore_normal_player(player)
-    if not player or not player:is_player() then return end
-
-    local pname = player:get_player_name()
-
-    spectator.restore_privs(pname)
-
-    spectator.disable_vanish(player)
-
-    if player.set_camera then
-        player:set_camera({mode = "any"})
-    end
-
-    state.eliminated[pname] = nil
-    state.spectator_anchor = state.spectator_anchor or {}
-    state.spectator_anchor[pname] = nil
-
-    local inv = player:get_inventory()
-    inv:set_list("main", {})
-
-    -- delete
-    spectator.set_spectator_state(pname, nil)
-end
-
---------------------------------------------------------------------------------
--- new match
---------------------------------------------------------------------------------
-function spectator.on_new_match_started()
-    spectator.for_each_spectator(function(pname)
-        local player = minetest.get_player_by_name(pname)
-        if player then
-            spectator.restore_normal_player(player)
-            minetest.chat_send_player(pname, "→ Neues Match gestartet – Normale Kamera wieder aktiv")
-        else
-            -- Offline → nur Speicher aufräumen
-            spectator.set_spectator_state(pname, nil)
-        end
-    end)
-
-    -- Alle eliminated-Flags löschen
-    state.eliminated = {}
-end
-
---------------------------------------------------------------------------------
 -- Re-join handling
---------------------------------------------------------------------------------
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
     local pname = player:get_player_name()
     local ss = spectator.get_spectator_state(pname)
-
     if ss and ss.match == state.match_id then
         core.set_player_privs(pname, ss.privs or core.get_player_privs(pname))
-
         if player.set_camera then
             player:set_camera({mode = "any"})
         end
-
         spectator.make_spectator(player)
-
         hud_events.new(pname, {
             quick = true,
             text = "Rejoined as spectator",
@@ -348,48 +253,18 @@ minetest.register_on_joinplayer(function(player)
     end
 end)
 
---------------------------------------------------------------------------------
 -- Public API
---------------------------------------------------------------------------------
 function spectator.setup(context)
     state = context.state or error("spectator.setup requires state")
     timer = context.timer or error("spectator.setup requires timer")
     rankings = context.rankings
     recent_rankings = context.recent_rankings
     bound_timer = 0
-    -- install_priv_hooks()   ← falls du das brauchst, wieder aktivieren
 end
-
 function spectator.reset()
     bound_timer = 0
 end
 
 function spectator.on_globalstep(dtime) end
-
--- Placeholder (falls später benötigt)
-function spectator.reassign_team_spectators(team)
-    -- Kann später erweitert werden
-end
-
---------------------------------------------------------------------------------
--- End-of-round scoring
---------------------------------------------------------------------------------
-function spectator.distribute_survivor_score()
-    ensure_state()
-    local survivors = {}
-    for _, alive_tbl in pairs(state.alive_players) do
-        for pname in pairs(alive_tbl) do
-            survivors[#survivors + 1] = pname
-        end
-    end
-    if #survivors == 0 then return end
-
-    local per_player = math.floor(500 / #survivors)
-    for _, pname in ipairs(survivors) do
-        if rankings and rankings.add_score then
-            rankings:add_score(pname, per_player)
-        end
-    end
-end
-
+function spectator.reassign_team_spectators(team) end
 return spectator

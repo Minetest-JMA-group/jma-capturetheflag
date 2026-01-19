@@ -199,4 +199,9 @@ function timer.get_alive_counts()
 	return get_alive_counts()
 end
 
+core.register_on_joinplayer(function(player)
+	local pname = player.get_player_name()
+	update_round_hud_for_player(pname)
+end)
+
 return timer

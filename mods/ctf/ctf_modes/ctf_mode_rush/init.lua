@@ -134,13 +134,24 @@ local function declare_winner(team)
 		core.chat_send_all(core.colorize("orange", winner_text))
 	end
 
+	local score_per_survivor = 0
+	local survivor_count = 0
+	if team then
+		for _ in pairs(state.alive_players[team]) do
+			survivor_count = survivor_count + 1
+		end
+		if survivor_count > 0 then
+			score_per_survivor = math.floor(500 / survivor_count)
+		end
+	end
+
 	for name in pairs(state.participants) do
 		if
 			team
 			and state.initial_team[name] == team
 			and state.eliminated[name] ~= true
 		then
-			award_score(name, 500)
+			award_score(name, score_per_survivor)
 		else
 			award_score(name, 50)
 		end

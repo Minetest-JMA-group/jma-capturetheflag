@@ -148,61 +148,54 @@ local function rush_spectator_format_chat_message(name, message)
 end
 
 core.register_on_chat_message(function(name, message)
-	local rush_api = rawget(_G, "ctf_mode_rush")
-	if rush_api and rush_api.is_spectator and rush_api.is_spectator(name) then
-		if filter_caps then
-			message = filter_caps.parse(name, message)
-		end
+    local rush_api = rawget(_G, "ctf_mode_rush")
 
-		if filter and not filter.check_message(message) then
-			filter.on_violation(name, message)
-			core.chat_send_player(name, "Watch your language!")
-			return true
-		end
+    if rush_api and rush_api.is_spectator and rush_api.is_spectator(name) then
 
-		core.log(
-			"action",
-			string.format("[Rush Spectator Chat]: <%s>: %s", name, message)
-		)
+        if filter_caps then
+            message = filter_caps.parse(name, message)
+        end
 
-		local formatted_msg = rush_spectator_format_chat_message(name, message)
-		local delivered = false
+        if filter and not filter.check_message(message) then
+            filter.on_violation(name, message)
+            core.chat_send_player(name, "Watch your language!")
+            return true
+        end
 
-		if rush_api.for_each_spectator then
-			rush_api.for_each_spectator(function(target)
-				local target_ref = core.get_player_by_name(target)
-				if target_ref then
-					delivered = true
-					core.chat_send_player(target, formatted_msg)
-				end
-			end)
-		end
+        core.log("action", string.format("[CHAT/Spectator] <%s>: %s", name, message))
 
-		if not delivered then
-			core.chat_send_player(name, formatted_msg)
-		end
+        local formatted_msg = rush_spectator_format_chat_message(name, message)
+        core.chat_send_all(formatted_msg)
 
-		return true
-	end
+        return true
+    end
 
-	local el_players = ctf_jma_elysium.players
-	if el_players[name] then
-		if filter and not filter.check_message(message) then
-			filter.on_violation(name, message)
-			core.chat_send_player(name, "Watch your language!")
-			return true
-		end
+    local el_players = ctf_jma_elysium.players
+    if el_players and el_players[name] then
+        if filter and not filter.check_message(message) then
+            filter.on_violation(name, message)
+            core.chat_send_player(name, "Watch your language!")
+            return true
+        end
 
-		core.log("action", string.format("[Elysium Chat]: <%s>: %s", name, message))
+        core.log("action", string.format("[Elysium Chat]: <%s>: %s", name, message))
+        local formatted_msg = elysium_format_chat_message(name, message)
 
-		local formatted_msg = elysium_format_chat_message(name, message)
-		for target, _ in pairs(el_players) do
-			core.chat_send_player(target, formatted_msg)
-		end
-
-		return true
-	end
+        for target, _ in pairs(el_players) do
+            core.chat_send_player(target, formatted_msg)
+        end
+        return true
+    end
 end)
+
+local function rush_spectator_format_chat_message(name, message)
+    local prefixes = format_prefixes(name, "white")
+
+    return core.colorize(SPECTATOR_CHAT_COLOR, "[Spectators] ")
+        .. prefixes
+        .. core.colorize(SPECTATOR_CHAT_COLOR, "<" .. name .. "> ")
+        .. message
+end
 
 core.register_chatcommand("g", {
 	params = "msg",
