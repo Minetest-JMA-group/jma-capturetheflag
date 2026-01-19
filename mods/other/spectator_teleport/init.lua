@@ -166,7 +166,7 @@ local function on_teleport_item_use(itemstack, user)
 		quick = true,
 		text  = ("Spectating %s (Score: %d) | Rank: %d/%d"):
 		         format(target_name, target_score, rank, #data.players),
-		color = "warning",
+		color = "success",
 	})
 
 	data.index = data.index + 1
@@ -176,9 +176,57 @@ local function on_teleport_item_use(itemstack, user)
 end
 
 --  Register the item
-minetest.register_craftitem(TELEPORT_ITEM, {
+core.register_craftitem(TELEPORT_ITEM, {
 	description    = S("Teleport to Teammates"),
 	inventory_image = "spectator_teleport_item.png",
 	stack_max      = 1,
 	on_use         = on_teleport_item_use,
+})
+
+core.register_chatcommand("spectate", {
+    description = S("Spectate a specific teammate (only as spectator)"),
+    params = "<playername>",
+    func = function(name, param)
+        if param == "" then
+            return false, S("Usage: /spectate <playername>")
+        end
+
+        local target_name = param:trim()
+        local target = minetest.get_player_by_name(target_name)
+        if not target then
+            return false, S("Player @1 not found or offline.", target_name)
+        end
+
+        local my_team = get_player_team(name)
+        if my_team ~= nil then
+            return false, S("Only spectators can use this command.")
+        end
+
+        local old_team = get_spectator_old_team(minetest.get_player_by_name(name))
+        if old_team == "" then
+            return false, S("No previous team found")
+        end
+
+        if get_player_team(target_name) ~= old_team then
+            return false, S("@1 is not on your team (@2).", target_name, old_team)
+        end
+
+        local spectator = minetest.get_player_by_name(name)
+        spectator:set_detach()
+        spectator:set_attach(target, "", {x=0, y=1.5, z=0}, {x=0, y=0, z=0})
+        spectator:set_pos(target:get_pos())
+
+        if spectator.set_camera then
+            spectator:set_camera({mode = "third"})
+        end
+
+        local score = get_player_score(target_name)
+        hud_events.new(name, {
+            quick = true,
+            text  = S("Spectating @1 (Score: @2)", target_name, score),
+            color = "success",
+        })
+
+        return true
+    end,
 })
