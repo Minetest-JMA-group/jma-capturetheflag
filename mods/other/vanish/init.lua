@@ -97,7 +97,7 @@ function vanish.off(player)
     wield3d.no_entity_attach[name] = nil
     server_cosmetics.no_entity_attach[name] = nil
 
-    player_api.set_model(player, "character.b3d")
+    playertag.remove_entity_tag(player)
     playertag.set(player, playertag.TYPE_ENTITY)
     wield3d.add_wielditem(player)
     server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
@@ -123,22 +123,23 @@ minetest.register_on_joinplayer(function(player)
     wield3d.no_entity_attach[name] = nil
     server_cosmetics.no_entity_attach[name] = nil
 
-    minetest.after(2, function()
+    minetest.after(3, function()
         if not minetest.get_player_by_name(name) then return end
-        local p = minetest.get_player_by_name(name)
-        playertag.set(p, playertag.TYPE_ENTITY)
-        ctf_modebase.player.update(p)
-        wield3d.add_wielditem(p)
-        server_cosmetics.update_entity_cosmetics(p, ctf_cosmetics.get_extra_clothing(p))
+        playertag.remove_entity_tag(player)
+        playertag.set(player, playertag.TYPE_ENTITY)
+        ctf_modebase.player.update(player)
+        wield3d.add_wielditem(player)
+        server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
     end)
 end)
 
 if ctf_modebase and ctf_modebase.events and ctf_modebase.events.register then
     ctf_modebase.events.register("match_start", function()
-        minetest.after(1, function()
+        minetest.after(2, function()
             for _, player in ipairs(minetest.get_connected_players()) do
                 local name = player:get_player_name()
                 if not vanish.vanished[name] then
+                    playertag.remove_entity_tag(player)
                     playertag.set(player, playertag.TYPE_ENTITY)
                     ctf_modebase.player.update(player)
                     wield3d.add_wielditem(player)
