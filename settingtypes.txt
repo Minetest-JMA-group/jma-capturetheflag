@@ -24,3 +24,7 @@ server_status.update_interval (Server status update interval in seconds) float 2
 #<worldpath>/server_status.json will be used.
 #Example: /home/luanti/server_status.json
 server_status.filepath (Server status save path for JSON-file) string
+
+#The interval in which the list of "alive" players in the rush mode.
+#Default: 5 seconds. Lower values increase the server load.
+spectator_teleport.update_interval List of alive players update interval in seconds) float 5
