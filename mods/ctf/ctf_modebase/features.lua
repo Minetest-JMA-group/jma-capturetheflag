@@ -758,6 +758,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					player:set_detach()
 					core.log("action", player:get_player_name() .. " detached")
 				end
+				if player.set_camera then
+					player:set_camera({mode = "any"})
+				end
 			end
 
 			if #delete_queue > 0 and delete_queue._map ~= ctf_map.current_map.dirname then
