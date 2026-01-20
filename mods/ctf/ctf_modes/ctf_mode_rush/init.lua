@@ -280,7 +280,6 @@ local function restore_all_players()
 		local name = player:get_player_name()
 		spectator.restore_privs(name)
 		spectator.disable_vanish(player)
-		player.set_detach()
 		if state.initial_team[name] then
 			ctf_teams.non_team_players[name] = nil
 		end
