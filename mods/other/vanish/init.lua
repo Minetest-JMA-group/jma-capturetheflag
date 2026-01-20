@@ -98,8 +98,14 @@ function vanish.off(player)
     server_cosmetics.no_entity_attach[name] = nil
 
     playertag.remove_entity_tag(player)
-    playertag.set(player, playertag.TYPE_ENTITY)
-    wield3d.add_wielditem(player)
+    wield3d.remove_wielditem(player)
+    minetest.after(0.5, function()
+        if minetest.get_player_by_name(name) then
+            playertag.set(player, playertag.TYPE_ENTITY)
+            wield3d.add_wielditem(player)
+        end
+    end)
+
     server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
     ctf_modebase.player.update(player)
 
@@ -125,11 +131,14 @@ minetest.register_on_joinplayer(function(player)
 
     minetest.after(3, function()
         if not minetest.get_player_by_name(name) then return end
+
         playertag.remove_entity_tag(player)
+        wield3d.remove_wielditem(player)
+
         playertag.set(player, playertag.TYPE_ENTITY)
-        ctf_modebase.player.update(player)
         wield3d.add_wielditem(player)
         server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
+        ctf_modebase.player.update(player)
     end)
 end)
 
@@ -140,10 +149,12 @@ if ctf_modebase and ctf_modebase.events and ctf_modebase.events.register then
                 local name = player:get_player_name()
                 if not vanish.vanished[name] then
                     playertag.remove_entity_tag(player)
+                    wield3d.remove_wielditem(player)
+
                     playertag.set(player, playertag.TYPE_ENTITY)
-                    ctf_modebase.player.update(player)
                     wield3d.add_wielditem(player)
                     server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
+                    ctf_modebase.player.update(player)
                 end
             end
         end)
