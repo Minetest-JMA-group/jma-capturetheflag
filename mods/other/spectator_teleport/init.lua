@@ -85,6 +85,11 @@ minetest.register_on_shutdown(function()
 	teleport_data = {}
 end)
 
+--Item drop logic
+local function on_teleport_item_drop(itemstack, dropper)
+	if dropper and dropper:is_player() then end
+	return itemstack
+
 --  Item use logic
 local function on_teleport_item_use(itemstack, user)
 	if not user or not user:is_player() then return itemstack end
@@ -181,6 +186,7 @@ core.register_craftitem(TELEPORT_ITEM, {
 	inventory_image = "spectator_teleport_item.png",
 	stack_max      = 1,
 	on_use         = on_teleport_item_use,
+	on_drop		   = on_teleport_item_drop,
 })
 
 core.register_chatcommand("spectate", {
