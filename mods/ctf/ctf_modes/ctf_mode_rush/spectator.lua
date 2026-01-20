@@ -137,6 +137,7 @@ function spectator.disable_vanish(player)
     local name = player:get_player_name()
     if state.vanish_active[name] then
         vanish.off(player)
+        player.set_detach()
     end
     state.vanish_active[name] = nil
 end
