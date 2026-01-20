@@ -89,6 +89,7 @@ end)
 local function on_teleport_item_drop(itemstack, dropper)
 	if dropper and dropper:is_player() then end
 	return itemstack
+end
 
 --  Item use logic
 local function on_teleport_item_use(itemstack, user)
