@@ -80,19 +80,21 @@ local function get_alive_teams()
     local alive = {}
     for team, players in pairs(state.alive_players) do
         if state.team_defeated[team] then goto continue end
-        local real_alive = 0
-        for pname, _ in pairs(players) do
-            if not is_elysium_player(pname) then
-                real_alive = real_alive + 1
+        local real_alive = {}
+        for pname in pairs(players) do
+            local p = core.get_player_by_name(pname)
+            if p and p:get_hp() > 0 and not is_elysium_player(pname) then
+                real_alive[pname] = true
             end
         end
-        if real_alive > 0 then
+        state.alive_players[team] = real_alive  -- Cleanup: Entferne Elysium-Spieler
+        if next(real_alive) then
             table.insert(alive, team)
         else
-            -- Automatisch defeat, wenn nur Elysium-Spieler übrig
             announce_team_defeat(team)
             spectator.reassign_team_spectators(team)
             timer.update_round_huds()
+            check_for_winner(team)  -- Explizit triggern für sofortiges Ende
         end
         ::continue::
     end
@@ -439,6 +441,13 @@ ctf_modebase.register_mode("rush", {
 			update_flag_huds()
 			timer.update_round_huds()
 		end)
+		for team in pairs(state.alive_players) do
+			for pname in pairs(state.alive_players[team]) do
+				if is_elysium_player(pname) then
+					state.alive_players[team][pname] = nil
+				end
+			end
+		end
 	end,
 	on_match_end = function()
 		restore_all_players()
@@ -446,20 +455,24 @@ ctf_modebase.register_mode("rush", {
 		features.on_match_end()
 	end,
 	team_allocator = function(player)
-		local name = PlayerName(player)
-		if is_elysium_player(name) then
+		local name
+		if type(player) == "string" then
+			name = player
+		elseif player and player.is_player and player:is_player() then
+			name = player:get_player_name()
+		end
+		if not name or is_elysium_player(name) then
 			return
 		end
-		if name and state.eliminated[name] then
+		if state.eliminated[name] then
 			return
 		end
 		return features.team_allocator(player)
 	end,
 	on_allocplayer = function(player, new_team, old_team)
-		local pname = player:get_player_name()
-
-		if is_elysium_player(pname) then
-			return  -- Do not track elysium players
+		local pname = player and player:get_player_name()
+		if not pname or is_elysium_player(pname) then
+			return
 		end
 		state.participants[pname] = true
 		if old_team and state.alive_players[old_team] then
@@ -506,21 +519,19 @@ ctf_modebase.register_mode("rush", {
 		features.on_allocplayer(player, new_team)
 	end,
 	on_leaveplayer = function(player)
-		local pname = player:get_player_name()
-
+		local pname = player and player:get_player_name()
+		if not pname then return end
+		local team = state.initial_team[pname]
 		if is_elysium_player(pname) then
-			-- Elysium-Spieler als "verlassen" behandeln
-			local team = state.initial_team[pname]
 			if team and state.alive_players[team] then
 				state.alive_players[team][pname] = nil
 				if not next(state.alive_players[team]) then
-					check_for_winner(team)  -- Sofort defeat check
+					check_for_winner(team)
 				end
 			end
 			state.participants[pname] = nil
-			return  -- Kein weiteres Tracking
+			return
 		end
-		local team = state.initial_team[pname]
 
 		if team and state.alive_players[team] then
 			state.alive_players[team][pname] = nil
@@ -661,27 +672,38 @@ core.register_globalstep(function(dtime)
 	spectator.on_globalstep(dtime)
 end)
 
+core.register_globalstep(function(dtime)
+    if ctf_modebase.current_mode ~= "rush" then return end
+    timer.on_globalstep(dtime)
+    spectator.on_globalstep(dtime)
+
+    -- Neu: Periodischer Elysium-Check (alle 5s)
+    state.globalstep_timer = (state.globalstep_timer or 0) + dtime
+    if state.globalstep_timer >= 5 then
+        state.globalstep_timer = 0
+        get_alive_teams()  -- Trigger Alive-Check
+        local alive_teams = get_alive_teams()
+        if #alive_teams <= 1 then
+            declare_winner(alive_teams[1])
+        end
+    end
+end)
+
 core.register_on_joinplayer(function(player)
-	local name = player:get_player_name()
-	if is_elysium_player(name) then
-		-- Elysium-Spieler: Kein Spectator-Force, restore normal
-		spectator.restore_privs(name)
-		return
-	end
-
-	local spec_state = spectator.get_spectator_state(name)
-	if not spec_state or not spec_state.match then
-		return
-	end
-
-	if
-		not is_rush_active()
-		or not state.match_id
-		or spec_state.match ~= state.match_id
-	then
-		spectator.restore_privs(name)
-		return
-	end
+    local name = player:get_player_name()
+    if is_elysium_player(name) then
+        spectator.restore_privs(name)
+        spectator.disable_vanish(player)
+        state.eliminated[name] = nil
+        state.participants[name] = nil
+        return
+    end
+    local spec_state = spectator.get_spectator_state(name)
+    if not spec_state or not spec_state.match then return end
+    if not is_rush_active() or not state.match_id or spec_state.match ~= state.match_id then
+        spectator.restore_privs(name)
+        return
+    end
 
 	if type(spec_state.team) == "string" and spec_state.team ~= "" then
 		state.initial_team[name] = spec_state.team
