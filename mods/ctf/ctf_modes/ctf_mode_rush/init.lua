@@ -59,6 +59,12 @@ spectator.setup({
 	recent_rankings = recent_rankings,
 })
 
+local function update_flag_huds()
+	for _, player in ipairs(core.get_connected_players()) do
+		ctf_modebase.flag_huds.update_player(player)
+	end
+end
+
 local function announce_team_defeat(team)
 	if state.team_defeated[team] then
 		return
@@ -93,7 +99,11 @@ local function store_initial_team(pname, team)
 	state.initial_team[pname] = team
 end
 
-local function get_alive_teams()
+local function is_elysium_player(name)
+	return ctf_jma_elysium and ctf_jma_elysium.get_player(name) ~= nil
+end
+
+function get_alive_teams()
     local alive = {}
     for team, players in pairs(state.alive_players) do
         if state.team_defeated[team] then goto continue end
@@ -118,21 +128,27 @@ local function get_alive_teams()
     return alive
 end
 
-local function update_flag_huds()
-	for _, player in ipairs(core.get_connected_players()) do
-		ctf_modebase.flag_huds.update_player(player)
+function check_for_winner(team)
+	local alive = state.alive_players[team]
+	if not alive or next(alive) then
+		return
 	end
-end
 
-local function is_elysium_player(name)
-	return ctf_jma_elysium and ctf_jma_elysium.get_player(name) ~= nil
+	announce_team_defeat(team)
+	spectator.reassign_team_spectators(team)
+	timer.update_round_huds()
+
+	local alive_teams = get_alive_teams()
+	if #alive_teams <= 1 then
+		declare_winner(alive_teams[1])
+	end
 end
 
 local function award_score(name, score)
 	recent_rankings.add(name, { score = score }, true)
 end
 
-local function declare_winner(team)
+function declare_winner(team)
 	if state.winner_announced then
 		return
 	end
@@ -236,22 +252,6 @@ ctf_api.register_on_match_start(function()
 
 	timer.start_round(timer.ROUND_DURATION)
 end)
-
-local function check_for_winner(team)
-	local alive = state.alive_players[team]
-	if not alive or next(alive) then
-		return
-	end
-
-	announce_team_defeat(team)
-	spectator.reassign_team_spectators(team)
-	timer.update_round_huds()
-
-	local alive_teams = get_alive_teams()
-	if #alive_teams <= 1 then
-		declare_winner(alive_teams[1])
-	end
-end
 
 local function remove_flags()
 	if not ctf_map.current_map then
