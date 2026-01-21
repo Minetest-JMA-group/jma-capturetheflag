@@ -59,6 +59,23 @@ spectator.setup({
 	recent_rankings = recent_rankings,
 })
 
+local function announce_team_defeat(team)
+	if state.team_defeated[team] then
+		return
+	end
+
+	state.team_defeated[team] = true
+	ctf_modebase.flag_captured[team] = true
+	ctf_modebase.flag_taken[team] = nil
+
+	local color = ctf_teams.team[team] and ctf_teams.team[team].color or "white"
+	local message =
+		core.colorize(color, HumanReadable(team) .. " base has been defeated!")
+	core.chat_send_all(message)
+
+	update_flag_huds()
+end
+
 local function new_match_id()
 	return tostring(core.get_us_time())
 end
@@ -113,23 +130,6 @@ end
 
 local function award_score(name, score)
 	recent_rankings.add(name, { score = score }, true)
-end
-
-local function announce_team_defeat(team)
-	if state.team_defeated[team] then
-		return
-	end
-
-	state.team_defeated[team] = true
-	ctf_modebase.flag_captured[team] = true
-	ctf_modebase.flag_taken[team] = nil
-
-	local color = ctf_teams.team[team] and ctf_teams.team[team].color or "white"
-	local message =
-		core.colorize(color, HumanReadable(team) .. " base has been defeated!")
-	core.chat_send_all(message)
-
-	update_flag_huds()
 end
 
 local function declare_winner(team)
