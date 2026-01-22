@@ -297,7 +297,11 @@ local function restore_all_players()
 		if is_elysium_player(name) then
 			state.participants[name] = nil
 			state.eliminated[name] = nil
-			state.alive_players[ctf_teams.get(name)] = nil  -- Cleanup
+			if ctf_teams.get(name) then
+				state.alive_players[ctf_teams.get(name)] = nil  -- Cleanup
+			else
+				return
+			end
 		end
 	end
 	for _, player in ipairs(core.get_connected_players()) do
