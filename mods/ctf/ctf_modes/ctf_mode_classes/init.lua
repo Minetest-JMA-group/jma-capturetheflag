@@ -143,7 +143,6 @@ ctf_modebase.register_mode("classes", {
 			max_stacks = 1,
 			rarity = 0.2,
 		},
-		["boats:boat"] = { min_count = 1, max_count = 1, max_stacks = 1, rarity = 0.07 },
 	},
 	crafts = {
 		"ctf_ranged:ammo",

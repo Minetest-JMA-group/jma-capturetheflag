@@ -399,7 +399,6 @@ ctf_modebase.register_mode("rush", {
 			rarity = 0.12,
 			max_stacks = 1,
 		},
-		["boats:boat"] = { min_count = 1, max_count = 1, rarity = 0.05, max_stacks = 1 },
 	},
 	team_chest_items = {
 		"default:cobble 80",
