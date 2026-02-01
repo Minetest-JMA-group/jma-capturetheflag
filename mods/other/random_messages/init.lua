@@ -113,6 +113,7 @@ local messages = {
 	"Using a unofficial client builds or modified clients which gives unfair game advantage is strictly forbidden and will result in a ban. ",
 	"Swearing, trolling, and being rude will not be tolerated, and strict action will be taken.",
 	"Trapping teammates on purpose is strictly against the rules, doing so will result in a ban.",
+	"Use /block <username> to stop seeing messages send by a user in the public or private chats.",
 	S("To report misbehaving players to moderators, please use /report <name> <action> or send the report on Discord: @1", DISCORD_SERVER),
 }
 
