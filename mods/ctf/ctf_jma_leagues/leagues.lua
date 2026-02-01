@@ -42,11 +42,11 @@ return {
 
 		}
 	},
-	["obsidian"] = {
-		display_name = "Obsidian League",
-		icon_texture = "ctf_jma_leagues_obsidian.png",
+	["steel"] = {
+		display_name = "Steel League",
+		icon_texture = "ctf_jma_leagues_steel.png",
 		order = 4,
-		color = "#252525",
+		color = "#d1d1d1",
 		requirements = {
 			{task_type = "kills", params = {goal = 400, mode_name = "total"}, description = "Reach 400 kills"},
 			{task_type = "kill_assists", params = {goal = 180, mode_name = "total"}, description = "Reach 180 kill assists"},
@@ -58,11 +58,11 @@ return {
 			{task_type = "top_pos", params = {goal = 1000, range = 1200, mode_name = "classes"}, description = "Reach Top 1000 (in Classes)"},
 		}
 	},
-	["steel"] = {
-		display_name = "Steel League",
-		icon_texture = "ctf_jma_leagues_steel.png",
+		["obsidian"] = {
+		display_name = "Obsidian League",
+		icon_texture = "ctf_jma_leagues_obsidian.png",
 		order = 5,
-		color = "#d1d1d1",
+		color = "#252525",
 		requirements = {
 			{task_type = "kills", params = {goal = 700, mode_name = "total"}, description = "Reach 700 kills"},
 			{task_type = "kill_assists", params = {goal = 300, mode_name = "total"}, description = "Reach 300 kill assists"},
