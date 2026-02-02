@@ -8,12 +8,12 @@ if type(record_shot) ~= "function" then
     end
 end
 
--- Safety check – if we still didn't get a function, warn the developer.
+-- Safety check if we still didn't get a function, warn the developer.
 if type(record_shot) ~= "function" then
     minetest.log("warning",
         "[ctf_ranged] Could not obtain 'record_shot' from hit_statistics. " ..
         "Statistics will not be recorded.")
-    -- To avoid a hard crash we replace it with a dummy no‑op function.
+    -- To avoid a hard crash we replace it with a dummy no op function.
     record_shot = function(_, _, _) end
 end
 
@@ -423,6 +423,9 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
 ------------------
 -- Scope-check --
 ------------------
+
+-- Hide scope if currently wielded item is not the same item
+-- player wielded when scoping
 
 local time = 0
 core.register_globalstep(function(dtime)
