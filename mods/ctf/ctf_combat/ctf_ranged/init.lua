@@ -1,3 +1,22 @@
+local record_shot = rawget(_G, "record_shot")   -- try to read the global directly
+
+if type(record_shot) ~= "function" then
+    local stats_path = minetest.get_modpath("hit_statistics")
+    if stats_path then
+        dofile(stats_path .. "/init.lua")
+        record_shot = rawget(_G, "record_shot")
+    end
+end
+
+-- Safety check – if we still didn't get a function, warn the developer.
+if type(record_shot) ~= "function" then
+    minetest.log("warning",
+        "[ctf_ranged] Could not obtain 'record_shot' from hit_statistics. " ..
+        "Statistics will not be recorded.")
+    -- To avoid a hard crash we replace it with a dummy no‑op function.
+    record_shot = function(_, _, _) end
+end
+
 local hud = mhud.init()
 local shoot_cooldown = ctf_core.init_cooldowns()
 
@@ -35,6 +54,7 @@ local function process_ray(ray, user, look_dir, def)
 				or (nodedef.groups.oddly_breakable_by_hand or 0) >= 3
 			then
 				if not core.is_protected(hitpoint.under, user:get_player_name()) then
+					record_shot(user:get_player_name(), false, user:get_wielded_item():get_name())
 					if nodedef.on_ranged_shoot then
 						nodedef.on_ranged_shoot(hitpoint.under, node, user, def.type)
 					else
@@ -60,6 +80,8 @@ local function process_ray(ray, user, look_dir, def)
 						"ctf_ranged_ricochet",
 						{ pos = hitpoint.intersection_point }
 					)
+
+					record_shot(user:get_player_name(), false, user:get_wielded_item():get_name())
 				elseif nodedef.groups.liquid then
 					core.add_particlespawner({
 						amount = 10,
@@ -103,6 +125,8 @@ local function process_ray(ray, user, look_dir, def)
 				full_punch_interval = 1,
 				damage_groups = { ranged = 1, [def.type] = 1, fleshy = def.damage },
 			}, look_dir)
+			record_shot(user:get_player_name(), true, user:get_wielded_item():get_name())
+
 
 			core.sound_play("ctf_ranged_hit", {
 				to_player = user:get_player_name(),
@@ -399,9 +423,6 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
 ------------------
 -- Scope-check --
 ------------------
-
--- Hide scope if currently wielded item is not the same item
--- player wielded when scoping
 
 local time = 0
 core.register_globalstep(function(dtime)
