@@ -4,13 +4,16 @@
 --License: LGPL-3-or-later
 
 --default values (overriding this when the settings exist)
-local UPDATE_INTERVAL = tonumber(core.settings:get("server_status.update_interval")) or 20
 local FILEPATH = core.settings:get("server_status.filepath")
 	or (core.get_worldpath() .. "/server_status.json")
 
-local timer = 0
+local ie_env = algorithms.request_insecure_environment()
+if not ie_env then
+	core.log("error", "[server_status]: Failed to obtain insecure environment.")
+	return
+end
 
-local function write_server_status()
+local function produce_server_status()
 	local uptime_seconds = core.get_server_uptime()
 
 	local max_lag = core.get_server_max_lag()
@@ -54,21 +57,63 @@ local function write_server_status()
 		table.insert(status.players, player:get_player_name())
 	end
 
-	-- write
-	local file = io.open(FILEPATH, "w")
-	if file then
-		file:write(core.serialize(status))
-		file:close()
-		core.log("action", "server_status written")
-	else
-		core.log("error", "Can't open the server_status")
+	local data, err = core.write_json(status)
+	if err then
+		core.log("error", "[server_status]: Failed to write status to JSON ("..err..")")
 	end
+	return data
 end
 
-core.register_globalstep(function(dtime)
-	timer = timer + dtime
-	if timer >= UPDATE_INTERVAL then
-		write_server_status()
-		timer = 0
+ie_env.unlink(FILEPATH)
+do
+	local errstr = ie_env.mkfifo(FILEPATH, 0644)
+	if errstr then
+		core.log("error", "[server_status]: Failed to create a pipe ("..errstr..")")
+		return
 	end
+	local errstr = ie_env.signal(algorithms.signal.SIGPIPE, algorithms.signal.SIG_IGN)
+	if errstr then
+		core.log("error", "[server_status]: Failed to ignore SIGPIPE ("..errstr..")")
+		return
+	end
+end
+local flags = bit.bor(algorithms.fcntl.O_WRONLY, algorighms.fcntl.O_NONBLOCK)
+local fatal_error = false
+
+core.register_globalstep(function(dtime)
+	if fatal_error then
+		-- Don't repeat the same mistake over and over again to spam the log
+		return
+	end
+	local fd, errstr, errnum = ie_env.open(FILEPATH, flags)
+	if errnum == algorithms.errno.ENXIO then
+		return
+	end
+	if not fd then
+		core.log("error", "[server_status]: Failed to open a pipe ("..errstr..")")
+		fatal_error = true
+		return
+	end
+
+	local data = produce_server_status()
+	if not data then
+		fatal_error = true
+		ie_env.close(fd)
+		return
+	end
+	local bytes_written = 0
+	while bytes_written ~= #data do
+		local b, errstr, errnum = ie_env.write(fd, data:sub(bytes_written+1))
+		if errnum == algorithms.errno.EINTR then
+			goto continue
+		end
+		if errstr then
+			core.log("error", "[server_status]: Failed to write to pipe ("..errstr..")")
+			fatal_error = true
+			break
+		end
+		bytes_written = bytes_written + b
+		::continue::
+	end
+	ie_env.close(fd)
 end)
