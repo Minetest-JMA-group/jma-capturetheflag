@@ -66,7 +66,7 @@ end
 
 ie_env.unlink(FILEPATH)
 do
-	local errstr = ie_env.mkfifo(FILEPATH, 0644)
+	local errstr = ie_env.mkfifo(FILEPATH, tonumber(644, 8))
 	if errstr then
 		core.log("error", "[server_status]: Failed to create a pipe ("..errstr..")")
 		return
