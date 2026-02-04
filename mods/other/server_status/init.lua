@@ -77,7 +77,7 @@ do
 		return
 	end
 end
-local flags = bit.bor(algorithms.fcntl.O_WRONLY, algorighms.fcntl.O_NONBLOCK)
+local flags = bit.bor(algorithms.fcntl.O_WRONLY, algorithms.fcntl.O_NONBLOCK)
 local fatal_error = false
 
 core.register_globalstep(function(dtime)
