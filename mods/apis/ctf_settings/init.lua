@@ -13,7 +13,7 @@ end)
 --[[
 Settings should only be registered at loadtime
 {
-	type = "bool" || "list",
+	type = "bool" || "list" || "field", -- 'field' is a single-line input with an Apply button
 	label = "Setting name/label", -- not used for list
 	description = "Text in tooltip",
 	list = {i1, i2, i3, i4}, -- used for list, remember to escape contents
@@ -137,6 +137,27 @@ core.register_on_mods_loaded(function()
 						context.setting[setting],
 					}
 					lastypos = lastypos + 0.5
+				elseif settingdef.type == "field" then
+					-- Singleline input field
+					lastypos = lastypos + 0.6
+					local field_w = FORMSIZE.x - SCROLLBAR_W - 2.2 -- leave small room for Apply button
+					setting_list[k] = {
+						"field[0.28,%f;%f,%f;%s;%s;%s]button[%f,%f;%f,0.5;apply_%s;Apply]tooltip[0,%f;%f,0.6;%s]",
+						lastypos - 0.32,
+						field_w,
+						2, -- field height
+						setting,
+						settingdef.label or "",
+						context.setting[setting],
+						field_w,
+						lastypos + 0.045,
+						1.5, -- button width
+						setting,
+						lastypos,
+						(FORMSIZE.x/1.7) - 0.3,
+						settingdef.description or HumanReadable(setting),
+					}
+					lastypos = lastypos + 0.5
 				end
 			end
 
@@ -163,8 +184,28 @@ core.register_on_mods_loaded(function()
 			local refresh = false
 
 			for field, value in pairs(fields) do
-				local setting = ctf_settings.settings[field]
+				-- Universal handler for all Apply/OK buttons
+				-- Button name: apply_<setting>
+				if field:sub(1,6) == "apply_" then
+					local sname = field:sub(7)
+					local setting = ctf_settings.settings[sname]
+					if setting and setting.type == "field" then
+						local newvalue = fields[sname] or context.setting[sname] or ""
+						if context.setting[sname] ~= newvalue then
+							if setting.on_change then
+								-- on_change() must contain logic to validate the new value and return true if it's valid
+								if setting.on_change(player, newvalue) == true then
+									ctf_settings.set(player, sname, newvalue)
+									context.setting[sname] = newvalue
+								end
+							end
 
+							refresh = true
+						end
+					end
+				end
+
+				local setting = ctf_settings.settings[field]
 				if setting then
 					if setting.type == "bool" then
 						local newvalue = value == "true" and "true" or "false"
