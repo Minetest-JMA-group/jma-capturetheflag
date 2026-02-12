@@ -129,6 +129,24 @@ core.register_chatcommand("donate", {
 			return false, "You should provide the player name!"
 		end
 
+		local cur_score = math.min(
+			current_mode.recent_rankings.get(name).score or 0,
+			(current_mode.rankings:get(name) or {}).score or 0
+		)
+
+		if score == "-1" then
+			score = "50%"
+		end
+		
+		if type(score) == "string" then -- string.match will crash if it's not a string so better safe than sorry
+			if string.match(score, "%%$") then -- The player is requesting a percentage of their score
+				local pc = ctf_core.to_number(score:sub(1, -2))
+				if pc then
+					score = (cur_score / 100) * pc
+				end
+			end
+		end
+
 		score = ctf_core.to_number(score)
 		if not score then
 			return false, "You should provide score amount!"
@@ -158,10 +176,6 @@ core.register_chatcommand("donate", {
 			return false, string.format("Player %s is not on your team!", pname)
 		end
 
-		local cur_score = math.min(
-			current_mode.recent_rankings.get(name).score or 0,
-			(current_mode.rankings:get(name) or {}).score or 0
-		)
 		if score > cur_score / 2 then
 			return false, "You can donate only half of your match score!"
 		end
