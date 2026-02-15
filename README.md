@@ -7,7 +7,7 @@
 Capture the flag uses several submodules. Make sure to grab them all by cloning like this:
 
 ```sh
-git clone --recursive https://github.com/Minetest-JMA-group/jma-capturetheflag.git
+git clone --recursive https://codeberg.org/Minetest-JMA-group/jma-capturetheflag.git
 ```
 (Using ssh to clone is recommended for developers/contributors)
 
