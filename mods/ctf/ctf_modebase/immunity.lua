@@ -1,3 +1,5 @@
+local hud = mhud.init()
+
 local RESPAWN_IMMUNITY_SECONDS = 4
 -- The value is a table if it's respawn immunity and false if it's a custom immunity
 local immune_players = {}
@@ -70,6 +72,22 @@ function ctf_modebase.give_immunity(
 
 	immune_players[pname].finish_callback = finish_callback
 
+	--add immunity overlay which is scaled up over the whole screen
+	hud:add(player, "immunity_overlay", {
+		type = "image",
+		position = { x = 0.5, y = 0.5 },
+		image_scale = -300,
+		texture = "[combine:1x1^[invert:rgba^[opacity:1^[colorize:#85beff:101",
+	})
+	hud:add(player, "immunity_overlay_text", {
+		type = "text",
+		position = { x = 0.5, y = 0.1 },
+		text = "You are immune!",
+		style = 1,
+		text_scale = 2,
+		color = 0x85beff,
+	})
+
 	if old == nil then
 		if not apply_callback then
 			player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
@@ -100,6 +118,9 @@ function ctf_modebase.remove_immunity(player)
 	local finish_callback = old.finish_callback
 
 	immune_players[pname] = nil
+
+	hud:remove(player, "immunity_overlay")
+	hud:remove(player, "immunity_overlay_text")
 
 	if finish_callback then
 		finish_callback(player)
