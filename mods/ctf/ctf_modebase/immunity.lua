@@ -1,3 +1,5 @@
+local hud = mhud.init()
+
 local RESPAWN_IMMUNITY_SECONDS = 4
 -- The value is a table if it's respawn immunity and false if it's a custom immunity
 local immune_players = {}
@@ -70,6 +72,15 @@ function ctf_modebase.give_immunity(
 
 	immune_players[pname].finish_callback = finish_callback
 
+	hud:add(player, "immunity_overlay_text", {
+		type = "text",
+		position = { x = 0.5, y = 0.1 },
+		text = "You are immune!",
+		style = 1,
+		text_scale = 2,
+		color = 0x85beff,
+	})
+
 	if old == nil then
 		if not apply_callback then
 			player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
@@ -100,6 +111,8 @@ function ctf_modebase.remove_immunity(player)
 	local finish_callback = old.finish_callback
 
 	immune_players[pname] = nil
+
+	hud:remove(player, "immunity_overlay_text")
 
 	if finish_callback then
 		finish_callback(player)
