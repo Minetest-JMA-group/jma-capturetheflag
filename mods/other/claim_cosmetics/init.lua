@@ -13,7 +13,8 @@ end
 
 local mod_storage = ipdb.get_mod_storage(merger)
 if not mod_storage then
-	error("[claim_cosmetics] Failed to initialize ipdb mod storage")
+	core.log("error", "[claim_cosmetics] Failed to initialize ipdb mod storage. /claim disabled")
+	return
 end
 
 local function is_ipv4(str)
