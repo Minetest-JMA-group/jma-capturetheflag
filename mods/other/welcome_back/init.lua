@@ -1,8 +1,8 @@
 -- SPDX-License-Identifier: LGPL-2.1-only
 -- Copyright (c) 2023 Marko Petrović
 
-local msg_price = 8
-local msg_num_limit = 5
+local msg_price = 10
+local msg_num_limit = 1
 local msg_interval_limit = 3600
 
 local storage = core.get_mod_storage()
