@@ -34,6 +34,8 @@ function ctf_modebase.give_immunity(
 		if old.particles then
 			core.delete_particlespawner(old.particles, pname)
 		end
+
+		hud:remove(player, "immunity_overlay_text")
 	end
 
 	if respawn_timer then
@@ -144,6 +146,8 @@ function ctf_modebase.remove_respawn_immunity(player)
 	old.timer:cancel()
 
 	core.delete_particlespawner(old.particles, pname)
+
+	hud:remove(player, "immunity_overlay_text")
 
 	if finish_callback then
 		finish_callback(player)
