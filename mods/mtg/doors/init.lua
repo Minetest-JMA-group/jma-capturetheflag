@@ -132,13 +132,6 @@ local transform = {
 	},
 }
 
-ctf_settings.register("doors:door_autoclose", {
-	type = "bool",
-	label = "Door Autoclose",
-	description = "Closes door automatically.",
-	default = "true",
-})
-
 local usage_cooldown = 0.15
 function doors.door_toggle(pos, node, clicker)
 	local meta = core.get_meta(pos)
@@ -196,7 +189,7 @@ function doors.door_toggle(pos, node, clicker)
 	else
 		core.sound_play(def.door.sounds[2],
 			{pos = pos, gain = def.door.gains[2], max_hear_distance = 10}, true)
-		if clicker and ctf_settings.get(clicker, "doors:door_autoclose") == "true" then
+		if clicker then
 
 			core.after(1, function() --autoclose delay
 				local door_item_name = core.get_node(pos).name
