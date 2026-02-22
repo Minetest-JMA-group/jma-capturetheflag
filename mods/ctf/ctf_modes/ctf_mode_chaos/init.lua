@@ -34,9 +34,9 @@ ctf_modebase.register_mode("chaos", {
 	team_chest_items = {
 		"default:cobble 80",
 		"default:wood 80",
-		"ctf_map:damage_cobble 20",
-		"ctf_map:damage_glass 20",
-		"ctf_map:reinforced_cobble 20",
+		"ctf_map:damage_cobble 32",
+		"ctf_map:damage_glass 32",
+		"ctf_map:reinforced_cobble 32",
 		"default:torch 30",
 		"ctf_teams:door_steel 2",
 		"default:obsidian 35",
