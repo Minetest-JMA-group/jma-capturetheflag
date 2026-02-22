@@ -197,6 +197,7 @@ ctf_modebase.register_mode("nade_fight", {
 			"default:pick_steel",
 			"default:shovel_steel",
 			"default:axe_steel",
+			"default:torch 15",
 		}
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
