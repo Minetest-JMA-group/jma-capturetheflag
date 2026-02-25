@@ -45,7 +45,7 @@ local function process_ray(ray, user, look_dir, def)
 					else
 						core.dig_node(hitpoint.under)
 					end
-				elseif hitstats_exists
+				elseif hitstats_exists then
 					hit_statistics.maybe_record_shot(user, "none", user:get_wielded_item():get_name())
 				end
 			else
@@ -130,10 +130,10 @@ local function process_ray(ray, user, look_dir, def)
 				pitch = 1.2,
 				gain = 0.9,
 			}, true)
-		elseif hitstats_exists
+		elseif hitstats_exists then
 			hit_statistics.maybe_record_shot(user, "none", user:get_wielded_item():get_name())
 		end
-	elseif hitstats_exists
+	elseif hitstats_exists then
 		hit_statistics.maybe_record_shot(user, "none", user:get_wielded_item():get_name())
 	end
 end
