@@ -193,17 +193,9 @@ core.register_chatcommand("donate", {
 		current_mode.recent_rankings.add(pname, { score = score }, true)
 		current_mode.recent_rankings.add(name, { score = -score }, true)
 
-		if xban then
-			local entry = xban.find_entry(name)
-			if entry and entry.muted then
-				local a = ""
-				if not entry.mute_expires then
-					a = "perm"
-				end
-				core.chat_send_player(name, "You're "..a.."muted, you can't send donate messages. Check /mutereason for details. Bypassing the mute through any way will result in a ban.")
-				
-				dmessage = ""
-			end
+		if core.global_exists("simplemod") and simplemod.is_muted_name(name) then
+			core.chat_send_player(name, "You're muted, you can't send donate messages. Check /sblog for details. Bypassing the mute through any way will result in a ban.")
+			dmessage = ""
 		end
 
 		donate_timer[name] = os.time()
