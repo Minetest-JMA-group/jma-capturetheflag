@@ -1,3 +1,5 @@
+local hitstats_exists = core.global_exists("hit_statistics")
+
 local hud = mhud.init()
 local shoot_cooldown = ctf_core.init_cooldowns()
 
@@ -35,11 +37,16 @@ local function process_ray(ray, user, look_dir, def)
 				or (nodedef.groups.oddly_breakable_by_hand or 0) >= 3
 			then
 				if not core.is_protected(hitpoint.under, user:get_player_name()) then
+					if hitstats_exists then
+						hit_statistics.maybe_record_shot(user, "block_destroyed", user:get_wielded_item():get_name())
+					end
 					if nodedef.on_ranged_shoot then
 						nodedef.on_ranged_shoot(hitpoint.under, node, user, def.type)
 					else
 						core.dig_node(hitpoint.under)
 					end
+				elseif hitstats_exists
+					hit_statistics.maybe_record_shot(user, "none", user:get_wielded_item():get_name())
 				end
 			else
 				if nodedef.walkable and nodedef.pointable then
@@ -60,6 +67,10 @@ local function process_ray(ray, user, look_dir, def)
 						"ctf_ranged_ricochet",
 						{ pos = hitpoint.intersection_point }
 					)
+
+					if hitstats_exists then
+						hit_statistics.maybe_record_shot(user, "bullethole", user:get_wielded_item():get_name())
+					end
 				elseif nodedef.groups.liquid then
 					core.add_particlespawner({
 						amount = 10,
@@ -99,6 +110,16 @@ local function process_ray(ray, user, look_dir, def)
 				end
 			end
 		elseif hitpoint.type == "object" then
+			local victim_name = hitpoint.ref:get_player_name()
+			local is_friend = ctf_teams.get(victim_name) == ctf_teams.get(user:get_player_name())
+
+			if hitstats_exists then
+				if is_friend then
+					hit_statistics.maybe_record_shot(user, "teammate", user:get_wielded_item():get_name())
+				else
+					hit_statistics.maybe_record_shot(user, "enemy", user:get_wielded_item():get_name())
+				end
+			end
 			hitpoint.ref:punch(user, 1, {
 				full_punch_interval = 1,
 				damage_groups = { ranged = 1, [def.type] = 1, fleshy = def.damage },
@@ -109,7 +130,11 @@ local function process_ray(ray, user, look_dir, def)
 				pitch = 1.2,
 				gain = 0.9,
 			}, true)
+		elseif hitstats_exists
+			hit_statistics.maybe_record_shot(user, "none", user:get_wielded_item():get_name())
 		end
+	elseif hitstats_exists
+		hit_statistics.maybe_record_shot(user, "none", user:get_wielded_item():get_name())
 	end
 end
 
