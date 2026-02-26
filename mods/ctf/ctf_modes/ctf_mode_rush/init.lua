@@ -22,8 +22,6 @@ local state = {
 	vanish_active = {},
 	winner_announced = false,
 	match_id = nil,
-	spectator_anchor = {},
-	hud_handles = {},
 	round_time_left = 0,
 	round_timer_active = false,
 }
@@ -39,10 +37,8 @@ local function reset_state()
 	state.vanish_active = {}
 	state.winner_announced = false
 	state.match_id = nil
-	state.spectator_anchor = {}
 
 	timer.reset()
-	spectator.reset()
 end
 
 spectator.setup({
@@ -96,25 +92,6 @@ local function is_elysium_player(name)
 	return ctf_jma_elysium and ctf_jma_elysium.get_player(name) ~= nil
 end
 
-function get_alive_teams()
-    local alive = {}
-    for team, players in pairs(state.alive_players) do
-        if state.team_defeated[team] then goto continue end
-        local real_alive = {}
-        for pname in pairs(players) do
-            local p = core.get_player_by_name(pname)
-            if p and p:get_hp() > 0 and not is_elysium_player(pname) then
-                real_alive[pname] = true
-            end
-        end
-        if next(real_alive) then
-            table.insert(alive, team)
-        end
-        ::continue::
-    end
-    return alive
-end
-
 local function get_alive_counts()
     local counts = {}
     for team, players in pairs(state.alive_players) do
@@ -138,48 +115,11 @@ timer.setup({
 	get_alive_counts = get_alive_counts,
 })
 
-function check_for_winner(team)
-	-- Check if team has any alive players (HP > 0)
-	local has_alive = false
-	local players = state.alive_players[team]
-	if players then
-		for pname in pairs(players) do
-			local p = core.get_player_by_name(pname)
-			if p and p:get_hp() > 0 and not is_elysium_player(pname) then
-				has_alive = true
-				break
-			end
-		end
-	end
-
-	if has_alive then
-		return
-	end
-
-	announce_team_defeat(team)
-	spectator.reassign_team_spectators(team)
-	timer.update_round_huds()
-
-	-- Check if only one or zero teams remain undefeated
-	local undefeated_count = 0
-	local last_undefeated = nil
-	for tname, defeated in pairs(state.team_defeated) do
-		if not defeated then
-			undefeated_count = undefeated_count + 1
-			last_undefeated = tname
-		end
-	end
-
-	if undefeated_count <= 1 then
-		declare_winner(last_undefeated)
-	end
-end
-
 local function award_score(name, score)
 	recent_rankings.add(name, { score = score }, true)
 end
 
-function declare_winner(team)
+local function declare_winner(team)
 	if state.winner_announced then
 		return
 	end
@@ -229,7 +169,7 @@ function declare_winner(team)
 		formdef.title = winner_text
 	end
 
-	if match_rankings then
+	if match_rankings and rank_values and formdef then
 		for _, player in ipairs(connected) do
 			ctf_modebase.summary.show_gui(
 				player:get_player_name(),
@@ -242,6 +182,43 @@ function declare_winner(team)
 	end
 
 	ctf_modebase.start_new_match(5)
+end
+
+local function check_for_winner(team)
+	-- Check if team has any alive players (HP > 0)
+	local has_alive = false
+	local players = state.alive_players[team]
+	if players then
+		for pname in pairs(players) do
+			local p = core.get_player_by_name(pname)
+			if p and p:get_hp() > 0 and not is_elysium_player(pname) then
+				has_alive = true
+				break
+			end
+		end
+	end
+
+	if has_alive then
+		return
+	end
+
+	announce_team_defeat(team)
+	spectator.reassign_team_spectators(team)
+	timer.update_round_huds()
+
+	-- Check if only one or zero teams remain undefeated
+	local undefeated_count = 0
+	local last_undefeated = nil
+	for tname, defeated in pairs(state.team_defeated) do
+		if not defeated then
+			undefeated_count = undefeated_count + 1
+			last_undefeated = tname
+		end
+	end
+
+	if undefeated_count <= 1 then
+		declare_winner(last_undefeated)
+	end
 end
 
 local function end_round_due_to_time()
@@ -343,15 +320,13 @@ local function restore_all_players()
 			ctf_teams.non_team_players[name] = nil
 		end
 		state.eliminated[name] = nil
-		state.spectator_anchor[name] = nil
 		state.revives_left[name] = nil
 		timer.clear_round_hud(name)
 		spectator.set_spectator_state(name, nil)
 	end
 	state.match_id = nil
-	state.spectator_anchor = {}
+
 	timer.reset()
-	spectator.reset()
 end
 
 local function is_rush_active()
@@ -522,7 +497,7 @@ ctf_modebase.register_mode("rush", {
 
 		if old_team and state.alive_players[old_team] then
 			state.alive_players[old_team][pname] = nil
-			state.spectator_anchor[pname] = nil
+
 			if not state.team_defeated[old_team] and not next(state.alive_players[old_team]) then
 				check_for_winner(old_team)
 			else
@@ -586,7 +561,6 @@ ctf_modebase.register_mode("rush", {
 			state.eliminated[pname] = nil
 		end
 
-		state.spectator_anchor[pname] = nil
 		state.vanish_active[pname] = nil
 		timer.clear_round_hud(pname)
 
@@ -714,6 +688,13 @@ if ctf_jma_elysium then
         if ctf_modebase.current_mode ~= "rush" then return end
         local name = player:get_player_name()
 
+        -- If this player was an anchor for spectators, detach them and reassign
+        local player_team = ctf_teams.get(name)
+        if player_team then
+            spectator.detach_spectators_from(name)
+            spectator.reassign_team_spectators(player_team)
+        end
+
         -- Remove player from their team in rush mode
         for team, players in pairs(state.alive_players) do
             if players[name] then
@@ -744,7 +725,6 @@ end
 core.register_globalstep(function(dtime)
     if ctf_modebase.current_mode ~= "rush" then return end
     timer.on_globalstep(dtime)
-    spectator.on_globalstep(dtime)
 end)
 
 core.register_on_joinplayer(function(player)
@@ -775,10 +755,8 @@ core.register_on_joinplayer(function(player)
 	state.participants[name] = true
 	state.vanish_active[name] = nil
 	state.eliminated[name] = true
-	state.spectator_anchor[name] = nil
 	ctf_teams.remove_online_player(name)
 	ctf_teams.player_team[name] = nil
-	ctf_teams.non_team_players[name] = true
 
 	local match_id = spec_state.match
 

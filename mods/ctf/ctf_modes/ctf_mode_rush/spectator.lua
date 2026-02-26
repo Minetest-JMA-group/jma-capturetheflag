@@ -6,7 +6,6 @@ local storage = core.get_mod_storage()
 local SPECTATOR_INFO_FORMNAME = "ctf_mode_rush:spectator_info"
 local SPECTATOR_INFO_META_KEY = "ctf_mode_rush:hide_spectator_info"
 local SPECTATOR_INFO_CHECKBOX = "ctf_mode_rush_spectator_hide"
-local SPECTATOR_INFO_SHOW_DELAY = 0
 local function storage_key(name)
     if type(name) ~= "string" or name == "" then return end
     return RUSH_SPEC_KEY .. ":" .. name
@@ -17,8 +16,6 @@ local state
 local timer
 local rankings
 local recent_rankings
-local bound_timer = 0
-local priv_hooks_installed = false
 local function ensure_state()
     if not state then error("spectator not initialised") end
 end
@@ -57,7 +54,7 @@ local function build_spectator_info_formspec(checked)
 end
 local function show_spectator_info(player)
     local pname = player:get_player_name()
-    core.after(SPECTATOR_INFO_SHOW_DELAY, function(name)
+    core.after(0, function(name)
         if core.get_player_by_name(name) then
             core.show_formspec(name, SPECTATOR_INFO_FORMNAME,
                 build_spectator_info_formspec(false))
@@ -152,7 +149,6 @@ end
 local function remove_player_from_team(name)
     ctf_teams.remove_online_player(name)
     ctf_teams.player_team[name] = nil
-    ctf_teams.non_team_players[name] = true
 end
 function spectator.restore_privs(name)
     ensure_state()
@@ -188,6 +184,7 @@ function spectator.make_spectator(player)
         state.saved_privs[pname] = core.get_player_privs(pname)
     end
     -- give spectator privs
+	---@diagnostic disable-next-line: undefined-field
     local privs = table.copy(state.saved_privs[pname])
     privs.interact = true
     privs.fast = nil
@@ -260,12 +257,98 @@ function spectator.setup(context)
     timer = context.timer or error("spectator.setup requires timer")
     rankings = context.rankings
     recent_rankings = context.recent_rankings
-    bound_timer = 0
 end
-function spectator.reset()
-    bound_timer = 0
+
+-- Detach spectators from anchor (when anchor leaves, e.g., joins elysium)
+local function find_spectators_attached_to(anchor_name)
+    ensure_state()
+    local spectators = {}
+    for pname, elim in pairs(state.eliminated) do
+        if elim then
+            local player = core.get_player_by_name(pname)
+            if player then
+                local parent = player:get_attach()
+                if parent then
+                    local parent_name = parent:get_player_name()
+                    if parent_name == anchor_name then
+                        table.insert(spectators, pname)
+                    end
+                end
+            end
+        end
+    end
+    return spectators
+end
+
+-- Detach all spectators from a specific anchor player
+function spectator.detach_spectators_from(anchor_name)
+    ensure_state()
+    local spectators = find_spectators_attached_to(anchor_name)
+    for _, pname in ipairs(spectators) do
+        local player = core.get_player_by_name(pname)
+        if player then
+            player:set_detach()
+        end
+    end
+    return spectators
 end
 
 function spectator.on_globalstep(dtime) end
-function spectator.reassign_team_spectators(team) end
+
+function spectator.reassign_team_spectators(team)
+    ensure_state()
+    if not team or not state.alive_players[team] then return end
+
+    -- Find all spectators for this team
+    local team_spectators = {}
+    for pname, elim in pairs(state.eliminated) do
+        if elim and state.initial_team[pname] == team then
+            table.insert(team_spectators, pname)
+        end
+    end
+
+    if #team_spectators == 0 then return end
+
+    -- Find a new anchor (alive player in the same team)
+    local new_anchor = select_anchor_for_team(team)
+
+    if not new_anchor then
+        -- No more teammates to spectate - spectators should be left alone
+        -- They'll stay in their current position or be cleaned up when match ends
+        for _, pname in ipairs(team_spectators) do
+            local player = core.get_player_by_name(pname)
+            if player then
+                player:set_detach()
+                hud_events.new(pname, {
+                    quick = true,
+                    text = "No more teammates to spectate.",
+                    color = "warning",
+                })
+            end
+        end
+        return
+    end
+
+    -- Reattach all spectators to the new anchor
+    local target = core.get_player_by_name(new_anchor)
+    if not target then return end
+
+    for _, pname in ipairs(team_spectators) do
+        local player = core.get_player_by_name(pname)
+        if player then
+            player:set_detach()
+            player:set_attach(target, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
+            player:set_pos(target:get_pos())
+            if player.set_camera then
+                player:set_camera({mode = "third"})
+            end
+            hud_events.new(pname, {
+                quick = true,
+                text = "Reassigned to spectate " .. new_anchor,
+                color = "info",
+            })
+        end
+    end
+end
+
 return spectator
