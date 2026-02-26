@@ -721,6 +721,9 @@ if ctf_jma_elysium then
                 -- Check if team is now empty
                 if not next(state.alive_players[team]) then
                     check_for_winner(team)
+                else
+                    -- Update HUDs to reflect player left team
+                    timer.update_round_huds()
                 end
                 break
             end
