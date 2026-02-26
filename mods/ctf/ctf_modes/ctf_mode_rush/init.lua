@@ -50,6 +50,7 @@ timer.setup({
 	is_mode_active = function()
 		return ctf_modebase.current_mode == "rush"
 	end,
+	get_alive_counts = get_alive_counts,
 })
 
 spectator.setup({
@@ -114,23 +115,44 @@ function get_alive_teams()
                 real_alive[pname] = true
             end
         end
-        state.alive_players[team] = real_alive  -- Cleanup: Entferne Elysium-Spieler
         if next(real_alive) then
             table.insert(alive, team)
-        else
-            announce_team_defeat(team)
-            spectator.reassign_team_spectators(team)
-            timer.update_round_huds()
-            check_for_winner(team)  -- Explizit triggern für sofortiges Ende
         end
         ::continue::
     end
     return alive
 end
 
+local function get_alive_counts()
+    local counts = {}
+    for team, players in pairs(state.alive_players) do
+        local count = 0
+        for pname in pairs(players) do
+            local p = core.get_player_by_name(pname)
+            if p and p:get_hp() > 0 and not is_elysium_player(pname) then
+                count = count + 1
+            end
+        end
+        counts[team] = count
+    end
+    return counts
+end
+
 function check_for_winner(team)
-	local alive = state.alive_players[team]
-	if not alive or next(alive) then
+	-- Check if team has any alive players (HP > 0)
+	local has_alive = false
+	local players = state.alive_players[team]
+	if players then
+		for pname in pairs(players) do
+			local p = core.get_player_by_name(pname)
+			if p and p:get_hp() > 0 and not is_elysium_player(pname) then
+				has_alive = true
+				break
+			end
+		end
+	end
+
+	if has_alive then
 		return
 	end
 
@@ -138,9 +160,18 @@ function check_for_winner(team)
 	spectator.reassign_team_spectators(team)
 	timer.update_round_huds()
 
-	local alive_teams = get_alive_teams()
-	if #alive_teams <= 1 then
-		declare_winner(alive_teams[1])
+	-- Check if only one or zero teams remain undefeated
+	local undefeated_count = 0
+	local last_undefeated = nil
+	for tname, defeated in pairs(state.team_defeated) do
+		if not defeated then
+			undefeated_count = undefeated_count + 1
+			last_undefeated = tname
+		end
+	end
+
+	if undefeated_count <= 1 then
+		declare_winner(last_undefeated)
 	end
 end
 
@@ -667,29 +698,9 @@ ctf_modebase.register_mode("rush", {
 })
 
 core.register_globalstep(function(dtime)
-	if ctf_modebase.current_mode ~= "rush" then
-		return
-	end
-
-	timer.on_globalstep(dtime)
-	spectator.on_globalstep(dtime)
-end)
-
-core.register_globalstep(function(dtime)
     if ctf_modebase.current_mode ~= "rush" then return end
     timer.on_globalstep(dtime)
     spectator.on_globalstep(dtime)
-
-    -- Neu: Periodischer Elysium-Check (alle 5s)
-    state.globalstep_timer = (state.globalstep_timer or 0) + dtime
-    if state.globalstep_timer >= 5 then
-        state.globalstep_timer = 0
-        get_alive_teams()  -- Trigger Alive-Check
-        local alive_teams = get_alive_teams()
-        if #alive_teams <= 1 then
-            declare_winner(alive_teams[1])
-        end
-    end
 end)
 
 core.register_on_joinplayer(function(player)

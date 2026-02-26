@@ -13,13 +13,15 @@ local config = {
 
 local hud_timer = 0
 
+local custom_get_alive_counts
+
 local function ensure_state()
 	if not state then
 		error("ctf_mode_rush.timer not initialised")
 	end
 end
 
-local function get_alive_counts()
+local function default_get_alive_counts()
 	local counts = {}
 
 	for team, players in pairs(state.alive_players) do
@@ -33,6 +35,14 @@ local function get_alive_counts()
 	end
 
 	return counts
+end
+
+local function get_alive_counts()
+	if custom_get_alive_counts then
+		return custom_get_alive_counts()
+	else
+		return default_get_alive_counts()
+	end
 end
 
 local function format_round_hud_text()
@@ -99,6 +109,10 @@ function timer.setup(opts)
 	if opts.on_time_expired then
 		config.on_time_expired = opts.on_time_expired
 	end
+
+	if opts.get_alive_counts then
+		custom_get_alive_counts = opts.get_alive_counts
+	end
 end
 
 function timer.set_timeout_handler(func)
@@ -109,36 +123,19 @@ function timer.clear_round_hud(name)
 	ensure_state()
 
 	local handle = state.hud_handles[name]
-	if not handle then
-		return
-	end
-
-	local player = core.get_player_by_name(name)
-	if player then
-		player:hud_remove(handle)
-	end
-
-	state.hud_handles[name] = nil
-end
-
-function timer.clear_all_round_huds()
-	ensure_state()
-
-	for name in pairs(state.hud_handles) do
-		timer.clear_round_hud(name)
+	if handle then
+		local player = core.get_player_by_name(name)
+		if player then
+			player:hud_remove(handle)
+		end
+		state.hud_handles[name] = nil
 	end
 end
 
 function timer.update_round_huds()
 	ensure_state()
 
-	if not state.round_timer_active then
-		timer.clear_all_round_huds()
-		return
-	end
-
-	if not config.is_mode_active() or not state.match_id then
-		timer.clear_all_round_huds()
+	if not state.match_id or not state.round_timer_active then
 		return
 	end
 
@@ -147,19 +144,14 @@ function timer.update_round_huds()
 	end
 end
 
-function timer.reset()
-	ensure_state()
-
-	state.round_time_left = 0
-	state.round_timer_active = false
-	state.hud_handles = {}
-	hud_timer = 0
-end
-
 function timer.start_round(duration)
 	ensure_state()
 
-	state.round_time_left = duration or timer.ROUND_DURATION
+	if state.round_timer_active then
+		return
+	end
+
+	state.round_time_left = duration
 	state.round_timer_active = true
 	timer.update_round_huds()
 end
@@ -171,6 +163,15 @@ function timer.stop_round()
 	timer.update_round_huds()
 end
 
+function timer.reset()
+	ensure_state()
+
+	state.round_time_left = 0
+	state.round_timer_active = false
+	state.hud_handles = {}
+	hud_timer = 0
+end
+
 function timer.on_globalstep(dtime)
 	ensure_state()
 
@@ -178,19 +179,19 @@ function timer.on_globalstep(dtime)
 		return
 	end
 
-	if state.round_timer_active then
-		state.round_time_left = math.max(0, (state.round_time_left or 0) - dtime)
+	if state.round_timer_active and state.round_time_left then
+		state.round_time_left = state.round_time_left - dtime
 		if state.round_time_left <= 0 then
 			state.round_time_left = 0
 			state.round_timer_active = false
 			config.on_time_expired()
 		end
-	end
 
-	hud_timer = hud_timer + dtime
-	if hud_timer >= timer.HUD_UPDATE_INTERVAL then
-		hud_timer = 0
-		timer.update_round_huds()
+		hud_timer = hud_timer + dtime
+		if hud_timer >= timer.HUD_UPDATE_INTERVAL then
+			hud_timer = 0
+			timer.update_round_huds()
+		end
 	end
 end
 
@@ -198,9 +199,5 @@ function timer.get_alive_counts()
 	ensure_state()
 	return get_alive_counts()
 end
-
-core.register_on_joinplayer(function(player)
-	update_round_hud_for_player(player)
-end)
 
 return timer
