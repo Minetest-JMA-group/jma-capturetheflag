@@ -45,14 +45,6 @@ local function reset_state()
 	spectator.reset()
 end
 
-timer.setup({
-	state = state,
-	is_mode_active = function()
-		return ctf_modebase.current_mode == "rush"
-	end,
-	get_alive_counts = get_alive_counts,
-})
-
 spectator.setup({
 	state = state,
 	timer = timer,
@@ -137,6 +129,14 @@ local function get_alive_counts()
     end
     return counts
 end
+
+timer.setup({
+	state = state,
+	is_mode_active = function()
+		return ctf_modebase.current_mode == "rush"
+	end,
+	get_alive_counts = get_alive_counts,
+})
 
 function check_for_winner(team)
 	-- Check if team has any alive players (HP > 0)
@@ -728,6 +728,15 @@ if ctf_jma_elysium then
                 break
             end
         end
+    end)
+
+    ctf_jma_elysium.register_on_leave(function(player, elysium_data)
+        if ctf_modebase.current_mode ~= "rush" then return end
+
+        -- When leaving elysium, check if player should rejoin their team
+        -- The player will be reallocated via normal team allocation flow
+        -- Just ensure HUD is updated
+        timer.update_round_huds()
     end)
 
 end
