@@ -509,6 +509,17 @@ ctf_modebase.register_mode("rush", {
 			return
 		end
 		state.participants[pname] = true
+
+		-- If old_team is nil (e.g., player leaving elysium), find and remove from any team
+		if not old_team then
+			for team, players in pairs(state.alive_players) do
+				if players[pname] then
+					old_team = team
+					break
+				end
+			end
+		end
+
 		if old_team and state.alive_players[old_team] then
 			state.alive_players[old_team][pname] = nil
 			state.spectator_anchor[pname] = nil
@@ -697,6 +708,27 @@ ctf_modebase.register_mode("rush", {
 	get_chest_access = features.get_chest_access,
 })
 
+-- Register elysium callbacks if elysium module is available
+if ctf_jma_elysium then
+    ctf_jma_elysium.register_on_join(function(player, elysium_data)
+        if ctf_modebase.current_mode ~= "rush" then return end
+        local name = player:get_player_name()
+
+        -- Remove player from their team in rush mode
+        for team, players in pairs(state.alive_players) do
+            if players[name] then
+                state.alive_players[team][name] = nil
+                -- Check if team is now empty
+                if not next(state.alive_players[team]) then
+                    check_for_winner(team)
+                end
+                break
+            end
+        end
+    end)
+
+end
+
 core.register_globalstep(function(dtime)
     if ctf_modebase.current_mode ~= "rush" then return end
     timer.on_globalstep(dtime)
@@ -704,6 +736,7 @@ core.register_globalstep(function(dtime)
 end)
 
 core.register_on_joinplayer(function(player)
+
     local name = player:get_player_name()
     if is_elysium_player(name) then
         spectator.restore_privs(name)

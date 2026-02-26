@@ -1,6 +1,10 @@
 ctf_jma_elysium = {
 	modpath = core.get_modpath("ctf_jma_elysium"),
 	players = {},
+	callbacks = {
+		on_join = {},
+		on_leave = {},
+	},
 	maps = {},
 	loaded_maps = {},
 	on_joining = {},
@@ -46,6 +50,14 @@ function ctf_jma_elysium.get_player_list()
 		table.insert(list, name)
 	end
 	return list
+end
+
+function ctf_jma_elysium.register_on_join(callback)
+	table.insert(ctf_jma_elysium.callbacks.on_join, callback)
+end
+
+function ctf_jma_elysium.register_on_leave(callback)
+	table.insert(ctf_jma_elysium.callbacks.on_leave, callback)
 end
 
 core.register_on_leaveplayer(function(player)
@@ -255,6 +267,11 @@ function ctf_jma_elysium.join(player, joined_callback)
 			joined_callback(player, ctf_jma_elysium.players[name])
 		end
 
+		-- Call registered callbacks
+		for _, callback in ipairs(ctf_jma_elysium.callbacks.on_join) do
+			callback(player, ctf_jma_elysium.players[name])
+		end
+
 		core.log("action", "[ctf_jma_elysium] Player " .. name .. " has joined Elysium.")
 	end
 
@@ -306,6 +323,12 @@ function ctf_jma_elysium.leave(player)
 	ctf_modebase.remove_immunity(player)
 
 	ctf_teams.non_team_players[name] = nil
+
+	-- Call registered callbacks before clearing player data
+	for _, callback in ipairs(ctf_jma_elysium.callbacks.on_leave) do
+		callback(player, ctf_jma_elysium.players[name])
+	end
+
 	ctf_jma_elysium.players[name] = nil
 
 	ctf_modebase.player.update(player)
