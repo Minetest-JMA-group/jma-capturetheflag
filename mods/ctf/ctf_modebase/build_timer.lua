@@ -6,16 +6,27 @@ local timer = nil
 
 ctf_modebase.build_timer = {}
 
+local function has_enough_teams()
+	local teams_with_players = 0
+	for teamname, team_status in pairs(ctf_teams.online_players) do
+		if team_status and team_status.count > 0 then
+			teams_with_players = teams_with_players + 1
+		end
+		if teams_with_players >= 2 then
+			return true
+		end
+	end
+	return false
+end
+
 local function timer_func(time_left)
+	local enough_teams = has_enough_teams()
 	for _, player in pairs(core.get_connected_players()) do
 		local time_str = "Removing Barrier..."
 
 		if time_left > 0 then
-			time_str = string.format(
-				"%dm %ds until match begins!",
-				math.floor(time_left / 60),
-				math.floor(time_left % 60)
-			)
+			local fmt = enough_teams and "%dm %ds until match begins!" or "%dm %ds (paused – waiting for players...)"
+			time_str = string.format(fmt, math.floor(time_left / 60), math.floor(time_left % 60))
 		end
 
 		if not hud:exists(player, "build_timer") then
@@ -54,7 +65,8 @@ local function timer_func(time_left)
 		return
 	end
 
-	timer = core.after(1, timer_func, time_left - 1)
+	local decrement = enough_teams and 1 or 0
+	timer = core.after(1, timer_func, time_left - decrement)
 end
 
 function ctf_modebase.build_timer.finish()
