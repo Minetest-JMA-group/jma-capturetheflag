@@ -1,0 +1,17 @@
+{
+	"Lua.runtime.version": "LuaJIT",
+	"Lua.workspace.library": [
+		"${workspace}/.vscode/lua_definitions/"
+	],
+	"Lua.diagnostics.globals": [
+		"dungeon_loot",
+		"filter",
+		"block_msgs",
+		"filter_caps",
+		"hit_statistics",
+		"rawf",
+		"playtime",
+		"worldedit",
+		"skybox"
+	],
+}

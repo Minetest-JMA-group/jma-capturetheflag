@@ -5,7 +5,6 @@
 tags
 *.vim
 debug.txt
-.vscode/
 
 /mods/ctf/ctf_map/textures/*Up.*
 /mods/ctf/ctf_map/textures/*Down.*
