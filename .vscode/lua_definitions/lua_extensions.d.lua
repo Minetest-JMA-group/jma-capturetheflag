@@ -2,50 +2,80 @@
 
 --- Extensions to standard Lua libraries provided by Luanti
 
---- Splits a string into parts using a separator.
----@param s string
----@param sep string
----@param plain? boolean (if true, treat sep as plain text, not pattern)
----@param max_splits? integer
----@param include_empty? boolean (if true, include empty fields)
+--- Split a string into parts.
+---@param separator string
+---@param include_empty? boolean (default false)
+---@param max_splits? integer (negative = unlimited, default -1)
+---@param sep_is_pattern? boolean (default false)
 ---@return string[]
-function string.split(s, sep, plain, max_splits, include_empty) end
+function string:split(separator, include_empty, max_splits, sep_is_pattern) end
 
---- Returns the index of a value in the array part of a table.
----@param t table
----@param value any
----@return integer|nil
-function table.indexof(t, value) end
+--- Trim whitespace from both ends.
+---@return string
+function string:trim() end
 
---- Shallow copy of a table.
+--- Deep copy a table (strips metatables).
 ---@param t table
 ---@return table
 function table.copy(t) end
 
---- Returns true if the value is present in the array part of the table.
----@param t table
----@param value any
----@return boolean
-function table.contains(t, value) end
+--- Deep copy a table, preserving metatables.
+---@param t any (non‑table values are returned as‑is)
+---@return any
+function table.copy_with_metatables(t) end
 
---- Inserts all elements from src into dest (as array).
+--- Find the smallest numerical index containing a value.
+---@param list table
+---@param val any
+---@return integer|nil
+function table.indexof(list, val) end
+
+--- Find a key by value.
+---@param t table
+---@param val any
+---@return any|nil
+function table.keyof(t, val) end
+
+--- Append all values from src to dest (array part).
 ---@param dest table
 ---@param src table
 function table.insert_all(dest, src) end
 
---- Returns an array of all keys in the table.
+--- Swap keys and values.
 ---@param t table
----@return any[]
-function table.keys(t) end
+---@return table
+function table.key_value_swap(t) end
 
---- Returns an array of all values in the table.
+--- Shuffle elements in a table in place.
 ---@param t table
----@return any[]
-function table.values(t) end
+---@param from? integer (default 1)
+---@param to? integer (default #t)
+---@param random_func? fun(min:integer, max:integer):integer (default math.random)
+function table.shuffle(t, from, to, random_func) end
 
---- Clamps a value between min and max.
----@param value number
----@param min number
----@param max number
+--- Get the hypotenuse of a right triangle.
+---@param x number
+---@param y number
 ---@return number
-function math.clamp(value, min, max) end
+function math.hypot(x, y) end
+
+--- Get the sign of a number.
+---@param x number
+---@param tolerance? number (default 0)
+---@return -1|0|1
+function math.sign(x, tolerance) end
+
+--- Compute factorial.
+---@param x integer
+---@return integer
+function math.factorial(x) end
+
+--- Round to nearest integer (away from zero at 0.5).
+---@param x number
+---@return integer
+function math.round(x) end
+
+--- Check if a number is finite (not inf or NaN).
+---@param x number
+---@return boolean
+function math.isfinite(x) end
