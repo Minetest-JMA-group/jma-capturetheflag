@@ -286,7 +286,7 @@ function vector.dir_to_rotation(direction, up) end
 ---@field equals fun(self: ItemStack, other: ItemStack): boolean
 
 --- ItemStack constructor.
----@param itemstring? string|table|ItemStack
+---@param itemstring? ItemRepresentation
 ---@return ItemStack
 function ItemStack(itemstring) end
 
@@ -659,6 +659,10 @@ function ValueNoiseMap(noiseparams, size) end
 
 --- Player object.
 ---@class PlayerRef : ObjectRef
+--- Returns the inventory reference (always exists for players).
+---@field get_inventory fun(self: PlayerRef): InvRef
+--- Returns the player metadata (always exists).
+---@field get_meta fun(self: PlayerRef): PlayerMetaRef
 --- Returns the player name.
 ---@field get_player_name fun(self: PlayerRef): string
 --- Deprecated: use get_velocity.
@@ -908,13 +912,13 @@ function ValueNoiseMap(noiseparams, size) end
 --- Sets multiple lists at once (sizes remain unchanged).
 ---@field set_lists fun(self: InvRef, lists: table<string, ItemStack[]>)
 --- Adds a stack to the list; returns leftover.
----@field add_item fun(self: InvRef, listname: string, stack: ItemStack): ItemStack
+---@field add_item fun(self: InvRef, listname: string, stack: ItemRepresentation): ItemStack
 --- Returns true if the stack can be fully added.
----@field room_for_item fun(self: InvRef, listname: string, stack: ItemStack): boolean
+---@field room_for_item fun(self: InvRef, listname: string, stack: ItemRepresentation): boolean
 --- Returns true if the list contains the given stack (ignores wear, optionally matches meta).
----@field contains_item fun(self: InvRef, listname: string, stack: ItemStack, match_meta?: boolean): boolean
+---@field contains_item fun(self: InvRef, listname: string, stack: ItemRepresentation, match_meta?: boolean): boolean
 --- Removes as many items as possible; returns the stack actually removed.
----@field remove_item fun(self: InvRef, listname: string, stack: ItemStack, match_meta?: boolean): ItemStack
+---@field remove_item fun(self: InvRef, listname: string, stack: ItemRepresentation, match_meta?: boolean): ItemStack
 --- Returns the location of this inventory as a table (type, name/pos).
 ---@field get_location fun(self: InvRef): {type: string}
 

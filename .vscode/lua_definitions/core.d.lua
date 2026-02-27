@@ -15,6 +15,16 @@ core = {}
 --- A color value: table, integer ARGB8, or ColorString.
 ---@alias ColorSpec ColorSpecTable|integer|string
 
+--- Table representation of an item stack.
+---@class ItemTable
+---@field name string
+---@field count? integer
+---@field wear? integer
+---@field metadata? string
+
+--- Any valid representation of an item: string, table, or ItemStack.
+---@alias ItemRepresentation string|ItemTable|ItemStack
+
 ---@class ObjectProperties
 ---@field hp_max? integer
 ---@field breath_max? integer
@@ -456,9 +466,9 @@ function core.show_death_screen(player, reason) end
 
 ---@class ToolCapabilities
 ---@field full_punch_interval number
----@field max_drop_level integer
----@field groupcaps table<string, {times:number[], uses:integer, maxlevel:integer}>
----@field damage_groups table<string, integer>
+---@field max_drop_level? integer
+---@field groupcaps? table<string, {times:number[], uses:integer, maxlevel:integer}>
+---@field damage_groups? table<string, integer>
 ---@field punch_attack_uses? integer
 
 ---@class WearColor
@@ -494,17 +504,17 @@ function core.show_death_screen(player, reason) end
 ---@field touch_interaction? "long_dig_short_place"|"short_dig_long_place"|"user"|{pointed_nothing?:string, pointed_node?:string, pointed_object?:string}
 ---@field sound? ItemSound
 --- Called when the 'place' key is used while pointing at a node. Returns leftover itemstack or nil.
----@field on_place? fun(itemstack:ItemStack, placer:ObjectRef|nil, pointed_thing:pointed_thing): ItemStack|nil
+---@field on_place? fun(itemstack:ItemStack, placer:PlayerRef|LuaEntityRef|nil, pointed_thing:pointed_thing): ItemStack|nil
 --- Called when the 'place' key is used while not pointing at a node (e.g., right-click in air).
----@field on_secondary_use? fun(itemstack:ItemStack, user:ObjectRef|nil, pointed_thing:pointed_thing): ItemStack|nil
+---@field on_secondary_use? fun(itemstack:ItemStack, user:PlayerRef|LuaEntityRef|nil, pointed_thing:pointed_thing): ItemStack|nil
 --- Called when the item is dropped. Returns leftover itemstack and the spawned object reference.
----@field on_drop? fun(itemstack:ItemStack, dropper:ObjectRef|nil, pos:vector): ItemStack, ObjectRef|nil
+---@field on_drop? fun(itemstack:ItemStack, dropper:PlayerRef|LuaEntityRef|nil, pos:vector): ItemStack, ObjectRef|nil
 --- Called when a dropped item is punched by a player (pickup attempt). Returns leftover itemstack or nil.
----@field on_pickup? fun(itemstack:ItemStack, picker:ObjectRef, pointed_thing:pointed_thing, time_from_last_punch?:number, ...): ItemStack|nil
+---@field on_pickup? fun(itemstack:ItemStack, picker:PlayerRef|LuaEntityRef, pointed_thing:pointed_thing, time_from_last_punch?:number, ...): ItemStack|nil
 --- Called when the 'punch/dig' key is used with the item. Returns leftover itemstack or nil.
----@field on_use? fun(itemstack:ItemStack, user:ObjectRef|nil, pointed_thing:pointed_thing): ItemStack|nil
+---@field on_use? fun(itemstack:ItemStack, user:PlayerRef|LuaEntityRef|nil, pointed_thing:pointed_thing): ItemStack|nil
 --- Called after using a tool to dig a node, for custom wear handling. Returns leftover itemstack or nil.
----@field after_use? fun(itemstack:ItemStack, user:ObjectRef|nil, node:table, digparams:table): ItemStack|nil
+---@field after_use? fun(itemstack:ItemStack, user:PlayerRef|LuaEntityRef|nil, node:table, digparams:table): ItemStack|nil
 ---@field _custom? any
 
 ---@class NodeSound
@@ -612,7 +622,7 @@ function core.show_death_screen(player, reason) end
 --- Called when node is punched.
 ---@field on_punch? fun(pos:vector, node:table, puncher:ObjectRef, pointed_thing:pointed_thing)
 --- Called when player right-clicks node. Return leftover itemstack.
----@field on_rightclick? fun(pos:vector, node:table, clicker:ObjectRef, itemstack:ItemStack, pointed_thing:pointed_thing): ItemStack|nil
+---@field on_rightclick? fun(pos:vector, node:table, clicker:ObjectRef, itemstack:ItemStack, pointed_thing:pointed_thing|nil): ItemStack|nil
 --- Called when node is dug. Return true if successfully dug.
 ---@field on_dig? fun(pos:vector, node:table, digger:ObjectRef): boolean|nil
 --- Called when node timer expires. Return true to restart timer.
@@ -898,7 +908,7 @@ function core.clear_craft(recipe) end
 ---@field description? string
 ---@field privs? table<string,boolean>|string[]
 --- Function called when command is executed. Returns success boolean and optional message.
----@field func fun(name:string, param:string): (boolean, string|nil)
+---@field func fun(name:string, param:string): (boolean|nil, string|nil)
 
 --- Registers a chat command.
 ---@param name string
@@ -1245,7 +1255,7 @@ function core.add_entity(pos, name, staticdata) end
 
 --- Spawns an item entity at the given position.
 ---@param pos vector
----@param item ItemStack|string
+---@param item ItemRepresentation
 ---@return ItemEntityRef|nil
 function core.add_item(pos, item) end
 
@@ -2009,6 +2019,46 @@ function core.get_mod_storage(modname) end
 --- Miscellaneous
 --- ==============================
 
+--- A color value in string form (e.g., "#FF0000", "red", "#0F0#80").
+---@alias ColorString string
+
+--- Returns an escape sequence that sets the text color.
+---@param color ColorString
+---@return string
+function core.get_color_escape_sequence(color) end
+
+--- Returns a string with `message` colorized using `color`.
+--- Equivalent to `core.get_color_escape_sequence(color) .. message .. core.get_color_escape_sequence("#fff")`.
+---@param color ColorString
+---@param message string
+---@return string
+function core.colorize(color, message) end
+
+--- Returns an escape sequence that sets the background color.
+---@param color ColorString
+---@return string
+function core.get_background_escape_sequence(color) end
+
+--- Removes foreground color escape sequences from a string.
+---@param str string
+---@return string
+function core.strip_foreground_colors(str) end
+
+--- Removes background color escape sequences from a string.
+---@param str string
+---@return string
+function core.strip_background_colors(str) end
+
+--- Removes all color escape sequences from a string.
+---@param str string
+---@return string
+function core.strip_colors(str) end
+
+--- Removes all escape sequences (including translations) from a string.
+---@param str string
+---@return string
+function core.strip_escapes(str) end
+
 --- Replaces the definition of a built‑in HUD element.
 ---@param name "breath"|"health"|"minimap"|"hotbar"
 ---@param def HUDDefinition
@@ -2400,10 +2450,42 @@ function core.is_nan(arg) end
 function core.get_us_time() end
 
 --- ==============================
+--- Translations
+--- ==============================
+
+--- Returns a translator function for the given textdomain.
+--- The first returned function is for singular strings (core.translate),
+--- the second for plural strings (core.translate_n).
+---@param textdomain string
+---@return fun(str:string, ...:any):string, fun(str:string, str_plural:string, n:integer, ...:any):string
+function core.get_translator(textdomain) end
+
+--- Translates a string with the given textdomain.
+---@param textdomain string
+---@param str string
+---@param ... any
+---@return string
+function core.translate(textdomain, str, ...) end
+
+--- Translates a plural string with the given textdomain.
+---@param textdomain string
+---@param str string
+---@param str_plural string
+---@param n integer
+---@param ... any
+---@return string
+function core.translate_n(textdomain, str, str_plural, n, ...) end
+
+--- Resolves translations in a string for a given language code.
+---@param lang_code string
+---@param str string
+---@return string
+function core.get_translated_string(lang_code, str) end
+
+--- ==============================
 --- Aliases and registered tables
 --- ==============================
 
-minetest = core
 core.env = {}
 
 ---@type table<string, table>
