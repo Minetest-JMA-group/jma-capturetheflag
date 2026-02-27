@@ -252,6 +252,7 @@ creative.register_tab("tools", S("Tools"), registered_tools)
 creative.register_tab("craftitems", S("Items"), registered_craftitems)
 
 local old_homepage_name = sfinv.get_homepage_name
+---@diagnostic disable-next-line: duplicate-set-field
 function sfinv.get_homepage_name(player)
 	if core.is_creative_enabled(player:get_player_name()) then
 		return "creative:all"

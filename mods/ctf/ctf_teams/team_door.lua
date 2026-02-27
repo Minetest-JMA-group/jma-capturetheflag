@@ -49,6 +49,7 @@ core.override_item("ctf_teams:door_steel", {
 })
 
 local old_handle = core.handle_node_drops
+---@diagnostic disable-next-line: duplicate-set-field
 core.handle_node_drops = function(pos, drops, digger)
 	for i, item in ipairs(drops) do
 		if item:match("ctf_teams:door_steel_") then
@@ -86,6 +87,7 @@ for team, def in pairs(ctf_teams.team) do
 end
 
 local old_func = default.can_interact_with_node
+---@diagnostic disable-next-line: duplicate-set-field
 default.can_interact_with_node = function(player, pos)
 	local pteam = ctf_teams.get(player)
 	local name = core.get_node(pos).name

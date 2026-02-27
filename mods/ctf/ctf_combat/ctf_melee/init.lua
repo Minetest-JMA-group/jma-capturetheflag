@@ -341,7 +341,7 @@ function ctf_melee.register_sword(name, def)
 			end
 		end
 
-		slash_stab_sword_func("LMB", itemstack, user, pointed, ...)
+		slash_stab_sword_func("LMB", itemstack, user, pointed)
 	end
 
 	base_def.on_place = function(itemstack, user, pointed, ...)

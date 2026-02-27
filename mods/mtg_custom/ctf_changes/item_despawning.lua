@@ -1,6 +1,9 @@
 local DEFAULT_DESPAWN_TIME = 60
 local DESPAWN_CHECK_DELAY = 2
 
+--- @class ObjectRef
+--- @field check_for_despawn fun(self: ObjectRef)
+
 -- This table represents how long items take to respawn
 -- Values of "true" don't automatically despawn
 
@@ -64,7 +67,7 @@ local item_despawn_times = {
 
 --- COPIED OVER FROM minetest_game/default/item_entity.lua
 
-local builtin_item = minetest.registered_entities["__builtin:item"]
+local builtin_item = core.registered_entities["__builtin:item"]
 
 -- strictly speaking none of this is part of the API, so do some checks
 -- and if it looks wrong skip the modifications
@@ -107,6 +110,7 @@ local item = {
 		
 	end,
 	on_deactivate = function(self, removal, ...)
+		---@diagnostic disable-next-line: redundant-parameter
 		(builtin_item.on_deactivate or function() end)(self, removal, ...) -- future-proofed
 		active_items[self.object:get_guid()] = nil
 		if not removal then

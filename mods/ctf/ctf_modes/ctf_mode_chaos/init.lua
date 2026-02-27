@@ -114,8 +114,7 @@ ctf_modebase.register_mode("chaos", {
 			hitter,
 			damage,
 			unneeded,
-			tool_capabilities,
-			...
+			tool_capabilities
 		)
 	end,
 	on_healplayer = features.on_healplayer,

@@ -37,7 +37,7 @@ local class_props = {
 			"ctf_melee:",
 			"ctf_ranged:sniper_magnum",
 		},
-		disallowed_items_markup = {
+		disallowed_items_textures = {
 			["ctf_melee:"] = "default_tool_steelsword.png^ctf_modebase_group.png",
 		},
 	},
@@ -52,7 +52,7 @@ local class_props = {
 		disallowed_items = {
 			"ctf_melee:",
 		},
-		disallowed_items_markup = {
+		disallowed_items_textures = {
 			["ctf_melee:"] = "default_tool_steelsword.png^ctf_modebase_group.png",
 		},
 	},
@@ -72,6 +72,7 @@ core.register_on_mods_loaded(function()
 			else
 				count = " x" .. count
 			end
+
 
 			local desc = string.split(item:get_description(), "\n", false, 1)
 			items_markup = string.format(
@@ -93,7 +94,7 @@ core.register_on_mods_loaded(function()
 				disallowed_items_markup = string.format(
 					"%s<img name=%s width=48>",
 					disallowed_items_markup,
-					class_prop.disallowed_items_markup[iname]
+					class_prop.disallowed_items_textures[iname]
 				)
 			end
 		end
@@ -555,10 +556,10 @@ function classes.show_class_formspec(player)
 					"model[0.1,2.3;%f,%f;classpreview;character.b3d;%s,blank.png;{0,160};;;]",
 					(form_x / 2) - 0.8,
 					form_y - 2.4,
-					ctf_cosmetics.get_colored_skin(
+					(ctf_cosmetics.get_colored_skin(
 						player,
-						pteam and ctf_teams.team[pteam].color
-					) .. classes.get_skin_overlay(class, true) or "",
+						pteam and ctf_teams.team[pteam].color) ..
+					classes.get_skin_overlay(class, true)) or "",
 				},
 				{
 					[[hypertext[%f,2.3;%f,%f;info;<global font=mono background=#00000044>

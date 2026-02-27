@@ -7,7 +7,8 @@ ctf_core = {
 	},
 }
 
----@param files table
+---@param ... string
+---@return ...
 -- Returns dofile() return values in order that files are given
 --
 -- Example: local f1, f2 = ctf_core.include_files("file1", "file2")

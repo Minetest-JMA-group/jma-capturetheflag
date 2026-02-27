@@ -248,8 +248,7 @@ ctf_modebase.register_mode("nade_fight", {
 			hitter,
 			damage,
 			unneeded,
-			tool_capabilities,
-			...
+			tool_capabilities
 		)
 	end,
 	on_healplayer = features.on_healplayer,

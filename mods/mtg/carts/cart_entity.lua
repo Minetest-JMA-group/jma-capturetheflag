@@ -229,6 +229,7 @@ local function rail_on_step(self, dtime)
 			-- No rail found: set to the expected position
 			pos = new_pos
 			update.pos = true
+			---@diagnostic disable-next-line: cast-local-type
 			dir = new_dir
 		end
 	elseif self.old_pos and self.old_dir.y ~= 1 and not self.punched then

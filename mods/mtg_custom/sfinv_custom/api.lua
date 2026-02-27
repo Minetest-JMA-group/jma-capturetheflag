@@ -70,6 +70,7 @@ function sfinv.make_formspec_v7(player, context, content, show_inv, size)
 	return table.concat(tmp, "")
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function sfinv.get_homepage_name(player)
 	return "sfinv:crafting"
 end

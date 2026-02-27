@@ -90,6 +90,7 @@ core.register_on_mods_loaded(function()
 			player = core.get_player_by_name(name)
 
 			if not player then
+				---@diagnostic disable-next-line: redundant-parameter
 				old_join_func(name, last_login)
 				return
 			end
@@ -99,6 +100,7 @@ core.register_on_mods_loaded(function()
 			local pteam = ctf_teams.get(player)
 
 			if not pteam then
+				---@diagnostic disable-next-line: redundant-parameter
 				old_join_func(player:get_player_name(), last_login)
 			else
 				local tcolor = ctf_teams.team[pteam].color
@@ -114,6 +116,7 @@ core.register_on_mods_loaded(function()
 		local pteam = ctf_teams.get(player)
 
 		if not pteam then
+			---@diagnostic disable-next-line: redundant-parameter
 			old_leave_func(player:get_player_name(), timed_out, ...)
 		else
 			ctf_teams.remove_online_player(player)

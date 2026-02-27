@@ -184,7 +184,7 @@ function spectator.make_spectator(player)
         state.saved_privs[pname] = core.get_player_privs(pname)
     end
     -- give spectator privs
-	---@diagnostic disable-next-line: undefined-field
+
     local privs = table.copy(state.saved_privs[pname])
     privs.interact = true
     privs.fast = nil

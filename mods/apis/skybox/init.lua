@@ -74,6 +74,7 @@ skybox.set = function(player, number)
     end
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 skybox.clear = function(player)
 	player:override_day_night_ratio(nil)
 	if player.get_sky_color ~= nil then
@@ -96,6 +97,7 @@ skybox.clear = function(player)
 	player:get_meta():set_string("skybox:skybox", "off")
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 skybox.add = function(def)
 	table.insert(skies, def)
 end
@@ -143,7 +145,7 @@ core.register_chatcommand("skybox", {
 				core.chat_send_player(name, v[1])
 			end
 			return
-		elseif tonumber(param) ~= nil and tonumber(param) >= 1 and tonumber(param) <= table.getn(skies) then
+		elseif tonumber(param) ~= nil and tonumber(param) >= 1 and tonumber(param) <= #skies then
 			skybox.set(player, tonumber(param))
 			return
 		elseif param == "off" or param == "0" then

@@ -64,7 +64,7 @@ local function add_trunk_and_leaves(data, a, pos, tree_cid, leaves_cid,
 
 	-- Force leaves near the trunk
 	for z_dist = -1, 1 do
-	for y_dist = -size, 1 do
+	for y_dist = 1, -size, -1 do
 		local vi = a:index(x - 1, y + height + y_dist, z + z_dist)
 		for x_dist = -1, 1 do
 			if data[vi] == c_air or data[vi] == c_ignore then

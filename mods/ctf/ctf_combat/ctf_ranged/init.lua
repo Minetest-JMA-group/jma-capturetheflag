@@ -139,6 +139,7 @@ local function process_ray(ray, user, look_dir, def)
 end
 
 -- Can be overridden for custom behaviour
+---@diagnostic disable-next-line: duplicate-set-field
 function ctf_ranged.can_use_gun(player, name)
 	return true
 end

@@ -33,7 +33,7 @@ local modes_all = ctf_modebase.modelist
 local modes_without_nade_fight = {"chaos", "classes", "classic", "rush"}
 
 local give_timer = 0
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
     give_timer = give_timer + dtime
     if give_timer >= 60 then
         give_timer = 0
@@ -155,7 +155,7 @@ local function show_shop_formspec(player_name, page)
         players_coins[player_name] = start_coin_amount
     end
 
-    if not minetest.check_player_privs(player_name, {dev = true}) then
+    if not core.check_player_privs(player_name, {dev = true}) then
         players_is_dev_mode[player_name] = nil
     end
 
@@ -171,12 +171,12 @@ local function show_shop_formspec(player_name, page)
         "hypertext[0.4,0.85;10,1;info;<style size=14 color=#CCCCCC>Browse items and buy them with coins.</style>]",
 
         "hypertext[7.95,0.6;2.2,1;coins;<right><style size=18 color=#FFD700><b>"
-            .. minetest.formspec_escape(tostring(coins))
+            .. core.formspec_escape(tostring(coins))
             .. "</b></style></right>]",
         "image[10.1,0.45;0.7,0.7;ctf_shop_coin.png]"
     }
 
-    if minetest.check_player_privs(player_name, {dev = true}) then
+    if core.check_player_privs(player_name, {dev = true}) then
         table.insert(formspec,
             "checkbox[0.4,0.85;dev_mode_check;Developer Test Mode;" ..
             tostring(players_is_dev_mode[player_name] == true) .. "]"
@@ -195,7 +195,7 @@ local function show_shop_formspec(player_name, page)
         )
         table.insert(formspec,
             "hypertext[3.5," .. current_y+0.2 .. ";4,1;price;<style color=#CCCCCC>Price: " ..
-            minetest.formspec_escape(tostring(shop_item.price)) .. "</style>]"
+            core.formspec_escape(tostring(shop_item.price)) .. "</style>]"
         )
         table.insert(formspec,
             "image[5.5," .. (current_y+0.075) .. ";0.55,0.55;ctf_shop_coin.png]"
@@ -209,15 +209,15 @@ local function show_shop_formspec(player_name, page)
 
     table.insert(formspec, "button_exit[1.3,10.9;8.5,0.8;close_button;Close]")
 
-    minetest.show_formspec(player_name, "ctf_shop:shop_formspec", table.concat(formspec))
+    core.show_formspec(player_name, "ctf_shop:shop_formspec", table.concat(formspec))
 end
 
 
-minetest.register_on_player_receive_fields(function(player, formname, fields)
+core.register_on_player_receive_fields(function(player, formname, fields)
     if formname ~= "ctf_shop:shop_formspec" then
         return
     end
-    if minetest.settings:get_bool("enable_ctf_shop", true) ~= true then
+    if core.settings:get_bool("enable_ctf_shop", true) ~= true then
         return
     end
     local player_name = player:get_player_name()
@@ -236,13 +236,13 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
     end
 
     if fields.dev_mode_check then
-        players_is_dev_mode[player_name] = (fields.dev_mode_check == "true" and minetest.check_player_privs(player_name, {dev = true}))
+        players_is_dev_mode[player_name] = (fields.dev_mode_check == "true" and core.check_player_privs(player_name, {dev = true}))
         if players_is_dev_mode[player_name] then
-            minetest.chat_send_player(player_name, "NOTE: Don't use the Developer Test Mode in regular matches. It is only there for debugging purposes.")
+            core.chat_send_player(player_name, "NOTE: Don't use the Developer Test Mode in regular matches. It is only there for debugging purposes.")
         end
     end
 
-    if minetest.check_player_privs(player_name, {dev = true}) ~= true then
+    if core.check_player_privs(player_name, {dev = true}) ~= true then
         players_is_dev_mode[player_name] = nil
     end
 
@@ -259,7 +259,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
                     end
                     show_shop_formspec(player_name, (players_last_page[player_name] or 1))
                 else
-                    minetest.chat_send_player(player_name, "You don't have enough shop coins.")
+                    core.chat_send_player(player_name, "You don't have enough shop coins.")
                 end
             end
 		end
@@ -267,14 +267,14 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 end)
 
 ctf_api.register_on_new_match(function()
-    if minetest.settings:get_bool("enable_ctf_shop", true) ~= true then
+    if core.settings:get_bool("enable_ctf_shop", true) ~= true then
         return
     end
     players_coins = {}
-    minetest.after(3, function ()
+    core.after(3, function ()
         local team_player_names = ctf_teams.get_all_team_players()
         for _, player_name in ipairs(team_player_names) do
-            local player = minetest.get_player_by_name(player_name)
+            local player = core.get_player_by_name(player_name)
             if player and ctf_settings.get(player, "ctf_shop:automatic_shop_display") == "true" then
                 show_shop_formspec(player_name, 1)
             end
@@ -283,11 +283,11 @@ ctf_api.register_on_new_match(function()
     end)
 end)
 
-minetest.register_chatcommand("shop", {
+core.register_chatcommand("shop", {
 	description = "Open the CTF Shop",
 	privs = {interact = true},
 	func = function(player_name)
-        if minetest.settings:get_bool("enable_ctf_shop", true) ~= true then
+        if core.settings:get_bool("enable_ctf_shop", true) ~= true then
             return false, "The Shop is disabled."
         end
 

@@ -21,7 +21,7 @@ local function get_chest_access(name)
 end
 
 --- @param listname string | "helper"
---- @param stack Stack
+--- @param stack ItemStack
 --- @return boolean
 function ctf_teams.is_allowed_in_team_chest(listname, stack)
 	if listname == "helper" then
@@ -237,7 +237,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				return 0
 			end
 
-			if not ctf_teams.is_allowed_in_team_chest(listname, stack, player) then
+			if not ctf_teams.is_allowed_in_team_chest(listname, stack) then
 				return 0
 			end
 

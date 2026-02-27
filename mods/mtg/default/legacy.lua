@@ -12,7 +12,7 @@ function default.register_falling_node(nodename, texture)
 end
 
 function default.spawn_falling_node(p, nodename)
-	spawn_falling_node(p, nodename)
+	core.spawn_falling_node(p, nodename)
 end
 
 -- Liquids
