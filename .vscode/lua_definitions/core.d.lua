@@ -48,10 +48,6 @@ function core.get_modnames(load_order) end
 ---@return {id: string, title: string, author: string, path: string}
 function core.get_game_info() end
 
---- Get the world directory path.
----@return string
-function core.get_worldpath() end
-
 --- Get a path for mod‑specific persistent data (call during mod load).
 ---@return string
 function core.get_mod_data_path() end
@@ -271,7 +267,7 @@ function core.string_to_privs(str, delim) end
 function core.privs_to_string(privs, delim) end
 
 --- Check player privileges.
----@param player_or_name string|ObjectRef
+---@param player_or_name string|PlayerRef
 ---@param ... string|table<string,boolean> List of privs or table
 ---@return boolean has_all, table<string,boolean> missing
 function core.check_player_privs(player_or_name, ...) end
@@ -373,7 +369,7 @@ function core.explode_textlist_event(event) end
 function core.explode_scrollbar_event(event) end
 
 --- Show the death screen for a player.
----@param player ObjectRef
+---@param player PlayerRef
 ---@param reason? PlayerHPChangeReason
 function core.show_death_screen(player, reason) end
 
@@ -541,27 +537,27 @@ function core.register_on_punchnode(func) end
 function core.register_on_generated(func) end
 
 --- Register a callback when a new player joins for the first time.
----@param func fun(player: ObjectRef)
+---@param func fun(player: PlayerRef)
 function core.register_on_newplayer(func) end
 
 --- Register a callback when a player joins.
----@param func fun(player: ObjectRef, last_login: number|nil)
+---@param func fun(player: PlayerRef, last_login: number|nil)
 function core.register_on_joinplayer(func) end
 
 --- Register a callback when a player leaves.
----@param func fun(player: ObjectRef, timed_out: boolean)
+---@param func fun(player: PlayerRef, timed_out: boolean)
 function core.register_on_leaveplayer(func) end
 
 --- Register a callback when a player dies.
----@param func fun(player: ObjectRef, reason: PlayerHPChangeReason)
+---@param func fun(player: PlayerRef, reason: PlayerHPChangeReason)
 function core.register_on_dieplayer(func) end
 
 --- Register a callback when a player respawns.
----@param func fun(player: ObjectRef): boolean|nil Return true to cancel default placement
+---@param func fun(player: PlayerRef): boolean|nil Return true to cancel default placement
 function core.register_on_respawnplayer(func) end
 
 --- Register a callback when a player's HP changes.
----@param func fun(player: ObjectRef, hp_change: integer, reason: PlayerHPChangeReason): (integer|nil, boolean|nil) If modifier, return new hp_change and optionally true to stop further modifiers
+---@param func fun(player: PlayerRef, hp_change: integer, reason: PlayerHPChangeReason): (integer|nil, boolean|nil) If modifier, return new hp_change and optionally true to stop further modifiers
 ---@param modifier? boolean If true, function can modify the change
 function core.register_on_player_hpchange(func, modifier) end
 
@@ -574,11 +570,11 @@ function core.register_on_player_hpchange(func, modifier) end
 ---@field node_pos? vector
 
 --- Register a callback when a player punches another player.
----@param func fun(player: ObjectRef, hitter: ObjectRef|nil, time_from_last_punch: number|nil, tool_capabilities: table|nil, dir: vector, damage: number): boolean|nil Return true to cancel default damage
+---@param func fun(player: PlayerRef, hitter: ObjectRef|nil, time_from_last_punch: number|nil, tool_capabilities: table|nil, dir: vector, damage: number): boolean|nil Return true to cancel default damage
 function core.register_on_punchplayer(func) end
 
 --- Register a callback when a player right‑clicks another player.
----@param func fun(player: ObjectRef, clicker: ObjectRef)
+---@param func fun(player: PlayerRef, clicker: ObjectRef)
 function core.register_on_rightclickplayer(func) end
 
 --- Register a callback when a player sends chat message.
@@ -590,15 +586,15 @@ function core.register_on_chat_message(func) end
 function core.register_on_chatcommand(func) end
 
 --- Register a callback when a player sends formspec fields.
----@param func fun(player: ObjectRef, formname: string, fields: table<string, string>): boolean|nil Return true to stop other callbacks
+---@param func fun(player: PlayerRef, formname: string, fields: table<string, string>): boolean|nil Return true to stop other callbacks
 function core.register_on_player_receive_fields(func) end
 
 --- Register a callback when a player crafts something.
----@param func fun(itemstack: ItemStack, player: ObjectRef, old_craft_grid: ItemStack[], craft_inv: InvRef): ItemStack|nil Return replacement output or nil
+---@param func fun(itemstack: ItemStack, player: PlayerRef, old_craft_grid: ItemStack[], craft_inv: InvRef): ItemStack|nil Return replacement output or nil
 function core.register_on_craft(func) end
 
 --- Register a callback for craft prediction.
----@param func fun(itemstack: ItemStack, player: ObjectRef, old_craft_grid: ItemStack[], craft_inv: InvRef)
+---@param func fun(itemstack: ItemStack, player: PlayerRef, old_craft_grid: ItemStack[], craft_inv: InvRef)
 function core.register_on_craft_predict(func) end
 
 --- Register a callback when an item is eaten.
@@ -610,11 +606,11 @@ function core.register_on_item_eat(func) end
 function core.register_on_item_pickup(func) end
 
 --- Register a callback to allow/disallow player inventory actions.
----@param func fun(player: ObjectRef, action: string, inventory: InvRef, info: table): integer Return number of items allowed (-1 for infinite)
+---@param func fun(player: PlayerRef, action: string, inventory: InvRef, info: table): integer Return number of items allowed (-1 for infinite)
 function core.register_allow_player_inventory_action(func) end
 
 --- Register a callback after a player inventory action.
----@param func fun(player: ObjectRef, action: string, inventory: InvRef, info: table)
+---@param func fun(player: PlayerRef, action: string, inventory: InvRef, info: table)
 function core.register_on_player_inventory_action(func) end
 
 --- Register a callback on protection violation.
@@ -654,16 +650,16 @@ function core.register_on_prejoinplayer(func) end
 function core.register_on_authplayer(func) end
 
 --- Register a callback on cheat detection.
----@param func fun(player: ObjectRef, cheat: {type: string})
+---@param func fun(player: PlayerRef, cheat: {type: string})
 function core.register_on_cheat(func) end
 
 --- Get connected players.
----@return ObjectRef[]
+---@return PlayerRef[]
 function core.get_connected_players() end
 
 --- Get a player by name.
 ---@param name string
----@return ObjectRef|nil
+---@return PlayerRef|nil
 function core.get_player_by_name(name) end
 
 --- Check if a player exists (offline or online).
@@ -786,16 +782,16 @@ function core.get_node_timer(pos) end
 ---@param pos vector
 ---@param name string Entity name
 ---@param staticdata? string
----@return ObjectRef|nil
+---@return LuaEntityRef|nil
 function core.add_entity(pos, name, staticdata) end
 
 --- Add an item entity.
 ---@param pos vector
 ---@param item ItemStack|string
----@return ObjectRef|nil
+---@return ItemEntityRef|nil
 function core.add_item(pos, item) end
 
---- Get all objects inside a radius.
+--- Get all objects inside a radius (may include players, entities, items).
 ---@param center vector
 ---@param radius number
 ---@return ObjectRef[]
@@ -1561,7 +1557,7 @@ function core.rotate_and_place(itemstack, placer, pointed_thing, infinitestacks,
 function core.rotate_node(itemstack, placer, pointed_thing) end
 
 --- Calculate knockback.
----@param player ObjectRef
+---@param player PlayerRef
 ---@param hitter ObjectRef|nil
 ---@param time_from_last_punch number|nil
 ---@param tool_capabilities table|nil
