@@ -5,6 +5,54 @@
 ---@field PLAYER_MAX_HP_DEFAULT integer  -- default maximum player hit points (usually 20)
 core = {}
 
+--- Table form of a ColorSpec: each component 0-255.
+---@class ColorSpecTable
+---@field r integer
+---@field g integer
+---@field b integer
+---@field a? integer (default 255)
+
+--- A color value: table, integer ARGB8, or ColorString.
+---@alias ColorSpec ColorSpecTable|integer|string
+
+---@class ObjectProperties
+---@field hp_max? integer
+---@field breath_max? integer
+---@field zoom_fov? number
+---@field eye_height? number
+---@field physical? boolean
+---@field collide_with_objects? boolean
+---@field collisionbox? number[]  -- [x1,y1,z1,x2,y2,z2]
+---@field selectionbox? {[1]:number,[2]:number,[3]:number,[4]:number,[5]:number,[6]:number, rotate?:boolean}
+---@field pointable? boolean|"blocking"
+---@field visual? string
+---@field visual_size? {x:number, y:number, z?:number}
+---@field mesh? string
+---@field textures? string[]
+---@field colors? table[]
+---@field node? {name:string, param1:integer, param2:integer}
+---@field use_texture_alpha? boolean
+---@field spritediv? {x:integer, y:integer}
+---@field initial_sprite_basepos? {x:integer, y:integer}
+---@field is_visible? boolean
+---@field makes_footstep_sound? boolean
+---@field automatic_rotate? number
+---@field stepheight? number
+---@field automatic_face_movement_dir? number
+---@field automatic_face_movement_max_rotation_per_sec? number
+---@field backface_culling? boolean
+---@field glow? integer
+---@field nametag? string
+---@field nametag_color? ColorSpec
+---@field nametag_bgcolor? ColorSpec|false
+---@field nametag_fontsize? number|false
+---@field nametag_scale_z? boolean
+---@field infotext? string
+---@field static_save? boolean
+---@field damage_texture_modifier? string
+---@field shaded? boolean
+---@field show_on_minimap? boolean
+
 --- ==============================
 --- Utility functions
 --- ==============================
@@ -196,18 +244,18 @@ function core.sha1(data, raw) end
 function core.sha256(data, raw) end
 
 --- Converts a ColorSpec to a ColorString.
----@param colorspec table|integer|string
+---@param colorspec ColorSpec
 ---@return string|nil
 function core.colorspec_to_colorstring(colorspec) end
 
 --- Converts a ColorSpec to raw RGBA bytes (string of 4 bytes).
----@param colorspec table|integer|string
+---@param colorspec ColorSpec
 ---@return string
 function core.colorspec_to_bytes(colorspec) end
 
 --- Converts a ColorSpec into RGBA table form.
----@param colorspec table|integer|string
----@return {r:integer, g:integer, b:integer, a:integer}|nil
+---@param colorspec ColorSpec
+---@return ColorSpecTable|nil
 function core.colorspec_to_table(colorspec) end
 
 --- Returns a "day‑night ratio" value equivalent to the given "time of day".
@@ -807,30 +855,30 @@ function core.clear_registered_schematics() end
 ---@field type? "shaped"
 ---@field output string
 ---@field recipe string[][]
----@field replacements? {string,string}[]
+---@field replacements? string[][]
 
 ---@class CraftRecipeShapeless
 ---@field type "shapeless"
 ---@field output string
 ---@field recipe string[]
----@field replacements? {string,string}[]
-
----@class CraftRecipeToolRepair
----@field type "toolrepair"
----@field additional_wear number
+---@field replacements? string[][]
 
 ---@class CraftRecipeCooking
 ---@field type "cooking"
 ---@field output string
 ---@field recipe string
 ---@field cooktime? number
----@field replacements? {string,string}[]
+---@field replacements? string[][]
 
 ---@class CraftRecipeFuel
 ---@field type "fuel"
 ---@field recipe string
 ---@field burntime? number
----@field replacements? {string,string}[]
+---@field replacements? string[][]
+
+---@class CraftRecipeToolRepair
+---@field type "toolrepair"
+---@field additional_wear number
 
 --- Registers a craft recipe.
 ---@param recipe CraftRecipeShaped|CraftRecipeShapeless|CraftRecipeToolRepair|CraftRecipeCooking|CraftRecipeFuel
