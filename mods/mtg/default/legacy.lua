@@ -12,10 +12,12 @@ function default.register_falling_node(nodename, texture)
 end
 
 function default.spawn_falling_node(p, nodename)
+	---@diagnostic disable-next-line: redundant-parameter
 	core.spawn_falling_node(p, nodename)
 end
 
 -- Liquids
+---@diagnostic disable-next-line: undefined-field
 WATER_ALPHA = core.registered_nodes["default:water_source"].alpha
 WATER_VISC = core.registered_nodes["default:water_source"].liquid_viscosity
 LAVA_VISC = core.registered_nodes["default:lava_source"].liquid_viscosity

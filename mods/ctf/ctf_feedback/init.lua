@@ -1,13 +1,7 @@
 -- SPDX-License-Identifier: AGPL-3.0-or-later
 -- Copyright (c) 2025 Farooq Karimi Zadeh
 local feedbacks_path = core.settings:get("ctf_feedback_path")
-local min_playtime = core.settings:get("ctf_feedback_min_playtime")
-
-if min_playtime ~= nil then
-	min_playtime = tonumber(min_playtime)
-else
-	min_playtime = 0
-end
+local min_playtime = tonumber(core.settings:get("ctf_feedback_min_playtime")) or 0
 
 local S = core.get_translator(core.get_current_modname())
 
@@ -175,5 +169,6 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 	if close then
 		core.close_formspec(pname, formname)
 	end
-	return true, message
+	core.chat_send_player(pname, message)
+	return true
 end)

@@ -29,6 +29,7 @@ core.register_on_mods_loaded(function()
 
 	for key, abm in pairs(core.registered_abms) do
 		for _, mod in pairs(DISALLOW_MOD_ABMS) do
+			---@diagnostic disable-next-line: undefined-field
 			if abm.mod_origin == mod then
 				table.insert(remove_list, key)
 				break
@@ -166,7 +167,7 @@ for _, name in pairs({
 		local old_on_construct = core.registered_nodes[name..variant].on_construct
 
 		core.override_item(name..variant, {
-			on_construct = function(pos, ...)
+			on_construct = function(pos)
 				core.after(0, function()
 					local meta = core.get_meta(pos)
 
@@ -174,7 +175,7 @@ for _, name in pairs({
 					meta:set_string("infotext", "")
 				end)
 
-				return old_on_construct and old_on_construct(pos, ...)
+				return old_on_construct and old_on_construct(pos)
 			end
 		})
 	end

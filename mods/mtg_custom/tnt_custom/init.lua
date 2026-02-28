@@ -26,8 +26,8 @@ core.register_on_mods_loaded(function()
 	for name, def in pairs(core.registered_nodes) do
 		cid_data[core.get_content_id(name)] = {
 			name = name,
-			drops = def.drops,
-			flammable = def.groups.flammable,
+			drops = def.drop,
+			flammable = (def.groups or {}).flammable,
 			on_blast = def.on_blast,
 		}
 	end
@@ -155,6 +155,7 @@ local function entity_physics(pos, radius, drops, puncher_name, damage_mod)
 	local objs = core.get_objects_inside_radius(pos, radius)
 	for _, obj in ipairs(objs) do
 		if obj:is_player() then
+			---@cast obj PlayerRef
 			local obj_pos = obj:get_pos()
 			local dist = math.max(1, vector.distance(pos, obj_pos))
 			local damage = (4 / dist) * (radius + damage_mod)
@@ -169,7 +170,7 @@ local function entity_physics(pos, radius, drops, puncher_name, damage_mod)
 						knockback = false
 					else
 						obj:punch(puncher, 1, {
-							punch_interval = 1,
+							full_punch_interval = 1,
 							damage_groups = {
 								fleshy = damage,
 								explosion = 1,
@@ -193,8 +194,8 @@ end
 local function add_effects(pos, radius, drops)
 	core.add_particle({
 		pos = pos,
-		velocity = vector.new(),
-		acceleration = vector.new(),
+		velocity = vector.zero(),
+		acceleration = vector.zero(),
 		expirationtime = 0.4,
 		size = radius * 10,
 		collisiondetection = false,
@@ -209,8 +210,8 @@ local function add_effects(pos, radius, drops)
 		maxpos = vector.add(pos, radius / 2),
 		minvel = {x = -10, y = -10, z = -10},
 		maxvel = {x = 10, y = 10, z = 10},
-		minacc = vector.new(),
-		maxacc = vector.new(),
+		minacc = vector.zero(),
+		maxacc = vector.zero(),
 		minexptime = 0.1,
 		maxexptime = 1,
 		minsize = radius * 3,
@@ -350,7 +351,6 @@ local function tnt_explode(pos, radius, ignore_protection, ignore_on_blast, igno
 
 	vm:set_data(data)
 	vm:write_to_map()
-	vm:update_map()
 	vm:update_liquids()
 
 	for _, queued_data in pairs(on_blast_queue) do
@@ -438,7 +438,7 @@ core.register_node("tnt:gunpowder", {
 	on_burn = function(pos)
 		core.set_node(pos, {name = "tnt:gunpowder_burning"})
 	end,
-	on_ignite = function(pos, igniter)
+	on_ignite = function(pos)
 		core.set_node(pos, {name = "tnt:gunpowder_burning"})
 	end,
 })
@@ -588,7 +588,8 @@ function tnt.register_tnt(def)
 			groups = {dig_immediate = 2, mesecon = 2, tnt = 1, flammable = 5},
 			sounds = default.node_sound_wood_defaults(),
 			after_place_node = function(pos, placer)
-				if placer:is_player() then
+				if placer and placer:is_player() then
+					---@cast placer PlayerRef
 					local meta = core.get_meta(pos)
 					meta:set_string("owner", placer:get_player_name())
 				end
@@ -616,7 +617,7 @@ function tnt.register_tnt(def)
 				core.swap_node(pos, {name = name .. "_burning"})
 				core.registered_nodes[name .. "_burning"].on_construct(pos)
 			end,
-			on_ignite = function(pos, igniter)
+			on_ignite = function(pos)
 				core.swap_node(pos, {name = name .. "_burning"})
 				core.registered_nodes[name .. "_burning"].on_construct(pos)
 			end,

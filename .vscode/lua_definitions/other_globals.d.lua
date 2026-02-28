@@ -9,6 +9,11 @@
 ---@field x number
 ---@field y number
 ---@field z number
+---@operator unm: vector                      -- -v
+---@operator add(vector): vector              -- v1 + v2
+---@operator sub(vector): vector              -- v1 - v2
+---@operator mul(number): vector              -- v * s
+---@operator div(number): vector              -- v / s
 
 --- Vector manipulation library.
 ---@class VectorLib
@@ -294,7 +299,11 @@ function ItemStack(itemstring) end
 --- VoxelArea
 --- ==============================
 
+VoxelArea = {}
+
 --- Helper for voxel areas (inclusive coordinates).
+--- Creates a VoxelArea.
+---@overload fun(minp: vector, maxp: vector): VoxelArea
 ---@class VoxelArea
 ---@field MinEdge vector
 ---@field MaxEdge vector
@@ -322,12 +331,8 @@ function ItemStack(itemstring) end
 ---@field getExtent fun(self: VoxelArea): vector
 --- Returns the volume (number of nodes) of the area.
 ---@field getVolume fun(self: VoxelArea): integer
-
---- Creates a VoxelArea.
----@param minp vector
----@param maxp vector
----@return VoxelArea
-function VoxelArea(minp, maxp) end
+--- Creates a VoxelArea from a table with MinEdge and MaxEdge.
+---@field new fun(self: VoxelArea, tbl: {MinEdge:vector, MaxEdge:vector}): VoxelArea
 
 --- ==============================
 --- VoxelManip
@@ -591,7 +596,7 @@ function ValueNoiseMap(noiseparams, size) end
 --- Punches the object.
 ---@field punch fun(self: ObjectRef, puncher: ObjectRef|nil, time_from_last_punch?: number, tool_capabilities?: ToolCapabilities, dir?: vector)
 --- Simulates a right‑click.
----@field right_click fun(self: ObjectRef, clicker: ObjectRef)
+---@field right_click fun(self: ObjectRef, clicker: PlayerRef|LuaEntityRef)
 --- Sets health points (0‑65535). For players, also clamped by hp_max.
 ---@field set_hp fun(self: ObjectRef, hp: integer, reason?: PlayerHPChangeReason)
 --- Returns current health points.
@@ -627,7 +632,7 @@ function ValueNoiseMap(noiseparams, size) end
 --- Returns all bone overrides.
 ---@field get_bone_overrides fun(self: ObjectRef): table<string, table>
 --- Attaches this object to a parent.
----@field set_attach fun(self: ObjectRef, parent: ObjectRef, bone?: string, pos?: vector, rot?: vector, forced_visible?: boolean)
+---@field set_attach fun(self: ObjectRef, parent: PlayerRef|LuaEntityRef, bone?: string, pos?: vector, rot?: vector, forced_visible?: boolean)
 --- Detaches from parent.
 ---@field set_detach fun(self: ObjectRef)
 --- Returns attachment info, or nil if not attached.
@@ -659,6 +664,8 @@ function ValueNoiseMap(noiseparams, size) end
 
 --- Player object.
 ---@class PlayerRef : ObjectRef
+--- Returns the player position
+---@field get_pos fun(self: ObjectRef): vector
 --- Returns the inventory reference (always exists for players).
 ---@field get_inventory fun(self: PlayerRef): InvRef
 --- Returns the player metadata (always exists).
@@ -710,7 +717,7 @@ function ValueNoiseMap(noiseparams, size) end
 --- Returns the current formspec prepend string.
 ---@field get_formspec_prepend fun(self: PlayerRef): string
 --- Returns the current player controls (key states and movement values).
----@field get_player_control fun(self: PlayerRef): {up:boolean, down:boolean, left:boolean, right:boolean, jump:boolean, sneak:boolean, aux1:boolean, zoom:boolean, dig:boolean, place:boolean, movement_x:number, movement_y:number}
+---@field get_player_control fun(self: PlayerRef): {up:boolean, down:boolean, left:boolean, right:boolean, jump:boolean, sneak:boolean, aux1:boolean, zoom:boolean, dig:boolean, place:boolean, LMB:boolean, RMB:boolean, movement_x:number, movement_y:number}
 --- Returns the control bits as an integer.
 ---@field get_player_control_bits fun(self: PlayerRef): integer
 --- Overrides physics attributes.

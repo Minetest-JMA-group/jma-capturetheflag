@@ -133,7 +133,7 @@ core.register_privilege("skybox", {
 core.register_chatcommand("skybox", {
 	params = "<skybox> or <number> or \"off\" or empty to list skyboxes",
 	description = "Change your sky box set",
-	privs = "skybox",
+	privs = {"skybox"},
 	func = function(name, param)
 		local player = core.get_player_by_name(name)
 		if not player then

@@ -14,7 +14,7 @@ local function register_mgv6_flower(flower_name)
 			spread = {x = 100, y = 100, z = 100},
 			seed = 436,
 			octaves = 3,
-			persist = 0.6
+			persistence = 0.6
 		},
 		y_max = 30,
 		y_min = 1,
@@ -34,7 +34,7 @@ local function register_mgv6_mushroom(mushroom_name)
 			spread = {x = 100, y = 100, z = 100},
 			seed = 7133,
 			octaves = 3,
-			persist = 0.6
+			persistence = 0.6
 		},
 		y_max = 30,
 		y_min = 1,
@@ -56,7 +56,7 @@ local function register_mgv6_waterlily()
 			spread = {x = 100, y = 100, z = 100},
 			seed = 33,
 			octaves = 3,
-			persist = 0.7
+			persistence = 0.7
 		},
 		y_max = 0,
 		y_min = 0,
@@ -98,7 +98,7 @@ local function register_flower(seed, flower_name)
 			spread = {x = 200, y = 200, z = 200},
 			seed = seed,
 			octaves = 3,
-			persist = 0.6
+			persistence = 0.6
 		},
 		biomes = {"grassland", "deciduous_forest"},
 		y_max = 31000,
@@ -119,7 +119,7 @@ local function register_mushroom(mushroom_name)
 			spread = {x = 250, y = 250, z = 250},
 			seed = 2,
 			octaves = 3,
-			persist = 0.66
+			persistence = 0.66
 		},
 		biomes = {"deciduous_forest", "coniferous_forest"},
 		y_max = 31000,
@@ -140,7 +140,7 @@ local function register_waterlily()
 			spread = {x = 200, y = 200, z = 200},
 			seed = 33,
 			octaves = 3,
-			persist = 0.7
+			persistence = 0.7
 		},
 		biomes = {"rainforest_swamp", "savanna_shore", "deciduous_forest_shore"},
 		y_max = 0,

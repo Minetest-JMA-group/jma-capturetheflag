@@ -77,8 +77,9 @@ function bucket.register_liquid(source, flowing, itemname, inventory_image, name
 				local ndef = node and core.registered_nodes[node.name]
 
 				-- Call on_rightclick if the pointed node defines it
-				if ndef and ndef.on_rightclick and
+				if ndef and ndef.on_rightclick and node and user and
 						not (user and user:is_player() and
+						---@cast user PlayerRef
 						user:get_player_control().sneak) then
 					return ndef.on_rightclick(
 						pointed_thing.under,
@@ -97,6 +98,7 @@ function bucket.register_liquid(source, flowing, itemname, inventory_image, name
 					-- check if the node above can be replaced
 
 					lpos = pointed_thing.above
+					---@cast lpos vector
 					node = core.get_node_or_nil(lpos)
 					local above_ndef = node and core.registered_nodes[node.name]
 
@@ -106,11 +108,14 @@ function bucket.register_liquid(source, flowing, itemname, inventory_image, name
 					end
 				end
 
-				local pname = user and user:get_player_name() or ""
+				local pname = (user and user:is_player()) and
+					---@cast user PlayerRef
+					user:get_player_name() or ""
 				if check_protection(lpos, pname, "place "..source) then
 					return
 				end
 
+				---@cast lpos vector
 				core.set_node(lpos, {name = source})
 				log_action(lpos, pname, "placed " .. source)
 				return ItemStack("bucket:bucket_empty")
@@ -125,6 +130,8 @@ core.register_craftitem("bucket:bucket_empty", {
 	groups = {tool = 1},
 	liquids_pointable = true,
 	on_use = function(itemstack, user, pointed_thing)
+		if not user or not user:is_player() then return end
+		---@cast user PlayerRef
 		if pointed_thing.type == "object" then
 			pointed_thing.ref:punch(user, 1.0, { full_punch_interval=1.0 }, nil)
 			return user:get_wielded_item()
@@ -134,6 +141,7 @@ core.register_craftitem("bucket:bucket_empty", {
 		end
 		-- Check if pointing to a liquid source
 		local pos = pointed_thing.under
+		---@cast pos vector
 		local node = core.get_node(pos)
 		local liquiddef = bucket.liquids[node.name]
 		local item_count = user:get_wielded_item():get_count()
@@ -168,7 +176,7 @@ core.register_craftitem("bucket:bucket_empty", {
 			end
 
 			-- force_renew requires a source neighbour
-			local source_neighbor = false
+			local source_neighbor
 			if liquiddef.force_renew then
 				source_neighbor =
 					core.find_node_near(pos, 1, liquiddef.source)

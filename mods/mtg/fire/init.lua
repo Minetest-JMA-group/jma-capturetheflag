@@ -90,6 +90,8 @@ core.register_tool("fire:flint_and_steel", {
 	sound = {breaks = "default_tool_breaks"},
 
 	on_use = function(itemstack, user, pointed_thing)
+		if not user or not user:is_player() then return end
+		---@cast user PlayerRef
 		local sound_pos = pointed_thing.above or user:get_pos()
 		core.sound_play("fire_flint_and_steel",
 			{pos = sound_pos, gain = 0.2, max_hear_distance = 8}, true)
@@ -105,7 +107,7 @@ core.register_tool("fire:flint_and_steel", {
 				return
 			end
 			if nodedef.on_ignite then
-				nodedef.on_ignite(pointed_thing.under, user)
+				nodedef.on_ignite(pointed_thing.under)
 			elseif core.get_item_group(node_under, "flammable") >= 1
 					and core.get_node(pointed_thing.above).name == "air" then
 				if core.is_protected(pointed_thing.above, player_name) then
@@ -183,6 +185,7 @@ if flame_sound then
 			areamax,
 			{"fire:basic_flame", "fire:permanent_flame"}
 		)
+		---@cast num table<string, integer>
 		-- Total number of flames in radius
 		local flames = (num["fire:basic_flame"] or 0) +
 			(num["fire:permanent_flame"] or 0)

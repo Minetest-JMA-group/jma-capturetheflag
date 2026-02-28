@@ -54,7 +54,7 @@ function ctf_melee.simple_register_sword(name, def)
 
 	if def.rightclick_func then
 		base_def.on_place = function(itemstack, user, pointed, ...)
-			local pointed_def = false
+			local pointed_def
 			local node
 
 			if pointed and pointed.under then
@@ -327,7 +327,7 @@ function ctf_melee.register_sword(name, def)
 						user,
 						slash_stab_anim_length,
 						damage_capabilities,
-						vector.new()
+						vector.zero()
 					)
 					return
 				end
@@ -345,7 +345,7 @@ function ctf_melee.register_sword(name, def)
 	end
 
 	base_def.on_place = function(itemstack, user, pointed, ...)
-		local pointed_def = false
+		local pointed_def
 		local node
 
 		if pointed and pointed.under then

@@ -79,3 +79,7 @@ function math.round(x) end
 ---@param x number
 ---@return boolean
 function math.isfinite(x) end
+
+---@class string
+---@field trim fun(self:string): string
+---@field split fun(self:string, separator:string, include_empty?:boolean, max_splits?:integer, sep_is_pattern?:boolean): string[]

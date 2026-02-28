@@ -82,7 +82,7 @@ core.register_decoration({
 		spread = {x = 50, y = 50, z = 50},
 		seed = 4242,
 		octaves = 3,
-		persist = 0.7
+		persistence = 0.7
 	},
 	biomes = {"savanna"},
 	y_max = 31000,

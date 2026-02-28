@@ -66,7 +66,7 @@ function default.register_mgv6_ores()
 			spread = {x = 5, y = 5, z = 5},
 			seed = -316,
 			octaves = 1,
-			persist = 0.0
+			persistence = 0.0
 		},
 	})
 
@@ -87,7 +87,7 @@ function default.register_mgv6_ores()
 			spread = {x = 5, y = 5, z = 5},
 			seed = 2316,
 			octaves = 1,
-			persist = 0.0
+			persistence = 0.0
 		},
 	})
 
@@ -108,7 +108,7 @@ function default.register_mgv6_ores()
 			spread = {x = 5, y = 5, z = 5},
 			seed = 17676,
 			octaves = 1,
-			persist = 0.0
+			persistence = 0.0
 		},
 	})
 
@@ -129,7 +129,7 @@ function default.register_mgv6_ores()
 			spread = {x = 5, y = 5, z = 5},
 			seed = 766,
 			octaves = 1,
-			persist = 0.0
+			persistence = 0.0
 		},
 	})
 
@@ -428,6 +428,7 @@ function default.register_ores()
 			spread = {x = 128, y = 128, z = 128},
 			seed = 90122,
 			octaves = 1,
+			persistence = 0.5
 		},
 		stratum_thickness = 4,
 		biomes = {"cold_desert"},
@@ -446,6 +447,7 @@ function default.register_ores()
 			spread = {x = 128, y = 128, z = 128},
 			seed = 90122,
 			octaves = 1,
+			persistence = 0.5
 		},
 		stratum_thickness = 2,
 		biomes = {"cold_desert"},
@@ -466,6 +468,7 @@ function default.register_ores()
 			spread = {x = 128, y = 128, z = 128},
 			seed = 90122,
 			octaves = 1,
+			persistence = 0.5
 		},
 		stratum_thickness = 4,
 		biomes = {"desert"},
@@ -484,6 +487,7 @@ function default.register_ores()
 			spread = {x = 128, y = 128, z = 128},
 			seed = 90122,
 			octaves = 1,
+			persistence = 0.5
 		},
 		stratum_thickness = 2,
 		biomes = {"desert"},
@@ -504,6 +508,7 @@ function default.register_ores()
 			spread = {x = 128, y = 128, z = 128},
 			seed = 90122,
 			octaves = 1,
+			persistence = 0.5
 		},
 		stratum_thickness = 2,
 		biomes = {"desert"},
@@ -529,7 +534,7 @@ function default.register_ores()
 			spread = {x = 5, y = 5, z = 5},
 			seed = -316,
 			octaves = 1,
-			persist = 0.0
+			persistence = 0.0
 		},
 	})
 
@@ -550,7 +555,7 @@ function default.register_ores()
 			spread = {x = 5, y = 5, z = 5},
 			seed = 2316,
 			octaves = 1,
-			persist = 0.0
+			persistence = 0.0
 		},
 	})
 
@@ -571,7 +576,7 @@ function default.register_ores()
 			spread = {x = 5, y = 5, z = 5},
 			seed = 17676,
 			octaves = 1,
-			persist = 0.0
+			persistence = 0.0
 		},
 		-- Only where default:dirt is present as surface material
 		biomes = {"taiga", "snowy_grassland", "grassland", "coniferous_forest",
@@ -596,7 +601,7 @@ function default.register_ores()
 			spread = {x = 5, y = 5, z = 5},
 			seed = 766,
 			octaves = 1,
-			persist = 0.0
+			persistence = 0.0
 		},
 	})
 
@@ -1640,7 +1645,7 @@ function default.register_mgv6_decorations()
 			spread = {x = 100, y = 100, z = 100},
 			seed = 354,
 			octaves = 3,
-			persist = 0.7
+			persistence = 0.7
 		},
 		y_max = 1,
 		y_min = 1,
@@ -1664,7 +1669,7 @@ function default.register_mgv6_decorations()
 			spread = {x = 100, y = 100, z = 100},
 			seed = 230,
 			octaves = 3,
-			persist = 0.6
+			persistence = 0.6
 		},
 		y_max = 30,
 		y_min = 1,
@@ -1687,7 +1692,7 @@ function default.register_mgv6_decorations()
 				spread = {x = 100, y = 100, z = 100},
 				seed = 329,
 				octaves = 3,
-				persist = 0.6
+				persistence = 0.6
 			},
 			y_max = 30,
 			y_min = 1,
@@ -1708,7 +1713,7 @@ function default.register_mgv6_decorations()
 			spread = {x = 100, y = 100, z = 100},
 			seed = 329,
 			octaves = 3,
-			persist = 0.6
+			persistence = 0.6
 		},
 		y_max = 30,
 		y_min = 1,
@@ -1732,7 +1737,7 @@ local function register_grass_decoration(offset, scale, length)
 			spread = {x = 200, y = 200, z = 200},
 			seed = 329,
 			octaves = 3,
-			persist = 0.6
+			persistence = 0.6
 		},
 		biomes = {"grassland", "deciduous_forest"},
 		y_max = 31000,
@@ -1753,7 +1758,7 @@ local function register_dry_grass_decoration(offset, scale, length)
 			spread = {x = 200, y = 200, z = 200},
 			seed = 329,
 			octaves = 3,
-			persist = 0.6
+			persistence = 0.6
 		},
 		biomes = {"savanna"},
 		y_max = 31000,
@@ -1774,7 +1779,7 @@ local function register_fern_decoration(seed, length)
 			spread = {x = 100, y = 100, z = 100},
 			seed = seed,
 			octaves = 3,
-			persist = 0.7
+			persistence = 0.7
 		},
 		biomes = {"coniferous_forest"},
 		y_max = 31000,
@@ -1800,7 +1805,7 @@ function default.register_decorations()
 			spread = {x = 200, y = 200, z = 200},
 			seed = 329,
 			octaves = 4,
-			persist = 1.0
+			persistence = 1.0
 		},
 		biomes = {"savanna"},
 		y_max = 31000,
@@ -1823,7 +1828,7 @@ function default.register_decorations()
 			spread = {x = 250, y = 250, z = 250},
 			seed = 2,
 			octaves = 3,
-			persist = 0.66
+			persistence = 0.66
 		},
 		biomes = {"deciduous_forest"},
 		y_max = 31000,
@@ -1845,7 +1850,7 @@ function default.register_decorations()
 			spread = {x = 250, y = 250, z = 250},
 			seed = 2,
 			octaves = 3,
-			persist = 0.66
+			persistence = 0.66
 		},
 		biomes = {"deciduous_forest"},
 		y_max = 31000,
@@ -1873,7 +1878,7 @@ function default.register_decorations()
 				spread = {x = 250, y = 250, z = 250},
 				seed = 2685,
 				octaves = 3,
-				persist = 0.7
+				persistence = 0.7
 			},
 			biomes = {"rainforest"},
 			y_max = 32,
@@ -1916,7 +1921,7 @@ function default.register_decorations()
 			spread = {x = 200, y = 200, z = 200},
 			seed = 354,
 			octaves = 1,
-			persist = 0.5
+			persistence = 0.5
 		},
 		biomes = {"rainforest_swamp"},
 		y_max = 0,
@@ -1956,7 +1961,7 @@ function default.register_decorations()
 			spread = {x = 250, y = 250, z = 250},
 			seed = 2,
 			octaves = 3,
-			persist = 0.66
+			persistence = 0.66
 		},
 		biomes = {"taiga", "coniferous_forest"},
 		y_max = 31000,
@@ -1976,7 +1981,7 @@ function default.register_decorations()
 			spread = {x = 250, y = 250, z = 250},
 			seed = 2,
 			octaves = 3,
-			persist = 0.66
+			persistence = 0.66
 		},
 		biomes = {"taiga", "coniferous_forest"},
 		y_max = 31000,
@@ -2015,7 +2020,7 @@ function default.register_decorations()
 			spread = {x = 250, y = 250, z = 250},
 			seed = 2,
 			octaves = 3,
-			persist = 0.66
+			persistence = 0.66
 		},
 		biomes = {"savanna"},
 		y_max = 31000,
@@ -2037,7 +2042,7 @@ function default.register_decorations()
 			spread = {x = 250, y = 250, z = 250},
 			seed = 2,
 			octaves = 3,
-			persist = 0.66
+			persistence = 0.66
 		},
 		biomes = {"savanna"},
 		y_max = 31000,
@@ -2062,7 +2067,7 @@ function default.register_decorations()
 			spread = {x = 250, y = 250, z = 250},
 			seed = 2,
 			octaves = 3,
-			persist = 0.66
+			persistence = 0.66
 		},
 		biomes = {"deciduous_forest"},
 		y_max = 31000,
@@ -2083,7 +2088,7 @@ function default.register_decorations()
 			spread = {x = 250, y = 250, z = 250},
 			seed = 2,
 			octaves = 3,
-			persist = 0.66
+			persistence = 0.66
 		},
 		biomes = {"deciduous_forest"},
 		y_max = 31000,
@@ -2108,7 +2113,7 @@ function default.register_decorations()
 			spread = {x = 200, y = 200, z = 200},
 			seed = 230,
 			octaves = 3,
-			persist = 0.6
+			persistence = 0.6
 		},
 		biomes = {"desert"},
 		y_max = 31000,
@@ -2131,7 +2136,7 @@ function default.register_decorations()
 			spread = {x = 200, y = 200, z = 200},
 			seed = 230,
 			octaves = 3,
-			persist = 0.6
+			persistence = 0.6
 		},
 		biomes = {"desert"},
 		y_max = 31000,
@@ -2156,7 +2161,7 @@ function default.register_decorations()
 			spread = {x = 200, y = 200, z = 200},
 			seed = 354,
 			octaves = 3,
-			persist = 0.7
+			persistence = 0.7
 		},
 		biomes = {"rainforest_swamp"},
 		y_max = 0,
@@ -2177,7 +2182,7 @@ function default.register_decorations()
 			spread = {x = 200, y = 200, z = 200},
 			seed = 354,
 			octaves = 3,
-			persist = 0.7
+			persistence = 0.7
 		},
 		biomes = {"savanna_shore"},
 		y_max = 0,
@@ -2199,7 +2204,7 @@ function default.register_decorations()
 			spread = {x = 100, y = 100, z = 100},
 			seed = 137,
 			octaves = 3,
-			persist = 0.7,
+			persistence = 0.7,
 		},
 		biomes = {"grassland", "deciduous_forest"},
 		y_max = 31000,
@@ -2221,7 +2226,7 @@ function default.register_decorations()
 			spread = {x = 100, y = 100, z = 100},
 			seed = 697,
 			octaves = 3,
-			persist = 0.7,
+			persistence = 0.7,
 		},
 		biomes = {"grassland", "snowy_grassland"},
 		y_max = 31000,
@@ -2244,7 +2249,7 @@ function default.register_decorations()
 			spread = {x = 100, y = 100, z = 100},
 			seed = 90155,
 			octaves = 3,
-			persist = 0.7,
+			persistence = 0.7,
 		},
 		biomes = {"savanna"},
 		y_max = 31000,
@@ -2266,7 +2271,7 @@ function default.register_decorations()
 			spread = {x = 100, y = 100, z = 100},
 			seed = 137,
 			octaves = 3,
-			persist = 0.7,
+			persistence = 0.7,
 		},
 		biomes = {"taiga", "snowy_grassland"},
 		y_max = 31000,
@@ -2325,7 +2330,7 @@ function default.register_decorations()
 			spread = {x = 200, y = 200, z = 200},
 			seed = 329,
 			octaves = 3,
-			persist = 0.6
+			persistence = 0.6
 		},
 		biomes = {"desert", "sandstone_desert", "cold_desert"},
 		y_max = 31000,
@@ -2347,7 +2352,7 @@ function default.register_decorations()
 			spread = {x = 16, y = 16, z = 16},
 			seed = 513337,
 			octaves = 1,
-			persist = 0.0,
+			persistence = 0.0,
 			flags = "absvalue, eased"
 		},
 		biomes = {"coniferous_forest_dunes", "grassland_dunes"},
@@ -2372,7 +2377,7 @@ function default.register_decorations()
 			spread = {x = 100, y = 100, z = 100},
 			seed = 53995,
 			octaves = 3,
-			persist = 1.0
+			persistence = 1.0
 		},
 		biomes = {"tundra"},
 		y_max = 50,
@@ -2399,7 +2404,7 @@ function default.register_decorations()
 			spread = {x = 100, y = 100, z = 100},
 			seed = 172555,
 			octaves = 3,
-			persist = 1.0
+			persistence = 1.0
 		},
 		biomes = {"tundra", "tundra_beach"},
 		y_max = 50,
@@ -2421,7 +2426,7 @@ function default.register_decorations()
 			spread = {x = 50, y = 50, z = 50},
 			seed = 7013,
 			octaves = 3,
-			persist = 0.7,
+			persistence = 0.7,
 		},
 		biomes = {
 			"desert_ocean",
@@ -2452,7 +2457,7 @@ function default.register_decorations()
 			spread = {x = 200, y = 200, z = 200},
 			seed = 87112,
 			octaves = 3,
-			persist = 0.7
+			persistence = 0.7
 		},
 		biomes = {
 			"taiga_ocean",

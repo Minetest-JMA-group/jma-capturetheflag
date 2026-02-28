@@ -3,6 +3,9 @@
 --- Luanti (formerly Minetest) Core API
 ---@class CoreAPI
 ---@field PLAYER_MAX_HP_DEFAULT integer  -- default maximum player hit points (usually 20)
+---@field CONTENT_IGNORE string   -- ID for "ignore" nodes
+---@field CONTENT_UNKNOWN string  -- ID for "unknown" nodes
+---@field CONTENT_AIR string      -- ID for "air" nodes
 core = {}
 
 --- Table form of a ColorSpec: each component 0-255.
@@ -449,12 +452,12 @@ function core.show_death_screen(player, reason) end
 
 ---@class TileAnimationDefinition
 ---@field type "vertical_frames"|"sheet_2d"
----@field aspect_w integer Width of a frame in pixels (for vertical_frames)
----@field aspect_h integer Height of a frame in pixels (for vertical_frames)
----@field length number Full loop length in seconds (for vertical_frames)
----@field frames_w integer Width in number of frames (for sheet_2d)
----@field frames_h integer Height in number of frames (for sheet_2d)
----@field frame_length number Length of a single frame in seconds (for sheet_2d)
+---@field aspect_w? integer Width of a frame in pixels (for vertical_frames)
+---@field aspect_h? integer Height of a frame in pixels (for vertical_frames)
+---@field length? number Full loop length in seconds (for vertical_frames)
+---@field frames_w? integer Width in number of frames (for sheet_2d)
+---@field frames_h? integer Height in number of frames (for sheet_2d)
+---@field frame_length? number Length of a single frame in seconds (for sheet_2d)
 
 ---@class ItemImageDefinition : string|table
 ---@field name string Texture filename
@@ -482,9 +485,9 @@ function core.show_death_screen(player, reason) end
 ---@field punch_use_air? SimpleSoundSpec
 
 ---@class ItemDefinition
----@field description string
+---@field description? string
 ---@field short_description? string
----@field groups table<string, integer>
+---@field groups? table<string, integer>
 ---@field inventory_image? ItemImageDefinition
 ---@field inventory_overlay? ItemImageDefinition
 ---@field wield_image? ItemImageDefinition
@@ -536,26 +539,29 @@ function core.show_death_screen(player, reason) end
 ---@field max_items? integer
 ---@field items NodeDropItem[]
 
+--- A box defined by six numbers: {x1, y1, z1, x2, y2, z2}
+---@alias Box number[]
+
 ---@class NodeBox
 ---@field type "regular"|"fixed"|"leveled"|"wallmounted"|"connected"
----@field fixed? table|table[]
----@field wall_top? table
----@field wall_bottom? table
----@field wall_side? table
----@field connect_top? table|table[]
----@field connect_bottom? table|table[]
----@field connect_front? table|table[]
----@field connect_left? table|table[]
----@field connect_back? table|table[]
----@field connect_right? table|table[]
----@field disconnected_top? table|table[]
----@field disconnected_bottom? table|table[]
----@field disconnected_front? table|table[]
----@field disconnected_left? table|table[]
----@field disconnected_back? table|table[]
----@field disconnected_right? table|table[]
----@field disconnected? table|table[]
----@field disconnected_sides? table|table[]
+---@field fixed? Box|Box[]               -- For "fixed" or "leveled"
+---@field wall_top? Box                   -- For "wallmounted"
+---@field wall_bottom? Box
+---@field wall_side? Box
+---@field connect_top? Box|Box[]          -- For "connected"
+---@field connect_bottom? Box|Box[]
+---@field connect_front? Box|Box[]
+---@field connect_left? Box|Box[]
+---@field connect_back? Box|Box[]
+---@field connect_right? Box|Box[]
+---@field disconnected_top? Box|Box[]
+---@field disconnected_bottom? Box|Box[]
+---@field disconnected_front? Box|Box[]
+---@field disconnected_left? Box|Box[]
+---@field disconnected_back? Box|Box[]
+---@field disconnected_right? Box|Box[]
+---@field disconnected? Box|Box[]
+---@field disconnected_sides? Box|Box[]
 
 ---@class NodeDefinition : ItemDefinition
 ---@field drawtype? "normal"|"airlike"|"liquid"|"flowingliquid"|"glasslike"|"glasslike_framed"|"glasslike_framed_optional"|"allfaces"|"allfaces_optional"|"torchlike"|"signlike"|"plantlike"|"firelike"|"fencelike"|"raillike"|"nodebox"|"mesh"|"plantlike_rooted"
@@ -626,7 +632,7 @@ function core.show_death_screen(player, reason) end
 --- Called when node is dug. Return true if successfully dug.
 ---@field on_dig? fun(pos:vector, node:table, digger:ObjectRef): boolean|nil
 --- Called when node timer expires. Return true to restart timer.
----@field on_timer? fun(pos:vector, elapsed:number, node:table, timeout:number): boolean
+---@field on_timer? fun(pos:vector, elapsed:number, node:table, timeout:number): boolean?
 --- Called when a formspec for this node receives fields.
 ---@field on_receive_fields? fun(pos:vector, formname:string, fields:table<string,string>, sender:PlayerRef)
 --- Return number of items allowed to move.
@@ -643,6 +649,12 @@ function core.show_death_screen(player, reason) end
 ---@field on_metadata_inventory_take? fun(pos:vector, listname:string, index:integer, stack:ItemStack, player:PlayerRef)
 --- Called when explosion touches node, instead of removing node.
 ---@field on_blast? fun(pos:vector, intensity:number)
+--- Called by the TNT mod when the node is about to ignite
+---@field on_ignite? fun(pos:vector)
+--- Called by the fire mod when the node catches fire
+---@field on_burn? fun(pos:vector)
+--- Called by the ctf_ranged mod when the node is shot
+---@field on_ranged_shoot? fun(pos:vector, node:table, user:ObjectRef, weapon_type:string)
 ---@field mod_origin? string
 
 --- Registers a node.
@@ -747,8 +759,8 @@ function core.register_alias_force(alias, original_name) end
 ---@field ore_param2? integer
 ---@field wherein string|string[]
 ---@field clust_scarcity integer
----@field clust_num_ores integer
----@field clust_size integer
+---@field clust_num_ores? integer   -- ignored by some ore types
+---@field clust_size? integer       -- ignored by some ore types
 ---@field y_min integer
 ---@field y_max integer
 ---@field flags? string
@@ -1125,7 +1137,7 @@ function core.register_on_cheat(func) end
 ---@return PlayerRef[]
 function core.get_connected_players() end
 
---- Returns an ObjectRef to a player (or nil if offline/doesn't exist).
+--- Returns a PlayerRef to a player (or nil if offline/doesn't exist).
 ---@param name string
 ---@return PlayerRef|nil
 function core.get_player_by_name(name) end
@@ -1211,7 +1223,7 @@ function core.get_artificial_light(param1) end
 --- Places a node with the same effects as a player would cause.
 ---@param pos vector
 ---@param node {name: string, param1?: integer, param2?: integer}
----@param placer? ObjectRef
+---@param placer? PlayerRef|LuaEntityRef
 function core.place_node(pos, node, placer) end
 
 --- Digs a node with the same effects as a player would cause.
@@ -1262,13 +1274,13 @@ function core.add_item(pos, item) end
 --- Returns a list of ObjectRefs inside a radius.
 ---@param center vector
 ---@param radius number
----@return ObjectRef[]
+---@return (PlayerRef|LuaEntityRef)[]
 function core.get_objects_inside_radius(center, radius) end
 
 --- Returns an iterator of valid objects inside a radius.
 ---@param center vector
 ---@param radius number
----@return fun(): ObjectRef|nil
+---@return fun(): (PlayerRef|LuaEntityRef)|nil
 function core.objects_inside_radius(center, radius) end
 
 --- Returns a list of ObjectRefs in an axis‑aligned area.
@@ -1280,7 +1292,7 @@ function core.get_objects_in_area(min_pos, max_pos) end
 --- Returns an iterator of valid objects in an axis‑aligned area.
 ---@param min_pos vector
 ---@param max_pos vector
----@return fun(): ObjectRef|nil
+---@return fun(): (PlayerRef|LuaEntityRef)|nil
 function core.objects_in_area(min_pos, max_pos) end
 
 --- Sets the time of day.
@@ -1352,7 +1364,6 @@ function core.get_perlin(seeddiff, octaves, persistence, spread) end
 function core.get_voxel_manip(pos1, pos2) end
 
 --- Sets the types of on‑generate notifications to collect.
----@param flags string
 ---@param deco_ids? integer[]
 ---@param custom_ids? string[]
 function core.set_gen_notify(flags, deco_ids, custom_ids) end
@@ -1654,7 +1665,7 @@ function core.item_place(itemstack, placer, pointed_thing, param2) end
 
 --- Default item pickup handler.
 ---@param itemstack ItemStack
----@param picker ObjectRef
+---@param picker PlayerRef|LuaEntityRef
 ---@param pointed_thing table
 ---@param time_from_last_punch? number
 ---@param ... any
@@ -1663,7 +1674,7 @@ function core.item_pickup(itemstack, picker, pointed_thing, time_from_last_punch
 
 --- Default secondary use (does nothing).
 ---@param itemstack ItemStack
----@param user ObjectRef
+---@param user PlayerRef|LuaEntityRef
 ---@param pointed_thing table
 ---@return ItemStack|nil
 function core.item_secondary_use(itemstack, user, pointed_thing) end
@@ -1672,13 +1683,13 @@ function core.item_secondary_use(itemstack, user, pointed_thing) end
 ---@param itemstack ItemStack
 ---@param dropper ObjectRef|nil
 ---@param pos vector
----@return ItemStack leftover, ObjectRef|nil entity
+---@return ItemStack leftover, LuaEntityRef|nil entity
 function core.item_drop(itemstack, dropper, pos) end
 
 --- Default node punch callback.
 ---@param pos vector
 ---@param node table
----@param puncher ObjectRef
+---@param puncher PlayerRef|LuaEntityRef
 ---@param pointed_thing table
 function core.node_punch(pos, node, puncher, pointed_thing) end
 
@@ -1747,6 +1758,22 @@ function core.register_mapgen_script(path) end
 ---@param data any
 ---@return boolean success
 function core.save_gen_notify(id, data) end
+
+--- ==============================
+--- Timing
+--- ==============================
+
+--- Reference to a delayed job created by core.after.
+---@class AfterJob
+--- Cancels the job. Returns true if successfully cancelled (job not yet executed).
+---@field cancel fun(self:AfterJob): boolean
+
+--- Calls a function after a delay. Returns a job table with a cancel method.
+---@param time number (seconds, may be fractional)
+---@param func function
+---@param ... any
+---@return AfterJob
+function core.after(time, func, ...) end
 
 --- ==============================
 --- Server
@@ -2011,9 +2038,8 @@ function core.request_http_api() end
 --- ==============================
 
 --- Returns a reference to mod‑private storage.
----@param modname string
 ---@return ModStorage
-function core.get_mod_storage(modname) end
+function core.get_mod_storage() end
 
 --- ==============================
 --- Miscellaneous
@@ -2282,7 +2308,7 @@ function core.get_all_craft_recipes(item) end
 --- Handles drops from a dug node: default is to put them into digger's inventory.
 ---@param pos vector
 ---@param drops string[]
----@param digger ObjectRef
+---@param digger PlayerRef|LuaEntityRef
 function core.handle_node_drops(pos, drops, digger) end
 
 --- Creates an item string with palette index for hardware coloring.
@@ -2457,7 +2483,8 @@ function core.get_us_time() end
 --- The first returned function is for singular strings (core.translate),
 --- the second for plural strings (core.translate_n).
 ---@param textdomain string
----@return fun(str:string, ...:any):string, fun(str:string, str_plural:string, n:integer, ...:any):string
+---@return fun(str:string, ...:any):string
+---@return fun(str:string, str_plural:string, n:integer, ...:any):string
 function core.get_translator(textdomain) end
 
 --- Translates a string with the given textdomain.

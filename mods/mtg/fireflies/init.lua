@@ -76,6 +76,7 @@ core.register_tool("fireflies:bug_net", {
 	inventory_image = "fireflies_bugnet.png",
 	pointabilities = {nodes = {["group:catchable"] = true}},
 	tool_capabilities = {
+		full_punch_interval = 1.0,
 		groupcaps = {
 			catchable = { maxlevel = 1, uses = 256, times = { [1] = 0, [2] = 0, [3] = 0 } }
 		},
@@ -118,6 +119,8 @@ core.register_node("fireflies:firefly_bottle", {
 	},
 	sounds = default.node_sound_glass_defaults(),
 	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
+		if not player:is_player() then return end
+		---@cast player PlayerRef
 		local lower_pos = {x = pos.x, y = pos.y + 1, z = pos.z}
 		if core.is_protected(pos, player:get_player_name()) or
 				core.get_node(lower_pos).name ~= "air" then

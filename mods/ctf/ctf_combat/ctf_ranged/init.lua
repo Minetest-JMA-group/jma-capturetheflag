@@ -55,7 +55,7 @@ local function process_ray(ray, user, look_dir, def)
 							hitpoint.intersection_point,
 							vector.multiply(look_dir, 0.04)
 						),
-						velocity = vector.new(),
+						velocity = vector.zero(),
 						acceleration = { x = 0, y = 0, z = 0 },
 						expirationtime = def.bullethole_lifetime or 3,
 						size = 1,
@@ -87,7 +87,7 @@ local function process_ray(ray, user, look_dir, def)
 						maxsize = 0,
 						collisiondetection = false,
 						glow = 3,
-						node = { name = nodedef.name },
+						node = { name = node.name },
 					})
 
 					if def.liquid_travel_dist then
@@ -227,7 +227,7 @@ function ctf_ranged.simple_register_gun(name, def)
 
 		if def.rightclick_func then
 			loaded_def.on_place = function(itemstack, user, pointed, ...)
-				local pointed_def = false
+				local pointed_def
 				local node
 
 				if pointed and pointed.under then
@@ -439,6 +439,7 @@ core.register_globalstep(function(dtime)
 	time = 0
 	for name, info in pairs(scoped) do
 		local player = core.get_player_by_name(name)
+		---@cast player PlayerRef
 		local wielded_item = player:get_wielded_item():get_name()
 		if wielded_item ~= info.item_name then
 			ctf_ranged.hide_scope(name)

@@ -35,10 +35,10 @@ do
 		table.insert(registered_on_formspec_input, { formname = formname, call = func })
 	end
 
-	core.register_on_player_receive_fields(function(player, formname, fields, ...)
+	core.register_on_player_receive_fields(function(player, formname, fields)
 		for _, func in ipairs(registered_on_formspec_input) do
 			if formname:match(func.formname) then
-				if func.call(PlayerName(player), formname, fields, ...) then
+				if func.call(PlayerName(player), formname, fields) then
 					return
 				end
 			end
@@ -127,14 +127,6 @@ do
 			and pos.y <= pos2.y
 			and pos.z >= pos1.z
 			and pos.z <= pos2.z
-	end
-
-	if not math.round then
-		local m_floor = math.floor
-
-		function math.round(x)
-			return m_floor(x + 0.5)
-		end
 	end
 end
 --
