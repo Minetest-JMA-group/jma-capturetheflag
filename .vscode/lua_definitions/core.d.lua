@@ -442,13 +442,19 @@ function core.show_death_screen(player, reason) end
 --- Registration functions
 --- ==============================
 
----@class TileDefinition : string|table
+--- Simple tile as a texture filename.
+---@alias TileSimple string
+
+--- Extended tile definition with optional fields.
+---@class TileDefinitionTable
 ---@field name string Texture filename
 ---@field animation? TileAnimationDefinition
 ---@field backface_culling? boolean
 ---@field align_style? "node"|"world"|"user"
 ---@field scale? integer
 ---@field color? ColorSpec
+
+---@alias TileDefinition TileSimple|TileDefinitionTable
 
 ---@class TileAnimationDefinition
 ---@field type "vertical_frames"|"sheet_2d"
@@ -459,9 +465,15 @@ function core.show_death_screen(player, reason) end
 ---@field frames_h? integer Height in number of frames (for sheet_2d)
 ---@field frame_length? number Length of a single frame in seconds (for sheet_2d)
 
----@class ItemImageDefinition : string|table
+--- Simple item image as a texture filename.
+---@alias ItemImageSimple string
+
+--- Extended item image definition with optional animation.
+---@class ItemImageDefinitionTable
 ---@field name string Texture filename
 ---@field animation? TileAnimationDefinition
+
+---@alias ItemImageDefinition ItemImageSimple|ItemImageDefinitionTable
 
 ---@class Pointabilities
 ---@field nodes? table<string, boolean|"blocking">
@@ -1082,7 +1094,10 @@ function core.register_on_item_eat(func) end
 function core.register_on_item_pickup(func) end
 
 --- Determines how many items may be taken, put, or moved in a player inventory.
----@param func fun(player:PlayerRef, action:string, inventory:InvRef, info:table): integer
+--- The callback only triggers when the player's inventory is the source or destination.
+--- Return a number to limit the item count for this action.
+--- For `take` actions only, returning -1 makes the source stack infinite.
+---@param func fun(player:PlayerRef, action:string, inventory:InvRef, info:table): integer?
 function core.register_allow_player_inventory_action(func) end
 
 --- Called after an item take, put, or move event in a player inventory.

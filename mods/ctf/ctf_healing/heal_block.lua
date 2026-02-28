@@ -21,7 +21,7 @@ core.register_node("ctf_healing:heal_block", {
 	tiles = {
 		{
 			name = "ctf_healing_heal_block_top.png",
-			align_style = "repeat",
+			align_style = "world",
 			scale = 1,
 			position = { x = 0, y = 0, z = 0.5 },
 		}, -- top
@@ -32,6 +32,7 @@ core.register_node("ctf_healing:heal_block", {
 	drop = "",
 
 	on_place = function(itemstack, placer, pointed_thing)
+		if not placer then return end
 		local pteam = ctf_teams.get(placer)
 		if pteam then
 			if
@@ -54,6 +55,7 @@ core.register_node("ctf_healing:heal_block", {
 
 	after_place_node = function(pos, placer)
 		core.get_node_timer(pos):start(1)
+		if not placer then return end
 		local pteam = ctf_teams.get(placer)
 		if pteam then
 			core.get_meta(pos):set_string("team", pteam)
@@ -65,6 +67,7 @@ core.register_node("ctf_healing:heal_block", {
 		local healed_points = meta:get_int("healed_points")
 		for _, player in ipairs(core.get_objects_inside_radius(pos, 3)) do
 			if player:is_player() then
+				---@cast player PlayerRef
 				local pteam = ctf_teams.get(player:get_player_name())
 				if pteam and pteam == meta:get_string("team") then
 					local hp = player:get_hp()
@@ -80,6 +83,8 @@ core.register_node("ctf_healing:heal_block", {
 	end,
 
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
+		if not digger or not digger:is_player() then return end
+		---@cast digger PlayerRef
 		local block_team = oldmetadata.fields.team
 		local player_team = ctf_teams.get(digger)
 		-- Only award points if player breaks enemy team's heal block
