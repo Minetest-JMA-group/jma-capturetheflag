@@ -1,9 +1,6 @@
 [submodule "mods/ctf/ctf_map/maps"]
 	path = mods/ctf/ctf_map/maps
 	url = https://codeberg.org/minetest-jma-group/jma-maps
-[submodule "mods/extras"]
-	path = mods/extras
-	url = https://codeberg.org/minetest-jma-group/jma-extras
 [submodule "mods/shared"]
 	path = mods/shared
 	url = https://codeberg.org/minetest-jma-group/jma-shared
