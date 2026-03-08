@@ -23,13 +23,13 @@ core.override_chatcommand("msg", {
 
 		-- Message color
 		local msg_color = core.settings:get("ctf_chat.message_color") or "#E043FF"
-		local sender_msg_color = "#FFF"
+		local sender_msg_color = "#FFFFFF"
 
 		local sender_team   = ctf_teams.get(name)
 		local recipient_team = ctf_teams.get(sendto)
 
-		local sender_tcolor   = sender_team   and ctf_teams.team[sender_team].color or "#FFF"
-		local recipient_tcolor = recipient_team and ctf_teams.team[recipient_team].color or "#FFF"
+		local sender_tcolor   = sender_team   and ctf_teams.team[sender_team].color or "#FFFFFF"
+		local recipient_tcolor = recipient_team and ctf_teams.team[recipient_team].color or "#FFFFFF"
 
 		-- Colorize the recipient‑side message and send it to the recipient
 		local recipient_str = colorize(msg_color, "PM from ")
