@@ -20,19 +20,28 @@ core.override_chatcommand("msg", {
 			return false, "Watch your language!"
 		end
 
+
 		-- Message color
-		local color = core.settings:get("ctf_chat.message_color") or "#E043FF"
-		local pteam = ctf_teams.get(name)
-		local tcolor = pteam and ctf_teams.team[pteam].color or "#FFF"
+		local msg_color = core.settings:get("ctf_chat.message_color") or "#E043FF"
+		local sender_msg_color = "#FFFFFF"
 
-		-- Colorize the recepient-side message and send it to the recepient
-		local str = colorize(color, "PM from ")
-		str = str .. colorize(tcolor, name)
-		str = str .. colorize(color, ": " .. message)
-		core.chat_send_player(sendto, str)
+		local sender_team   = ctf_teams.get(name)
+		local recipient_team = ctf_teams.get(sendto)
 
-		-- Make the sender-side message
-		str = "Message sent to " .. sendto .. ": " .. message
+		local sender_tcolor   = sender_team   and ctf_teams.team[sender_team].color or "#FFFFFF"
+		local recipient_tcolor = recipient_team and ctf_teams.team[recipient_team].color or "#FFFFFF"
+
+		-- Colorize the recipient‑side message and send it to the recipient
+		local recipient_str = colorize(msg_color, "PM from ")
+		recipient_str = recipient_str .. colorize(sender_tcolor, name)
+		recipient_str = recipient_str .. colorize(msg_color, ": " .. message)
+		core.chat_send_player(sendto, recipient_str)
+
+		-- Make the sender‑side message
+		local sender_str = colorize(sender_msg_color, "Message sent to ")
+		sender_str = sender_str .. colorize(recipient_tcolor, sendto)
+		sender_str = sender_str .. colorize(sender_msg_color, ": " .. message)
+
 
 		core.log(
 			"action",
@@ -40,7 +49,7 @@ core.override_chatcommand("msg", {
 		)
 
 		-- Send the sender-side message
-		return true, str
+		return true, sender_str
 	end,
 })
 
