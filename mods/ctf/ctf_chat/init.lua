@@ -5,6 +5,7 @@ local colorize = core.colorize
 local SPECTATOR_CHAT_COLOR = "#8f7bb9"
 
 core.override_chatcommand("msg", {
+	privs = { shout = true },
 	func = function(name, param)
 		local sendto, message = param:match("^(%S+)%s(.+)$")
 		if not sendto then
@@ -54,6 +55,7 @@ core.override_chatcommand("msg", {
 })
 
 core.override_chatcommand("me", {
+	privs = { shout = true },
 	func = function(name, param)
 		core.log("action", string.format("[CHAT] ME from %s: %s", name, param))
 
