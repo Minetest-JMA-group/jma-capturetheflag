@@ -207,6 +207,13 @@ core.register_craftitem(COIN_ITEM, {
 			)
 			return itemstack
 		end
+		if ctf_modebase and ctf_modebase.taken_flags[user:get_player_name()] then
+			core.chat_send_player(
+				user:get_player_name(),
+				S("You cannot use the teleport coin while carrying a flag.")
+			)
+			return itemstack
+		end
 
 		local ok, err = teleport_player(user)
 		if ok then
