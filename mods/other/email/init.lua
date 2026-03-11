@@ -231,6 +231,13 @@ core.register_chatcommand("mail", {
 	func = function(name, param)
 		local to, msg = string.match(param, "^([%a%d_-]+) (.+)")
 		if to and msg then
+			if core.global_exists("simplemod") and simplemod.is_muted(name) then
+				if simplemod.is_restricted(name) then
+					return true, "You are muted. You cannot send mails to anyone."
+				elseif core.check_player_privs(to, "moderator")
+					return true, "You are muted. You can send mails only to moderators."
+				end
+			end
 			return email.send_mail(name, to, msg)
 		else
 			return false, S("Usage: mail <playername> <some message>")
