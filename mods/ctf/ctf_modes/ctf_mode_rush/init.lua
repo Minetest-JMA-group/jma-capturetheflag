@@ -423,6 +423,7 @@ ctf_modebase.register_mode("rush", {
 		"deaths",
 		"hp_healed",
 	},
+	build_timer = 50,
 	stuff_provider = function()
 		return {
 			"default:sword_steel",
