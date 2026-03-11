@@ -684,7 +684,7 @@ ctf_modebase.register_mode("rush", {
 
 -- Register elysium callbacks if elysium module is available
 if ctf_jma_elysium then
-    ctf_jma_elysium.register_on_pre_join(function(player)
+    ctf_jma_elysium.register_on_prejoin(function(player)
         if ctf_modebase.current_mode ~= "rush" then return end
         local name = player:get_player_name()
 

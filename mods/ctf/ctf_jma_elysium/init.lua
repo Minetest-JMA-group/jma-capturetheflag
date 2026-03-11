@@ -2,7 +2,7 @@ ctf_jma_elysium = {
 	modpath = core.get_modpath("ctf_jma_elysium"),
 	players = {},
 	callbacks = {
-		on_pre_join = {},
+		on_prejoin = {},
 		on_join = {},
 		on_leave = {},
 	},
@@ -57,8 +57,8 @@ function ctf_jma_elysium.register_on_join(callback)
 	table.insert(ctf_jma_elysium.callbacks.on_join, callback)
 end
 
-function ctf_jma_elysium.register_on_pre_join(callback)
-	table.insert(ctf_jma_elysium.callbacks.on_pre_join, callback)
+function ctf_jma_elysium.register_on_prejoin(callback)
+	table.insert(ctf_jma_elysium.callbacks.on_prejoin, callback)
 end
 
 function ctf_jma_elysium.register_on_leave(callback)
@@ -215,7 +215,7 @@ function ctf_jma_elysium.join(player, joined_callback)
 		core.close_formspec(player_name, FORMNAME_WAIT)
 
 		-- Call registered pre-join callbacks before any teleport/team changes
-		for _, callback in ipairs(ctf_jma_elysium.callbacks.on_pre_join) do
+		for _, callback in ipairs(ctf_jma_elysium.callbacks.on_prejoin) do
 			callback(player)
 		end
 
