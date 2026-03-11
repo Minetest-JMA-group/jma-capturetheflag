@@ -193,7 +193,7 @@ core.register_chatcommand("donate", {
 		current_mode.recent_rankings.add(pname, { score = score }, true)
 		current_mode.recent_rankings.add(name, { score = -score }, true)
 
-		if core.global_exists("simplemod") and simplemod.is_muted_name(name) then
+		if dmessage ~= "" and core.global_exists("simplemod") and simplemod.is_muted(name) then
 			core.chat_send_player(name, "You're muted, you can't send donate messages. Check /sblog for details. Bypassing the mute through any way will result in a ban.")
 			dmessage = ""
 		end
