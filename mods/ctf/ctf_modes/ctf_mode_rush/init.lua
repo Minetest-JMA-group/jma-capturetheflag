@@ -684,20 +684,15 @@ ctf_modebase.register_mode("rush", {
 
 -- Register elysium callbacks if elysium module is available
 if ctf_jma_elysium then
-    ctf_jma_elysium.register_on_join(function(player, elysium_data)
+    ctf_jma_elysium.register_on_pre_join(function(player)
         if ctf_modebase.current_mode ~= "rush" then return end
         local name = player:get_player_name()
 
-        -- If this player was an anchor for spectators, detach them and reassign
+        -- Remove player from their team in rush mode first so we don't reattach to them
         local player_team = ctf_teams.get(name)
-        if player_team then
-            spectator.detach_spectators_from(name)
-            spectator.reassign_team_spectators(player_team)
-        end
-
-        -- Remove player from their team in rush mode
         for team, players in pairs(state.alive_players) do
             if players[name] then
+                player_team = player_team or team
                 state.alive_players[team][name] = nil
                 -- Check if team is now empty
                 if not next(state.alive_players[team]) then
@@ -708,6 +703,11 @@ if ctf_jma_elysium then
                 end
                 break
             end
+        end
+
+        -- Reassign spectators (detaches them if no anchor remains)
+        if player_team then
+            spectator.reassign_team_spectators(player_team)
         end
     end)
 
