@@ -70,10 +70,12 @@ ctf_core.register_on_formspec_input("^" .. SPECTATOR_INFO_FORMNAME .. "$",
         if formname ~= SPECTATOR_INFO_FORMNAME then return end
         local player = core.get_player_by_name(pname)
         if not player then return true end
-        if fields[SPECTATOR_INFO_CHECKBOX] == "true" then
-            player:get_meta():set_int(SPECTATOR_INFO_META_KEY, 1)
-        else
-            player:get_meta():set_int(SPECTATOR_INFO_META_KEY, 0)
+        if fields[SPECTATOR_INFO_CHECKBOX] ~= nil then
+            if fields[SPECTATOR_INFO_CHECKBOX] == "true" then
+                player:get_meta():set_int(SPECTATOR_INFO_META_KEY, 1)
+            else
+                player:get_meta():set_int(SPECTATOR_INFO_META_KEY, 0)
+            end
         end
         return true
     end)
