@@ -234,7 +234,7 @@ core.register_chatcommand("mail", {
 			if core.global_exists("simplemod") and simplemod.is_muted(name) then
 				if simplemod.is_restricted(name) then
 					return true, "You are muted. You cannot send mails to anyone."
-				elseif core.check_player_privs(to, "moderator")
+				elseif core.check_player_privs(to, "moderator") then
 					return true, "You are muted. You can send mails only to moderators."
 				end
 			end
