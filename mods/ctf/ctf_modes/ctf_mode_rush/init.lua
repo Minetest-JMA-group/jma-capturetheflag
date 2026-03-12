@@ -1,6 +1,8 @@
 local rankings = ctf_rankings.init()
 local recent_rankings = ctf_modebase.recent_rankings(rankings)
 local features = ctf_modebase.features(rankings, recent_rankings)
+local old_bounty_reward_func = ctf_modebase.bounties.bounty_reward_func
+local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 
 local MAX_REVIVES = 1
 
@@ -145,7 +147,7 @@ local function declare_winner(team)
 			survivor_count = survivor_count + 1
 		end
 		if survivor_count > 0 then
-			score_per_survivor = math.floor(500 / survivor_count)
+			score_per_survivor = math.floor(100 / survivor_count)
 		end
 	end
 
@@ -157,7 +159,7 @@ local function declare_winner(team)
 		then
 			award_score(name, score_per_survivor)
 		else
-			award_score(name, 50)
+			award_score(name, 10)
 		end
 	end
 
@@ -434,9 +436,15 @@ ctf_modebase.register_mode("rush", {
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
 	on_mode_start = function()
+		ctf_modebase.bounties.bounty_reward_func =
+			ctf_modebase.bounty_algo.kd.bounty_reward_func
+		ctf_modebase.bounties.get_next_bounty =
+			ctf_modebase.bounty_algo.kd.get_next_bounty
 		reset_state()
 	end,
 	on_mode_end = function()
+		ctf_modebase.bounties.bounty_reward_func = old_bounty_reward_func
+		ctf_modebase.bounties.get_next_bounty = old_get_next_bounty
 		restore_all_players()
 	end,
 	on_new_match = function()
