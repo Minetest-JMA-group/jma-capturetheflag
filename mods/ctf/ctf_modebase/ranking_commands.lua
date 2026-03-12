@@ -286,6 +286,64 @@ core.register_chatcommand("reset_rankings", {
 	end,
 })
 
+local allow_reset_mode = {}
+core.register_chatcommand("reset_mode_rankings", {
+	description = core.colorize(
+		"red",
+		"Resets rankings for all players in a specific mode"
+	),
+	params = "mode:technical modename",
+	privs = { ctf_admin = true },
+	func = function(name, param)
+		local mode_name, mode_data, opt_param = get_gamemode(param)
+		if not mode_name or not mode_data then
+			return false, mode_data
+		end
+		if mode_name == "all" then
+			return false, "Please specify a single mode (not all)."
+		end
+		if opt_param then
+			return false, "This command does not take a player name."
+		end
+		local key = string.format("%s:%s", mode_name, name)
+		if not allow_reset_mode[key] then
+			allow_reset_mode[key] = true
+
+			core.after(30, function()
+				allow_reset_mode[key] = nil
+			end)
+
+			return true,
+				"This will reset ALL rankings for mode "
+					.. mode_name
+					.. ". This is irreversible. Re-type /reset_mode_rankings within 30 seconds to confirm."
+		end
+
+		allow_reset_mode[key] = nil
+		local count = 0
+		mode_data.rankings.op_all(function(pname, _)
+			mode_data.rankings:del(pname)
+			count = count + 1
+		end)
+
+		core.log(
+			"action",
+			string.format(
+				"[ctf_admin] %s reset ALL rankings for mode %s (%d players)",
+				name,
+				mode_name,
+				count
+			)
+		)
+		return true,
+			string.format(
+				"Reset rankings for mode %s (%d players).",
+				mode_name,
+				count
+			)
+	end,
+})
+
 core.register_chatcommand("top50", {
 	description = "Show the top 50 players",
 	params = "[mode:technical modename]",
