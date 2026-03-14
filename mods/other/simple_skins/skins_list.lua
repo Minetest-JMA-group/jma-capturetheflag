@@ -128,3 +128,10 @@ return {
 		texture = "character_flagelite.png",
 	},
 }
+
+	[36] = {
+		name = "Bobo",
+		author = "bobogames",
+		texture = "character_bobo.png",
+	},
+}
