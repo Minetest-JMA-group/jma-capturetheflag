@@ -3,11 +3,9 @@ local S       = core.get_translator(modname)
 
 local TELEPORT_ITEM = "spectator_teleport:item"
 
---  Data structures
--- teleport_data[player_name] = {players = {name1, name2, …}, index = 1}
+-- teleport_data[player_name] = {index = 1}
 local teleport_data = {}
 
--- Auto‑save each player's last known team every few seconds
 local UPDATE_INTERVAL = tonumber(core.settings:get("spectator_teleport.update_interval")) or 5   -- default value of seconds and settings
 local update_timer    = 0
 
@@ -19,9 +17,13 @@ end
 
 local function get_player_score(pname)
 	local mode = ctf_modebase:get_current_mode()
-	if not mode then return 0 end
+	if not mode then
+		return 0
+	end
 	local rankings = mode.recent_rankings
-	if not rankings then return 0 end
+	if not rankings then
+		return 0
+	end
 	local all_players = rankings.players()
 	return (all_players[pname] and all_players[pname].score) or 0
 end
@@ -38,11 +40,16 @@ local function build_sorted_teammates(my_name, my_team)
 		if pname ~= my_name then
 			local team = get_player_team(pname)
 			if team == my_team and team ~= nil then
-				table.insert(teammates, {name = pname, score = get_player_score(pname)})
+				local player_obj = minetest.get_player_by_name(pname)
+				if player_obj then
+					table.insert(teammates, {name = pname, score = get_player_score(pname)})
+				end
 			end
 		end
 	end
-	table.sort(teammates, function(a, b) return a.score > b.score end)
+	table.sort(teammates, function(a, b)
+		return a.score > b.score
+	end)
 
 	local name_list = {}
 	for _, t in ipairs(teammates) do
@@ -51,7 +58,7 @@ local function build_sorted_teammates(my_name, my_team)
 	return name_list
 end
 
--- Store each player's current team in meta (used later when they become a spec)
+-- Store each player's current team in meta
 local function update_all_players_team_meta()
 	for _, player in ipairs(minetest.get_connected_players()) do
 		local pname = player:get_player_name()
@@ -62,7 +69,7 @@ local function update_all_players_team_meta()
 	end
 end
 
---  Globalstep refresh
+--  globalstep
 minetest.register_globalstep(function(dtime)
 	update_timer = update_timer + dtime
 	if update_timer > UPDATE_INTERVAL then
@@ -71,7 +78,6 @@ minetest.register_globalstep(function(dtime)
 	end
 end)
 
---  Player join / leave hooks
 minetest.register_on_joinplayer(function(player)
 	update_all_players_team_meta()
 	teleport_data[player:get_player_name()] = nil
@@ -132,27 +138,34 @@ local function on_teleport_item_use(itemstack, user)
 
 	--  Initialise / update per‑player teleport cache
 	if not teleport_data[pname] then
-		teleport_data[pname] = {players = {}, index = 1}
+		teleport_data[pname] = {index = 1}
 	end
 
 	local data = teleport_data[pname]
 
 	-- Replace the cached list only when it changed (e.g. a teammate died or respawned)
-	if #data.players ~= #sorted_teammates then
-		data.players = sorted_teammates
-		data.index   = 1
+	if data.index > #sorted_teammates then
+		data.index = 1
 	end
 
 	--  Pick the next teammate
-	local target_name   = data.players[data.index]
+	local target_name   = sorted_teammates[data.index]
 	local target_player = minetest.get_player_by_name(target_name)
 
-	-- If the selected teammate is offline, skip him and try the next one
+	-- If the selected teammate is offline, skip this player
 	if not target_player then
-		minetest.chat_send_player(pname, "Teammate offline, skipping…")
-		data.index = data.index + 1
-		if data.index > #data.players then data.index = 1 end
-		return itemstack
+		minetest.chat_send_player(pname, "Target player offline, resetting...")
+		data.index = 1
+		target_name = sorted_teammates[data.index]
+		target_player = minetest.get_player_by_name(target_name)
+		if not target_player then
+			hud_events.new(pname, {
+				quick = true,
+				text  = "Error: Could not find valid target.",
+				color = "error",
+			})
+			return itemstack
+		end
 	end
 
 	--  Attach / teleport the user
@@ -167,73 +180,73 @@ local function on_teleport_item_use(itemstack, user)
 
 	--  HUD feedback
 	local target_score = get_player_score(target_name)
-	local rank        = data.index
+	local rank = data.index
 	hud_events.new(pname, {
 		quick = true,
-		text  = ("Spectating %s (Score: %d) | Rank: %d/%d"):
-		         format(target_name, target_score, rank, #data.players),
+		text = ("Spectating %s (Score: %d) | Rank: %d/%d"):
+		         format(target_name, target_score, rank, #sorted_teammates),
 		color = "success",
 	})
 
 	data.index = data.index + 1
-	if data.index > #data.players then data.index = 1 end
+	if data.index > #sorted_teammates then data.index = 1 end
 
 	return itemstack
 end
 
 --  Register the item
 core.register_craftitem(TELEPORT_ITEM, {
-	description    = S("Teleport to Teammates"),
+	description = S("Teleport to Teammates"),
 	inventory_image = "spectator_teleport_item.png",
-	stack_max      = 1,
-	on_use         = on_teleport_item_use,
-	on_drop		   = on_teleport_item_drop,
+	stack_max = 1,
+	on_use = on_teleport_item_use,
+	on_drop = on_teleport_item_drop,
 })
 
 core.register_chatcommand("spectate", {
-    description = S("Spectate a specific teammate (only as spectator)"),
-    params = "<playername>",
-    func = function(name, param)
-        if param == "" then
-            return false, S("Usage: /spectate <playername>")
-        end
+	description = S("Spectate a specific teammate (only as spectator)"),
+	params = "<playername>",
+	func = function(name, param)
+		if param == "" then
+			return false, S("Usage: /spectate <playername>")
+		end
 
-        local target_name = param:trim()
-        local target = minetest.get_player_by_name(target_name)
-        if not target then
-            return false, S("Player @1 not found or offline.", target_name)
-        end
+		local target_name = param:trim()
+		local target = minetest.get_player_by_name(target_name)
+		if not target then
+			return false, S("Player @1 not found or offline.", target_name)
+		end
 
-        local my_team = get_player_team(name)
-        if my_team ~= nil then
-            return false, S("Only spectators can use this command.")
-        end
+		local my_team = get_player_team(name)
+		if my_team ~= nil then
+			return false, S("Only spectators can use this command while rush mode.")
+		end
 
-        local old_team = get_spectator_old_team(minetest.get_player_by_name(name))
-        if old_team == "" then
-            return false, S("No previous team found")
-        end
+		local old_team = get_spectator_old_team(minetest.get_player_by_name(name))
+		if old_team == "" then
+			return false, S("No previous team found.")
+		end
 
-        if get_player_team(target_name) ~= old_team then
-            return false, S("@1 is not on your team (@2).", target_name, old_team)
-        end
+		if get_player_team(target_name) ~= old_team then
+			return false, S("@1 is not in your team (@2).", target_name, old_team)
+		end
 
-        local spectator = minetest.get_player_by_name(name)
-        spectator:set_detach()
-        spectator:set_attach(target, "", {x=0, y=1.5, z=0}, {x=0, y=0, z=0})
-        spectator:set_pos(target:get_pos())
+		local spectator = minetest.get_player_by_name(name)
+		spectator:set_detach()
+		spectator:set_attach(target, "", {x=0, y=1.5, z=0}, {x=0, y=0, z=0})
+		spectator:set_pos(target:get_pos())
 
-        if spectator.set_camera then
-            spectator:set_camera({mode = "third"})
-        end
+		if spectator.set_camera then
+			spectator:set_camera({mode = "third"})
+		end
 
-        local score = get_player_score(target_name)
-        hud_events.new(name, {
-            quick = true,
-            text  = S("Spectating @1 (Score: @2)", target_name, score),
-            color = "success",
-        })
+		local score = get_player_score(target_name)
+		hud_events.new(name, {
+			quick = true,
+			text  = S("Spectating @1 (Score: @2)", target_name, score),
+			color = "success",
+		})
 
-        return true
-    end,
+		return true
+	end,
 })
