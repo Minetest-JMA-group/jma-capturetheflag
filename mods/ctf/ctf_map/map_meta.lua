@@ -2,59 +2,30 @@ local CURRENT_MAP_VERSION = "3"
 local BARRIER_Y_SIZE = 16
 local modname = core.get_current_modname()
 
+local function normalize_seasonal_date(raw, dirname)
+    if not raw or raw == "" then
+        return
+    end
+
+    local m, d = raw:match("^(%d+)%.(%d+)$")
+    if not m or not d then
+        core.log("error", "Invalid seasonal date '" .. tostring(raw) .. "' for map " .. dirname .. ". Expected format: MM.DD")
+        return
+    end
+
+    m = tonumber(m)
+    d = tonumber(d)
+    if not m or not d or m < 1 or m > 12 or d < 1 or d > 31 then
+        core.log("error", "Invalid seasonal date '" .. tostring(raw) .. "' for map " .. dirname .. ". Expected format: MM.DD")
+        return
+    end
+
+    return string.format("%02d.%02d", m, d)
+end
+
 function ctf_map.skybox_exists(subdir)
     local list = core.get_dir_list(subdir, true)
     return table.indexof(list, "skybox") ~= -1
-end
-
-local function is_map_currently_available(map)
-    local current_players = #core.get_connected_players()
-
-    local min_p = map.min_players or 1
-    local max_p = map.max_players or 32
-
-    if current_players < min_p or current_players > max_p then
-        core.log("info", "Map '" .. (map.name or map.dirname) ..
-                 "' skipped: " .. current_players .. " players not in range [" .. min_p .. "-" .. max_p .. "]")
-        return false
-    end
-
-    local start_str = map.seasonal_start
-    local end_str = map.seasonal_end
-
-    if not start_str or not end_str or start_str == "" or end_str == "" then
-        return true
-    end
-
-    local sm, sd = start_str:match("^(%d+)%.(%d+)$")
-    local em, ed = end_str:match("^(%d+)%.(%d+)$")
-    if not sm or not em then
-        return true
-    end
-
-    sm, sd = tonumber(sm), tonumber(sd)
-    em, ed = tonumber(em), tonumber(ed)
-
-    local cm = tonumber(os.date("%m"))
-    local cd = tonumber(os.date("%d"))
-
-    local function num(m, d) return m * 100 + d end
-    local curr = num(cm, cd)
-    local start = num(sm, sd)
-    local ending = num(em, ed)
-
-    local available
-    if start <= ending then
-        available = curr >= start and curr <= ending
-    else
-        available = curr >= start or curr <= ending
-    end
-
-    if not available then
-        core.log("info", "Map '" .. (map.name or map.dirname) ..
-                 "' skipped: outside seasonal window " .. start_str .. " - " .. end_str)
-    end
-    return available
 end
 
 -- calc_flag_center() calculates the center of a map from the positions of the flags.
@@ -204,10 +175,10 @@ function ctf_map.load_map_meta(idx, dirname)
             phys_speed = tonumber(meta:get("phys_speed")),
             phys_jump = tonumber(meta:get("phys_jump")),
             phys_gravity = tonumber(meta:get("phys_gravity")),
-            min_players = tonumber(meta:get("min_players")) or 1,
-            max_players = tonumber(meta:get("max_players")) or 32,
-            seasonal_start = meta:get("seasonal_start") or "01.01",
-            seasonal_end = meta:get("seasonal_end") or "12.31",
+            min_players = tonumber(meta:get("min_players")),
+            max_players = tonumber(meta:get("max_players")),
+            seasonal_start = normalize_seasonal_date(meta:get("seasonal_start"), dirname),
+            seasonal_end = normalize_seasonal_date(meta:get("seasonal_end"), dirname),
             chests = core.deserialize(meta:get("chests")),
             teams = core.deserialize(meta:get("teams")),
             barrier_area = core.deserialize(meta:get("barrier_area")),
@@ -231,8 +202,6 @@ function ctf_map.load_map_meta(idx, dirname)
             map.barrier_area = { pos1 = map.pos1, pos2 = map.pos2 }
         end
     end
-
-    map.currently_available = is_map_currently_available(map)
 
     map.flag_center = calc_flag_center(map)
 

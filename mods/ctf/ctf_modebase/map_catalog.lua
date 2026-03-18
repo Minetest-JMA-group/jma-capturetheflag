@@ -11,6 +11,53 @@ local used_maps = {}
 local used_maps_idx = 1
 local map_repeat_interval
 
+local function is_map_currently_available(map)
+	local available = true
+
+    local current_players = #core.get_connected_players()
+    local min_p = map.min_players
+    local max_p = map.max_players
+    if min_p and max_p and (current_players < min_p or current_players > max_p) then
+        core.log("info", "Map '" .. (map.name or map.dirname) ..
+                 "' skipped: " .. current_players .. " players not in range [" .. min_p .. "-" .. max_p .. "]")
+        available = false
+    end
+
+    local start_str = map.seasonal_start
+    local end_str = map.seasonal_end
+    if start_str and end_str then
+        local sm, sd = start_str:match("^(%d+)%.(%d+)$")
+        local em, ed = end_str:match("^(%d+)%.(%d+)$")
+        sm, sd = tonumber(sm), tonumber(sd)
+        em, ed = tonumber(em), tonumber(ed)
+
+        if sm and sd and em and ed then
+            local cm = tonumber(os.date("%m"))
+            local cd = tonumber(os.date("%d"))
+
+            local function num(m, d) return m * 100 + d end
+            local curr = num(cm, cd)
+            local start = num(sm, sd)
+            local ending = num(em, ed)
+
+            local inside
+            if start <= ending then
+                inside = curr >= start and curr <= ending
+            else
+                inside = curr >= start or curr <= ending
+            end
+
+            if not inside then
+                core.log("info", "Map '" .. (map.name or map.dirname) ..
+                         "' skipped: outside seasonal window " .. start_str .. " - " .. end_str)
+                available = false
+            end
+        end
+    end
+
+    return available
+end
+
 local function init()
 	table.sort(ctf_map.registered_maps)
 
@@ -100,18 +147,7 @@ end
 
 function ctf_modebase.map_catalog.sample_map_for_mode(mode, n)
 	return ctf_modebase.map_catalog.sample_maps(function(map)
-		return not map.game_modes or table.indexof(map.game_modes, mode) ~= -1
+		return (not map.game_modes or table.indexof(map.game_modes, mode) ~= -1)
+			and is_map_currently_available(map) -- check seasonal and player count
 	end, n)
 end
-
-
--- After all maps are registered
-minetest.after(0, function()
-	local filtered = {}
-	for dirname, map in pairs(ctf_map.registered_maps_meta or ctf_map.registered_maps) do
-		if map.currently_available then
-			filtered[dirname] = map
-		end
-	end
-	ctf_map.available_maps = filtered
-end)
