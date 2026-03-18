@@ -10,7 +10,7 @@ local modpath = core.get_modpath(core.get_current_modname())
 local timer = dofile(modpath .. "/timer.lua")
 local spectator = dofile(modpath .. "/spectator.lua")
 
-ctf_mode_rush = ctf_mode_rush or {}
+ctf_mode_rush = {}
 local rush_api = ctf_mode_rush
 
 local state = {
