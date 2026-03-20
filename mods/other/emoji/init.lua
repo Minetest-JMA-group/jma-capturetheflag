@@ -1,170 +1,148 @@
--- Modified by fancyfinn9
+-- Modified by fancyfinn9 and Nanowolf4
+local cooldown = ctf_core.init_cooldowns()
 
-local bg = "bg_emoji.png"
+local emojis = {
+	["B-)"] = "2_emoji",
+	[":D"] = "5_emoji",
+	[":_("] = "7_emoji",
+	[">:-["] = "8_emoji",
+	["]:-)"] = "9_emoji",
+	[":/"] = "10_emoji",
+	[";)"] = "11_emoji",
+	[":("] = "12_emoji",
+	[";P"] = "13_emoji",
+	[":'-D"] = "14_emoji",
+	["~:["] = "15_emoji",
+	["o_O"] = "16_emoji",
+	["xD"] = "17_emoji",
+	["xP"] = "18_emoji",
+	[":P"] = "20_emoji",
+	[":O"] = "21_emoji",
+	["jma"] = "jma_emoji",
+	["rabbit"] = "rabbit_emoji",
+	["sus"] = "sus_emoji",
+	["troll"] = "troll_emoji",
+	["rick"] = "rick_emoji",
+}
 
-local form = "size[10,7.8] bgcolor[#333444cc; false] image_button_exit[0,0;2,2;"
-	.. bg
-	.. "^2_emoji.png;2_emoji;] image_button_exit[2,0;2,2;"
-	.. bg
-	.. "^5_emoji.png;5_emoji;] image_button_exit[4,0;2,2;"
-	.. bg
-	.. "^7_emoji.png;7_emoji;] image_button_exit[6,0;2,2;"
-	.. bg
-	.. "^8_emoji.png;8_emoji;] image_button_exit[8,0;2,2;"
-	.. bg
-	.. "^9_emoji.png;9_emoji;] image_button_exit[0,2;2,2;"
-	.. bg
-	.. "^10_emoji.png;10_emoji;] image_button_exit[2,2;2,2;"
-	.. bg
-	.. "^11_emoji.png;11_emoji;] image_button_exit[4,2;2,2;"
-	.. bg
-	.. "^12_emoji.png;12_emoji;] image_button_exit[6,2;2,2;"
-	.. bg
-	.. "^13_emoji.png;13_emoji;] image_button_exit[8,2;2,2;"
-	.. bg
-	.. "^14_emoji.png;14_emoji;] image_button_exit[0,4;2,2;"
-	.. bg
-	.. "^15_emoji.png;15_emoji;] image_button_exit[2,4;2,2;"
-	.. bg
-	.. "^16_emoji.png;16_emoji;] image_button_exit[4,4;2,2;"
-	.. bg
-	.. "^17_emoji.png;17_emoji;] image_button_exit[6,4;2,2;"
-	.. bg
-	.. "^18_emoji.png;18_emoji;] image_button_exit[8,4;2,2;"
-	.. bg
-	.. "^20_emoji.png;20_emoji;] image_button_exit[0,6;2,2;"
-	.. bg
-	.. "^21_emoji.png;21_emoji;] image_button_exit[2,6;2,2;"
-	.. bg
-	.. "^jma_emoji.png;jma_emoji;] image_button_exit[4,6;2,2;"
-	.. bg
-	.. "^rabbit_emoji.png;rabbit_emoji;] image_button_exit[6,6;2,2;"
-	.. bg
-	.. "^sus_emoji.png;sus_emoji;] image_button_exit[8,6;2,2;"
-	.. bg
-	.. "^troll_emoji.png;troll_emoji;]"
+local hidden_emojis = {
+	["rick"] = true,
+}
+
+local function get_emoji_formspec()
+	local bg = "bg_emoji.png"
+	local cols = 5
+	local btn_size = 2
+	local spacing = 0.1
+	local start_y = 0
+	local form = "formspec_version[7] size[10.4,10.4] bgcolor[#333444cc; false]"
+	local i = 0
+
+	-- Pass emoji as texture name to avoid escaping issues with special characters in the formspec
+	for n, texture in pairs(emojis) do
+		if hidden_emojis[n] then
+			goto continue
+		end
+
+		local x = (i % cols) * (btn_size + spacing)
+		local y = start_y + math.floor(i / cols) * (btn_size + spacing)
+		form = form .. string.format(
+			"image_button_exit[%.2f,%.2f;%.2f,%.2f;%s^%s.png;%s;]",
+			x,
+			y,
+			btn_size,
+			btn_size,
+			bg,
+			texture,
+			texture
+		)
+		i = i + 1
+
+		::continue::
+	end
+
+	return form
+end
 
 core.register_chatcommand("e", {
 	params = "",
 	description = "Emoji",
-	privs = {},
+	privs = {shout = true},
 	func = function(name, param)
-		core.show_formspec(name, "emoji_form", form)
+		core.show_formspec(name, "emoji_form", get_emoji_formspec())
 	end,
 })
 
-local v = {
-	{ "2_emoji", "B-)" },
-	{ "5_emoji", ":D" },
-	{ "7_emoji", ":_(" },
-	{ "8_emoji", ">:-[" },
-	{ "9_emoji", "]:-)" },
-	{ "10_emoji", ":/" },
-	{ "11_emoji", ";)" },
-	{ "12_emoji", ":(" },
-	{ "13_emoji", ";P" },
-	{ "14_emoji", ":'-D" },
-	{ "15_emoji", "~:[" },
-	{ "16_emoji", "o_O" },
-	{ "17_emoji", "xD" },
-	{ "18_emoji", "xP" },
-	{ "20_emoji", ":P" },
-	{ "21_emoji", ":O" },
-	{ "jma_emoji", "jma" },
-	{ "rabbit_emoji", "rabbit" },
-	{ "sus_emoji", "sus" },
-	{ "troll_emoji", "troll" },
-	{ "rick_emoji", "rick" },
-}
+local function spawn_emoji_particles(pos, texture, anim)
+	local def = {
+		amount = 1,
+		time = 0.01,
+		minpos = { x = pos.x, y = pos.y + 2, z = pos.z },
+		maxpos = { x = pos.x, y = pos.y + 2, z = pos.z },
+		minvel = { x = 0, y = 0.15, z = 0 },
+		maxvel = { x = 0, y = 0.15, z = 0 },
+		minacc = { x = 0, y = 0, z = 0 },
+		maxacc = { x = 0, y = 0, z = 0 },
+		minexptime = 2.5,
+		maxexptime = 2.5,
+		minsize = 9,
+		maxsize = 9,
+		collisiondetection = false,
+		texture = texture,
+	}
+	if anim then
+		def.animation  = {
+			type = "vertical_frames",
+			aspect_w = 347,
+			aspect_h = 350,
+			length = 2.0,
+		}
+	end
+	core.add_particlespawner(def)
+end
+
+local function play_sound(pos)
+	core.sound_play(
+		"emoji_sound",
+		{ pos = pos, max_hear_distance = 10, gain = 1.0 }
+	)
+end
 
 core.register_on_player_receive_fields(function(player, formname, fields)
 	if formname == "emoji_form" then
+		if cooldown:get(player) then
+			return true
+		end
+		cooldown:set(player, 1)
+
 		local pos = player:get_pos()
+		local name = player:get_player_name()
+		for _, texture in pairs(emojis) do
+			if fields[texture] then
+				play_sound(pos)
+				spawn_emoji_particles(pos, texture .. ".png")
 
-		for _, v in pairs(v) do
-			if fields[v[1]] then
-				core.sound_play(
-					"emoji_sound",
-					{ pos = pos, max_hear_distance = 12, gain = 1.0 }
-				)
-
-				core.add_particlespawner(
-					1, --amount
-					0.01, --time
-					{ x = pos.x, y = pos.y + 2, z = pos.z }, --minpos
-					{ x = pos.x, y = pos.y + 2, z = pos.z }, --maxpos
-					{ x = 0, y = 0.15, z = 0 }, --minvel
-					{ x = 0, y = 0.15, z = 0 }, --maxvel
-					{ x = 0, y = 0, z = 0 }, --minacc
-					{ x = 0, y = 0, z = 0 }, --maxacc
-					2.5, --minexptime
-					2.5, --maxexptime
-					9, --minsize
-					9, --maxsize
-					false, --collisiondetection
-					v[1] .. ".png"
-				)
+				core.close_formspec(name, "emoji_form")
+				return true
 			end
 		end
+
+		core.close_formspec(name, "emoji_form")
+		return true
 	end
 end)
 
-core.register_on_chat_message(function(name, message, pos)
-	local checkingmessage = (name .. " " .. message .. " ")
-	for _, v in pairs(v) do
-		if string.find(checkingmessage, v[2], 1, true) ~= nil then
-			if v[2] == "rick" then
-				local player = core.get_player_by_name(name)
+-- Find the emoji in the first or last word of the message, and spawn the particles if found
+core.register_on_chat_message(function(name, message)
+	local first_word = message:match("^(%S+)")
+	local last_word = message:match("(%S+)$")
+	local texture = emojis[first_word] or emojis[last_word]
 
-				local pos = player:get_pos()
+	if texture then
+		local player = core.get_player_by_name(name)
+		local pos = player:get_pos()
 
-				core.add_particlespawner({
-					amount = 1,
-					time = 0.01,
-					minpos = { x = pos.x, y = pos.y + 2, z = pos.z },
-					maxpos = { x = pos.x, y = pos.y + 2, z = pos.z },
-					minvel = { x = 0, y = 0.15, z = 0 }, --minvel
-					maxvel = { x = 0, y = 0.15, z = 0 }, --maxvel
-					minacc = { x = 0, y = 0, z = 0 }, --minacc
-					maxacc = { x = 0, y = 0, z = 0 }, --maxacc
-					minexptime = 2.5, --minexptime
-					maxexptime = 2.5, --maxexptime
-					minsize = 9, --minsize
-					maxsize = 9, --maxsize
-					collisiondetection = false, --collisiondetection
-					texture = "rick_emoji.png",
-					animation = {
-						type = "vertical_frames",
-
-						aspect_w = 347,
-
-						aspect_h = 350,
-
-						length = 2.0,
-					},
-				})
-			else
-				local player = core.get_player_by_name(name)
-
-				local pos = player:get_pos()
-
-				core.add_particlespawner(
-					1, --amount
-					0.01, --time
-					{ x = pos.x, y = pos.y + 2, z = pos.z }, --minpos
-					{ x = pos.x, y = pos.y + 2, z = pos.z }, --maxpos
-					{ x = 0, y = 0.15, z = 0 }, --minvel
-					{ x = 0, y = 0.15, z = 0 }, --maxvel
-					{ x = 0, y = 0, z = 0 }, --minacc
-					{ x = 0, y = 0, z = 0 }, --maxacc
-					2.5, --minexptime
-					2.5, --maxexptime
-					9, --minsize
-					9, --maxsize
-					false, --collisiondetection
-					v[1] .. ".png"
-				)
-			end
-		end
+		play_sound(pos)
+		spawn_emoji_particles(pos, texture .. ".png", true)
 	end
 end)
