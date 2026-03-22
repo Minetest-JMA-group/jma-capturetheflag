@@ -64,12 +64,14 @@ local function get_emoji_formspec()
 	return form
 end
 
+local formspec_cached = get_emoji_formspec()
+
 core.register_chatcommand("e", {
 	params = "",
 	description = "Emoji",
 	privs = {shout = true},
 	func = function(name, param)
-		core.show_formspec(name, "emoji_form", get_emoji_formspec())
+		core.show_formspec(name, "emoji_form", formspec_cached)
 	end,
 })
 
@@ -89,6 +91,7 @@ local function spawn_emoji_particles(pos, texture, anim)
 		maxsize = 9,
 		collisiondetection = false,
 		texture = texture,
+		glow = 14,
 	}
 	if anim then
 		def.animation  = {
