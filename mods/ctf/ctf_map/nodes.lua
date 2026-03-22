@@ -130,7 +130,7 @@ local function make_immortal(def)
 	def.description = def.description and ("Indestructible " .. def.description)
 end
 
-local ind_damage_per_second = tonumber(core.settings:get("ctf_map_ind_damage_per_second")) or 2
+local ind_damage_per_second = tonumber(core.settings:get("ctf_map_ind_damage_per_second")) or 5
 local queue = {}
 for name, def in pairs(core.registered_nodes) do
 	local mod, nodename = name:match("(..-):(.+)")
