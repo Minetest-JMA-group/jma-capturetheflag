@@ -89,7 +89,8 @@ end
 core.register_tool("ctf_map:adminpick", {
 	description = "Admin pickaxe used to break indestructible nodes.\nRightclick to remove non-indestructible nodes",
 	inventory_image = "default_tool_diamondpick.png^default_obsidian_shard.png",
-	range = 16,
+    range = 16,
+	groups = { non_dropable = 1 },
 	tool_capabilities = {
 		full_punch_interval = 1.0,
 		max_drop_level = 3,
