@@ -5,9 +5,9 @@ local function drop_list(pos, player, list)
 	local pname = player:get_player_name()
 	local is_player = pname ~= ""
 	local inv = player:get_inventory()
-    for _, item in ipairs(inv:get_list(list)) do
+	for _, item in ipairs(inv:get_list(list)) do
 		local item_name = item:get_name()
-        local item_def = core.registered_items[item_name]
+		local item_def = core.registered_items[item_name]
 		if item_name == "" or not item_def or item_def.groups.non_dropable then
 			goto continue
 		end
@@ -19,17 +19,17 @@ local function drop_list(pos, player, list)
 		end
 
 		local obj = core.add_item(pos, item)
-        if obj then
-            local random_velocity = {
-                x = math.random(-1, 1),
-                y = 5,
-                z = math.random(-1, 1),
-            }
+		if obj then
+			local random_velocity = {
+				x = math.random(-1, 1),
+				y = 5,
+				z = math.random(-1, 1),
+			}
 
-            local final_velocity = vector.add(vector.divide(vel, 2), random_velocity)
+			local final_velocity = vector.add(vector.divide(vel, 2), random_velocity)
 
-            obj:set_velocity(final_velocity)
-        end
+			obj:set_velocity(final_velocity)
+		end
 		::continue::
 	end
 
