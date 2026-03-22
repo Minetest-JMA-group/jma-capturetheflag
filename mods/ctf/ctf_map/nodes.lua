@@ -130,6 +130,7 @@ local function make_immortal(def)
 	def.description = def.description and ("Indestructible " .. def.description)
 end
 
+local ind_damage_per_second = tonumber(core.settings:get("ctf_map_ind_damage_per_second")) or 2
 local queue = {}
 for name, def in pairs(core.registered_nodes) do
 	local mod, nodename = name:match("(..-):(.+)")
@@ -152,7 +153,7 @@ for name, def in pairs(core.registered_nodes) do
 			and def.drawtype == "normal"
 			and def.walkable ~= false
 		then
-			new_def.damage_per_second = 15
+			new_def.damage_per_second = ind_damage_per_second
 		end
 		make_immortal(new_def)
 		table.insert(queue, { name = new_name, def = new_def })
