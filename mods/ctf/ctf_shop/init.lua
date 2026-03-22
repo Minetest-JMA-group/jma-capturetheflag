@@ -1,17 +1,6 @@
-if type(ctf_api) ~= "table" or type(ctf_teams) ~= "table" or type(ctf_modebase) ~= "table" or type(ctf_settings) ~= "table" then
+if not core.settings:get_bool("enable_ctf_shop") then
+    core.log("action", "[ctf_shop] Mod is disabled. To enable it, set 'enable_ctf_shop' to true in the settings.")
     return
-end
-
-local function contains(tbl, val)
-    if type(tbl) ~= "table" then
-        return false
-    end
-    for _, v in pairs(tbl) do
-        if v == val then
-            return true
-        end
-    end
-    return false
 end
 
 ctf_shop = {}
@@ -121,7 +110,7 @@ end
 local function get_items_of_page(page, ctf_mode)
     local allowed = {}
     for idx, def in ipairs(shop_items) do
-        if type(def) == "table" and type(def.modes) == "table" and contains(def.modes, ctf_mode) then
+        if table.keyof(def.modes, ctf_mode) then
             table.insert(allowed, {index = idx, item = def})
         end
     end
@@ -217,9 +206,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
     if formname ~= "ctf_shop:shop_formspec" then
         return
     end
-    if core.settings:get_bool("enable_ctf_shop", true) ~= true then
-        return
-    end
+
     local player_name = player:get_player_name()
     if type(players_coins[player_name]) ~= "number" then
         players_coins[player_name] = start_coin_amount
@@ -267,9 +254,6 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 end)
 
 ctf_api.register_on_new_match(function()
-    if core.settings:get_bool("enable_ctf_shop", true) ~= true then
-        return
-    end
     players_coins = {}
     core.after(3, function ()
         local team_player_names = ctf_teams.get_all_team_players()
@@ -287,9 +271,6 @@ core.register_chatcommand("shop", {
 	description = "Open the CTF Shop",
 	privs = {interact = true},
 	func = function(player_name)
-        if core.settings:get_bool("enable_ctf_shop", true) ~= true then
-            return false, "The Shop is disabled."
-        end
 
 		show_shop_formspec(player_name, 1)
 		return true, "Opened the shop."
