@@ -65,21 +65,19 @@ local messages = {
 	"You can press sneak while jumping to jump up two blocks.",
 	S("Use /donate <playername> <score> to reward a teammate for their work."),
 	"A medic and knight working together can wreak havoc on the enemy team(s).",
-	"Check/news to see our recent updates and rules, you will also figure out how to get the [PRO] tag at that page.",
 	S("Join us on Discord: @1", DISCORD_SERVER),
 	"Use /news to see the server news",
 	"Stuck? Use /killme to return to base",
 	"Strengthen your defense: build walls, set obstacles, and traps to secure your base.",
-	S("Want to get a new skin? Send it to us at @1", DISCORD_SERVER),
 	"Try modern HUD instead of hearts/arrows (in the in-game settings)",
 	S(
 		"It is recommended that you avoid sharing personal information such as your address, phone number, or other confidential data to ensure your safety and privacy."
 	),
-	-- connection, fps, minetest issues
-	"To ensure smooth gameplay, we recommend updating to the latest version of Minetest",
+	-- connection, fps, luanti issues
+	"To ensure smooth gameplay, we recommend updating to the latest version of Luanti",
 	"If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
 	"Having a stable internet connection is crucial as it minimizes lag, ensuring smoother multiplayer interactions",
-	"If you can't open chests, exit then rejoin the game",
+	"If you can't open chests, exit then rejoin the game (this issue only affects Multicraft clients).",
 	"Your VPS service is being blocked? Contact our server staff so we can whitelist you",
 	"Check your connection latency to the server with /ping",
 	--translator usage tips
@@ -114,7 +112,10 @@ local messages = {
 	"Swearing, trolling, and being rude will not be tolerated, and strict action will be taken.",
 	"Trapping teammates on purpose is strictly against the rules, doing so will result in a ban.",
 	"Use /block <username> to stop seeing messages send by a user in the public or private chats.",
-	S("To report misbehaving players to moderators, please use /report <name> <action> or send the report on Discord: @1", DISCORD_SERVER),
+	S(
+	"To report misbehaving players to moderators, please use /report <name> <action> or send the report on Discord: @1",
+		DISCORD_SERVER),
+	"If you need urgent help (for example, suicidal thoughts or self-harm), use /emergency_ping. Abusing this command is subject to punishment.",
 }
 
 local MESSAGE_INTERVAL = tonumber(core.settings:get("random_messages_interval")) or 120
