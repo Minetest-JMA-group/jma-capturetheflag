@@ -30,6 +30,7 @@ local function add_suffocation()
 		and (def.collision_box == nil or def.collision_box.type == "regular")
 		and (def.node_box == nil or def.node_box.type == "regular")
 		and (def.groups.disable_suffocation ~= 1)
+		and (def.groups.immortal ~= 1) --disable suffocation on all indestructible nodes
 		then
 			-- Add “real_suffocation” group so other mods know this node was touched by this mod
 			local marked_groups = def.groups
