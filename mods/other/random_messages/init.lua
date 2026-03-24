@@ -11,7 +11,7 @@ local S = core.get_translator(core.get_current_modname())
 
 random_messages = {}
 
-if core.settings:get("random_messages_disabled") == "true" then
+if core.settings:get("random_messages_disabled") == "true" or ctf_core.settings.server_mode == "mapedit" then
 	return
 end
 
@@ -124,16 +124,16 @@ function random_messages.get_random_message()
 	return messages[math.random(1, #messages)]
 end
 
-local timer = 0
-core.register_globalstep(function(dtime)
-	timer = timer + dtime
-	if timer > MESSAGE_INTERVAL then
+local function send_random_message()
+	core.after(MESSAGE_INTERVAL, function()
 		if #core.get_connected_players() > 0 then
 			core.chat_send_all(
 				core.colorize("#808080", random_messages.get_random_message()),
 				"random_messages"
 			)
 		end
-		timer = 0
-	end
-end)
+		send_random_message()
+	end)
+end
+
+send_random_message()
