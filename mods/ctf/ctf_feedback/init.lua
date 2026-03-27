@@ -125,7 +125,8 @@ core.register_chatcommand("feedback", {
 	func = function(pname, params)
 		if params ~= "" then
 			if record_feedback(pname, params) then
-				return true, S("Thanks! Your feedback has been recorded!")
+				return true,
+				S("Feedback could NOT be send, please submit your feedback to loki@jma-sig.de or on discord. Thanks!")
 			else
 				return true, S("You can send at most 2 feedbacks per hour")
 			end
@@ -154,7 +155,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 	local message
 	local close = true
 	if status then
-		message = S("Thanks! Your feedback has been recorded!")
+		message = S("Feedback could NOT be send, please submit your feedback to loki@jma-sig.de or on discord. Thanks!")
 	else
 		if reason == "playtime" then
 			message = S("You don't have enough playtime to send a feedback")
