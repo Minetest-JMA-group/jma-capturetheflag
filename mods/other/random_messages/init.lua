@@ -115,7 +115,7 @@ local messages = {
 	S(
 	"To report misbehaving players to moderators, please use /report <name> <action> or send the report on Discord: @1",
 		DISCORD_SERVER),
-	"If you need urgent help (for example, suicidal thoughts or self-harm), use /emergency_ping. Abusing this command is subject to punishment.",
+	"If you need urgent help (for example, suicidal thoughts or self-harm), use /emergency. Abusing this command is subject to punishment.",
 }
 
 local MESSAGE_INTERVAL = tonumber(core.settings:get("random_messages_interval")) or 120
