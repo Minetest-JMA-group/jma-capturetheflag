@@ -23,6 +23,8 @@ function ctf_jma_elysium.register_map(name, def)
 		pos1 = vector.add(def.pos, def.bounds.pos1),
 		pos2 = vector.add(def.pos, def.bounds.pos2),
 
+		map_offset = def.map_offset or vector.new(0, 0, 0),
+
 		bounds1 = def.bounds1,
 		bounds2 = def.bounds2,
 
@@ -290,7 +292,7 @@ function ctf_jma_elysium.join(player, joined_callback)
 		ctf_jma_elysium.show_wait_formspec(name)
 
 		ctf_map.emerge_with_callbacks(nil, map.pos1, map.pos2, function()
-			core.place_schematic(map.pos1, map.file, 0)
+			core.place_schematic(vector.add(map.pos1, map.map_offset), map.file, 0)
 			ctf_jma_elysium.loaded_maps.main = true
 			ctf_jma_elysium.restore_nodemeta("main")
 			core.after(3, handle_player, player)
@@ -354,7 +356,8 @@ ctf_jma_elysium.register_map("main", {
 	bounds = {
 		pos1 = { x = 0, y = 0, z = 0 },
 		pos2 = { x = 226, y = 124, z = 222 },
-	},
+    },
+	map_offset = { x = 0, y = -1, z = 0 },
 	pos = { x = 0, y = 500, z = 0 },
 	spawn = { x = 115, y = 21, z = 111 },
 	no_pvp_zone = {
