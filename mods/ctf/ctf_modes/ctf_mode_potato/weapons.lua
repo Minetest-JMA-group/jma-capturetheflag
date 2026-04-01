@@ -4,7 +4,7 @@ local cooldown = ctf_core.init_cooldowns()
 local grenade_launcher_name = "ctf_mode_potato:potato_launcher"
 
 local weapon_list = {
-	[1] = grenade_launcher_name
+	[1] = grenade_launcher_name,
 }
 
 local function run_cooldown(user, itemstack)
@@ -42,7 +42,8 @@ local shot_types = {
 }
 
 core.register_tool("ctf_mode_potato:potato_launcher", {
-	description = core.colorize("#c69828", "Potato Launcher").."\nShoot Potato Grenades sky-high",
+	description = core.colorize("#c69828", "Potato Launcher")
+		.. "\nShoot Potato Grenades sky-high",
 	wield_scale = { x = 2.0, y = 2.0, z = 2.5 },
 	inventory_image = "ctf_mode_chaos_grenade_launcher.png",
 	wield_image = "ctf_mode_chaos_grenade_launcher.png",
@@ -222,151 +223,166 @@ core.register_entity("ctf_mode_potato:potato_grenade", {
 })
 
 core.register_node("ctf_mode_potato:compressor", {
-    description = core.colorize("#c69828", "Potato Compressor"),
+	description = core.colorize("#c69828", "Potato Compressor"),
 
-    groups = { cracky = 3 },
+	groups = { cracky = 3 },
 
-    tiles = {
-        "ctf_mode_potato_compressor_top.png",
-        "ctf_mode_potato_compressor_top.png",
-        "ctf_mode_potato_compressor_side.png",
-        "ctf_mode_potato_compressor_side.png",
-        "ctf_mode_potato_compressor_side.png",
-        "ctf_mode_potato_compressor_front.png"
-    },
-    paramtype2 = "facedir",
+	tiles = {
+		"ctf_mode_potato_compressor_top.png",
+		"ctf_mode_potato_compressor_top.png",
+		"ctf_mode_potato_compressor_side.png",
+		"ctf_mode_potato_compressor_side.png",
+		"ctf_mode_potato_compressor_side.png",
+		"ctf_mode_potato_compressor_front.png",
+	},
+	paramtype2 = "facedir",
 
-    on_construct = function(pos)
-        local meta = core.get_meta(pos)
-        local inv = meta:get_inventory()
-        inv:set_size("src", 1)
+	on_construct = function(pos)
+		local meta = core.get_meta(pos)
+		local inv = meta:get_inventory()
+		inv:set_size("src", 1)
 
-        meta:set_string("formspec",
-            "size[8,8.5]" ..
-            "list[nodemeta:" .. pos.x .. "," .. pos.y .. "," .. pos.z .. ";src;4.5,0.5;1,1;]" ..
-            "button_exit[4,2;2,1;compress_btn;Compress]"..
-            "label[0.1,2;I heard that putting 20 potatoes\nin here might do something...]"..
-            "list[current_player;main;0,4.25;8,1;]" ..
-            "list[current_player;main;0,5.5;8,3;8]" ..
-            "listring[context;src]" ..
-            "listring[current_player;main]" ..
-            default.get_hotbar_bg(0, 4.25)
-        )
-    end,
-    
-    on_receive_fields = function(pos, formname, fields, sender)
-        if fields.compress_btn then
-            core.show_formspec(sender:get_player_name(), "", "")
+		meta:set_string(
+			"formspec",
+			"size[8,8.5]"
+				.. "list[nodemeta:"
+				.. pos.x
+				.. ","
+				.. pos.y
+				.. ","
+				.. pos.z
+				.. ";src;4.5,0.5;1,1;]"
+				.. "button_exit[4,2;2,1;compress_btn;Compress]"
+				.. "label[0.1,2;I heard that putting 20 potatoes\nin here might do something...]"
+				.. "list[current_player;main;0,4.25;8,1;]"
+				.. "list[current_player;main;0,5.5;8,3;8]"
+				.. "listring[context;src]"
+				.. "listring[current_player;main]"
+				.. default.get_hotbar_bg(0, 4.25)
+		)
+	end,
 
-            local node = core.get_node(pos)
+	on_receive_fields = function(pos, formname, fields, sender)
+		if fields.compress_btn then
+			core.show_formspec(sender:get_player_name(), "", "")
 
-            local meta = core.get_meta(pos)
-            local inv = meta:get_inventory()
-            local stack = inv:get_stack("src", 1)
+			local node = core.get_node(pos)
 
-            local enough_potatoes = false
+			local meta = core.get_meta(pos)
+			local inv = meta:get_inventory()
+			local stack = inv:get_stack("src", 1)
 
-            if stack:get_name() == "ctf_mode_potato:potato" and stack:get_count() >= 20 then
-                enough_potatoes = true
-            end
+			local enough_potatoes = false
 
-            core.set_node(pos, {name="ctf_mode_potato:compressor_active", param2=node.param2})
+			if
+				stack:get_name() == "ctf_mode_potato:potato"
+				and stack:get_count() >= 20
+			then
+				enough_potatoes = true
+			end
 
-            core.after(3, function()
-                core.add_particlespawner({
-                    amount = 50,
-                    time = 5,
-                    texture = {
-                        name = "grenades_smoke.png",
-                        scale = 1.5,
-                    },
-                    pos = {
-                        min = vector.new(pos.x-0.3,pos.y+0.5,pos.z-0.3),
-                        max = vector.new(pos.x+0.3,pos.y+0.5,pos.z+0.3),
-                        bias = 0,
-                    },
-                    vel = {
-                        min = vector.new(-0.1, 0.5, -0.1),
-                        max = vector.new( 0.1, 1.0,  0.1),
-                    },
-                })
+			core.set_node(
+				pos,
+				{ name = "ctf_mode_potato:compressor_active", param2 = node.param2 }
+			)
 
-                core.after(2, function()
-                    core.add_particlespawner({
-                        amount = 15,
-                        time = 3,
-                        texture = {
-                            name = "grenades_boom.png",
-                            scale = 1,
-                            glow = 5
-                        },
-                        pos = {
-                            min = vector.new(pos.x-0.3,pos.y+0.5,pos.z-0.3),
-                            max = vector.new(pos.x+0.3,pos.y+0.5,pos.z+0.3),
-                            bias = 0,
-                        },
-                        vel = {
-                            min = vector.new(-0.1, 0.5, -0.1),
-                            max = vector.new( 0.1, 1.0,  0.1),
-                        },
-                    })
-                end)
-            end)
-            core.after(8, function()
-                -- EXPLODE
-                core.add_particlespawner({
-                    amount = 64,
-                    time = 0.1,
-                    texture = "grenades_smoke.png",
-                    pos = {
-                        min = vector.new(pos.x-0.5, pos.y-0.5, pos.z-0.5),
-                        max = vector.new(pos.x+0.5, pos.y+0.5, pos.z+0.5),
-                    },
-                    vel = {
-                        min = vector.new(-3, 1, -3),
-                        max = vector.new( 3, 5,  3),
-                    },
-                    acc = {
-                        min = vector.new(0, -3, 0),
-                        max = vector.new(0, -5, 0),
-                    },
-                    size = {
-                        min = 1,
-                        max = 3,
-                    },
-                    exptime = {
-                        min = 0.5,
-                        max = 1.5,
-                    },
-                })
-                core.sound_play("tnt_explode", {
-                    pos = pos,
-                    gain = 0.6,
-                    max_hear_distance = 20,
-                })
+			core.after(3, function()
+				core.add_particlespawner({
+					amount = 50,
+					time = 5,
+					texture = {
+						name = "grenades_smoke.png",
+						scale = 1.5,
+					},
+					pos = {
+						min = vector.new(pos.x - 0.3, pos.y + 0.5, pos.z - 0.3),
+						max = vector.new(pos.x + 0.3, pos.y + 0.5, pos.z + 0.3),
+						bias = 0,
+					},
+					vel = {
+						min = vector.new(-0.1, 0.5, -0.1),
+						max = vector.new(0.1, 1.0, 0.1),
+					},
+				})
 
-                local damage_radius = 3
-                for _, obj in ipairs(core.get_objects_inside_radius(pos, damage_radius)) do
-                    if obj:is_player() then
-                        obj:punch(obj, 1.0, {
-                            full_punch_interval = 1.0,
-                            damage_groups = { fleshy = 8 },
-                        })
-                    end
-                end
-                local knockback_radius = 5
-                local knockback_force = 10
+				core.after(2, function()
+					core.add_particlespawner({
+						amount = 15,
+						time = 3,
+						texture = {
+							name = "grenades_boom.png",
+							scale = 1,
+							glow = 5,
+						},
+						pos = {
+							min = vector.new(pos.x - 0.3, pos.y + 0.5, pos.z - 0.3),
+							max = vector.new(pos.x + 0.3, pos.y + 0.5, pos.z + 0.3),
+							bias = 0,
+						},
+						vel = {
+							min = vector.new(-0.1, 0.5, -0.1),
+							max = vector.new(0.1, 1.0, 0.1),
+						},
+					})
+				end)
+			end)
+			core.after(8, function()
+				-- EXPLODE
+				core.add_particlespawner({
+					amount = 64,
+					time = 0.1,
+					texture = "grenades_smoke.png",
+					pos = {
+						min = vector.new(pos.x - 0.5, pos.y - 0.5, pos.z - 0.5),
+						max = vector.new(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5),
+					},
+					vel = {
+						min = vector.new(-3, 1, -3),
+						max = vector.new(3, 5, 3),
+					},
+					acc = {
+						min = vector.new(0, -3, 0),
+						max = vector.new(0, -5, 0),
+					},
+					size = {
+						min = 1,
+						max = 3,
+					},
+					exptime = {
+						min = 0.5,
+						max = 1.5,
+					},
+				})
+				core.sound_play("tnt_explode", {
+					pos = pos,
+					gain = 0.6,
+					max_hear_distance = 20,
+				})
 
-                for _, obj in ipairs(core.get_objects_inside_radius(pos, knockback_radius)) do
-                    if obj:is_player() then
-                        local dist = vector.distance(pos, obj:get_pos())
-                        local force = knockback_force * (1 - (dist / knockback_radius))
-                        local dir = vector.normalize(vector.subtract(obj:get_pos(), pos))
-                        dir.y = dir.y + 5  -- upward bias before normalizing
-                        dir = vector.normalize(dir)
-                        obj:add_velocity(vector.multiply(dir, force))
-                    end
-                end
+				local damage_radius = 3
+				for _, obj in ipairs(core.get_objects_inside_radius(pos, damage_radius)) do
+					if obj:is_player() then
+						obj:punch(obj, 1.0, {
+							full_punch_interval = 1.0,
+							damage_groups = { fleshy = 8 },
+						})
+					end
+				end
+				local knockback_radius = 5
+				local knockback_force = 10
+
+				for _, obj in
+					ipairs(core.get_objects_inside_radius(pos, knockback_radius))
+				do
+					if obj:is_player() then
+						local dist = vector.distance(pos, obj:get_pos())
+						local force = knockback_force * (1 - (dist / knockback_radius))
+						local dir = vector.normalize(vector.subtract(obj:get_pos(), pos))
+						dir.y = dir.y + 5 -- upward bias before normalizing
+						dir = vector.normalize(dir)
+						obj:add_velocity(vector.multiply(dir, force))
+					end
+				end
 
 				if not enough_potatoes then
 					tnt.boom(pos, {
@@ -375,38 +391,55 @@ core.register_node("ctf_mode_potato:compressor", {
 						damage_modifier = 1,
 					})
 				end
-                
-                core.set_node(pos, {name="ctf_mode_potato:compressor", param2=node.param2})
-                if enough_potatoes then
-                    local meta = core.get_meta(pos)
-                    local inv = meta:get_inventory()
-                    inv:set_stack("src", 1, ItemStack("ctf_mode_potato:potato_grenade 3"))
-                end
-            end)
-        end
-    end,
 
-    allow_metadata_inventory_put = function(pos, listname, index, stack, player)
-        return stack:get_count()
-    end,
+				core.set_node(
+					pos,
+					{ name = "ctf_mode_potato:compressor", param2 = node.param2 }
+				)
+				if enough_potatoes then
+					local meta = core.get_meta(pos)
+					local inv = meta:get_inventory()
+					inv:set_stack("src", 1, ItemStack("ctf_mode_potato:potato_grenade 3"))
+				end
+			end)
+		end
+	end,
 
-    allow_metadata_inventory_take = function(pos, listname, index, stack, player)
-        return stack:get_count()
-    end,
+	allow_metadata_inventory_put = function(pos, listname, index, stack, player)
+		return stack:get_count()
+	end,
 
-    allow_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
-        return count
-    end,
+	allow_metadata_inventory_take = function(pos, listname, index, stack, player)
+		return stack:get_count()
+	end,
+
+	allow_metadata_inventory_move = function(
+		pos,
+		from_list,
+		from_index,
+		to_list,
+		to_index,
+		count,
+		player
+	)
+		return count
+	end,
 })
 
 core.register_node("ctf_mode_potato:compressor_active", {
-    description = core.colorize("#c69828", "Potato Compressor").." (active)",
+	description = core.colorize("#c69828", "Potato Compressor") .. " (active)",
 
-    groups = { indestructable = 1 },
+	groups = { indestructable = 1 },
 
-    tiles = { "ctf_mode_potato_compressor_top.png", "ctf_mode_potato_compressor_top.png", "ctf_mode_potato_compressor_side.png", "ctf_mode_potato_compressor_side.png", "ctf_mode_potato_compressor_side.png", "ctf_mode_potato_compressor_front_active.png" },
-    paramtype2 = "facedir",
+	tiles = {
+		"ctf_mode_potato_compressor_top.png",
+		"ctf_mode_potato_compressor_top.png",
+		"ctf_mode_potato_compressor_side.png",
+		"ctf_mode_potato_compressor_side.png",
+		"ctf_mode_potato_compressor_side.png",
+		"ctf_mode_potato_compressor_front_active.png",
+	},
+	paramtype2 = "facedir",
 
-    sounds = default.node_sound_stone_defaults(),
-
+	sounds = default.node_sound_stone_defaults(),
 })

@@ -34,7 +34,6 @@ ctf_modebase.register_mode("potato", {
 			max_stacks = 2,
 		},
 
-
 		["ctf_mode_potato:potato_block"] = {
 			min_count = 20,
 			max_count = 60,
@@ -87,7 +86,7 @@ ctf_modebase.register_mode("potato", {
 		"default:torch 30",
 		"ctf_teams:door_steel 2",
 		"ctf_healing:heal_block",
-		"ctf_mode_potato:compressor 3"
+		"ctf_mode_potato:compressor 3",
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,
@@ -109,7 +108,7 @@ ctf_modebase.register_mode("potato", {
 			"default:pick_stone",
 			"default:torch 15",
 			"default:stick 5",
-			"ctf_mode_potato:potato"
+			"ctf_mode_potato:potato",
 		}
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
