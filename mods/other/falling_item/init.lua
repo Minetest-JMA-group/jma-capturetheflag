@@ -59,26 +59,17 @@ local facedir_to_euler = {
 }
 
 local function fall_hurt_check(self, pos)
-
 	if self.hurt_toggle then
 
 		-- Get damage level from falling_node_damage group
 		local damage = core.registered_nodes[self.node.name] and
 				core.registered_nodes[self.node.name].groups.falling_node_damage
 
-		if damage then
-
+		if damage and damage > 0 then
 			local all_objects = core.get_objects_inside_radius(pos, 0.8)
-
 			for _,obj in ipairs(all_objects) do
-
-				local name = obj:get_luaentity() and obj:get_luaentity().name
-
-				if (name ~= "__builtin:item" and name ~= "__builtin:falling_node")
-				or obj:is_player() then
-
+				if obj:is_player() then
 					obj:punch(self.object, 4.0, {damage_groups = {fleshy = damage}}, nil)
-
 					self.hurt_toggle = false
 				end
 			end
