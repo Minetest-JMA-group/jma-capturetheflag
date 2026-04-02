@@ -522,12 +522,14 @@ core.register_entity(":__builtin:falling_node", {
 				-- Place falling entity as node and write any metadata
 				core.add_node(npos, self.node)
 
+				local meta = core.get_meta(npos)
+
 				if self.meta then
-
-					local meta = core.get_meta(npos)
-
 					meta:from_table(self.meta)
 				end
+
+                -- Mark node as landed (useful for other mods to check if a node was placed by falling_item)
+				meta:set_int("falling_item_landed", 1)
 
 				-- Play placed sound
 				local def = core.registered_nodes[self.node.name]
