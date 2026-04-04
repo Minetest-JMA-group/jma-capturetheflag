@@ -386,6 +386,7 @@ ctf_core.register_chatcommand_alias("put_bounty", "pb", {
 	func = function(name, param)
 		--- @type string, string
 		local player, amount_s = param:match("(%S+)%s+(%S+)")
+		amount_s = tonumber(amount_s)
 		--- @type string | nil
 		local pteam = ctf_teams.get(player)
 		if not (player and pteam and amount_s) then
