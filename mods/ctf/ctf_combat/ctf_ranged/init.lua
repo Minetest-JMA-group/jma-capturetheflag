@@ -411,7 +411,7 @@ function ctf_ranged.simple_register_gun(name, def)
 
 		if def.rightclick_func then
 			loaded_def.on_place = function(itemstack, user, pointed, ...)
-				local pointed_def
+							local pointed_def
 				local node
 
 				if pointed and pointed.under then
@@ -422,6 +422,9 @@ function ctf_ranged.simple_register_gun(name, def)
 				if pointed_def and pointed_def.on_rightclick then
 					return core.item_place(itemstack, user, pointed)
 				else
+					if pointed and pointed.type == "node" then
+						return
+					end
 					return def.rightclick_func(itemstack, user, pointed, ...)
 				end
 			end
@@ -600,6 +603,9 @@ ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
 		if scoped[user:get_player_name()] then
 			ctf_ranged.hide_scope(user:get_player_name())
 		else
+			if pointed and pointed.type == "node" then
+				return
+			end
 			local item_name = itemstack:get_name()
 			ctf_ranged.show_shoulder_scope(user:get_player_name(), item_name, 2)
 		end
@@ -666,6 +672,9 @@ ctf_ranged.simple_register_gun("ctf_ranged:assault_rifle", {
 		if scoped[user:get_player_name()] then
 			ctf_ranged.hide_scope(user:get_player_name())
 		else
+			if pointed and pointed.type == "node" then
+				return
+			end
 			local item_name = itemstack:get_name()
 			ctf_ranged.show_shoulder_scope(user:get_player_name(), item_name, 2)
 		end
@@ -768,6 +777,9 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper", {
 		if scoped[user:get_player_name()] then
 			ctf_ranged.hide_scope(user:get_player_name())
 		else
+			if pointed and pointed.type == "node" then
+				return
+			end
 			local item_name = itemstack:get_name()
 			ctf_ranged.show_scope(user:get_player_name(), item_name, 4)
 		end
@@ -788,6 +800,9 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
 		if scoped[user:get_player_name()] then
 			ctf_ranged.hide_scope(user:get_player_name())
 		else
+			if pointed and pointed.type == "node" then
+				return
+			end
 			local item_name = itemstack:get_name()
 			ctf_ranged.show_scope(user:get_player_name(), item_name, 8)
 		end
@@ -814,6 +829,22 @@ core.register_globalstep(function(dtime)
 		---@cast player PlayerRef
 		local wielded_item = player:get_wielded_item():get_name()
 		if wielded_item ~= info.item_name then
+			ctf_ranged.hide_scope(name)
+		end
+
+		local pos = player:get_pos()
+		local look_dir = player:get_look_dir()
+		local ray = rawf.bulletcast({ texture = "" }, pos, vector.add(pos, vector.multiply(look_dir, 10)), true, false)
+		local hitpoint = ray:hit_object_or_node({
+			node = function(ndef)
+				return ndef.walkable == true
+			end,
+			object = function(obj)
+				return false
+			end,
+		})
+
+		if hitpoint and hitpoint.type == "node" then
 			ctf_ranged.hide_scope(name)
 		end
 	end
