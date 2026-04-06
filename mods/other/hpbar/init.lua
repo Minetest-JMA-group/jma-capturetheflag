@@ -15,8 +15,9 @@ core.register_entity("hpbar:entity", {
 		pointable = false,
 	},
 	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir, damage)
-		if core.is_player(puncher) then
-			puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
+		if puncher and core.is_player(puncher) then
+			---@cast puncher PlayerRef
+			puncher:set_hp(puncher:get_hp() - damage,  {type="punch", from="mod"}) --cause damage to yourself.
 			core.log("warning", puncher:get_player_name() .. " is trying to damage non-pointable entity \"hpbar:entity\".")
 		end
 		return true
@@ -117,6 +118,7 @@ function hpbar.set_icon(player, texture)
 	update_entity(PlayerObj(player), texture)
 end
 
+---@diagnostic disable-next-line: undefined-field
 core.register_playerevent(function(player, eventname)
 	if eventname == "health_changed" or eventname == "properties_changed" then
 		if players[player:get_player_name()] ~= nil then

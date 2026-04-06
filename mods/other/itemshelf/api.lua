@@ -37,6 +37,10 @@ local function show_user_formspec(name)
 	end
 
 	local list = inv:get_list("main")
+	if not list then
+		ctx = nil
+		return
+	end
 
 	local count = 0
 	for i = 1, ctx.inv_size do
@@ -147,6 +151,10 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 			return true
 		end
 		local list = inv:get_list("main")
+		if not list then
+			core.log("error", "itemshelf: Failed to get inventory list at "..core.pos_to_string(pos))
+			return true
+		end
 		for i = 1, #list do
 			local stack = list[i]
 			if stack and stack:get_name() == itemname then
@@ -205,7 +213,7 @@ local function update_shelf(pos)
 	if vertical_displacement == 0 then
 		vertical_displacement = 0.2375
 	end
-	core.log("displacements: "..dump(depth_displacement)..", "..dump(vertical_displacement))
+	core.log("action", "displacements: "..dump(depth_displacement)..", "..dump(vertical_displacement))
 	-- Calculate the horizontal displacement. This one is hardcoded so that either 4 or 6
 	-- items are properly displayed.
 	local horizontal_displacement = 0.715
@@ -226,13 +234,16 @@ local function update_shelf(pos)
 		return
 	end
 	local list = inv:get_list("main")
+	if not list then
+		return
+	end
 	local obj_count = 0
 	for key, itemstack in pairs(list) do
 		if not itemstack:is_empty() then
 			obj_count = obj_count + 1
 		end
 	end
-	core.log("Found "..dump(obj_count).." items on shelf inventory")
+	core.log("action", "Found "..dump(obj_count).." items on shelf inventory")
 	if obj_count > 0 then
 		local shown_items = math.min(#list, max_shown_items)
 		for i = 1, shown_items do
@@ -254,10 +265,14 @@ local function update_shelf(pos)
 			}
 
 			if not list[i]:is_empty() then
-				core.log("Adding item entity at "..core.pos_to_string(obj_pos))
+				core.log("action", "Adding item entity at "..core.pos_to_string(obj_pos))
 				temp_texture = list[i]:get_name()
 				temp_size = 0.8/max_shown_items
 				local ent = core.add_entity(obj_pos, "itemshelf:item")
+				if not ent then
+					core.log("error", "Failed to add entity at "..core.pos_to_string(obj_pos))
+					return
+				end
 				ent:set_properties({
 					wield_item = temp_texture,
 					visual_size = {x = 0.8/max_shown_items, y = 0.8/max_shown_items}
@@ -322,6 +337,10 @@ function itemshelf.register_shelf(name, def)
 		end,
 		on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
 			local capacity = def.capacity or 4
+			if not clicker:is_player() then
+				return
+			end
+			---@cast clicker PlayerRef
 			local name = clicker:get_player_name()
 			if can_modify_inv(clicker) then
 				core.show_formspec(name, "itemshelf:shelf", get_shelf_formspec(capacity, pos))

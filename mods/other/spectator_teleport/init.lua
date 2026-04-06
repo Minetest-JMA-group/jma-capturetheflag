@@ -35,12 +35,12 @@ end
 
 local function build_sorted_teammates(my_name, my_team)
 	local teammates = {}
-	for _, p in ipairs(minetest.get_connected_players()) do
+	for _, p in ipairs(core.get_connected_players()) do
 		local pname = p:get_player_name()
 		if pname ~= my_name then
 			local team = get_player_team(pname)
 			if team == my_team and team ~= nil then
-				local player_obj = minetest.get_player_by_name(pname)
+				local player_obj = core.get_player_by_name(pname)
 				if player_obj then
 					table.insert(teammates, {name = pname, score = get_player_score(pname)})
 				end
@@ -60,7 +60,7 @@ end
 
 -- Store each player's current team in meta
 local function update_all_players_team_meta()
-	for _, player in ipairs(minetest.get_connected_players()) do
+	for _, player in ipairs(core.get_connected_players()) do
 		local pname = player:get_player_name()
 		local team  = get_player_team(pname)
 		if team then
@@ -70,7 +70,7 @@ local function update_all_players_team_meta()
 end
 
 --  globalstep
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	update_timer = update_timer + dtime
 	if update_timer > UPDATE_INTERVAL then
 		update_all_players_team_meta()
@@ -78,16 +78,16 @@ minetest.register_globalstep(function(dtime)
 	end
 end)
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	update_all_players_team_meta()
 	teleport_data[player:get_player_name()] = nil
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	teleport_data[player:get_player_name()] = nil
 end)
 
-minetest.register_on_shutdown(function()
+core.register_on_shutdown(function()
 	teleport_data = {}
 end)
 
@@ -150,14 +150,14 @@ local function on_teleport_item_use(itemstack, user)
 
 	--  Pick the next teammate
 	local target_name   = sorted_teammates[data.index]
-	local target_player = minetest.get_player_by_name(target_name)
+	local target_player = core.get_player_by_name(target_name)
 
 	-- If the selected teammate is offline, skip this player
 	if not target_player then
-		minetest.chat_send_player(pname, "Selected teammate is offline. Resetting target list.")
+		core.chat_send_player(pname, "Selected teammate is offline. Resetting target list.")
 		data.index = 1
 		target_name = sorted_teammates[data.index]
-		target_player = minetest.get_player_by_name(target_name)
+		target_player = core.get_player_by_name(target_name)
 		if not target_player then
 			hud_events.new(pname, {
 				quick = true,
@@ -212,7 +212,7 @@ core.register_chatcommand("spectate", {
 		end
 
 		local target_name = param:trim()
-		local target = minetest.get_player_by_name(target_name)
+		local target = core.get_player_by_name(target_name)
 		if not target then
 			return false, S("Player @1 not found or offline.", target_name)
 		end
@@ -222,7 +222,7 @@ core.register_chatcommand("spectate", {
 			return false, S("Only spectators can use this command.")
 		end
 
-		local old_team = get_spectator_old_team(minetest.get_player_by_name(name))
+		local old_team = get_spectator_old_team(core.get_player_by_name(name))
 		if old_team == "" then
 			return false, S("Could not determine your old team.")
 		end
@@ -231,7 +231,7 @@ core.register_chatcommand("spectate", {
 			return false, S("@1 is not on your old team (@2).", target_name, old_team)
 		end
 
-		local spectator = minetest.get_player_by_name(name)
+		local spectator = core.get_player_by_name(name)
 		spectator:set_detach()
 		spectator:set_attach(target, "", {x=0, y=1.5, z=0}, {x=0, y=0, z=0})
 		spectator:set_pos(target:get_pos())

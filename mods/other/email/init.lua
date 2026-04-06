@@ -42,17 +42,17 @@ function email.load()
 		end
 	end
 
-	local forward_to = storage:get_string("forward_to")
-	local send_as = storage:get_string("send_as")
+	local forward_to_str = storage:get_string("forward_to")
+	local send_as_str = storage:get_string("send_as")
 
-	if forward_to ~= "" then
-		forward_to = core.parse_json(forward_to) or {}
+	if forward_to_str ~= "" then
+		forward_to = core.parse_json(forward_to_str) or {}
 	else
 		forward_to = {}
 	end
 
-	if send_as ~= "" then
-		send_as = core.parse_json(send_as) or {}
+	if send_as_str ~= "" then
+		send_as = core.parse_json(send_as_str) or {}
 	else
 		send_as = {}
 	end

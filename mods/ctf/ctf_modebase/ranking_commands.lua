@@ -46,7 +46,7 @@ local function rank(name, mode_name, mode_data, pname)
 			"%s%s: %s,\n\t",
 			return_str,
 			core.colorize("#63d437", HumanReadable(irank)),
-			core.colorize("#ffea00", math.round(prank[irank] or 0))
+			core.colorize("#ffea00", tostring(math.round(prank[irank] or 0)))
 		)
 	end
 
@@ -57,10 +57,10 @@ local function rank(name, mode_name, mode_data, pname)
 			core.colorize("#63d437", HumanReadable(pair[1] .. "/" .. pair[2])),
 			core.colorize(
 				"#ffea00",
-				0.1
+				tostring(0.1
 					* math.round(
 						10 * ((prank[pair[1]] or 0) / math.max(prank[pair[2]] or 0, 1))
-					)
+					))
 			)
 		)
 	end
@@ -227,6 +227,7 @@ core.register_chatcommand("reset_rankings", {
 	func = function(name, param)
 		local mode_name, mode_data, pname = get_gamemode(param)
 		if not mode_name or not mode_data then
+			---@cast mode_data string?
 			return false, mode_data
 		end
 
@@ -297,6 +298,7 @@ core.register_chatcommand("reset_mode_rankings", {
 	func = function(name, param)
 		local mode_name, mode_data, opt_param = get_gamemode(param)
 		if not mode_name or not mode_data then
+			---@cast mode_data string?
 			return false, mode_data
 		end
 		if mode_name == "all" then
@@ -350,6 +352,7 @@ core.register_chatcommand("top50", {
 	func = function(name, param)
 		local mode_name, mode_data = get_gamemode(param)
 		if not mode_name or not mode_data then
+			---@cast mode_data string?
 			return false, mode_data
 		end
 
@@ -385,6 +388,7 @@ core.register_chatcommand("make_pro", {
 	func = function(name, param)
 		local mode_name, mode_data, pname = get_gamemode(param)
 		if not mode_name or not mode_data then
+			---@cast mode_data string?
 			return false, mode_data
 		end
 
@@ -422,7 +426,8 @@ core.register_chatcommand("add_score", {
 	privs = { ctf_admin = true },
 	func = function(name, param)
 		local mode_name, mode_data, opt_param = get_gamemode(param)
-		if not mode_name then
+		if not mode_name or not mode_data then
+			---@cast mode_data string?
 			return false, mode_data
 		end
 

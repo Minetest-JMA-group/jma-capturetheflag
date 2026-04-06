@@ -6,8 +6,8 @@ local modname = core.get_current_modname()
 local claim_timeout = storage:get_int("claim_timeout")
 
 local function merger(data1, data2)
-	local last1 = tonumber(data1.last_claim or 0)
-	local last2 = tonumber(data2.last_claim or 0)
+	local last1 = tonumber(data1.last_claim) or 0
+	local last2 = tonumber(data2.last_claim) or 0
 	return { last_claim = tostring(math.max(last1, last2)) }
 end
 
@@ -77,7 +77,7 @@ core.register_chatcommand("claim_migrate", {
 	description = "Migrate claim data from xban to ipdb",
 	privs = { dev = true },
 	func = function(name, param)
-		if not xban or not xban.db then
+		if not core.global_exists("xban") or not xban.db then
 			return false, "xban mod not loaded or no database found"
 		end
 

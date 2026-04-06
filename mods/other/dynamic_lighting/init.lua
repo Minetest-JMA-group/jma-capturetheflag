@@ -26,7 +26,7 @@ function wielded_light.update_light(pos, light_level)
 			do_update = true
 			break
 		elseif name:sub(1, 16) == "dynamic_lighting" then -- Update existing light node and timer
-			old_value = tonumber(name:sub(18))
+			old_value = tonumber(name:sub(18)) or 0
 			if not old_value or not light_level then
 				return
 			end

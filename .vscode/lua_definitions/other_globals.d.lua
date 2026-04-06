@@ -4,16 +4,61 @@
 --- Vector
 --- ==============================
 
---- A 3D spatial vector.
----@class vector
+-- A 3D spatial vector without a metatable
+---@class simplevector
 ---@field x number
 ---@field y number
 ---@field z number
+
+--- A 3D spatial vector.
+---@class vector : simplevector
 ---@operator unm: vector                      -- -v
 ---@operator add(vector): vector              -- v1 + v2
 ---@operator sub(vector): vector              -- v1 - v2
 ---@operator mul(number): vector              -- v * s
 ---@operator div(number): vector              -- v / s
+-- Applies a function to each component.
+---@field apply fun(self:vector, func:fun(n:number):number, ...:any):vector
+-- Returns the length of a vector.
+---@field length fun(self:vector):number
+-- Returns a normalized vector (length 1).
+---@field normalize fun(self:vector):vector
+-- Returns a vector with each component rounded down.
+---@field floor fun(self:vector):vector
+-- Returns a vector with each component rounded up.
+---@field ceil fun(self:vector):vector
+-- Returns a vector with each component rounded to nearest integer (away from zero at 0.5).
+---@field round fun(self:vector):vector
+-- Returns the sign of each component.
+---@field sign fun(self:vector, tolerance?:number):vector
+-- Returns a vector with absolute values of each component.
+---@field abs fun(self:vector):vector
+-- Returns the dot product.
+---@field dot fun(self:vector, other:simplevector):number
+-- Returns the cross product.
+---@field cross fun(self:vector, other:simplevector):vector
+-- Adds offsets to a vector.
+---@field offset fun(self:vector, x:number, y:number, z:number):vector
+-- Rotates a vector by a rotation vector (radians, right‑handed Z‑X‑Y).
+---@field rotate fun(self:vector, r:simplevector):vector
+-- Rotates a vector around an axis.
+---@field rotate_around_axis fun(self:vector, axis:simplevector, angle:number):vector
+-- Converts a direction vector to a rotation.
+---@field dir_to_rotation fun(self:vector, up?:simplevector):vector
+-- Adds a vector or scalar.
+---@field add fun(self:vector, x:simplevector|number):vector
+-- Subtracts a vector or scalar.
+---@field subtract fun(self:vector, x:simplevector|number):vector
+-- Multiplies by a scalar.
+---@field multiply fun(self:vector, s:number):vector
+-- Divides by a scalar.
+---@field divide fun(self:vector, s:number):vector
+-- Returns the Euclidean distance between two points.
+---@field distance fun(self:vector, other:simplevector):number
+-- Returns the angle (in radians) between two vectors.
+---@field angle fun(self:vector, other:simplevector):number
+-- Copies a vector
+---@field copy fun(self:vector):vector
 
 --- Vector manipulation library.
 ---@class VectorLib
@@ -24,14 +69,14 @@ vector = {}
 function vector.zero() end
 
 --- Creates a new vector.
----@param x number|vector
+---@param x number
 ---@param y? number
 ---@param z? number
 ---@return vector
 function vector.new(x, y, z) end
 
 --- Copies a vector.
----@param v vector
+---@param v simplevector
 ---@return vector
 function vector.copy(v) end
 
@@ -42,104 +87,104 @@ function vector.copy(v) end
 function vector.from_string(s, init) end
 
 --- Converts a vector to a string "(x, y, z)".
----@param v vector
+---@param v simplevector
 ---@return string
 function vector.to_string(v) end
 
 --- Returns a unit direction vector from p1 to p2.
----@param p1 vector
----@param p2 vector
+---@param p1 simplevector
+---@param p2 simplevector
 ---@return vector
 function vector.direction(p1, p2) end
 
 --- Returns the Euclidean distance between two points.
----@param p1 vector
----@param p2 vector
+---@param p1 simplevector
+---@param p2 simplevector
 ---@return number
 function vector.distance(p1, p2) end
 
 --- Returns the length of a vector.
----@param v vector
+---@param v simplevector
 ---@return number
 function vector.length(v) end
 
 --- Returns a normalized vector (length 1).
----@param v vector
+---@param v simplevector
 ---@return vector
 function vector.normalize(v) end
 
 --- Returns a vector with each component rounded down.
----@param v vector
+---@param v simplevector
 ---@return vector
 function vector.floor(v) end
 
 --- Returns a vector with each component rounded up.
----@param v vector
+---@param v simplevector
 ---@return vector
 function vector.ceil(v) end
 
 --- Returns a vector with each component rounded to nearest integer (away from zero at 0.5).
----@param v vector
+---@param v simplevector
 ---@return vector
 function vector.round(v) end
 
 --- Returns the sign of each component.
----@param v vector
+---@param v simplevector
 ---@param tolerance? number
 ---@return vector
 function vector.sign(v, tolerance) end
 
 --- Returns a vector with absolute values of each component.
----@param v vector
+---@param v simplevector
 ---@return vector
 function vector.abs(v) end
 
 --- Applies a function to each component.
----@param v vector
+---@param v simplevector
 ---@param func fun(n:number):number
 ---@param ... any
 ---@return vector
 function vector.apply(v, func, ...) end
 
 --- Combines two vectors component‑wise.
----@param v vector
----@param w vector
+---@param v simplevector
+---@param w simplevector
 ---@param func fun(a:number, b:number):number
 ---@return vector
 function vector.combine(v, w, func) end
 
 --- Checks if two vectors are equal.
----@param v1 vector
----@param v2 vector
+---@param v1 simplevector
+---@param v2 simplevector
 ---@return boolean
 function vector.equals(v1, v2) end
 
 --- Sorts two vectors into minp and maxp.
----@param v1 vector
----@param v2 vector
+---@param v1 simplevector
+---@param v2 simplevector
 ---@return vector minp, vector maxp
 function vector.sort(v1, v2) end
 
 --- Returns the angle (in radians) between two vectors.
----@param v1 vector
----@param v2 vector
+---@param v1 simplevector
+---@param v2 simplevector
 ---@return number
 function vector.angle(v1, v2) end
 
 --- Returns the dot product.
----@param v1 vector
----@param v2 vector
+---@param v1 simplevector
+---@param v2 simplevector
 ---@return number
 function vector.dot(v1, v2) end
 
 --- Returns the cross product.
----@param v1 vector
----@param v2 vector
+---@param v1 simplevector
+---@param v2 simplevector
 ---@return vector
 function vector.cross(v1, v2) end
 
 --- Adds offsets to a vector.
----@param v vector
+---@param v simplevector
 ---@param x number
 ---@param y number
 ---@param z number
@@ -152,15 +197,15 @@ function vector.offset(v, x, y, z) end
 function vector.check(v) end
 
 --- Checks if a position is inside an axis‑aligned box (inclusive).
----@param pos vector
----@param min vector
----@param max vector
+---@param pos simplevector
+---@param min simplevector
+---@param max simplevector
 ---@return boolean
 function vector.in_area(pos, min, max) end
 
 --- Returns a random integer position inside an area.
----@param min vector
----@param max vector
+---@param min simplevector
+---@param max simplevector
 ---@return vector
 function vector.random_in_area(min, max) end
 
@@ -169,45 +214,45 @@ function vector.random_in_area(min, max) end
 function vector.random_direction() end
 
 --- Adds a vector or scalar.
----@param v vector
----@param x vector|number
+---@param v simplevector
+---@param x simplevector|number
 ---@return vector
 function vector.add(v, x) end
 
 --- Subtracts a vector or scalar.
----@param v vector
----@param x vector|number
+---@param v simplevector
+---@param x simplevector|number
 ---@return vector
 function vector.subtract(v, x) end
 
 --- Multiplies by a scalar.
----@param v vector
+---@param v simplevector
 ---@param s number
 ---@return vector
 function vector.multiply(v, s) end
 
 --- Divides by a scalar.
----@param v vector
+---@param v simplevector
 ---@param s number
 ---@return vector
 function vector.divide(v, s) end
 
 --- Rotates a vector by a rotation vector (radians, right‑handed Z‑X‑Y).
----@param v vector
----@param r vector {pitch, yaw, roll}
+---@param v simplevector
+---@param r simplevector {pitch, yaw, roll}
 ---@return vector
 function vector.rotate(v, r) end
 
 --- Rotates a vector around an axis.
----@param v1 vector
----@param v2 vector
+---@param v1 simplevector
+---@param v2 simplevector
 ---@param a number (radians, right‑hand rule)
 ---@return vector
 function vector.rotate_around_axis(v1, v2, a) end
 
 --- Converts a direction vector to a rotation.
----@param direction vector
----@param up? vector (default (0,1,0))
+---@param direction simplevector
+---@param up? simplevector (default (0,1,0))
 ---@return vector
 function vector.dir_to_rotation(direction, up) end
 
@@ -303,36 +348,36 @@ VoxelArea = {}
 
 --- Helper for voxel areas (inclusive coordinates).
 --- Creates a VoxelArea.
----@overload fun(minp: vector, maxp: vector): VoxelArea
+---@overload fun(minp: simplevector, maxp: simplevector): VoxelArea
 ---@class VoxelArea
----@field MinEdge vector
----@field MaxEdge vector
+---@field MinEdge simplevector
+---@field MaxEdge simplevector
 ---@field ystride integer
 ---@field zstride integer
 --- Returns the index in a flat array for the given (x,y,z) (integers required).
 ---@field index fun(self: VoxelArea, x: integer, y: integer, z: integer): integer
 --- Returns the index for a position vector.
----@field indexp fun(self: VoxelArea, pos: vector): integer
+---@field indexp fun(self: VoxelArea, pos: simplevector): integer
 --- Returns the absolute position vector for a given index, or nil if out of bounds.
----@field position fun(self: VoxelArea, i: integer): vector|nil
+---@field position fun(self: VoxelArea, i: integer): simplevector|nil
 --- Returns the (x,y,z) components for a given index.
 ---@field position fun(self: VoxelArea, i: integer): integer, integer, integer
 --- Checks if (x,y,z) is inside the area.
 ---@field contains fun(self: VoxelArea, x: integer, y: integer, z: integer): boolean
 --- Checks if a position is inside the area.
----@field containsp fun(self: VoxelArea, pos: vector): boolean
+---@field containsp fun(self: VoxelArea, pos: simplevector): boolean
 --- Checks if an index is inside the area.
 ---@field containsi fun(self: VoxelArea, i: integer): boolean
 --- Returns an iterator over indices in a sub‑region.
 ---@field iter fun(self: VoxelArea, minx: integer, miny: integer, minz: integer, maxx: integer, maxy: integer, maxz: integer): function
 --- Returns an iterator over indices in a sub‑region (vector version).
----@field iterp fun(self: VoxelArea, minp: vector, maxp: vector): function
+---@field iterp fun(self: VoxelArea, minp: simplevector, maxp: simplevector): function
 --- Returns the size of the area as a vector (width, height, depth).
----@field getExtent fun(self: VoxelArea): vector
+---@field getExtent fun(self: VoxelArea): simplevector
 --- Returns the volume (number of nodes) of the area.
 ---@field getVolume fun(self: VoxelArea): integer
 --- Creates a VoxelArea from a table with MinEdge and MaxEdge.
----@field new fun(self: VoxelArea, tbl: {MinEdge:vector, MaxEdge:vector}): VoxelArea
+---@field new fun(self: VoxelArea, tbl: {MinEdge:simplevector, MaxEdge:simplevector}): VoxelArea
 
 --- ==============================
 --- VoxelManip
@@ -341,9 +386,9 @@ VoxelArea = {}
 --- Low‑level, fast map access.
 ---@class VoxelManip
 --- Loads a region into the VoxelManip; returns actual emerged pmin, pmax.
----@field read_from_map fun(self: VoxelManip, p1?: vector, p2?: vector): vector emerged_min, vector emerged_max
+---@field read_from_map fun(self: VoxelManip, p1?: simplevector, p2?: simplevector): simplevector emerged_min, simplevector emerged_max
 --- Clears and resizes the VoxelManip to the given region (no map read). Optionally fills with node.
----@field initialize fun(self: VoxelManip, p1: vector, p2: vector, node?: {name:string, param1?:integer, param2?:integer}): vector, vector
+---@field initialize fun(self: VoxelManip, p1: simplevector, p2: simplevector, node?: {name:string, param1?:integer, param2?:integer}): simplevector, simplevector
 --- Writes the data back to the map. If light is true (default), recalculates lighting.
 ---@field write_to_map fun(self: VoxelManip, light?: boolean)
 --- Returns the node content data as an array of content IDs. Optionally fills a buffer table.
@@ -359,23 +404,23 @@ VoxelArea = {}
 --- Sets the param2 data.
 ---@field set_param2_data fun(self: VoxelManip, param2_data: table)
 --- Calculates lighting within the VoxelManip (mapgen only). Optionally limits area and shadow propagation.
----@field calc_lighting fun(self: VoxelManip, p1?: vector, p2?: vector, propagate_shadow?: boolean)
+---@field calc_lighting fun(self: VoxelManip, p1?: simplevector, p2?: simplevector, propagate_shadow?: boolean)
 --- Sets lighting to a uniform value (mapgen only). Optionally limits area.
----@field set_lighting fun(self: VoxelManip, light: {day:integer, night:integer}, p1?: vector, p2?: vector)
+---@field set_lighting fun(self: VoxelManip, light: {day:integer, night:integer}, p1?: simplevector, p2?: simplevector)
 --- Returns the current lighting (mapgen only). Optionally limits area.
----@field get_lighting fun(self: VoxelManip, p1?: vector, p2?: vector): {day:integer, night:integer}
+---@field get_lighting fun(self: VoxelManip, p1?: simplevector, p2?: simplevector): {day:integer, night:integer}
 --- Updates liquid flow.
 ---@field update_liquids fun(self: VoxelManip)
 --- Returns true if the data has been modified since last read from map (mapgen only).
 ---@field was_modified fun(self: VoxelManip): boolean
 --- Returns the actual emerged minimum and maximum positions.
----@field get_emerged_area fun(self: VoxelManip): vector, vector
+---@field get_emerged_area fun(self: VoxelManip): simplevector, simplevector
 --- Frees the internal data buffers (recommended to avoid memory leaks).
 ---@field close fun(self: VoxelManip)
 
 --- Creates a VoxelManip (optionally loads area).
----@param pos1? vector
----@param pos2? vector
+---@param pos1? simplevector
+---@param pos2? simplevector
 ---@return VoxelManip
 function VoxelManip(pos1, pos2) end
 
@@ -436,8 +481,8 @@ function SecureRandom() end
 ---@field next fun(self: Raycast): pointed_thing|nil
 
 --- Creates a raycast.
----@param pos1 vector
----@param pos2 vector
+---@param pos1 simplevector
+---@param pos2 simplevector
 ---@param objects? boolean (default true)
 ---@param liquids? boolean (default false)
 ---@param pointabilities? Pointabilities
@@ -472,11 +517,11 @@ function Raycast(pos1, pos2, objects, liquids, pointabilities) end
 --- Returns area information for the given ID. Optionally include corners and data.
 ---@field get_area fun(self: AreaStore, id: integer, include_corners?: boolean, include_data?: boolean): table|nil
 --- Returns all areas containing the given position, indexed by ID.
----@field get_areas_for_pos fun(self: AreaStore, pos: vector, include_corners?: boolean, include_data?: boolean): table<integer, table>
+---@field get_areas_for_pos fun(self: AreaStore, pos: simplevector, include_corners?: boolean, include_data?: boolean): table<integer, table>
 --- Returns all areas intersecting the specified cuboid.
----@field get_areas_in_area fun(self: AreaStore, corner1: vector, corner2: vector, accept_overlap?: boolean, include_corners?: boolean, include_data?: boolean): table<integer, table>
+---@field get_areas_in_area fun(self: AreaStore, corner1: simplevector, corner2: simplevector, accept_overlap?: boolean, include_corners?: boolean, include_data?: boolean): table<integer, table>
 --- Inserts a new area; returns the new ID, or nil on failure.
----@field insert_area fun(self: AreaStore, corner1: vector, corner2: vector, data?: string, id?: integer): integer|nil
+---@field insert_area fun(self: AreaStore, corner1: simplevector, corner2: simplevector, data?: string, id?: integer): integer|nil
 --- Reserves space for `count` areas (LibSpatial only).
 ---@field reserve fun(self: AreaStore, count: integer)
 --- Removes the area with the given ID; returns success.
@@ -527,7 +572,7 @@ function AreaStore(type_name) end
 --- Returns 2D noise value at (x,y).
 ---@field get_2d fun(self: ValueNoise, pos: {x:number, y:number}): number
 --- Returns 3D noise value at (x,y,z).
----@field get_3d fun(self: ValueNoise, pos: vector): number
+---@field get_3d fun(self: ValueNoise, pos: simplevector): number
 
 ---@param noiseparams NoiseParams
 ---@return ValueNoise
@@ -536,7 +581,7 @@ function ValueNoise(noiseparams) end
 ---@param seed integer
 ---@param octaves integer
 ---@param persistence number
----@param spread number|vector
+---@param spread number|simplevector
 ---@return ValueNoise
 function ValueNoise(seed, octaves, persistence, spread) end
 
@@ -549,15 +594,15 @@ function ValueNoise(seed, octaves, persistence, spread) end
 --- Returns a 2D array of noise values starting at pos.
 ---@field get_2d_map fun(self: ValueNoiseMap, pos: {x:number, y:number}): number[][]
 --- Returns a 3D array of noise values starting at pos.
----@field get_3d_map fun(self: ValueNoiseMap, pos: vector): number[][][]
+---@field get_3d_map fun(self: ValueNoiseMap, pos: simplevector): number[][][]
 --- Returns a flat array of 2D noise values.
 ---@field get_2d_map_flat fun(self: ValueNoiseMap, pos: {x:number, y:number}, buffer?: table): table
 --- Returns a flat array of 3D noise values.
----@field get_3d_map_flat fun(self: ValueNoiseMap, pos: vector, buffer?: table): table
+---@field get_3d_map_flat fun(self: ValueNoiseMap, pos: simplevector, buffer?: table): table
 --- Calculates a 2D map and stores internally.
 ---@field calc_2d_map fun(self: ValueNoiseMap, pos: {x:number, y:number})
 --- Calculates a 3D map and stores internally.
----@field calc_3d_map fun(self: ValueNoiseMap, pos: vector)
+---@field calc_3d_map fun(self: ValueNoiseMap, pos: simplevector)
 --- Returns a slice of the last computed map.
 ---@field get_map_slice fun(self: ValueNoiseMap, slice_offset: {x?:integer, y?:integer, z?:integer}, slice_size: {x?:integer, y?:integer, z?:integer}, buffer?: table): table
 
@@ -581,20 +626,20 @@ function ValueNoiseMap(noiseparams, size) end
 ---@field is_valid fun(self: ObjectRef): boolean
 --- Removes the object (entities only, no‑op for players).
 ---@field remove fun(self: ObjectRef)
---- Returns the position, or nil if invalid.
----@field get_pos fun(self: ObjectRef): vector|nil
+--- Returns the position
+---@field get_pos fun(self: ObjectRef): simplevector
 --- Sets the position (no‑op if attached).
----@field set_pos fun(self: ObjectRef, pos: vector)
+---@field set_pos fun(self: ObjectRef, pos: simplevector)
 --- Adds to the current position (no‑op if attached).
----@field add_pos fun(self: ObjectRef, pos: vector)
+---@field add_pos fun(self: ObjectRef, pos: simplevector)
 --- Smoothly moves to a position (for entities; for players same as set_pos).
----@field move_to fun(self: ObjectRef, pos: vector, continuous?: boolean)
+---@field move_to fun(self: ObjectRef, pos: simplevector, continuous?: boolean)
 --- Returns the velocity vector.
----@field get_velocity fun(self: ObjectRef): vector
+---@field get_velocity fun(self: ObjectRef): simplevector
 --- Adds to the current velocity.
----@field add_velocity fun(self: ObjectRef, vel: vector)
+---@field add_velocity fun(self: ObjectRef, vel: simplevector)
 --- Punches the object.
----@field punch fun(self: ObjectRef, puncher: ObjectRef|nil, time_from_last_punch?: number, tool_capabilities?: ToolCapabilities, dir?: vector)
+---@field punch fun(self: ObjectRef, puncher: ObjectRef|nil, time_from_last_punch?: number, tool_capabilities?: ToolCapabilities, dir?: simplevector)
 --- Simulates a right‑click.
 ---@field right_click fun(self: ObjectRef, clicker: PlayerRef|LuaEntityRef)
 --- Sets health points (0‑65535). For players, also clamped by hp_max.
@@ -622,9 +667,9 @@ function ValueNoiseMap(noiseparams, size) end
 --- Returns the current animation parameters.
 ---@field get_animation fun(self: ObjectRef): {frame_range:{x:number,y:number}, frame_speed:number, frame_blend:number, frame_loop:boolean}
 --- Deprecated: use set_bone_override.
----@field set_bone_position fun(self: ObjectRef, bone: string, pos: vector, rot: vector) (deprecated)
+---@field set_bone_position fun(self: ObjectRef, bone: string, pos: simplevector, rot: simplevector) (deprecated)
 --- Deprecated: use get_bone_override.
----@field get_bone_position fun(self: ObjectRef, bone: string): vector, vector (deprecated)
+---@field get_bone_position fun(self: ObjectRef, bone: string): simplevector, simplevector (deprecated)
 --- Sets a bone override.
 ---@field set_bone_override fun(self: ObjectRef, bone: string, override: table|nil)
 --- Returns a bone override.
@@ -632,11 +677,11 @@ function ValueNoiseMap(noiseparams, size) end
 --- Returns all bone overrides.
 ---@field get_bone_overrides fun(self: ObjectRef): table<string, table>
 --- Attaches this object to a parent.
----@field set_attach fun(self: ObjectRef, parent: PlayerRef|LuaEntityRef, bone?: string, pos?: vector, rot?: vector, forced_visible?: boolean)
+---@field set_attach fun(self: ObjectRef, parent: PlayerRef|LuaEntityRef, bone?: string, pos?: simplevector, rot?: simplevector, forced_visible?: boolean)
 --- Detaches from parent.
 ---@field set_detach fun(self: ObjectRef)
 --- Returns attachment info, or nil if not attached.
----@field get_attach fun(self: ObjectRef): (ObjectRef|nil, string|nil, vector|nil, vector|nil, boolean|nil)
+---@field get_attach fun(self: ObjectRef): (ObjectRef|nil, string|nil, simplevector|nil, simplevector|nil, boolean|nil)
 --- Returns a list of attached child objects.
 ---@field get_children fun(self: ObjectRef): ObjectRef[]
 --- Sets object properties.
@@ -664,8 +709,6 @@ function ValueNoiseMap(noiseparams, size) end
 
 --- Player object.
 ---@class PlayerRef : ObjectRef
---- Returns the player position
----@field get_pos fun(self: ObjectRef): vector
 --- Returns the inventory reference (always exists for players).
 ---@field get_inventory fun(self: PlayerRef): InvRef
 --- Returns the player metadata (always exists).
@@ -673,11 +716,11 @@ function ValueNoiseMap(noiseparams, size) end
 --- Returns the player name.
 ---@field get_player_name fun(self: PlayerRef): string
 --- Deprecated: use get_velocity.
----@field get_player_velocity fun(self: PlayerRef): vector (deprecated)
+---@field get_player_velocity fun(self: PlayerRef): simplevector (deprecated)
 --- Deprecated: use add_velocity.
----@field add_player_velocity fun(self: PlayerRef, vel: vector) (deprecated)
+---@field add_player_velocity fun(self: PlayerRef, vel: simplevector) (deprecated)
 --- Returns the look direction as a unit vector.
----@field get_look_dir fun(self: PlayerRef): vector
+---@field get_look_dir fun(self: PlayerRef): simplevector
 --- Returns the horizontal look angle (yaw) in radians.
 ---@field get_look_horizontal fun(self: PlayerRef): number
 --- Returns the vertical look angle (pitch) in radians.
@@ -786,15 +829,15 @@ function ValueNoiseMap(noiseparams, size) end
 --- Returns local animation parameters.
 ---@field get_local_animation fun(self: PlayerRef): {x:number,y:number}, {x:number,y:number}, {x:number,y:number}, {x:number,y:number}, number
 --- Sets camera offset vectors.
----@field set_eye_offset fun(self: PlayerRef, firstperson?: vector, thirdperson_back?: vector, thirdperson_front?: vector)
+---@field set_eye_offset fun(self: PlayerRef, firstperson?: simplevector, thirdperson_back?: simplevector, thirdperson_front?: simplevector)
 --- Returns camera offset vectors.
----@field get_eye_offset fun(self: PlayerRef): vector, vector, vector
+---@field get_eye_offset fun(self: PlayerRef): simplevector, simplevector, simplevector
 --- Sets camera mode.
 ---@field set_camera fun(self: PlayerRef, params: {mode:"any"|"first"|"third"|"third_front"})
 --- Returns current camera parameters.
 ---@field get_camera fun(self: PlayerRef): {mode:string}
 --- Sends a mapblock to the player immediately.
----@field send_mapblock fun(self: PlayerRef, blockpos: vector): boolean
+---@field send_mapblock fun(self: PlayerRef, blockpos: simplevector): boolean
 --- Sets lighting parameters (saturation, shadows, exposure, bloom, volumetric light).
 ---@field set_lighting fun(self: PlayerRef, lighting: table)
 --- Returns current lighting parameters.
@@ -809,15 +852,15 @@ function ValueNoiseMap(noiseparams, size) end
 --- Lua entity object.
 ---@class LuaEntityRef : ObjectRef
 --- Sets velocity (entities only).
----@field set_velocity fun(self: LuaEntityRef, vel: vector)
+---@field set_velocity fun(self: LuaEntityRef, vel: simplevector)
 --- Sets acceleration (entities only).
----@field set_acceleration fun(self: LuaEntityRef, acc: vector)
+---@field set_acceleration fun(self: LuaEntityRef, acc: simplevector)
 --- Returns acceleration (entities only).
----@field get_acceleration fun(self: LuaEntityRef): vector
+---@field get_acceleration fun(self: LuaEntityRef): simplevector
 --- Sets rotation (radians, right‑handed Z‑X‑Y) (entities only).
----@field set_rotation fun(self: LuaEntityRef, rot: vector)
+---@field set_rotation fun(self: LuaEntityRef, rot: simplevector)
 --- Returns rotation (entities only).
----@field get_rotation fun(self: LuaEntityRef): vector
+---@field get_rotation fun(self: LuaEntityRef): simplevector
 --- Sets yaw (heading) in radians; resets pitch and roll to 0 (entities only).
 ---@field set_yaw fun(self: LuaEntityRef, yaw: number)
 --- Returns yaw (entities only).
@@ -946,7 +989,7 @@ function ValueNoiseMap(noiseparams, size) end
 ---@field direction? integer
 ---@field alignment? {x:number, y:number}
 ---@field offset? {x:number, y:number}
----@field world_pos? vector
+---@field world_pos? simplevector
 ---@field size? {x:number, y:number}
 ---@field z_index? integer
 ---@field style? integer

@@ -140,16 +140,22 @@ for _, i in pairs(fireworks.colors) do
 					if core.get_node(pos).name:sub(1, 9) == "fireworks" then
 						core.remove_node(pos)
 						local entity = core.add_entity(pos, "fireworks:rocket")
+						if not entity then
+							return
+						end
 						entity:set_properties({textures = {"firework_"..i[1]..".png"}})
 						local luaent = entity:get_luaentity()
 						luaent.firework_name = i[1]
-						luaent.player_name = puncher:get_player_name()
+						if puncher:is_player() then
+							---@cast puncher PlayerRef
+							luaent.player_name = puncher:get_player_name()
+						end
 						entity:add_velocity(vector.new(0, math.random(10, 13), 0))
 					end
 				end)
 				return
 			end
-			return core.dig_node(pos, puncher)
+			core.dig_node(pos, puncher)
 		end,
 		sounds = default.node_sound_stone_defaults(),
 	})

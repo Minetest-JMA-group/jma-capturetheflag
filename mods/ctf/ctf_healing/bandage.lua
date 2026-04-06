@@ -110,7 +110,7 @@ function ctf_healing.register_bandage(name, def)
 
 	if def.rightclick_func then
 		tooldef.on_place = function(itemstack, user, pointed, ...)
-			local pointed_def = false
+			local pointed_def
 			local node
 
 			if pointed and pointed.under then

@@ -90,7 +90,7 @@ end)
 ctf_teams.register_on_allocplayer(function(...)
 	local current_mode = ctf_modebase:get_current_mode()
 	if not current_mode then
-		return true
+		return
 	end
 	current_mode.on_allocplayer(...)
 end)
@@ -107,7 +107,10 @@ end
 
 core.register_on_punchplayer(
 	function(player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
-		local team1, team2 = ctf_teams.get(player), ctf_teams.get(hitter)
+		local team1, team2 = ctf_teams.get(player)
+		if hitter then
+			team2 = ctf_teams.get(hitter)
+		end
 
 		if not team1 and not team2 then
 			if ctf_jma_elysium.can_hit_player(player, hitter) then
@@ -133,7 +136,7 @@ core.register_on_punchplayer(
 		)
 
 		if real_damage then
-			player:set_hp(player:get_hp() - real_damage, { type = "punch" })
+			player:set_hp(player:get_hp() - real_damage, { type = "punch", from = "mod" })
 			punch_sound(player)
 		end
 
@@ -176,6 +179,7 @@ function ctf_modebase.on_flag_capture(capturer, flagteams)
 	RunCallbacks(ctf_api.registered_on_flag_capture, capturer, flagteams)
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 ctf_teams.team_allocator = function(...)
 	if not ctf_modebase.in_game then
 		return
@@ -195,6 +199,7 @@ ctf_teams.team_allocator = function(...)
 end
 
 local default_calc_knockback = core.calculate_knockback
+---@diagnostic disable-next-line: duplicate-set-field
 core.calculate_knockback = function(...)
 	local player = select(1, ...)
 	local hitter = select(2, ...)
@@ -215,10 +220,11 @@ end
 --- can_drop_item()
 
 local default_item_drop = core.item_drop
+---@diagnostic disable-next-line: duplicate-set-field
 core.item_drop = function(itemstack, dropper, ...)
 	local current_mode = ctf_modebase:get_current_mode()
 
-	if not ctf_teams.get(dropper) then
+	if not dropper or not ctf_teams.get(dropper) then
 		return default_item_drop(itemstack, dropper, ...)
 	end
 
@@ -252,6 +258,7 @@ core.register_allow_player_inventory_action(function(player, action, inventory, 
 	end
 end)
 
+---@diagnostic disable-next-line: duplicate-set-field
 ctf_ranged.can_use_gun = function(player, name)
 	if not ctf_teams.get(player) then
 		return true

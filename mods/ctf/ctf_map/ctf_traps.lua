@@ -43,36 +43,38 @@ core.register_node("ctf_map:spike", {
 		fixed = { -0.5, -0.5, -0.5, 0.5, 0, 0.5 },
 	},
 	on_place = function(itemstack, placer, pointed_thing)
-		local pteam = ctf_teams.get(placer)
+		if placer and placer:is_player() then
+			---@cast placer PlayerRef
+			local pteam = ctf_teams.get(placer)
+			if pteam then
+				local pname = placer:get_player_name()
 
-		if pteam then
-			local pname = placer:get_player_name()
+				if
+					not ctf_core.pos_inside(
+						pointed_thing.above,
+						ctf_teams.get_team_territory(pteam)
+					)
+				then
+					core.chat_send_player(
+						pname,
+						"You can only place spikes in your own territory!"
+					)
+					return itemstack
+				end
 
-			if
-				not ctf_core.pos_inside(
-					pointed_thing.above,
-					ctf_teams.get_team_territory(pteam)
-				)
-			then
-				core.chat_send_player(
-					pname,
-					"You can only place spikes in your own territory!"
-				)
+				local newitemstack = ItemStack("ctf_map:spike_" .. pteam)
+				newitemstack:set_count(itemstack:get_count())
+
+				local result = core.item_place(newitemstack, placer, pointed_thing, 34)
+
+				if result then
+					core.get_meta(pointed_thing.above):set_string("placer", pname)
+
+					itemstack:set_count(result:get_count())
+				end
+
 				return itemstack
 			end
-
-			local newitemstack = ItemStack("ctf_map:spike_" .. pteam)
-			newitemstack:set_count(itemstack:get_count())
-
-			local result = core.item_place(newitemstack, placer, pointed_thing, 34)
-
-			if result then
-				core.get_meta(pointed_thing.above):set_string("placer", pname)
-
-				itemstack:set_count(result:get_count())
-			end
-
-			return itemstack
 		end
 
 		return core.item_place(itemstack, placer, pointed_thing, 34)
@@ -101,11 +103,12 @@ for _, team in ipairs(ctf_teams.teamlist) do
 		},
 		on_place = function(itemstack, placer, pointed_thing)
 			local item, pos = core.item_place(itemstack, placer, pointed_thing, 34)
-			if item then
+			if item and placer and placer:is_player() then
+				---@cast placer PlayerRef
 				local pname = placer:get_player_name()
-				minetest
+				core
 					.get_meta(pointed_thing.above)
-					:set_string("placer_team", ctf_teams.get(pname))
+					:set_string("placer_team", ctf_teams.get(pname) or "")
 				core.get_meta(pointed_thing.above):set_string("placer", pname)
 			end
 			return item, pos
@@ -198,7 +201,7 @@ core.register_node("ctf_map:damage_cobble", {
 		end
 
 		if not damage_node_dig(pos, node, shooter) then
-			return core.dig_node(pos)
+			core.dig_node(pos)
 		end
 	end,
 	on_dig = function(pos, node, digger)
@@ -207,6 +210,10 @@ core.register_node("ctf_map:damage_cobble", {
 		end
 	end,
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
+		if not placer or not placer:is_player() then
+			return
+		end
+		---@cast placer PlayerRef
 		local meta = core.get_meta(pos)
 		meta:set_string("placer", placer:get_player_name())
 	end,
@@ -226,7 +233,7 @@ core.register_node("ctf_map:damage_glass", {
 	sunlight_propagates = true,
 	on_ranged_shoot = function(pos, node, shooter, type)
 		if not damage_node_dig(pos, node, shooter) then
-			return core.dig_node(pos)
+			core.dig_node(pos)
 		end
 	end,
 	on_dig = function(pos, node, digger)
@@ -235,6 +242,10 @@ core.register_node("ctf_map:damage_glass", {
 		end
 	end,
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
+		if not placer or not placer:is_player() then
+			return
+		end
+		---@cast placer PlayerRef
 		local meta = core.get_meta(pos)
 		meta:set_string("placer", placer:get_player_name())
 	end,

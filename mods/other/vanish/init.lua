@@ -9,7 +9,7 @@ vanish.old_armor_groups = {}
 function vanish.on(player, options)
 	local name = player:get_player_name()
 	local pos = player:get_pos()
-	if not minetest.get_player_by_name(name) or not pos then return end
+	if not core.get_player_by_name(name) or not pos then return end
 
 	vanish.vanished[name] = true
 
@@ -55,16 +55,16 @@ function vanish.on(player, options)
 	playertag.remove_entity_tag(player)
 	wield3d.remove_wielditem(player)
 
-	minetest.after(1, function()
-		if not minetest.get_player_by_name(name) then return end
+	core.after(1, function()
+		if not core.get_player_by_name(name) then return end
 		local attached_list = player:get_children()
 		for _, obj in ipairs(attached_list) do
 			obj:remove()
 		end
-		minetest.chat_send_player(name, minetest.colorize("yellow", "Your attached objects have been removed."))
+		core.chat_send_player(name, core.colorize("yellow", "Your attached objects have been removed."))
 	end)
 
-	minetest.chat_send_player(name, minetest.colorize("red", "Note: You are currently in Vanish mode."))
+	core.chat_send_player(name, core.colorize("red", "Note: You are currently in Vanish mode."))
 
 	hud:add(player, "vanish:notify", {
 		type = "text",
@@ -78,7 +78,7 @@ end
 
 function vanish.off(player)
 	local name = player:get_player_name()
-	if not vanish.vanished[name] or not minetest.get_player_by_name(name) then return end
+	if not vanish.vanished[name] or not core.get_player_by_name(name) then return end
 
 	player:set_properties(vanish.old_properties[name])
 	player:override_day_night_ratio()
@@ -99,8 +99,8 @@ function vanish.off(player)
 
 	playertag.remove_entity_tag(player)
 	wield3d.remove_wielditem(player)
-	minetest.after(0.5, function()
-		if minetest.get_player_by_name(name) then
+	core.after(0.5, function()
+		if core.get_player_by_name(name) then
 			playertag.set(player, playertag.TYPE_ENTITY)
 			wield3d.add_wielditem(player)
 		end
@@ -121,7 +121,7 @@ function vanish.off(player)
 	end
 end
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
 
 	hpbar.no_entity_attach[name] = nil
@@ -129,8 +129,8 @@ minetest.register_on_joinplayer(function(player)
 	wield3d.no_entity_attach[name] = nil
 	server_cosmetics.no_entity_attach[name] = nil
 
-	minetest.after(3, function()
-		if not minetest.get_player_by_name(name) then return end
+	core.after(3, function()
+		if not core.get_player_by_name(name) then return end
 
 		playertag.remove_entity_tag(player)
 		wield3d.remove_wielditem(player)
@@ -144,8 +144,8 @@ end)
 
 if ctf_modebase and ctf_modebase.events and ctf_modebase.events.register then
 	ctf_modebase.events.register("match_start", function()
-		minetest.after(2, function()
-			for _, player in ipairs(minetest.get_connected_players()) do
+		core.after(2, function()
+			for _, player in ipairs(core.get_connected_players()) do
 				local name = player:get_player_name()
 				if not vanish.vanished[name] then
 					playertag.remove_entity_tag(player)
@@ -161,7 +161,7 @@ if ctf_modebase and ctf_modebase.events and ctf_modebase.events.register then
 	end)
 end
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local name = player:get_player_name()
 
 	if vanish.vanished[name] then
@@ -177,9 +177,9 @@ minetest.register_on_leaveplayer(function(player)
 	vanish.old_armor_groups[name] = nil
 end)
 
-minetest.register_privilege("vanish", "Allows to make players invisible")
+core.register_privilege("vanish", "Allows to make players invisible")
 
-minetest.register_chatcommand("vanish", {
+core.register_chatcommand("vanish", {
 	description = "Toggle invisibility of player with optional parameters",
 	privs = {vanish=true},
 	params = " [key=value] ...",
@@ -188,7 +188,7 @@ minetest.register_chatcommand("vanish", {
 		local target_name = args[1] ~= "" and args[1] or name
 		if target_name == "!" then target_name = name end
 
-		local player = minetest.get_player_by_name(target_name)
+		local player = core.get_player_by_name(target_name)
 		if not player then
 			return false, "Player " .. target_name .. " is not online."
 		end
@@ -225,13 +225,13 @@ minetest.register_chatcommand("vanish", {
 	end
 })
 
-minetest.register_chatcommand("unvanish", {
+core.register_chatcommand("unvanish", {
 	description = "Toggle invisibility of player",
 	privs = {vanish=true},
 	params = "",
 	func = function(name, param)
 		local target_name = param ~= "" and param or name
-		local player = minetest.get_player_by_name(target_name)
+		local player = core.get_player_by_name(target_name)
 		if not player then
 			return false, "Player " .. target_name .. " is not online."
 		end
@@ -245,7 +245,7 @@ minetest.register_chatcommand("unvanish", {
 	end
 })
 
-minetest.register_chatcommand("vanished", {
+core.register_chatcommand("vanished", {
 	description = "Show list of vanished players",
 	privs = {vanish=true},
 	func = function(name, param)

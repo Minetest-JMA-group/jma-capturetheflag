@@ -5,6 +5,7 @@ ctf_modebase.map_on_next_match = nil
 ctf_modebase.mode_on_next_match = nil
 
 -- Overridable
+---@diagnostic disable-next-line: duplicate-set-field
 function ctf_modebase.map_chosen(map) end
 
 function ctf_modebase.start_match_after_mode_vote()

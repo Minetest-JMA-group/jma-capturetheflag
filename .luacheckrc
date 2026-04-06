@@ -1,7 +1,7 @@
 unused_args = false
 
 globals = {
-	"PlayerObj", "PlayerName", "HumanReadable", "RunCallbacks",
+	"PlayerObj", "PlayerName", "HumanReadable", "RunCallbacks", "joinStrings",
 
 	"ctf_gui", "hud_events", "mhud", "physics", "rawf", "ctf_settings",
 

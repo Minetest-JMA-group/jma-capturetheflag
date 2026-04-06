@@ -38,7 +38,9 @@ local p = core.get_player_by_name(pname)
 
 core.close_formspec(pname, "ctf_map:loading")
     ctf_map.announce_map(map)
-    p:set_pos(vector.add(map.pos1, vector.divide(map.size, 2)))
+	if p then
+    	p:set_pos(vector.add(map.pos1, vector.divide(map.size, 2)))
+	end
     skybox.set(p, table.indexof(ctf_map.skyboxes, map.skybox) - 1)
     physics.set(pname, "ctf_map_editor_speed", {
         speed = map.phys_speed,
@@ -289,9 +291,9 @@ function ctf_map.show_map_save_form(player, scroll_pos)
         if not context[player].teams[name] then
             context[player].teams[name] = {
                 enabled = false,
-                flag_pos = vector.new(),
-                pos1 = vector.new(),
-                pos2 = vector.new(),
+                flag_pos = vector.zero(),
+                pos1 = vector.zero(),
+                pos2 = vector.zero(),
             }
         end
      end
@@ -814,8 +816,8 @@ function ctf_map.show_map_save_form(player, scroll_pos)
         pos = { (5 - 0.2) - (ctf_gui.ELEM_SIZE.x / 2), idx },
         func = function(pname, fields)
             table.insert(context[pname].chests, {
-                pos1 = vector.new(),
-                pos2 = vector.new(),
+                pos1 = vector.zero(),
+                pos2 = vector.zero(),
                 amount = ctf_map.DEFAULT_CHEST_AMOUNT,
             })
             core.after(0.1,

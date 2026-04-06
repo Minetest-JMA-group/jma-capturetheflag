@@ -3,6 +3,7 @@
 --- Extensions to standard Lua libraries provided by Luanti.
 
 --- Splits a string into parts using a separator.
+---@overload fun(self:string, separator:string, include_empty?:boolean, max_splits?:integer, sep_is_pattern?:boolean): string[]
 ---@param separator string
 ---@param include_empty? boolean (default false)
 ---@param max_splits? integer (negative = unlimited, default -1)
@@ -82,4 +83,3 @@ function math.isfinite(x) end
 
 ---@class string
 ---@field trim fun(self:string): string
----@field split fun(self:string, separator:string, include_empty?:boolean, max_splits?:integer, sep_is_pattern?:boolean): string[]

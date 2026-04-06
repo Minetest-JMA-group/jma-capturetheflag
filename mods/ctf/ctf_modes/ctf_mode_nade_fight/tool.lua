@@ -89,6 +89,9 @@ grenades.register_grenade("ctf_mode_nade_fight:black_hole_grenade", {
 		end
 
 		local black_hole = core.add_entity(pos, "ctf_mode_nade_fight:black_hole")
+		if not black_hole then
+			return
+		end
 
 		local corners = { -black_hole_radius, black_hole_radius }
 		for _, x in pairs(corners) do
@@ -138,6 +141,10 @@ grenades.register_grenade("ctf_mode_nade_fight:black_hole_grenade", {
 		local victims = {}
 
 		for _, v in pairs(core.get_objects_inside_radius(pos, black_hole_radius)) do
+			if not v:is_player() then
+				goto continue
+			end
+			---@cast v PlayerRef
 			local vname = v:get_player_name()
 
 			if
@@ -188,6 +195,7 @@ grenades.register_grenade("ctf_mode_nade_fight:black_hole_grenade", {
 					table.insert(victims, vname)
 				end
 			end
+			::continue::
 		end
 
 		core.after(0.2, function()
@@ -269,6 +277,10 @@ grenades.register_grenade("ctf_mode_nade_fight:knockback_grenade", {
 		})
 
 		for _, v in pairs(core.get_objects_inside_radius(pos, KNOCKBACK_RADIUS)) do
+			if not v:is_player() then
+				goto continue
+			end
+			---@cast v PlayerRef
 			local vname = v:get_player_name()
 			local player = core.get_player_by_name(name)
 
@@ -341,6 +353,7 @@ grenades.register_grenade("ctf_mode_nade_fight:knockback_grenade", {
 					v:add_velocity(vel)
 				end
 			end
+			::continue::
 		end
 	end,
 })
@@ -366,7 +379,7 @@ local function swap_next_grenade(itemstack, user, pointed)
 	end
 
 	held_grenade[user:get_player_name()] = nadeid_next
-	return "ctf_mode_nade_fight:grenade_tool_" .. nadeid_next
+	return ItemStack("ctf_mode_nade_fight:grenade_tool_" .. nadeid_next)
 end
 
 core.register_on_leaveplayer(function(player)
@@ -385,9 +398,10 @@ for idx, info in ipairs(grenade_list) do
 		wield_image = def.inventory_image,
 		inventory_overlay = "ctf_modebase_special_item.png",
 		on_use = function(itemstack, user, pointed_thing)
-			if itemstack:get_wear() > 1 then
+			if itemstack:get_wear() > 1 or not user or not user:is_player() then
 				return
 			end
+			---@cast user PlayerRef
 			local uname = user:get_player_name()
 
 			if not tool.holed[uname] then
@@ -408,8 +422,8 @@ for idx, info in ipairs(grenade_list) do
 
 			return itemstack
 		end,
-		on_place = function(itemstack, user, pointed, ...)
-			local node = false
+		on_place = function(itemstack, user, pointed)
+			local node
 			local pointed_def
 
 			if pointed and pointed.under then

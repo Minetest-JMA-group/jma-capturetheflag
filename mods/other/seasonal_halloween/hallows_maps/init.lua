@@ -10,9 +10,7 @@ function ctf_modebase.map_catalog.select_map_for_mode(mode, ...)
 		was_last = true
 		first_map = false
 
-		ctf_modebase.map_catalog.select_map(function(map)
-			return map.dirname == "pumpkin_hills"
-		end, true)
+		ctf_modebase.map_catalog.select_map(ctf_modebase.map_catalog.map_dirnames["pumpkin_hills"])
 	else
 		was_last = false
 		old_select_map_for_mode(mode, ...)

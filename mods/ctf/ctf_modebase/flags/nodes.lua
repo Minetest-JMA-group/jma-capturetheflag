@@ -1,5 +1,6 @@
 if ctf_core.settings.server_mode == "play" then
 	local old_protected = core.is_protected
+	---@diagnostic disable-next-line: duplicate-set-field
 	core.is_protected = function(pos, ...)
 		local foundpos = core.find_node_near(pos, 2, "ctf_modebase:flag", true)
 
@@ -42,7 +43,7 @@ core.register_node("ctf_modebase:flag", {
 		},
 	},
 	groups = { immortal = 1, is_flag = 1, flag_bottom = 1, not_in_creative_inventory = 1, ignore = 1 },
-	on_punch = function(pos, node, puncher, pointed_thing, ...)
+	on_punch = function(pos, node, puncher, pointed_thing)
 		local pos_above = vector.offset(pos, 0, 1, 0)
 		local node_above = core.get_node(pos_above)
 
@@ -50,7 +51,7 @@ core.register_node("ctf_modebase:flag", {
 			ctf_modebase.flag_on_punch(puncher, pos_above, node_above)
 		end
 
-		core.node_punch(pos, node, puncher, pointed_thing, ...)
+		core.node_punch(pos, node, puncher, pointed_thing)
 	end,
 	on_rightclick = function(pos, node, clicker)
 		if ctf_core.settings.server_mode ~= "mapedit" then
@@ -98,12 +99,12 @@ for name, def in pairs(ctf_teams.team) do
 			[name] = 1,
 			ignore = 1,
 		},
-		on_punch = function(pos, node, puncher, pointed_thing, ...)
+		on_punch = function(pos, node, puncher, pointed_thing)
 			if node.name ~= "ctf_modebase:flag_captured_top" then
 				ctf_modebase.flag_on_punch(puncher, pos, node)
 			end
 
-			core.node_punch(pos, node, puncher, pointed_thing, ...)
+			core.node_punch(pos, node, puncher, pointed_thing)
 		end,
 		on_rightclick = function(pos, node, clicker)
 			if ctf_core.settings.server_mode ~= "mapedit" then

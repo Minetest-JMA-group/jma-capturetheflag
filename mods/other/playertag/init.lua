@@ -20,26 +20,30 @@ local function add_entity_tag(player, old_observers, readded)
 
 	local ent = core.add_entity(player:get_pos(), "playertag:tag")
 	if not ent then return end
-	local ent2 = false
-	local ent3 = false
+	local ent2
+	local ent3
 
 	if ent.set_observers then
 		ent2 = core.add_entity(player:get_pos(), "playertag:tag")
-		ent2:set_observers(old_observers.nametag_entity or {})
-		ent2:set_properties({
-			nametag = player_name,
-			nametag_color = "#EEFFFFDD",
-			nametag_bgcolor = "#0000002D"
-		})
+		if ent2 then
+			ent2:set_observers(old_observers.nametag_entity or {})
+			ent2:set_properties({
+				nametag = player_name,
+				nametag_color = "#EEFFFFDD",
+				nametag_bgcolor = "#0000002D"
+			})
+		end
 
 		ent3 = core.add_entity(player:get_pos(), "playertag:tag")
-		ent3:set_observers(old_observers.symbol_entity or {})
-		ent3:set_properties({
-			collisionbox = { 0, 0, 0, 0, 0, 0 },
-			nametag = "V",
-			nametag_color = "#EEFFFFDD",
-			nametag_bgcolor = "#0000002D"
-		})
+		if ent3 then
+			ent3:set_observers(old_observers.symbol_entity or {})
+			ent3:set_properties({
+				collisionbox = { 0, 0, 0, 0, 0, 0 },
+				nametag = "V",
+				nametag_color = "#EEFFFFDD",
+				nametag_bgcolor = "#0000002D"
+			})
+		end
 	end
 
 	-- Build name from font texture
@@ -78,7 +82,7 @@ local function add_entity_tag(player, old_observers, readded)
 	if readded then return end
 	players[player_name].timer = core.after(5, function()
 		if core.get_player_by_name(player_name) ~= nil then -- check if the player is still online
-			if not ent:get_luaentity() or (ent.set_observers and not (ent2:get_luaentity() or ent3:get_luaentity())) then
+			if not ent:get_luaentity() or (ent.set_observers and not ((ent2 and ent2:get_luaentity()) or (ent3 and ent3:get_luaentity()))) then
 				core.log("warning", "playertag: respawning entity for " .. player_name)
 				add_entity_tag(player, old_observers, true)
 			end
@@ -183,8 +187,9 @@ core.register_entity("playertag:tag", {
 		pointable = false,
 	},
 	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir, damage)
-		if core.is_player(puncher) then
-			puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
+		if puncher and core.is_player(puncher) then
+			---@cast puncher PlayerRef
+			puncher:set_hp(puncher:get_hp() - damage,  {type="punch", from="mod"}) --cause damage to yourself.
 			core.log("warning", puncher:get_player_name() .. " is trying to damage non-pointable entity \"playertag:tag\".")
 		end
 		return true

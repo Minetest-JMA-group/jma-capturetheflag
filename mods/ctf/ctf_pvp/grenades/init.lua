@@ -84,9 +84,9 @@ function grenades.register_grenade(name, def)
 						end
 						obj:remove()
 					elseif c_result == false then
-						vel = vector.new()
-						self.last_vel = vector.new()
-						obj:set_velocity(vector.new())
+						vel = vector.zero()
+						self.last_vel = vector.zero()
+						obj:set_velocity(vector.zero())
 						obj:set_acceleration(vector.new(0, 0, 0))
 					end
 				else
@@ -104,7 +104,7 @@ function grenades.register_grenade(name, def)
 
 			norm_vel = vector.normalize(vel)
 
-			if not vector.equals(vel, vector.new()) then
+			if not vector.equals(vel, vector.zero()) then
 				obj:set_acceleration({
 					x = -norm_vel.x
 						* grenades.grenade_deaccel
@@ -119,10 +119,10 @@ function grenades.register_grenade(name, def)
 			if moveresult.touching_ground then -- Is the grenade sliding?
 				-- If grenade is barely moving, make sure it stays that way
 				if
-					vector.distance(vector.new(), vel) <= 2
-					and not vector.equals(vel, vector.new())
+					vector.distance(vector.zero(), vel) <= 2
+					and not vector.equals(vel, vector.zero())
 				then
-					obj:set_velocity(vector.new())
+					obj:set_velocity(vector.zero())
 					obj:set_acceleration(vector.new(0, -9.8, 0))
 				end
 			end

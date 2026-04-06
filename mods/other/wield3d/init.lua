@@ -9,6 +9,7 @@ local location = {
 
 local players = {}
 
+---@diagnostic disable-next-line: undefined-field
 core.register_item("wield3d:hand", {
 	type = "none",
 	wield_image = "blank.png",
@@ -27,8 +28,9 @@ core.register_entity("wield3d:entity", {
 		glow = 7,
 	},
 	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir, damage)
-		if core.is_player(puncher) then
-			puncher:set_hp(puncher:get_hp() - damage,  {type="punch"}) --cause damage to yourself.
+		if puncher and core.is_player(puncher) then
+			---@cast puncher PlayerRef
+			puncher:set_hp(puncher:get_hp() - damage,  {type="punch", from="mod"}) --cause damage to yourself.
 			core.log("warning", puncher:get_player_name() .. " is trying to damage non-pointable entity \"wield3d:entity\".")
 		end
 		return true

@@ -245,6 +245,9 @@ core.register_entity("random_gifts:gift", {
 	on_activate = function(self, staticdata, dtime_s)
 		-- self.object:set_properties({textures = "radom_gifts_chest.png"})
 		local par = core.add_entity(self.object:get_pos(), "random_gifts:parachute")
+		if not par then
+			return
+		end
 		par:set_attach(self.object)
 		self.parachute = par
 

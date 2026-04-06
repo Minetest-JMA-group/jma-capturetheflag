@@ -75,8 +75,9 @@ function ctf_map.load_map_meta(idx, dirname)
         if not meta:get("r") then
             return
         end
-        local mapr = meta:get("r")
-        local maph = meta:get("h")
+        local mapr = tonumber(meta:get("r"))
+		---@cast mapr -nil
+        local maph = tonumber(meta:get("h"))
         local start_time = meta:get("start_time")
         local time_speed = meta:get("time_speed")
         local initial_stuff = meta:get("initial_stuff")
@@ -120,12 +121,14 @@ function ctf_map.load_map_meta(idx, dirname)
         local i = 1
         while meta:get("team." .. i) do
             local tname = meta:get("team." .. i)
-            local tpos = core.string_to_pos(meta:get("team." .. i .. ".pos"))
+            local tpos = core.string_to_pos(meta:get("team." .. i .. ".pos") or "")
+			---@cast tname -nil
+			---@cast tpos -nil
             map.teams[tname] = {
                 enabled = true,
                 flag_pos = vector.add(offset, vector.add(tpos, offset_to_new)),
-                pos1 = vector.new(),
-                pos2 = vector.new(),
+                pos1 = vector.zero(),
+                pos2 = vector.zero(),
             }
             i = i + 1
         end
@@ -133,8 +136,8 @@ function ctf_map.load_map_meta(idx, dirname)
         i = 1
         core.log("verbose", "Parsing chest zones of " .. map.name .. "...")
         while meta:get("chests." .. i .. ".from") do
-            local from = core.string_to_pos(meta:get("chests." .. i .. ".from"))
-            local to = core.string_to_pos(meta:get("chests." .. i .. ".to"))
+            local from = core.string_to_pos(meta:get("chests." .. i .. ".from") or "")
+            local to = core.string_to_pos(meta:get("chests." .. i .. ".to") or "")
             assert(from and to, "Positions needed for chest zone " .. i .. " in map " .. map.name)
             from, to = vector.sort(from, to)
             map.chests[i] = {
@@ -152,7 +155,7 @@ function ctf_map.load_map_meta(idx, dirname)
             }
         end
     else
-        local size = core.deserialize(meta:get("size"))
+        local size = core.deserialize(meta:get("size") or "")
         offset.y = -size.y / 2
         map = {
             map_version = CURRENT_MAP_VERSION,
@@ -167,7 +170,7 @@ function ctf_map.load_map_meta(idx, dirname)
             hint = meta:get("hint"),
             license = meta:get("license"),
             others = meta:get("others"),
-            initial_stuff = core.deserialize(meta:get("initial_stuff")),
+            initial_stuff = core.deserialize(meta:get("initial_stuff") or ""),
             treasures = meta:get("treasures"),
             skybox = meta:get("skybox"),
             start_time = tonumber(meta:get("start_time")),
@@ -179,10 +182,10 @@ function ctf_map.load_map_meta(idx, dirname)
             max_players = tonumber(meta:get("max_players")),
             seasonal_start = normalize_seasonal_date(meta:get("seasonal_start"), dirname),
             seasonal_end = normalize_seasonal_date(meta:get("seasonal_end"), dirname),
-            chests = core.deserialize(meta:get("chests")),
-            teams = core.deserialize(meta:get("teams")),
-            barrier_area = core.deserialize(meta:get("barrier_area")),
-            game_modes = core.deserialize(meta:get("game_modes")),
+            chests = core.deserialize(meta:get("chests") or ""),
+            teams = core.deserialize(meta:get("teams") or ""),
+            barrier_area = core.deserialize(meta:get("barrier_area") or ""),
+            game_modes = core.deserialize(meta:get("game_modes") or ""),
             enable_shadows = tonumber(meta:get("enable_shadows") or "0.26"),
         }
 
@@ -241,6 +244,7 @@ function ctf_map.save_map(mapmeta)
             local flagpos = core.find_node_near(def.flag_pos, 3, { "group:flag_bottom" }, true)
             if not flagpos then
                 flagpos = def.flag_pos
+				---@cast flagpos -nil
                 core.chat_send_all(core.colorize("red", "Failed to find flag for team " .. id ..
                     ". Node at given position: " .. dump(core.get_node(flagpos).name)))
             end

@@ -222,6 +222,7 @@ local function add_effects(pos, radius, drops)
 
 	-- we just dropped some items. Look at the items entities and pick
 	-- one of them to use as texture
+	---@type string|TileDefinitionTable
 	local texture = "tnt_blast.png" --fallback texture
 	local node
 	local most = 0

@@ -241,6 +241,7 @@ end
 local function swap_tools(itemstack, picker, inv, inv_action, item_index)
 	if ctf_modebase.current_mode and ctf_teams.get(picker) then
 		local mode = ctf_modebase:get_current_mode()
+		---@cast mode -nil
 		for name, func in pairs(mode.initial_stuff_item_levels) do
 			local priority = func(itemstack)
 
@@ -388,6 +389,7 @@ function ctf_modebase.player.update(player)
 	end
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function ctf_modebase.player.is_playing(player)
 	return true
 end
@@ -428,8 +430,14 @@ core.register_on_joinplayer(function(player)
 	ctf_modebase.player.update(player)
 end)
 
-minetest.register_on_item_pickup(function(itemstack, picker)
+core.register_on_item_pickup(function(itemstack, picker)
+	if not picker then
+		return
+	end
 	local playerinv = picker:get_inventory()
+	if not playerinv then
+		return
+	end
 	local leftovers = playerinv:add_item("main", itemstack)
 	if leftovers:get_count() > 0 then
 		hud_events.new(picker, {

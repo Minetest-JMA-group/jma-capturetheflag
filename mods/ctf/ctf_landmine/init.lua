@@ -45,10 +45,10 @@ local function landmine_explode(pos)
 		time = 0.5,
 		minpos = vector.subtract(pos, 3),
 		maxpos = vector.add(pos, 3),
-		minvel = { x = 0, y = 5, z = 0 },
-		maxvel = { x = 0, y = 7, z = 0 },
-		minacc = { x = 0, y = 1, z = 0 },
-		maxacc = { x = 0, y = 1, z = 0 },
+		minvel = vector.new(0, 5, 0),
+		maxvel = vector.new(0, 7, 0),
+		minacc = vector.new(0, 1, 0),
+		maxacc = vector.new(0, 1, 0),
 		minexptime = 0.3,
 		maxexptime = 0.6,
 		minsize = 7,
@@ -61,8 +61,8 @@ local function landmine_explode(pos)
 
 	core.add_particle({
 		pos = pos,
-		velocity = { x = 0, y = 0, z = 0 },
-		acceleration = { x = 0, y = 0, z = 0 },
+		velocity = vector.zero(),
+		acceleration = vector.zero(),
 		expirationtime = 0.3,
 		size = 15,
 		collisiondetection = false,
@@ -126,24 +126,26 @@ core.register_node("ctf_landmine:landmine", {
 		fixed = { -0.4375, -0.5000, -0.4375, 0.4375, -0.4750, 0.4375 },
 	},
 	on_place = function(itemstack, placer, pointed_thing)
-		local pteam = ctf_teams.get(placer:get_player_name())
-
-		if pteam then
-			for flagteam, team in pairs(ctf_map.current_map.teams) do
-				if
-					pteam ~= flagteam
-					and not ctf_modebase.flag_captured[flagteam]
-					and team.flag_pos
-				then
-					local distance_from_flag =
-						vector.distance(placer:get_pos(), team.flag_pos)
-					if distance_from_flag < 15 then -- block landmine placement when closer than 15 nodes to the enemy flag
-						hud_events.new(placer:get_player_name(), {
-							text = S("You can't place landmine so close to a flag"),
-							color = "warning",
-							quick = true,
-						})
-						return nil
+		if placer and placer:is_player() then
+			---@cast placer PlayerRef
+			local pteam = ctf_teams.get(placer:get_player_name())
+			if pteam then
+				for flagteam, team in pairs(ctf_map.current_map.teams) do
+					if
+						pteam ~= flagteam
+						and not ctf_modebase.flag_captured[flagteam]
+						and team.flag_pos
+					then
+						local distance_from_flag =
+							vector.distance(placer:get_pos(), team.flag_pos)
+						if distance_from_flag < 15 then -- block landmine placement when closer than 15 nodes to the enemy flag
+							hud_events.new(placer:get_player_name(), {
+								text = S("You can't place landmine so close to a flag"),
+								color = "warning",
+								quick = true,
+							})
+							return nil
+						end
 					end
 				end
 			end
@@ -152,12 +154,16 @@ core.register_node("ctf_landmine:landmine", {
 		return core.item_place(itemstack, placer, pointed_thing)
 	end,
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
+		if not placer or not placer:is_player() then
+			return
+		end
+		---@cast placer PlayerRef
 		local meta = core.get_meta(pos)
 		local name = placer:get_player_name()
 		local pteam = ctf_teams.get(placer)
 
 		meta:set_string("placer", name)
-		meta:set_string("pteam", pteam)
+		meta:set_string("pteam", pteam or "")
 		table.insert(landmines, pos)
 	end,
 	on_punch = function(pos, _node, puncher, pointed_thing)
@@ -188,15 +194,15 @@ core.register_globalstep(function(dtime)
 	end
 	landmine_globalstep_counter = 0.0
 	for _idx, pos in pairs(landmines) do
-		local near_objs = core.get_objects_in_area({
-			x = pos.x - 0.75,
-			y = pos.y - 0.75,
-			z = pos.z - 0.75,
-		}, {
-			x = pos.x + 0.75,
-			y = pos.y - 0.3,
-			z = pos.z + 0.75,
-		})
+		local near_objs = core.get_objects_in_area(vector.new(
+			pos.x - 0.75,
+			pos.y - 0.75,
+			pos.z - 0.75
+		), vector.new(
+			pos.x + 0.75,
+			pos.y - 0.3,
+			pos.z + 0.75
+		))
 		local must_explode = false
 		for _, obj in pairs(near_objs) do
 			if is_self_landmine(obj, pos) == false then

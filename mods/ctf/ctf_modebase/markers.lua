@@ -31,6 +31,7 @@ local MARKER_PLACE_INTERVAL = 5
 ctf_modebase.markers = {}
 
 -- Code taken from mods/mtg/mtg_binoculars, changed default FOV
+---@diagnostic disable-next-line: duplicate-set-field
 function binoculars.update_player_property(player)
 	local new_zoom_fov = 84
 
@@ -199,6 +200,7 @@ local function marker_func(name, param, specific_player, hpmarker)
 	end
 
 	local player = core.get_player_by_name(name)
+	---@cast player -nil
 	local message
 	local pos
 	local pos1 = vector.offset(player:get_pos(), 0, player:get_properties().eye_height, 0)
@@ -212,9 +214,7 @@ local function marker_func(name, param, specific_player, hpmarker)
 		pos1,
 		vector.add(
 			pos1,
-			vector.multiply(player:get_look_dir(), MARKER_RANGE),
-			true,
-			false
+			vector.multiply(player:get_look_dir(), MARKER_RANGE)
 		)
 	)
 	local pointed = ray:next()
@@ -225,7 +225,7 @@ local function marker_func(name, param, specific_player, hpmarker)
 
 	if
 		pointed
-		and vector.distance(pointed.under or pointed.ref:get_pos(), player:get_pos())
+		and vector.distance(pointed.under or pointed.ref:get_pos() or vector.zero(), player:get_pos())
 			<= 2
 	then
 		hpmarker = true
@@ -236,7 +236,7 @@ local function marker_func(name, param, specific_player, hpmarker)
 			S("HP: @1/@2", player:get_hp(), player:get_properties().hp_max)
 		message = string.format("m [%s]: ", name) .. player_hpr
 		if
-			vector.distance(pointed.under or pointed.ref:get_pos(), player:get_pos()) <= 2
+			vector.distance(pointed.under or pointed.ref:get_pos() or vector.zero(), player:get_pos()) <= 2
 		then
 			pos = pointed.under or pointed.ref:get_pos()
 		else
@@ -244,7 +244,7 @@ local function marker_func(name, param, specific_player, hpmarker)
 		end
 		if pointed then
 			if pointed.type == "object" then
-				message, pos = check_pointed_entity(pointed, message, pos)
+				message, pos = check_pointed_entity(pointed, message)
 			end
 		end
 		if param ~= "Look here!" then
@@ -354,7 +354,7 @@ core.register_globalstep(function(dtime)
 		local controls = player:get_player_control()
 
 		if controls.zoom then
-			local marker_text = false
+			local marker_text
 			local stackname = player:get_wielded_item():get_name()
 
 			local holding_blacklisted_item = false

@@ -380,12 +380,14 @@ function core.auth_reload() end
 
 --- Sends a chat message to all players.
 ---@param message string
-function core.chat_send_all(message) end
+---@param source string?
+function core.chat_send_all(message, source) end
 
 --- Sends a chat message to a specific player.
 ---@param player_name string
 ---@param message string
-function core.chat_send_player(player_name, message) end
+---@param source string?
+function core.chat_send_player(player_name, message, source) end
 
 --- Formats a chat message according to server settings.
 ---@param name string Player name
@@ -480,7 +482,7 @@ function core.show_death_screen(player, reason) end
 ---@field objects? table<string, boolean|"blocking">
 
 ---@class ToolCapabilities
----@field full_punch_interval number
+---@field full_punch_interval? number
 ---@field max_drop_level? integer
 ---@field groupcaps? table<string, {times:number[], uses:integer, maxlevel:integer}>
 ---@field damage_groups? table<string, integer>
@@ -519,13 +521,13 @@ function core.show_death_screen(player, reason) end
 ---@field touch_interaction? "long_dig_short_place"|"short_dig_long_place"|"user"|{pointed_nothing?:string, pointed_node?:string, pointed_object?:string}
 ---@field sound? ItemSound
 --- Called when the 'place' key is used while pointing at a node. Returns leftover itemstack or nil.
----@field on_place? fun(itemstack:ItemStack, placer:PlayerRef|LuaEntityRef|nil, pointed_thing:pointed_thing): ItemStack|nil
+---@field on_place? fun(itemstack:ItemStack, placer:PlayerRef|LuaEntityRef|nil, pointed_thing:pointed_thing): ItemStack|nil, simplevector|nil
 --- Called when the 'place' key is used while not pointing at a node (e.g., right-click in air).
 ---@field on_secondary_use? fun(itemstack:ItemStack, user:PlayerRef|LuaEntityRef|nil, pointed_thing:pointed_thing): ItemStack|nil
 --- Called when the item is dropped. Returns leftover itemstack and the spawned object reference.
----@field on_drop? fun(itemstack:ItemStack, dropper:PlayerRef|LuaEntityRef|nil, pos:vector): ItemStack, ObjectRef|nil
+---@field on_drop? fun(itemstack:ItemStack, dropper:PlayerRef|LuaEntityRef|nil, pos:simplevector): ItemStack, ObjectRef|nil
 --- Called when a dropped item is punched by a player (pickup attempt). Returns leftover itemstack or nil.
----@field on_pickup? fun(itemstack:ItemStack, picker:PlayerRef|LuaEntityRef, pointed_thing:pointed_thing, time_from_last_punch?:number, ...): ItemStack|nil
+---@field on_pickup? fun(itemstack:ItemStack, picker:PlayerRef|LuaEntityRef|nil, pointed_thing:pointed_thing, time_from_last_punch?:number, ...): ItemStack|nil
 --- Called when the 'punch/dig' key is used with the item. Returns leftover itemstack or nil.
 ---@field on_use? fun(itemstack:ItemStack, user:PlayerRef|LuaEntityRef|nil, pointed_thing:pointed_thing): ItemStack|nil
 --- Called after using a tool to dig a node, for custom wear handling. Returns leftover itemstack or nil.
@@ -622,51 +624,51 @@ function core.show_death_screen(player, reason) end
 ---@field sounds? NodeSound
 ---@field drop? string|NodeDrop
 --- Called after adding node. Can set up metadata, etc.
----@field on_construct? fun(pos:vector)
+---@field on_construct? fun(pos:simplevector)
 --- Called before removing node.
----@field on_destruct? fun(pos:vector)
+---@field on_destruct? fun(pos:simplevector)
 --- Called after removing node.
----@field after_destruct? fun(pos:vector, oldnode:table)
+---@field after_destruct? fun(pos:simplevector, oldnode:table)
 --- Called when a liquid is about to flood this node. Return true to prevent flooding.
----@field on_flood? fun(pos:vector, oldnode:table, newnode:table): boolean|nil
+---@field on_flood? fun(pos:simplevector, oldnode:table, newnode:table): boolean|nil
 --- Called when node is about to be converted to an item, to preserve metadata in drops.
----@field preserve_metadata? fun(pos:vector, oldnode:table, oldmeta:table, drops:ItemStack[])
+---@field preserve_metadata? fun(pos:simplevector, oldnode:table, oldmeta:table, drops:ItemStack[])
 --- Called after node placed by player. Return true to prevent item consumption.
----@field after_place_node? fun(pos:vector, placer:ObjectRef|nil, itemstack:ItemStack, pointed_thing:pointed_thing): boolean|nil
+---@field after_place_node? fun(pos:simplevector, placer:PlayerRef|LuaEntityRef|nil, itemstack:ItemStack, pointed_thing:pointed_thing): boolean|nil
 --- Called after node dug by player.
----@field after_dig_node? fun(pos:vector, oldnode:table, oldmetadata:table, digger:ObjectRef|nil)
+---@field after_dig_node? fun(pos:simplevector, oldnode:table, oldmetadata:table, digger:PlayerRef|LuaEntityRef|nil)
 --- Return true if node can be dug, false otherwise.
----@field can_dig? fun(pos:vector, player?:PlayerRef): boolean
+---@field can_dig? fun(pos:simplevector, player?:PlayerRef): boolean
 --- Called when node is punched.
----@field on_punch? fun(pos:vector, node:table, puncher:ObjectRef, pointed_thing:pointed_thing)
+---@field on_punch? fun(pos:simplevector, node:table, puncher:PlayerRef|LuaEntityRef, pointed_thing:pointed_thing)
 --- Called when player right-clicks node. Return leftover itemstack.
----@field on_rightclick? fun(pos:vector, node:table, clicker:ObjectRef, itemstack:ItemStack, pointed_thing:pointed_thing|nil): ItemStack|nil
+---@field on_rightclick? fun(pos:simplevector, node:table, clicker:PlayerRef|LuaEntityRef, itemstack:ItemStack, pointed_thing:pointed_thing|nil): ItemStack|nil
 --- Called when node is dug. Return true if successfully dug.
----@field on_dig? fun(pos:vector, node:table, digger:ObjectRef): boolean|nil
+---@field on_dig? fun(pos:simplevector, node:table, digger:PlayerRef|LuaEntityRef): boolean|nil
 --- Called when node timer expires. Return true to restart timer.
----@field on_timer? fun(pos:vector, elapsed:number, node:table, timeout:number): boolean?
+---@field on_timer? fun(pos:simplevector, elapsed:number, node:table, timeout:number): boolean?
 --- Called when a formspec for this node receives fields.
----@field on_receive_fields? fun(pos:vector, formname:string, fields:table<string,string>, sender:PlayerRef)
+---@field on_receive_fields? fun(pos:simplevector, formname:string, fields:table<string,string>, sender:PlayerRef)
 --- Return number of items allowed to move.
----@field allow_metadata_inventory_move? fun(pos:vector, from_list:string, from_index:integer, to_list:string, to_index:integer, count:integer, player:PlayerRef): integer
+---@field allow_metadata_inventory_move? fun(pos:simplevector, from_list:string, from_index:integer, to_list:string, to_index:integer, count:integer, player:PlayerRef): integer
 --- Return number of items allowed to put.
----@field allow_metadata_inventory_put? fun(pos:vector, listname:string, index:integer, stack:ItemStack, player:PlayerRef): integer
+---@field allow_metadata_inventory_put? fun(pos:simplevector, listname:string, index:integer, stack:ItemStack, player:PlayerRef): integer
 --- Return number of items allowed to take.
----@field allow_metadata_inventory_take? fun(pos:vector, listname:string, index:integer, stack:ItemStack, player:PlayerRef): integer
+---@field allow_metadata_inventory_take? fun(pos:simplevector, listname:string, index:integer, stack:ItemStack, player:PlayerRef): integer
 --- Called after inventory move.
----@field on_metadata_inventory_move? fun(pos:vector, from_list:string, from_index:integer, to_list:string, to_index:integer, count:integer, player:PlayerRef)
+---@field on_metadata_inventory_move? fun(pos:simplevector, from_list:string, from_index:integer, to_list:string, to_index:integer, count:integer, player:PlayerRef)
 --- Called after inventory put.
----@field on_metadata_inventory_put? fun(pos:vector, listname:string, index:integer, stack:ItemStack, player:PlayerRef)
+---@field on_metadata_inventory_put? fun(pos:simplevector, listname:string, index:integer, stack:ItemStack, player:PlayerRef)
 --- Called after inventory take.
----@field on_metadata_inventory_take? fun(pos:vector, listname:string, index:integer, stack:ItemStack, player:PlayerRef)
+---@field on_metadata_inventory_take? fun(pos:simplevector, listname:string, index:integer, stack:ItemStack, player:PlayerRef)
 --- Called when explosion touches node, instead of removing node.
----@field on_blast? fun(pos:vector, intensity:number)
+---@field on_blast? fun(pos:simplevector, intensity:number)
 --- Called by the TNT mod when the node is about to ignite
----@field on_ignite? fun(pos:vector)
+---@field on_ignite? fun(pos:simplevector)
 --- Called by the fire mod when the node catches fire
----@field on_burn? fun(pos:vector)
+---@field on_burn? fun(pos:simplevector)
 --- Called by the ctf_ranged mod when the node is shot
----@field on_ranged_shoot? fun(pos:vector, node:table, user:ObjectRef, weapon_type:string)
+---@field on_ranged_shoot? fun(pos:simplevector, node:table, user:PlayerRef|LuaEntityRef, weapon_type:string)
 ---@field mod_origin? string
 
 --- Registers a node.
@@ -685,7 +687,7 @@ function core.register_tool(name, definition) end
 function core.register_craftitem(name, definition) end
 
 ---@class EntityDefinition
----@field initial_properties ObjectProperties
+---@field initial_properties ObjectProperties?
 --- Called when object is instantiated.
 ---@field on_activate? fun(self:table, staticdata:string, dtime_s:number)
 --- Called when object is about to be removed or unloaded.
@@ -693,11 +695,11 @@ function core.register_craftitem(name, definition) end
 --- Called on every server tick.
 ---@field on_step? fun(self:table, dtime:number, moveresult:table)
 --- Called when object is punched. Return true to prevent default damage.
----@field on_punch? fun(self:table, puncher:ObjectRef|nil, time_from_last_punch:number|nil, tool_capabilities:ToolCapabilities|nil, dir:vector, damage:number): boolean|nil
+---@field on_punch? fun(self:table, puncher:PlayerRef|LuaEntityRef|nil, time_from_last_punch:number|nil, tool_capabilities:ToolCapabilities|nil, dir:simplevector, damage:number): boolean|nil
 --- Called when object dies.
----@field on_death? fun(self:table, killer:ObjectRef|nil)
+---@field on_death? fun(self:table, killer:PlayerRef|LuaEntityRef|nil)
 --- Called when object is right-clicked.
----@field on_rightclick? fun(self:table, clicker:ObjectRef)
+---@field on_rightclick? fun(self:table, clicker:PlayerRef|LuaEntityRef)
 --- Called after another object is attached to this one.
 ---@field on_attach_child? fun(self:table, child:ObjectRef)
 --- Called after another object detaches from this one.
@@ -724,7 +726,7 @@ function core.register_entity(name, definition) end
 ---@field max_y? integer
 ---@field catch_up? boolean
 --- Function triggered for each qualifying node.
----@field action fun(pos:vector, node:table, active_object_count:integer, active_object_count_wider:integer)
+---@field action fun(pos:simplevector, node:table, active_object_count:integer, active_object_count_wider:integer)
 
 --- Registers an ABM.
 ---@param definition ABMDefinition
@@ -736,9 +738,9 @@ function core.register_abm(definition) end
 ---@field nodenames string|string[]
 ---@field run_at_every_load? boolean
 --- Function triggered for each qualifying node.
----@field action? fun(pos:vector, node:table, dtime_s:number)
+---@field action? fun(pos:simplevector, node:table, dtime_s:number)
 --- Function triggered with list of all qualifying node positions at once.
----@field bulk_action? fun(pos_list:vector[], dtime_s:number)
+---@field bulk_action? fun(pos_list:simplevector[], dtime_s:number)
 
 --- Registers an LBM.
 ---@param definition LBMDefinition
@@ -860,7 +862,7 @@ function core.register_decoration(definition) end
 
 ---@class SchematicDefinition
 ---@field name? string
----@field size vector
+---@field size simplevector
 ---@field yslice_prob? {ypos:integer, prob:integer}[]
 ---@field data {name:string, prob?:integer, param2?:integer, force_place?:boolean}[]
 
@@ -1009,19 +1011,19 @@ function core.register_on_mods_loaded(func) end
 function core.register_on_shutdown(func) end
 
 --- Called after a node has been placed.
----@param func fun(pos:vector, newnode:table, placer:ObjectRef|nil, oldnode:table, itemstack:ItemStack, pointed_thing:pointed_thing): boolean|nil
+---@param func fun(pos:simplevector, newnode:table, placer:PlayerRef|LuaEntityRef|nil, oldnode:table, itemstack:ItemStack, pointed_thing:pointed_thing): boolean|nil
 function core.register_on_placenode(func) end
 
 --- Called after a node has been dug.
----@param func fun(pos:vector, oldnode:table, digger:ObjectRef|nil)
+---@param func fun(pos:simplevector, oldnode:table, digger:PlayerRef|LuaEntityRef|nil)
 function core.register_on_dignode(func) end
 
 --- Called when a node is punched.
----@param func fun(pos:vector, node:table, puncher:ObjectRef, pointed_thing:pointed_thing)
+---@param func fun(pos:simplevector, node:table, puncher:PlayerRef|LuaEntityRef, pointed_thing:pointed_thing)
 function core.register_on_punchnode(func) end
 
 --- Called after a mapchunk has been generated.
----@param func fun(minp:vector, maxp:vector, blockseed:integer)
+---@param func fun(minp:simplevector, maxp:simplevector, blockseed:integer)
 function core.register_on_generated(func) end
 
 --- Called when a new player enters the world for the first time.
@@ -1055,14 +1057,14 @@ function core.register_on_player_hpchange(func, modifier) end
 ---@field from "engine"|"mod"
 ---@field object? ObjectRef
 ---@field node? string
----@field node_pos? vector
+---@field node_pos? simplevector
 
 --- Called when a player is punched.
----@param func fun(player:PlayerRef, hitter:ObjectRef|nil, time_from_last_punch:number|nil, tool_capabilities:ToolCapabilities|nil, dir:vector, damage:number): boolean|nil
+---@param func fun(player:PlayerRef|LuaEntityRef, hitter:PlayerRef|LuaEntityRef|nil, time_from_last_punch:number|nil, tool_capabilities:ToolCapabilities|nil, dir:simplevector, damage:number): boolean|nil
 function core.register_on_punchplayer(func) end
 
 --- Called when the 'place/use' key was used while pointing a player.
----@param func fun(player:PlayerRef, clicker:ObjectRef)
+---@param func fun(player:PlayerRef, clicker:PlayerRef|LuaEntityRef)
 function core.register_on_rightclickplayer(func) end
 
 --- Called when a player says something.
@@ -1086,11 +1088,11 @@ function core.register_on_craft(func) end
 function core.register_on_craft_predict(func) end
 
 --- Called when an item is eaten.
----@param func fun(hp_change:integer, replace_with_item:string|nil, itemstack:ItemStack, user:ObjectRef, pointed_thing:pointed_thing): ItemStack|nil
+---@param func fun(hp_change:integer, replace_with_item:string|nil, itemstack:ItemStack, user:PlayerRef|LuaEntityRef, pointed_thing:pointed_thing): ItemStack|nil
 function core.register_on_item_eat(func) end
 
 --- Called when an item is picked up.
----@param func fun(itemstack:ItemStack, picker:ObjectRef, pointed_thing:pointed_thing, time_from_last_punch?:number, ...): ItemStack|nil
+---@param func fun(itemstack:ItemStack, picker:PlayerRef|LuaEntityRef|nil, pointed_thing:pointed_thing, time_from_last_punch?:number, ...): ItemStack|nil
 function core.register_on_item_pickup(func) end
 
 --- Determines how many items may be taken, put, or moved in a player inventory.
@@ -1105,7 +1107,7 @@ function core.register_allow_player_inventory_action(func) end
 function core.register_on_player_inventory_action(func) end
 
 --- Called when a player violates protection.
----@param func fun(pos:vector, name:string)
+---@param func fun(pos:simplevector, name:string)
 function core.register_on_protection_violation(func) end
 
 --- Called when a privilege is granted.
@@ -1125,7 +1127,7 @@ function core.register_can_bypass_userlimit(func) end
 function core.register_on_modchannel_message(func) end
 
 --- Called after liquid nodes are transformed by the engine.
----@param func fun(pos_list:vector[], node_list:table[])
+---@param func fun(pos_list:simplevector[], node_list:table[])
 function core.register_on_liquid_transformed(func) end
 
 --- Called soon after any nodes or node metadata have been modified.
@@ -1173,12 +1175,12 @@ function core.is_valid_player_name(name) end
 function core.is_player(obj) end
 
 --- Returns the node at the given position.
----@param pos vector
+---@param pos simplevector
 ---@return {name: string, param1: integer, param2: integer}
 function core.get_node(pos) end
 
 --- Same as get_node but returns nil for unloaded areas.
----@param pos vector
+---@param pos simplevector
 ---@return {name: string, param1: integer, param2: integer}|nil
 function core.get_node_or_nil(pos) end
 
@@ -1190,42 +1192,42 @@ function core.get_node_or_nil(pos) end
 function core.get_node_raw(x, y, z) end
 
 --- Sets a node at the given position.
----@param pos vector
+---@param pos simplevector
 ---@param node {name: string, param1?: integer, param2?: integer}
 function core.set_node(pos, node) end
 
 --- Alias for set_node.
----@param pos vector
+---@param pos simplevector
 ---@param node table
 function core.add_node(pos, node) end
 
 --- Sets the same node at multiple positions.
----@param positions vector[]
+---@param positions simplevector[]
 ---@param node {name: string, param1?: integer, param2?: integer}
 function core.bulk_set_node(positions, node) end
 
 --- Swaps a node (keeps metadata, no callbacks).
----@param pos vector
+---@param pos simplevector
 ---@param node {name: string, param1?: integer, param2?: integer}
 function core.swap_node(pos, node) end
 
 --- Bulk swap nodes.
----@param positions vector[]
+---@param positions simplevector[]
 ---@param node {name: string, param1?: integer, param2?: integer}
 function core.bulk_swap_node(positions, node) end
 
 --- Removes a node (sets to air).
----@param pos vector
+---@param pos simplevector
 function core.remove_node(pos) end
 
 --- Gets the light value at the given position.
----@param pos vector
+---@param pos simplevector
 ---@param timeofday? number (0‑1, nil for current)
 ---@return integer|nil (0‑15)
 function core.get_node_light(pos, timeofday) end
 
 --- Figures out the sunlight (or moonlight) value at pos.
----@param pos vector
+---@param pos simplevector
 ---@param timeofday? number (0‑1, nil for current)
 ---@return integer|nil (0‑15)
 function core.get_natural_light(pos, timeofday) end
@@ -1236,77 +1238,77 @@ function core.get_natural_light(pos, timeofday) end
 function core.get_artificial_light(param1) end
 
 --- Places a node with the same effects as a player would cause.
----@param pos vector
+---@param pos simplevector
 ---@param node {name: string, param1?: integer, param2?: integer}
 ---@param placer? PlayerRef|LuaEntityRef
 function core.place_node(pos, node, placer) end
 
 --- Digs a node with the same effects as a player would cause.
----@param pos vector
----@param digger? ObjectRef
+---@param pos simplevector
+---@param digger? PlayerRef|LuaEntityRef
 ---@return boolean success
 function core.dig_node(pos, digger) end
 
 --- Punches a node.
----@param pos vector
----@param puncher? ObjectRef
+---@param pos simplevector
+---@param puncher? PlayerRef|LuaEntityRef
 function core.punch_node(pos, puncher) end
 
 --- Changes a node into a falling node entity.
----@param pos vector
+---@param pos simplevector
 ---@return boolean success, ObjectRef|nil entity
 function core.spawn_falling_node(pos) end
 
 --- Returns a table of positions of nodes that have metadata in a region.
----@param pos1 vector
----@param pos2 vector
----@return vector[]
+---@param pos1 simplevector
+---@param pos2 simplevector
+---@return simplevector[]
 function core.find_nodes_with_meta(pos1, pos2) end
 
 --- Gets node metadata at the given position.
----@param pos vector
+---@param pos simplevector
 ---@return NodeMetaRef
 function core.get_meta(pos) end
 
 --- Gets node timer at the given position.
----@param pos vector
+---@param pos simplevector
 ---@return NodeTimerRef
 function core.get_node_timer(pos) end
 
 --- Spawns a Lua entity at the given position.
----@param pos vector
+---@param pos simplevector
 ---@param name string
 ---@param staticdata? string
 ---@return LuaEntityRef|nil
 function core.add_entity(pos, name, staticdata) end
 
 --- Spawns an item entity at the given position.
----@param pos vector
+---@param pos simplevector
 ---@param item ItemRepresentation
 ---@return ItemEntityRef|nil
 function core.add_item(pos, item) end
 
 --- Returns a list of ObjectRefs inside a radius.
----@param center vector
+---@param center simplevector
 ---@param radius number
 ---@return (PlayerRef|LuaEntityRef)[]
 function core.get_objects_inside_radius(center, radius) end
 
 --- Returns an iterator of valid objects inside a radius.
----@param center vector
+---@param center simplevector
 ---@param radius number
 ---@return fun(): (PlayerRef|LuaEntityRef)|nil
 function core.objects_inside_radius(center, radius) end
 
 --- Returns a list of ObjectRefs in an axis‑aligned area.
----@param min_pos vector
----@param max_pos vector
----@return ObjectRef[]
+---@param min_pos simplevector
+---@param max_pos simplevector
+---@return (PlayerRef|LuaEntityRef)[]
 function core.get_objects_in_area(min_pos, max_pos) end
 
 --- Returns an iterator of valid objects in an axis‑aligned area.
----@param min_pos vector
----@param max_pos vector
+---@param min_pos simplevector
+---@param max_pos simplevector
 ---@return fun(): (PlayerRef|LuaEntityRef)|nil
 function core.objects_in_area(min_pos, max_pos) end
 
@@ -1327,32 +1329,32 @@ function core.get_gametime() end
 function core.get_day_count() end
 
 --- Finds a node near a position.
----@param pos vector
+---@param pos simplevector
 ---@param radius number (maximum metric)
 ---@param nodenames string|string[]
 ---@param search_center? boolean (default false)
----@return vector|nil
+---@return simplevector|nil
 function core.find_node_near(pos, radius, nodenames, search_center) end
 
 --- Finds nodes in an area.
----@param pos1 vector
----@param pos2 vector
+---@param pos1 simplevector
+---@param pos2 simplevector
 ---@param nodenames string|string[]
 ---@param grouped? boolean
----@return vector[]|table<string,vector[]> positions, table<string,integer>? counts
+---@return simplevector[]|table<string,simplevector[]> positions, table<string,integer>? counts
 function core.find_nodes_in_area(pos1, pos2, nodenames, grouped) end
 
 --- Finds nodes in an area that have air above.
----@param pos1 vector
----@param pos2 vector
+---@param pos1 simplevector
+---@param pos2 simplevector
 ---@param nodenames string|string[]
----@return vector[]
+---@return simplevector[]
 function core.find_nodes_in_area_under_air(pos1, pos2, nodenames) end
 
 ---@class NoiseParams
 ---@field offset number
 ---@field scale number
----@field spread vector
+---@field spread simplevector
 ---@field seed integer
 ---@field octaves integer
 ---@field persistence number
@@ -1368,13 +1370,13 @@ function core.get_value_noise(noiseparams) end
 ---@param seeddiff integer
 ---@param octaves integer
 ---@param persistence number
----@param spread number|vector
+---@param spread number|simplevector
 ---@return ValueNoise
 function core.get_perlin(seeddiff, octaves, persistence, spread) end
 
 --- Returns a voxel manipulator.
----@param pos1? vector
----@param pos2? vector
+---@param pos1? simplevector
+---@param pos2? simplevector
 ---@return VoxelManip
 function core.get_voxel_manip(pos1, pos2) end
 
@@ -1398,17 +1400,17 @@ function core.get_decoration_id(name) end
 function core.get_mapgen_object(objectname) end
 
 --- Returns the heat at a position.
----@param pos vector
+---@param pos simplevector
 ---@return number|nil
 function core.get_heat(pos) end
 
 --- Returns the humidity at a position.
----@param pos vector
+---@param pos simplevector
 ---@return number|nil
 function core.get_humidity(pos) end
 
 --- Returns biome data at a position.
----@param pos vector
+---@param pos simplevector
 ---@return {biome: integer, heat: number, humidity: number}|nil
 function core.get_biome_data(pos) end
 
@@ -1432,12 +1434,12 @@ function core.set_mapgen_params(params) end
 
 --- Returns the minimum and maximum possible generated node positions.
 ---@param mapgen_limit? integer
----@param chunksize? integer|vector
----@return vector minp, vector maxp
+---@param chunksize? integer|simplevector
+---@return simplevector minp, simplevector maxp
 function core.get_mapgen_edges(mapgen_limit, chunksize) end
 
 --- Returns the currently active chunksize of the mapgen (in blocks).
----@return vector
+---@return simplevector
 function core.get_mapgen_chunksize() end
 
 --- Gets an active mapgen setting.
@@ -1475,14 +1477,14 @@ function core.get_noiseparams(name) end
 
 --- Generates all registered ores within a VoxelManip.
 ---@param vm VoxelManip
----@param pos1? vector
----@param pos2? vector
+---@param pos1? simplevector
+---@param pos2? simplevector
 function core.generate_ores(vm, pos1, pos2) end
 
 --- Generates all registered decorations within a VoxelManip.
 ---@param vm VoxelManip
----@param pos1? vector
----@param pos2? vector
+---@param pos1? simplevector
+---@param pos2? simplevector
 ---@param use_mapgen_biomes? boolean (default false)
 function core.generate_decorations(vm, pos1, pos2, use_mapgen_biomes) end
 
@@ -1491,31 +1493,31 @@ function core.generate_decorations(vm, pos1, pos2, use_mapgen_biomes) end
 function core.clear_objects(options) end
 
 --- Loads mapblocks containing an area.
----@param pos1 vector
----@param pos2? vector
+---@param pos1 simplevector
+---@param pos2? simplevector
 function core.load_area(pos1, pos2) end
 
 --- Queues blocks in an area to be emerged asynchronously.
----@param pos1 vector
----@param pos2 vector
----@param callback? fun(blockpos:vector, action:integer, calls_remaining:integer, param:any)
+---@param pos1 simplevector
+---@param pos2 simplevector
+---@param callback? fun(blockpos:simplevector, action:integer, calls_remaining:integer, param:any)
 ---@param param? any
 function core.emerge_area(pos1, pos2, callback, param) end
 
 --- Deletes all mapblocks in an area.
----@param pos1 vector
----@param pos2 vector
+---@param pos1 simplevector
+---@param pos2 simplevector
 function core.delete_area(pos1, pos2) end
 
 --- Checks if there is a line of sight between two positions.
----@param pos1 vector
----@param pos2 vector
----@return boolean has_line_of_sight, vector|nil blocking_pos
+---@param pos1 simplevector
+---@param pos2 simplevector
+---@return boolean has_line_of_sight, simplevector|nil blocking_pos
 function core.line_of_sight(pos1, pos2) end
 
 --- Creates a raycast object.
----@param pos1 vector
----@param pos2 vector
+---@param pos1 simplevector
+---@param pos2 simplevector
 ---@param objects? boolean (default true)
 ---@param liquids? boolean (default false)
 ---@param pointabilities? Pointabilities
@@ -1523,70 +1525,70 @@ function core.line_of_sight(pos1, pos2) end
 function core.raycast(pos1, pos2, objects, liquids, pointabilities) end
 
 --- Finds a walkable path between two positions.
----@param pos1 vector
----@param pos2 vector
+---@param pos1 simplevector
+---@param pos2 simplevector
 ---@param searchdistance number
 ---@param max_jump number
 ---@param max_drop number
 ---@param algorithm? "A*_noprefetch"|"A*"|"Dijkstra" (default "A*_noprefetch")
----@return vector[]|nil
+---@return simplevector[]|nil
 function core.find_path(pos1, pos2, searchdistance, max_jump, max_drop, algorithm) end
 
 --- Spawns an L‑system tree.
----@param pos vector
+---@param pos simplevector
 ---@param treedef table
 function core.spawn_tree(pos, treedef) end
 
 --- Spawns an L‑system tree onto a VoxelManip.
 ---@param vmanip VoxelManip
----@param pos vector
+---@param pos simplevector
 ---@param treedef table
 function core.spawn_tree_on_vmanip(vmanip, pos, treedef) end
 
 --- Adds a node to the liquid flow update queue.
----@param pos vector
+---@param pos simplevector
 function core.transforming_liquid_add(pos) end
 
 --- Returns the maximum level for a leveled node.
----@param pos vector
+---@param pos simplevector
 ---@return integer
 function core.get_node_max_level(pos) end
 
 --- Returns the current level of a leveled node.
----@param pos vector
+---@param pos simplevector
 ---@return integer
 function core.get_node_level(pos) end
 
 --- Sets the level of a leveled node.
----@param pos vector
+---@param pos simplevector
 ---@param level integer
 function core.set_node_level(pos, level) end
 
 --- Adds to the level of a leveled node.
----@param pos vector
+---@param pos simplevector
 ---@param add integer
 ---@return integer new_level
 function core.add_node_level(pos, add) end
 
 --- Returns actual node boxes after applying rotations.
 ---@param box_type "node_box"|"collision_box"|"selection_box"
----@param pos vector
+---@param pos simplevector
 ---@param node? table
 ---@return {[1]:number, [2]:number, [3]:number, [4]:number, [5]:number, [6]:number}[]
 function core.get_node_boxes(box_type, pos, node) end
 
 --- Fixes lighting in an area.
----@param pos1 vector
----@param pos2 vector
+---@param pos1 simplevector
+---@param pos2 simplevector
 ---@return boolean success
 function core.fix_light(pos1, pos2) end
 
 --- Causes an unsupported falling node to fall (single).
----@param pos vector
+---@param pos simplevector
 function core.check_single_for_falling(pos) end
 
 --- Causes falling nodes to fall and propagate.
----@param pos vector
+---@param pos simplevector
 function core.check_for_falling(pos) end
 
 --- Returns a player spawn y coordinate at (x,z).
@@ -1609,7 +1611,7 @@ function core.mod_channel_join(channel_name) end
 --- ==============================
 
 --- Gets an inventory reference.
----@param location {type:"player", name:string}|{type:"node", pos:vector}|{type:"detached", name:string}
+---@param location {type:"player", name:string}|{type:"node", pos:simplevector}|{type:"detached", name:string}
 ---@return InvRef
 function core.get_inventory(location) end
 
@@ -1643,7 +1645,7 @@ function core.remove_detached_inventory(name) end
 ---@param hp_change integer
 ---@param replace_with_item string|nil
 ---@param itemstack ItemStack
----@param user ObjectRef
+---@param user PlayerRef|LuaEntityRef
 ---@param pointed_thing table
 ---@return ItemStack|nil
 function core.do_item_eat(hp_change, replace_with_item, itemstack, user, pointed_thing) end
@@ -1651,7 +1653,7 @@ function core.do_item_eat(hp_change, replace_with_item, itemstack, user, pointed
 --- Returns a function wrapper for core.do_item_eat.
 ---@param hp_change integer
 ---@param replace_with_item? string
----@return fun(itemstack:ItemStack, user:ObjectRef, pointed_thing:table): ItemStack|nil
+---@return fun(itemstack:ItemStack, user:PlayerRef|LuaEntityRef, pointed_thing:table): ItemStack|nil
 function core.item_eat(hp_change, replace_with_item) end
 
 --- ==============================
@@ -1660,11 +1662,11 @@ function core.item_eat(hp_change, replace_with_item) end
 
 --- Default node placement function.
 ---@param itemstack ItemStack
----@param placer ObjectRef|nil
+---@param placer PlayerRef|LuaEntityRef|nil
 ---@param pointed_thing table
 ---@param param2? integer
 ---@param prevent_after_place? boolean
----@return ItemStack, vector|nil
+---@return ItemStack, simplevector|nil
 function core.item_place_node(itemstack, placer, pointed_thing, param2, prevent_after_place) end
 
 --- Deprecated.
@@ -1672,10 +1674,10 @@ function core.item_place_object(itemstack, placer, pointed_thing) end
 
 --- Default item placement dispatcher.
 ---@param itemstack ItemStack
----@param placer ObjectRef|nil
+---@param placer PlayerRef|LuaEntityRef|nil
 ---@param pointed_thing table
 ---@param param2? integer
----@return ItemStack, vector|nil
+---@return ItemStack, simplevector|nil
 function core.item_place(itemstack, placer, pointed_thing, param2) end
 
 --- Default item pickup handler.
@@ -1696,22 +1698,22 @@ function core.item_secondary_use(itemstack, user, pointed_thing) end
 
 --- Default drop function.
 ---@param itemstack ItemStack
----@param dropper ObjectRef|nil
----@param pos vector
+---@param dropper PlayerRef|LuaEntityRef|nil
+---@param pos simplevector
 ---@return ItemStack leftover, LuaEntityRef|nil entity
 function core.item_drop(itemstack, dropper, pos) end
 
 --- Default node punch callback.
----@param pos vector
+---@param pos simplevector
 ---@param node table
 ---@param puncher PlayerRef|LuaEntityRef
 ---@param pointed_thing table
 function core.node_punch(pos, node, puncher, pointed_thing) end
 
 --- Default node dig callback.
----@param pos vector
+---@param pos simplevector
 ---@param node table
----@param digger ObjectRef
+---@param digger PlayerRef|LuaEntityRef
 function core.node_dig(pos, node, digger) end
 
 --- ==============================
@@ -1726,17 +1728,18 @@ function core.node_dig(pos, node, digger) end
 ---@field fade? number
 ---@field start_time? number
 ---@field loop? boolean
----@field pos? vector
+---@field pos? simplevector
 ---@field object? ObjectRef
 ---@field to_player? string
 ---@field exclude_player? string
 ---@field max_hear_distance? number
 
 --- Plays a sound.
+---@overload fun(spec:SimpleSoundSpec, parameters:SoundParams, ephemeral:true): nil
 ---@param spec SimpleSoundSpec
 ---@param parameters SoundParams
----@param ephemeral? boolean (default false)
----@return integer|nil handle
+---@param ephemeral? boolean (default false, return a handle only if false)
+---@return integer handle
 function core.sound_play(spec, parameters, ephemeral) end
 
 --- Stops a sound.
@@ -1902,9 +1905,9 @@ function core.disconnect_player(name, reason, reconnect) end
 --- ==============================
 
 ---@class ParticleDefinition
----@field pos? vector
----@field velocity? vector
----@field acceleration? vector
+---@field pos? simplevector
+---@field velocity? simplevector
+---@field acceleration? simplevector
 ---@field expirationtime? number
 ---@field size? number
 ---@field collisiondetection? boolean
@@ -1917,7 +1920,7 @@ function core.disconnect_player(name, reason, reconnect) end
 ---@field glow? integer (0‑14)
 ---@field node? {name:string, param2?:integer}
 ---@field node_tile? integer
----@field drag? vector
+---@field drag? simplevector
 ---@field jitter? {min:number, max:number, bias?:number}
 ---@field bounce? {min:number, max:number, bias?:number}
 
@@ -1941,24 +1944,24 @@ function core.add_particle(def) end
 ---@field glow? integer
 ---@field node? {name:string, param2?:integer}
 ---@field node_tile? integer
----@field minpos? vector
----@field maxpos? vector
----@field minvel? vector
----@field maxvel? vector
----@field minacc? vector
----@field maxacc? vector
+---@field minpos? simplevector
+---@field maxpos? simplevector
+---@field minvel? simplevector
+---@field maxvel? simplevector
+---@field minacc? simplevector
+---@field maxacc? simplevector
 ---@field minexptime? number
 ---@field maxexptime? number
 ---@field minsize? number
 ---@field maxsize? number
----@field pos? vector|{min:vector, max:vector, bias?:number}
----@field vel? vector|{min:vector, max:vector, bias?:number}
----@field acc? vector|{min:vector, max:vector, bias?:number}
+---@field pos? simplevector|{min:simplevector, max:simplevector, bias?:number}
+---@field vel? simplevector|{min:simplevector, max:simplevector, bias?:number}
+---@field acc? simplevector|{min:simplevector, max:simplevector, bias?:number}
 ---@field exptime? {min:number, max:number, bias?:number}
 ---@field size_tween? table
 ---@field texpool? (string|table)[]
----@field attract? {kind:"none"|"point"|"line"|"plane", strength:{min:number, max:number, bias?:number}, origin?:vector, direction?:vector, origin_attached?:ObjectRef, direction_attached?:ObjectRef, die_on_contact?:boolean}
----@field radius? {min:number, max:number, bias?:number}|vector
+---@field attract? {kind:"none"|"point"|"line"|"plane", strength:{min:number, max:number, bias?:number}, origin?:simplevector, direction?:simplevector, origin_attached?:ObjectRef, direction_attached?:ObjectRef, die_on_contact?:boolean}
+---@field radius? {min:number, max:number, bias?:number}|simplevector
 
 --- Adds a particle spawner.
 ---@param def ParticleSpawnerDefinition
@@ -1975,15 +1978,15 @@ function core.delete_particlespawner(id, player) end
 --- ==============================
 
 --- Creates a schematic from a region.
----@param p1 vector
----@param p2 vector
----@param probability_list? {pos:vector, prob:integer}[]
+---@param p1 simplevector
+---@param p2 simplevector
+---@param probability_list? {pos:simplevector, prob:integer}[]
 ---@param filename string
 ---@param slice_prob_list? {ypos:integer, prob:integer}[]
 function core.create_schematic(p1, p2, probability_list, filename, slice_prob_list) end
 
 --- Places a schematic.
----@param pos vector
+---@param pos simplevector
 ---@param schematic string|table
 ---@param rotation? "0"|"90"|"180"|"270"|"random"
 ---@param replacements? table<string,string>
@@ -1994,7 +1997,7 @@ function core.place_schematic(pos, schematic, rotation, replacements, force_plac
 
 --- Places a schematic onto a VoxelManip.
 ---@param vmanip VoxelManip
----@param pos vector
+---@param pos simplevector
 ---@param schematic string|table
 ---@param rotation? string
 ---@param replacements? table
@@ -2121,13 +2124,13 @@ function core.send_join_message(player_name) end
 function core.send_leave_message(player_name, timed_out) end
 
 --- Hashes a node position to a 48‑bit integer.
----@param pos vector
+---@param pos simplevector
 ---@return integer
 function core.hash_node_position(pos) end
 
 --- Returns a node position from a hash.
 ---@param hash integer
----@return vector
+---@return simplevector
 function core.get_position_from_hash(hash) end
 
 --- Returns the rating of a group for an item.
@@ -2210,13 +2213,13 @@ function core.encode_base64(s) end
 function core.decode_base64(s) end
 
 --- Checks if a position is protected.
----@param pos vector
+---@param pos simplevector
 ---@param name string
 ---@return boolean
 function core.is_protected(pos, name) end
 
 --- Records a protection violation.
----@param pos vector
+---@param pos simplevector
 ---@param name string
 function core.record_protection_violation(pos, name) end
 
@@ -2226,16 +2229,16 @@ function core.record_protection_violation(pos, name) end
 function core.is_creative_enabled(name) end
 
 --- Checks if an area is protected.
----@param pos1 vector
----@param pos2 vector
+---@param pos1 simplevector
+---@param pos2 simplevector
 ---@param player_name string
 ---@param interval? number
----@return vector|false
+---@return simplevector|false
 function core.is_area_protected(pos1, pos2, player_name, interval) end
 
 --- Rotates and places a node with prediction.
 ---@param itemstack ItemStack
----@param placer ObjectRef|nil
+---@param placer PlayerRef|LuaEntityRef|nil
 ---@param pointed_thing table
 ---@param infinitestacks? boolean
 ---@param orient_flags? {invert_wall?:boolean, force_wall?:boolean, force_ceiling?:boolean, force_floor?:boolean, force_facedir?:boolean}
@@ -2245,35 +2248,35 @@ function core.rotate_and_place(itemstack, placer, pointed_thing, infinitestacks,
 
 --- Rotates a node (calls rotate_and_place with creative/sneak handling).
 ---@param itemstack ItemStack
----@param placer ObjectRef|nil
+---@param placer PlayerRef|LuaEntityRef|nil
 ---@param pointed_thing table
 function core.rotate_node(itemstack, placer, pointed_thing) end
 
 --- Calculates knockback.
 ---@param player PlayerRef
----@param hitter ObjectRef|nil
+---@param hitter PlayerRef|LuaEntityRef|nil
 ---@param time_from_last_punch number|nil
 ---@param tool_capabilities ToolCapabilities|nil
----@param dir vector
+---@param dir simplevector
 ---@param distance number
 ---@param damage number
 ---@return number
 function core.calculate_knockback(player, hitter, time_from_last_punch, tool_capabilities, dir, distance, damage) end
 
 --- Forceloads a block.
----@param pos vector
+---@param pos simplevector
 ---@param transient? boolean
 ---@param limit? integer
 ---@return boolean success
 function core.forceload_block(pos, transient, limit) end
 
 --- Stops forceloading a block.
----@param pos vector
+---@param pos simplevector
 ---@param transient? boolean
 function core.forceload_free_block(pos, transient) end
 
 --- Compares mapblock status.
----@param pos vector
+---@param pos simplevector
 ---@param condition "unknown"|"emerging"|"loaded"|"active"
 ---@return boolean|nil
 function core.compare_block_status(pos, condition) end
@@ -2301,7 +2304,7 @@ function core.register_portable_metatable(name, mt) end
 ---@param toolname? string
 ---@param tool? ItemStack
 ---@param digger? ObjectRef
----@param pos? vector
+---@param pos? simplevector
 ---@return string[]
 function core.get_node_drops(node, toolname, tool, digger, pos) end
 
@@ -2321,7 +2324,7 @@ function core.get_craft_recipe(output) end
 function core.get_all_craft_recipes(item) end
 
 --- Handles drops from a dug node: default is to put them into digger's inventory.
----@param pos vector
+---@param pos simplevector
 ---@param drops string[]
 ---@param digger PlayerRef|LuaEntityRef
 function core.handle_node_drops(pos, drops, digger) end
@@ -2341,55 +2344,55 @@ function core.itemstring_with_color(item, colorstring) end
 --- Returns position of pointed thing (node or object) or nil.
 ---@param pointed_thing pointed_thing
 ---@param above? boolean Return above position for node
----@return vector|nil
+---@return simplevector|nil
 function core.get_pointed_thing_position(pointed_thing, above) end
 
 --- Returns a string for an inventory cube image.
 ---@param img1 string
----@param img2 string
----@param img3 string
+---@param img2 string?
+---@param img3 string?
 ---@return string
 function core.inventorycube(img1, img2, img3) end
 
---- Converts direction vector to facedir value.
----@param dir vector
+--- Converts direction simplevector to facedir value.
+---@param dir simplevector
 ---@param is6d? boolean Include up/down (6‑directional)
 ---@return integer
 function core.dir_to_facedir(dir, is6d) end
 
---- Converts facedir to direction vector.
+--- Converts facedir to direction simplevector.
 ---@param facedir integer
----@return vector
+---@return simplevector
 function core.facedir_to_dir(facedir) end
 
---- Converts direction vector to 4dir value.
----@param dir vector
+--- Converts direction simplevector to 4dir value.
+---@param dir simplevector
 ---@return integer
 function core.dir_to_fourdir(dir) end
 
---- Converts 4dir to direction vector.
+--- Converts 4dir to direction simplevector.
 ---@param fourdir integer
----@return vector
+---@return simplevector
 function core.fourdir_to_dir(fourdir) end
 
---- Converts direction vector to wallmounted value.
----@param dir vector
+--- Converts direction simplevector to wallmounted value.
+---@param dir simplevector
 ---@return integer
 function core.dir_to_wallmounted(dir) end
 
---- Converts wallmounted to direction vector.
+--- Converts wallmounted to direction simplevector.
 ---@param wallmounted integer
----@return vector
+---@return simplevector
 function core.wallmounted_to_dir(wallmounted) end
 
---- Converts direction vector to yaw (radians).
----@param dir vector
+--- Converts direction simplevector to yaw (radians).
+---@param dir simplevector
 ---@return number
 function core.dir_to_yaw(dir) end
 
---- Converts yaw (radians) to direction vector.
+--- Converts yaw (radians) to direction simplevector.
 ---@param yaw number
----@return vector
+---@return simplevector
 function core.yaw_to_dir(yaw) end
 
 --- Returns true if paramtype2 includes color information.
@@ -2408,11 +2411,11 @@ function core.strip_param2_color(param2, paramtype2) end
 --- ==============================
 
 --- Returns actions performed on nodes in an area.
----@param pos vector
+---@param pos simplevector
 ---@param range number
 ---@param seconds number
 ---@param limit integer
----@return {actor:string, pos:vector, time:number, oldnode:table, newnode:table}[]
+---@return {actor:string, pos:simplevector, time:number, oldnode:table, newnode:table}[]
 function core.rollback_get_node_actions(pos, range, seconds, limit) end
 
 --- Reverts latest actions by an actor.
@@ -2428,7 +2431,7 @@ function core.rollback_revert_actions_by(actor, seconds) end
 --- Returns exact position on the surface of a pointed node.
 ---@param placer ObjectRef
 ---@param pointed_thing pointed_thing
----@return vector
+---@return simplevector
 function core.pointed_thing_to_face_pos(placer, pointed_thing) end
 
 --- Simulates tool use and returns added wear.
@@ -2453,27 +2456,28 @@ function core.get_dig_params(groups, tool_capabilities, wear) end
 function core.get_hit_params(groups, tool_capabilities, time_from_last_punch, wear) end
 
 --- Adds newlines to string to keep it within character limit.
+---@overload fun(str:string, limit:integer, as_table:true): string[]
 ---@param str string
 ---@param limit integer
 ---@param as_table? boolean Return table of lines
----@return string|string[]
+---@return string
 function core.wrap_text(str, limit, as_table) end
 
 --- Converts position to human‑readable string.
----@param pos vector
+---@param pos simplevector
 ---@param decimal_places? integer
 ---@return string
 function core.pos_to_string(pos, decimal_places) end
 
 --- Parses position from string.
 ---@param str string
----@return vector|nil
+---@return simplevector|nil
 function core.string_to_pos(str) end
 
 --- Parses area string "(x1,y1,z1) (x2,y2,z2)" with optional tilde notation.
 ---@param str string
----@param relative_to? vector
----@return vector pos1, vector pos2
+---@param relative_to? simplevector
+---@return simplevector pos1, simplevector pos2
 function core.string_to_area(str, relative_to) end
 
 --- Returns true for 'y', 'yes', 'true' or non‑zero number.
@@ -2594,7 +2598,7 @@ function core.settings:get_flags(name) end
 
 --- Returns a position setting.
 ---@param name string
----@return vector|nil
+---@return simplevector|nil
 function core.settings:get_pos(name) end
 
 --- Sets a setting.
@@ -2614,7 +2618,7 @@ function core.settings:set_np_group(name, value) end
 
 --- Sets a position setting.
 ---@param name string
----@param value vector
+---@param value simplevector
 function core.settings:set_pos(name, value) end
 
 --- Removes a setting.
@@ -2641,3 +2645,8 @@ function core.settings:to_table() end
 
 --- Deprecated: use core.settings:get_pos.
 function core.setting_get_pos(name) end
+
+---@param filename string
+function Settings(filename)
+	return core.settings
+end
