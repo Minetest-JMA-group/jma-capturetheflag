@@ -45,8 +45,8 @@ local function generate_formspec(tab, skin_texture, target_name, league, is_onli
 		"style[label;font_size=+1]" ..
 		"style_type[label;textcolor=#e0e0e0]" ..
 		"box[0.2,0;8.5,0.8;#121212]" ..
-		"hypertext[0.5,0;8.5,2;title;<center><style size=22 color=#FFD700><b>Player Profile</b></style></center>]" ..
-		"box[0.2,0.75;8.5,0.05;#FFD700]" ..
+		"hypertext[0.5,0;8.5,2;title;<center><style size=22 color=#2d42fc><b>Player Profile</b></style></center>]" ..
+		"box[0.2,0.75;8.5,0.05;#2d42fc]" ..
 		"tabheader[0.2,0;tab;Home,Classes,Classic,Nade,Chaos,Rush;" .. tab .. ";false;false]"
 
 	formspec = formspec ..
