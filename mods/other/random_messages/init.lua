@@ -56,6 +56,7 @@ local messages = {
 	"Help your team claim victory by storing extra weapons in the team chest, and never taking more than you need.",
 	"Use /r to check your rank and other statistics.",
 	"Use /r <playername> to check the rankings of another player.",
+	"Use /player_info <playername> (or /pi) to check another player's rank, league, and skin.",
 	"Use bandages on teammates to heal them by 3-4 HP if their health is below 15 HP.",
 	"Use /m to add a team marker at a pointed location, visible only to teammates.",
 	"Use /summary (or /s) to check scores of the current match and the previous match.",
