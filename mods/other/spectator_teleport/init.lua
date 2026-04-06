@@ -110,7 +110,7 @@ local function on_teleport_item_use(itemstack, user)
 		if my_team == "" then
 			hud_events.new(pname, {
 				quick = true,
-				text  = "No old team found!",
+				text  = "Could not determine your old team.",
 				color = "warning",
 			})
 			return itemstack
@@ -130,7 +130,7 @@ local function on_teleport_item_use(itemstack, user)
 	elseif #sorted_teammates == 1 then
 		hud_events.new(pname, {
 			quick = true,
-			text  = "No other teammate to spectate!",
+			text  = "No other teammates to spectate.",
 			color = "warning",
 		})
 		return itemstack
@@ -154,14 +154,14 @@ local function on_teleport_item_use(itemstack, user)
 
 	-- If the selected teammate is offline, skip this player
 	if not target_player then
-		minetest.chat_send_player(pname, "Target player offline, resetting...")
+		minetest.chat_send_player(pname, "Selected teammate is offline. Resetting target list.")
 		data.index = 1
 		target_name = sorted_teammates[data.index]
 		target_player = minetest.get_player_by_name(target_name)
 		if not target_player then
 			hud_events.new(pname, {
 				quick = true,
-				text  = "Error: Could not find valid target.",
+				text  = "Error: Could not find a valid teammate to spectate.",
 				color = "error",
 			})
 			return itemstack
@@ -204,7 +204,7 @@ core.register_craftitem(TELEPORT_ITEM, {
 })
 
 core.register_chatcommand("spectate", {
-	description = S("Spectate a specific teammate (only as spectator)"),
+	description = S("Spectate a specific teammate (spectators only)"),
 	params = "<playername>",
 	func = function(name, param)
 		if param == "" then
@@ -219,16 +219,16 @@ core.register_chatcommand("spectate", {
 
 		local my_team = get_player_team(name)
 		if my_team ~= nil then
-			return false, S("Only spectators can use this command while rush mode.")
+			return false, S("Only spectators can use this command.")
 		end
 
 		local old_team = get_spectator_old_team(minetest.get_player_by_name(name))
 		if old_team == "" then
-			return false, S("No previous team found.")
+			return false, S("Could not determine your old team.")
 		end
 
 		if get_player_team(target_name) ~= old_team then
-			return false, S("@1 is not in your team (@2).", target_name, old_team)
+			return false, S("@1 is not on your old team (@2).", target_name, old_team)
 		end
 
 		local spectator = minetest.get_player_by_name(name)

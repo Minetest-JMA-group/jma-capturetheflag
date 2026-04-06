@@ -93,7 +93,7 @@ core.register_node("ctf_map:killnode", {
 	drawtype = "glasslike",
 	tiles = { "ctf_map_killnode.png" },
 	paramtype = "light",
-	sunlight_propogates = true,
+	sunlight_propagates = true,
 	walkable = false,
 	pointable = ctf_core.settings.server_mode == "mapedit",
 	damage_per_second = 20,
@@ -105,61 +105,61 @@ core.register_node("ctf_map:killnode", {
 core.register_node("ctf_map:placeholder1", {
 	description = "Placeholder 1",
 	tiles = { "placeholder1.png" },
-	sunlight_propogates = true,
+	sunlight_propagates = true,
 	groups = { oddly_breakable_by_hand = 1 },
 })
 core.register_node("ctf_map:placeholder2", {
 	description = "Placeholder 2",
 	tiles = { "placeholder2.png" },
-	sunlight_propogates = true,
+	sunlight_propagates = true,
 	groups = { oddly_breakable_by_hand = 1 },
 })
 core.register_node("ctf_map:placeholder3", {
 	description = "Placeholder 3",
 	tiles = { "placeholder3.png" },
-	sunlight_propogates = true,
+	sunlight_propagates = true,
 	groups = { oddly_breakable_by_hand = 1 },
 })
 core.register_node("ctf_map:placeholder4", {
 	description = "Placeholder 4",
 	tiles = { "placeholder4.png" },
-	sunlight_propogates = true,
+	sunlight_propagates = true,
 	groups = { oddly_breakable_by_hand = 1 },
 })
 core.register_node("ctf_map:placeholder5", {
 	description = "Placeholder 5",
 	tiles = { "placeholder5.png" },
-	sunlight_propogates = true,
+	sunlight_propagates = true,
 	groups = { oddly_breakable_by_hand = 1 },
 })
 core.register_node("ctf_map:placeholder6", {
 	description = "Placeholder 6",
 	tiles = { "placeholder6.png" },
-	sunlight_propogates = true,
+	sunlight_propagates = true,
 	groups = { oddly_breakable_by_hand = 1 },
 })
 core.register_node("ctf_map:placeholder7", {
 	description = "Placeholder 7",
 	tiles = { "placeholder7.png" },
-	sunlight_propogates = true,
+	sunlight_propagates = true,
 	groups = { oddly_breakable_by_hand = 1 },
 })
 core.register_node("ctf_map:placeholder8", {
 	description = "Placeholder 8",
 	tiles = { "placeholder8.png" },
-	sunlight_propogates = true,
+	sunlight_propagates = true,
 	groups = { oddly_breakable_by_hand = 1 },
 })
 core.register_node("ctf_map:placeholder9", {
 	description = "Placeholder 9",
 	tiles = { "placeholder9.png" },
-	sunlight_propogates = true,
+	sunlight_propagates = true,
 	groups = { oddly_breakable_by_hand = 1 },
 })
 core.register_node("ctf_map:placeholder10", {
 	description = "Placeholder 10",
 	tiles = { "placeholder10.png" },
-	sunlight_propogates = true,
+	sunlight_propagates = true,
 	groups = { oddly_breakable_by_hand = 1 },
 })
 

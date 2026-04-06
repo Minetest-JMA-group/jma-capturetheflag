@@ -59,7 +59,6 @@ core.register_tool("ctf_mode_potato:potato_launcher", {
 		local inv = user:get_inventory()
 		local charge = inv:remove_item("main", "ctf_mode_potato:potato_grenade 1")
 		if charge:is_empty() then
-			is_sneaking = false
 			hud_events.new(user:get_player_name(), {
 				text = "You need a potato grenade to use this",
 				quick = true,
@@ -429,7 +428,7 @@ core.register_node("ctf_mode_potato:compressor", {
 core.register_node("ctf_mode_potato:compressor_active", {
 	description = core.colorize("#c69828", "Potato Compressor") .. " (active)",
 
-	groups = { indestructable = 1 },
+	groups = { immortal = 1 },
 
 	tiles = {
 		"ctf_mode_potato_compressor_top.png",
