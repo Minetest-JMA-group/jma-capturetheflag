@@ -1,9 +1,9 @@
 [submodule "mods/ctf/ctf_map/maps"]
 	path = mods/ctf/ctf_map/maps
-	url = https://codeberg.org/Minetest-JMA-Group/jma-maps
+	url = https://codeberg.org/Minetest-JMA-group/jma-maps
 [submodule "mods/shared"]
 	path = mods/shared
-	url = https://codeberg.org/Minetest-JMA-Group/jma-shared
+	url = https://codeberg.org/Minetest-JMA-group/jma-shared
 [submodule ".vscode"]
 	path = .vscode
-	url = https://codeberg.org/Minetest-JMA-Group/luanti-luals
+	url = https://codeberg.org/Minetest-JMA-group/luanti-luals
