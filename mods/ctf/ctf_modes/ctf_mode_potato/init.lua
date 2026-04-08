@@ -8,7 +8,7 @@ dofile(modpath .. "/weapons.lua")
 
 local old_bounty_reward_func = ctf_modebase.bounties.bounty_reward_func
 local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
-ctf_modebase.register_mode("potato", {
+--[[ctf_modebase.register_mode("potato", {
 	treasures = {
 		["default:ladder_wood"] = {
 			max_count = 20,
@@ -143,4 +143,4 @@ ctf_modebase.register_mode("potato", {
 	calculate_knockback = function()
 		return 0
 	end,
-})
+})]]
