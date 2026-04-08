@@ -11,6 +11,10 @@ local function merger(data1, data2)
 	return { last_claim = tostring(math.max(last1, last2)) }
 end
 
+if not ipdb then
+	core.log("error", "[claim_cosmetics] ipdb not found. /claim disabled")
+	return
+end
 local mod_storage = ipdb.get_mod_storage(merger)
 if not mod_storage then
 	core.log("error", "[claim_cosmetics] Failed to initialize ipdb mod storage. /claim disabled")
