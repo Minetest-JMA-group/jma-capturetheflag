@@ -105,6 +105,10 @@ local function record_feedback(pname, feedback)
 	else
 		used_followup_feedback[pname] = nil
 	end
+
+	-- Relay the feedback to xmpp and discord.
+	relays.send_feedback("Feedback: **%s**: %s", pname, feedback)
+
 	return true
 end
 
