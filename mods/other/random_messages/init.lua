@@ -103,7 +103,7 @@ local messages = {
 
 	--Security & rules related messages
 	"Use /rules to read the server rules",
-	"You can report player who don't behave to the server staff my using /report <name> <action>.",
+	"You can report player who don't behave to the server staff by using /report <name> <action>.",
 	"You can find our Terms Of Service and the privacy policy on our Codeberg page: https://codeberg.org/Minetest-JMA-group/information/",
 	"It is recommended that you avoid sharing personal information such as your address, phone number, or other confidential data to ensure your safety and privacy.",
 	"Please avoid or refrain from introducing any other potentially offensive or inappropriate topics.",
