@@ -75,10 +75,10 @@ local messages = {
 	),
 	-- connection, fps, luanti issues
 	"To ensure smooth gameplay, we recommend updating to the latest version of Luanti",
-	"If you on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
+	"If you are on older hardware or a mobile device, adjust to lower graphics for smoother gameplay, improving FPS.",
 	"Having a stable internet connection is crucial as it minimizes lag, ensuring smoother multiplayer interactions",
 	"If you can't open chests, exit then rejoin the game (this issue only affects Multicraft clients).",
-	"Your VPS service is being blocked? Contact our server staff so we can whitelist you",
+	"Is your VPS service being blocked? Contact our server staff so we can whitelist you",
 	"Check your connection latency to the server with /ping",
 	--translator usage tips
 	S(
@@ -97,21 +97,20 @@ local messages = {
 	"Keep the team door closed to stop enemies from getting in",
 	"You can claim the crown as a reward for joining our Discord server",
 	"Use /e to send emojis into the air",
-	"You have problems exiting the game? Use /kickme to get disconnected from the server",
-	"Want to check match status? Type /match to see current mode, map details and teams info",
+	"Having problems exiting the game? Use /kickme to get disconnected from the server",
+	"Want to check match status? Type /match to see current mode, map details, and teams info",
 	"Want to enter Elysium? Heal 100 HP and capture 1 flag to unlock access for 24 hours! Check progress with /eprogress",
 
 	--Security & rules related messages
 	"Use /rules to read the server rules",
-	"You can report player who don't behave to the server staff by using /report <name> <action>.",
+	"You can report players who don't behave to the server staff by using /report <name> <action>.",
 	"You can find our Terms Of Service and the privacy policy on our Codeberg page: https://codeberg.org/Minetest-JMA-group/information/",
-	"It is recommended that you avoid sharing personal information such as your address, phone number, or other confidential data to ensure your safety and privacy.",
 	"Please avoid or refrain from introducing any other potentially offensive or inappropriate topics.",
 	"Excessive spawn-killing is a direct violation of the rules - appropriate punishments will be given.",
-	"Using a unofficial client builds or modified clients which gives unfair game advantage is strictly forbidden and will result in a ban. ",
+	"Using unofficial client builds or modified clients which gives unfair game advantage is strictly forbidden and will result in a ban.",
 	"Swearing, trolling, and being rude will not be tolerated, and strict action will be taken.",
 	"Trapping teammates on purpose is strictly against the rules, doing so will result in a ban.",
-	"Use /block <username> to stop seeing messages send by a user in the public or private chats.",
+	"Use /block <username> to stop seeing messages sent by a user in the public or private chats.",
 	S(
 	"To report misbehaving players to moderators, please use /report <name> <action> or send the report on Discord: @1",
 		DISCORD_SERVER),
