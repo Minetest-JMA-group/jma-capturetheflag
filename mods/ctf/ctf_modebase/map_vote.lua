@@ -192,7 +192,7 @@ function ctf_modebase.map_vote.end_vote()
 
 	votes = nil
 	voted = nil
-	if (2 * reshuffle_votes) >= other_votes then
+	if (2 * reshuffle_votes) >= other_votes and reshuffle_votes ~= 0 then
 		done_reshuffle_once = true
 		core.chat_send_all(S("A reshuffle has been requested by majority of players."))
 		ctf_modebase.map_vote.start_vote()
