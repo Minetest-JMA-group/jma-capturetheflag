@@ -19,6 +19,6 @@ jobs:
             - name: Install required packages
               run: apt update && apt upgrade -y && apt install luarocks -y
             - name: Install luacheck through luarocks
-              run: luarocks install luacheck --local
+              run: luarocks install luacheck
             - name: Luacheck everything
               run: find . -iname '*.lua' | xargs luacheck --max-line-length 120
