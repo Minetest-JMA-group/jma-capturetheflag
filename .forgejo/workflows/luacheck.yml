@@ -9,8 +9,14 @@ on:
 jobs:
     luacheck:
         runs-on: codeberg-tiny
+
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-            - name: Luacheck
-              uses: lunarmodules/luacheck@master
+              with:
+                  fetch-depth: 0
+                  submodules: false
+            - name: Install required packages
+              run: apt update && apt upgrade -y && apt install luarocks -y
+            - name: Luacheck everything
+              run: find . -iname '*.lua' | xargs luacheck --max-line-length 120
