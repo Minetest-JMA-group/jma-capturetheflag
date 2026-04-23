@@ -96,6 +96,9 @@ function ctf_map.place_map(mapmeta, callback)
 		ctf_map.current_map = mapmeta
 
 		callback()
+		if ctf_map.callbacks[dirname].on_place then
+			ctf_map.callbacks[dirname].on_place(mapmeta.pos1, mapmeta.pos2, mapmeta.teams)
+		end
 	end)
 end
 

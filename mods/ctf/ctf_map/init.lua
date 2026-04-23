@@ -1,3 +1,11 @@
+--- @alias MapName string
+--- @alias Vector { x: number, y: number, z: number }
+--- @alias OnPlaceCallback fun(pos1: Vector, pos2: Vector)
+--- @alias Flags { [string]: Vector }
+--- @alias StepData { dtime: number, mode: string, start_time: number, flags: Flags }
+--- @alias OnStepCallback fun(pos1: Vector, pos2: Vector, data: StepData)
+--- @alias MapCallbacks { on_place: OnPlaceCallback?, on_step: OnStepCallback? }
+
 if not ctf_core.settings.server_mode or ctf_core.settings.server_mode == "play" then
 	assert(
 		core.get_mapgen_setting("mg_name") == "singlenode",
@@ -36,6 +44,8 @@ ctf_map = {
 	-- Table of map paths. Indexed by map's folder name
 	-- Doesn't include trailing '/'
 	map_path = {},
+	--- @type { [MapName]: MapCallbacks }
+	callbacks = {},
 }
 
 function ctf_map.register_map(dirname, path_to_map)
@@ -89,7 +99,7 @@ end
 core.register_tool("ctf_map:adminpick", {
 	description = "Admin pickaxe used to break indestructible nodes.\nRightclick to remove non-indestructible nodes",
 	inventory_image = "default_tool_diamondpick.png^default_obsidian_shard.png",
-    range = 16,
+	range = 16,
 	groups = { non_dropable = 1 },
 	tool_capabilities = {
 		full_punch_interval = 1.0,
@@ -135,9 +145,8 @@ ctf_core.include_files(
 local directory = core.get_modpath(core.get_current_modname()) .. "/maps/"
 
 for _, entry in ipairs(core.get_dir_list(directory, true)) do
-	for _, filename in
-		ipairs(core.get_dir_list(directory .. "/" .. entry .. "/", false))
-	do
+	for _, filename in ipairs(core.get_dir_list(directory .. "/" .. entry .. "/", false)) do
+		ctf_map.callbacks[entry] = {}
 		if filename == "init.lua" then
 			dofile(directory .. "/" .. entry .. "/" .. filename)
 		end
