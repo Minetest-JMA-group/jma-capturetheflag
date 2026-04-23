@@ -1,3 +1,4 @@
+local S = core.get_translator("ctf_map")
 -- Backwards compat
 
 core.register_alias("ctf_map:ind_stone", "ctf_map:stone")
@@ -241,6 +242,7 @@ local chest_formspec = "size[8,9]"
 	.. default.get_hotbar_bg(0, 4.85)
 local chestv = "Treasure Chest (visited)"
 
+local not_allowed_timer = {}
 local chest_def = {
 	description = "Treasure Chest",
 	tiles = {
@@ -266,10 +268,16 @@ local chest_def = {
 	end,
 	allow_metadata_inventory_put = function(pos, listname, index, stack, player)
 		if player then
-			core.chat_send_player(
-				player:get_player_name(),
-				"You're not allowed to put things in treasure chests!"
-			)
+			local name = player:get_player_name()
+
+			if not not_allowed_timer[name] then
+				core.chat_send_player(name,
+					S("You're not allowed to put things in treasure chests!"))
+
+				not_allowed_timer[name] = true
+				core.after(1, function() not_allowed_timer[name] = nil end)
+			end
+
 			return 0
 		end
 	end,
