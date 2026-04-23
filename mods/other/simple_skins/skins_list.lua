@@ -110,26 +110,6 @@ return {
 		name = "Koro Sensei",
 		author = "0Hi9l",
 	},
-	[25] = {
-		name = "SWAT Officer",
-		author = "DrEpicGTM",
-	},
-	[26] = {
-		name = "Captain Merica",
-		author = "DrEpicGTM",
-	},
-	[27] = {
-		name = "Ninja",
-		author = "DrEpicGTM",
-	},
-	[28] = {
-		name = "Hazmat Jeff",
-		author = "DrEpicGTM",
-	},
-	[29] = {
-		name = "Red Iron",
-		author = "DrEpicGTM",
-	},
 	[31] = {
 		name = "Wolf!!!",
 		author = "Rin",
@@ -147,4 +127,32 @@ return {
 		licence = "CC BY-I 3.5",
 		texture = "character_flagelite.png",
 	},
+	-- by DrEpicGTM
+	[36] = {
+		name = "SWAT Officer",
+		author = "DrEpicGTM",
+		texture = "character_swat.png",
+	},
+	[37] = {
+		name = "Captain Merica",
+		author = "DrEpicGTM",
+		texture = "character_captain_merica.png",
+	},
+	[38] = {
+		name = "Ninja",
+		author = "DrEpicGTM",
+		texture = "character_ninja.png",
+	},
+	[39] = {
+		name = "Hazmat Jeff",
+		author = "DrEpicGTM",
+		texture = "character_hazmat_jeff.png",
+	},
+	[40] = {
+		name = "Red Iron",
+		author = "DrEpicGTM",
+		texture = "character_red_iron.png",
+	},
+
+	-- Add new skins here with higher IDs (max 199) --
 }
