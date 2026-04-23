@@ -102,10 +102,6 @@ return {
 		name = "GojoSatoru",
 		author = "",
 	},
-	[23] = {
-		name = "RPiManiac",
-		author = "",
-	},
 	[24] = {
 		name = "Koro Sensei",
 		author = "0Hi9l",
