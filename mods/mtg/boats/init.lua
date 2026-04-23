@@ -250,11 +250,15 @@ core.register_craftitem("boats:boat", {
 
 	on_place = function(itemstack, placer, pointed_thing)
 		local under = pointed_thing.under
+		if not under then
+			return itemstack
+		end
 		local node = core.get_node(under)
 		local udef = core.registered_nodes[node.name]
 		if udef and udef.on_rightclick and
-				not (placer and placer:is_player() and
-				placer:get_player_control().sneak) then
+				placer and placer:is_player() and
+				---@cast placer PlayerRef
+				not placer:get_player_control().sneak then
 			return udef.on_rightclick(under, node, placer, itemstack,
 				pointed_thing) or itemstack
 		end
@@ -262,18 +266,20 @@ core.register_craftitem("boats:boat", {
 		if pointed_thing.type ~= "node" then
 			return itemstack
 		end
+		---@cast pointed_thing {type: "node", under: vector, above: vector}
 		if not is_water(pointed_thing.under) then
 			return itemstack
 		end
 		pointed_thing.under.y = pointed_thing.under.y + 0.5
-		boat = core.add_entity(pointed_thing.under, "boats:boat")
+		local boat = core.add_entity(pointed_thing.under, "boats:boat")
 		if boat then
-			if placer then
+			if placer and placer:is_player() then
+				---@cast placer PlayerRef
 				boat:set_yaw(placer:get_look_horizontal())
-			end
-			local player_name = placer and placer:get_player_name() or ""
-			if not core.is_creative_enabled(player_name) then
-				itemstack:take_item()
+				local player_name = placer:get_player_name()
+				if not core.is_creative_enabled(player_name) then
+					itemstack:take_item()
+				end
 			end
 		end
 		return itemstack

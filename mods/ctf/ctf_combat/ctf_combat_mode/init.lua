@@ -31,7 +31,14 @@ local function update(player)
 		})
 	end
 
-	local pos = vector.offset(core.get_player_by_name(player):get_pos(), 0, 0.5, 0)
+	local player_obj = core.get_player_by_name(player)
+	if not player_obj then
+		-- Player is offline, clean up
+		hud:remove(player, "combat_indicator")
+		hitters[player] = nil
+		return
+	end
+	local pos = vector.offset(player_obj:get_pos(), 0, 0.5, 0)
 	local node = core.registered_nodes[core.get_node(pos).name]
 
 	if node.groups.real_suffocation then -- From real_suffocation mod

@@ -44,8 +44,12 @@ end
 local function show_modechoose_form(player)
 	local max_rounds = get_mode_max_rounds(new_mode)
 
+	local player_obj = core.get_player_by_name(player)
+	if not player_obj then
+		return
+	end
 	local vote_setting = ctf_settings.get(
-		core.get_player_by_name(player),
+		player_obj,
 		"ctf_modebase:default_vote_" .. new_mode
 	)
 
@@ -55,6 +59,7 @@ local function show_modechoose_form(player)
 		)]
 
 	if vote_setting ~= "ask" and vote_setting > max_rounds then
+		---@diagnostic disable-next-line: cast-local-type
 		vote_setting = max_rounds
 	end
 
@@ -216,8 +221,10 @@ function ctf_modebase.mode_vote.end_vote()
 
 	local max_rounds = get_mode_max_rounds(new_mode)
 	local length_votes = {}
-	for _, length in pairs(votes) do
-		length_votes[length] = (length_votes[length] or 0) + 1
+	if votes then
+		for _, length in pairs(votes) do
+			length_votes[length] = (length_votes[length] or 0) + 1
+		end
 	end
 
 	votes = nil
@@ -271,7 +278,7 @@ end
 core.register_on_joinplayer(function(player)
 	local pname = player:get_player_name()
 
-	if votes and not voted[pname] then
+	if votes and voted and not voted[pname] then
 		show_modechoose_form(pname)
 		voted[pname] = false
 		voters_count = voters_count + 1
@@ -281,7 +288,7 @@ end)
 core.register_on_leaveplayer(function(player)
 	local pname = player:get_player_name()
 
-	if votes and not voted[pname] then
+	if votes and voted and not voted[pname] then
 		voters_count = voters_count - 1
 
 		if voters_count == 0 then

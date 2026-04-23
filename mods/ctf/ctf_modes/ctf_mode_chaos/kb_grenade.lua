@@ -63,76 +63,77 @@ grenades.register_grenade("ctf_mode_chaos:knockback_grenade", {
 		}, true)
 
 		for _, v in pairs(core.get_objects_inside_radius(pos, KNOCKBACK_RADIUS)) do
-			local vname = v:get_player_name()
-			local player = core.get_player_by_name(name)
+			if v:is_player() then
+				---@cast v PlayerRef
+				local vname = v:get_player_name()
+				local player = core.get_player_by_name(name)
 
-			if
-				player
-				and v:is_player()
-				and v:get_hp() > 0
-				and v:get_properties().pointable
-				and (
-					vname == name
-					or ctf_teams.get(vname) ~= ctf_teams.get(name)
-					or ctf_jma_elysium.get_player(name)
-						and ctf_jma_elysium.get_player(vname)
-				)
-			then
-				local footpos = vector.offset(v:get_pos(), 0, 0.1, 0)
-				local headpos =
-					vector.offset(v:get_pos(), 0, v:get_properties().eye_height, 0)
-				local footdist = vector.distance(pos, footpos)
-				local headdist = vector.distance(pos, headpos)
-				local target_head = false
+				if player
+					and v:get_hp() > 0
+					and v:get_properties().pointable
+					and (
+						vname == name
+						or ctf_teams.get(vname) ~= ctf_teams.get(name)
+						or ctf_jma_elysium.get_player(name)
+							and ctf_jma_elysium.get_player(vname)
+					)
+				then
+					local footpos = vector.offset(v:get_pos(), 0, 0.1, 0)
+					local headpos =
+						vector.offset(v:get_pos(), 0, v:get_properties().eye_height, 0)
+					local footdist = vector.distance(pos, footpos)
+					local headdist = vector.distance(pos, headpos)
+					local target_head = false
 
-				if footdist >= headdist then
-					target_head = true
-				end
-
-				local hit_pos1 = check_hit(pos, target_head and headpos or footpos, v)
-
-				-- Check the closest distance, but if that fails try targeting the farther one
-				if hit_pos1 or check_hit(pos, target_head and footpos or headpos, v) then
-					v:punch(player, 1, {
-						punch_interval = 1,
-						damage_groups = {
-							fleshy = 1,
-							knockback_grenade = 1,
-						},
-					}, nil)
-					core.add_particlespawner({
-						attached = v,
-						amount = 10,
-						time = 1,
-						minpos = { x = 0, y = 1, z = 0 }, -- Offset to middle of player
-						maxpos = { x = 0, y = 1, z = 0 },
-						minvel = { x = 0, y = 0, z = 0 },
-						maxvel = v:get_velocity(),
-						minacc = { x = 0, y = -9, z = 0 },
-						maxacc = { x = 0, y = -9, z = 0 },
-						minexptime = 1,
-						maxexptime = 2.8,
-						minsize = 3,
-						maxsize = 4,
-						collisiondetection = false,
-						collision_removal = false,
-						vertical = false,
-						texture = "grenades_smoke.png",
-					})
-
-					local kb = KNOCKBACK_AMOUNT
-					if ctf_modebase.taken_flags[vname] then
-						kb = KNOCKBACK_AMOUNT_WITH_FLAG
-					else
-						kb = KNOCKBACK_AMOUNT
+					if footdist >= headdist then
+						target_head = true
 					end
 
-					local dir = vector.direction(pos, headpos)
-					if dir.y < 0 then
-						dir.y = 0
+					local hit_pos1 = check_hit(pos, target_head and headpos or footpos, v)
+
+					-- Check the closest distance, but if that fails try targeting the farther one
+					if hit_pos1 or check_hit(pos, target_head and footpos or headpos, v) then
+						v:punch(player, 1, {
+							punch_interval = 1,
+							damage_groups = {
+								fleshy = 1,
+								knockback_grenade = 1,
+							},
+						}, nil)
+						core.add_particlespawner({
+							attached = v,
+							amount = 10,
+							time = 1,
+							minpos = { x = 0, y = 1, z = 0 }, -- Offset to middle of player
+							maxpos = { x = 0, y = 1, z = 0 },
+							minvel = { x = 0, y = 0, z = 0 },
+							maxvel = v:get_velocity(),
+							minacc = { x = 0, y = -9, z = 0 },
+							maxacc = { x = 0, y = -9, z = 0 },
+							minexptime = 1,
+							maxexptime = 2.8,
+							minsize = 3,
+							maxsize = 4,
+							collisiondetection = false,
+							collision_removal = false,
+							vertical = false,
+							texture = "grenades_smoke.png",
+						})
+
+						local kb = KNOCKBACK_AMOUNT
+						if ctf_modebase.taken_flags[vname] then
+							kb = KNOCKBACK_AMOUNT_WITH_FLAG
+						else
+							kb = KNOCKBACK_AMOUNT
+						end
+
+						local dir = vector.direction(pos, headpos)
+						if dir.y < 0 then
+							dir.y = 0
+						end
+						local vel = { x = dir.x * kb, y = dir.y * (kb / 1.8), z = dir.z * kb }
+						v:add_velocity(vel)
 					end
-					local vel = { x = dir.x * kb, y = dir.y * (kb / 1.8), z = dir.z * kb }
-					v:add_velocity(vel)
 				end
 			end
 		end

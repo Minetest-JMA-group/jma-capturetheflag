@@ -249,8 +249,8 @@ local function rail_on_step(self, dtime)
 	dir_changed = not vector.equals(dir, self.old_dir)
 
 	local acc = 0
-	if stop_wiggle or vector.equals(dir, {x=0, y=0, z=0}) then
-		dir = vector.new(self.old_dir)
+	if stop_wiggle or vector.equals(dir, vector.new(0, 0, 0)) then
+		dir = vector.copy(self.old_dir)
 		vel = {x = 0, y = 0, z = 0}
 		local pos_r = vector.round(pos)
 		if not carts:is_rail(pos_r, self.railtype)
@@ -320,7 +320,7 @@ local function rail_on_step(self, dtime)
 	self.object:set_acceleration(vector.multiply(dir, acc))
 
 	self.old_pos = vector.round(pos)
-	self.old_dir = vector.new(dir)
+	self.old_dir = vector.copy(dir)
 	self.old_switch = switch_keys
 
 	if self.punched then
@@ -391,11 +391,15 @@ core.register_craftitem("carts:cart", {
 	wield_image = "carts_cart_front.png",
 	on_place = function(itemstack, placer, pointed_thing)
 		local under = pointed_thing.under
+		if not under then return itemstack end
 		local node = core.get_node(under)
 		local udef = core.registered_nodes[node.name]
-		if udef and udef.on_rightclick and
-				not (placer and placer:is_player() and
-				placer:get_player_control().sneak) then
+		local is_sneak = false
+		if placer and placer:is_player() then
+			---@cast placer PlayerRef
+			is_sneak = placer:get_player_control().sneak
+		end
+		if udef and udef.on_rightclick and not is_sneak then
 			return udef.on_rightclick(under, node, placer, itemstack,
 				pointed_thing) or itemstack
 		end
@@ -403,6 +407,7 @@ core.register_craftitem("carts:cart", {
 		if pointed_thing.type ~= "node" then
 			return
 		end
+		---@cast pointed_thing {type: "node", under: vector, above: vector}
 		if carts:is_rail(pointed_thing.under) then
 			core.add_entity(pointed_thing.under, "carts:cart")
 		elseif carts:is_rail(pointed_thing.above) then
@@ -414,9 +419,13 @@ core.register_craftitem("carts:cart", {
 		core.sound_play({name = "default_place_node_metal", gain = 0.5},
 			{pos = pointed_thing.above}, true)
 
-		local player_name = placer and placer:get_player_name() or ""
-		if not core.is_creative_enabled(player_name) then
-			itemstack:take_item()
+		local player_name
+		if placer and placer:is_player() then
+			---@cast placer PlayerRef
+			player_name = placer:get_player_name()
+			if not core.is_creative_enabled(player_name) then
+				itemstack:take_item()
+			end
 		end
 		return itemstack
 	end,

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
+  "runtime.version": "LuaJIT",
+  "workspace.library": [
+    ".vscode/lua_definitions/"
+  ],
+  "workspace.ignoreDir": [
+    ".git",
+    "mods/ctf/ctf_map/maps",
+    "mods/shared",
+    "maps"
+  ],
+  "diagnostics.globals": [
+    "core",
+    "minetest"
+  ]
+}

@@ -33,7 +33,7 @@ local function swap_weapon(itemstack)
 		weapon_idx_next = 1
 	end
 
-	local next_weapon_name = ""
+	local next_weapon_name
 	if type(weapon_list[weapon_idx_next]) == "function" then
 		next_weapon_name = weapon_list[weapon_idx_next](meta)
 	else
@@ -157,6 +157,8 @@ core.register_tool("ctf_mode_chaos:grenade_launcher", {
 	wield_image = "ctf_mode_chaos_grenade_launcher.png",
 	range = 4,
 	on_use = function(itemstack, user, pointed_thing)
+		if not user or not user:is_player() then return end
+		---@cast user PlayerRef
 		local meta = itemstack:get_meta()
 		if meta:get_int("overheat") == 1 then
 			return

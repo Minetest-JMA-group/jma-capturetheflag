@@ -68,8 +68,10 @@ core.register_on_mods_loaded(function()
 			local count = item:get_count()
 
 			if count <= 1 then
+				---@diagnostic disable-next-line: cast-local-type
 				count = nil
 			else
+				---@diagnostic disable-next-line: cast-local-type
 				count = " x" .. count
 			end
 

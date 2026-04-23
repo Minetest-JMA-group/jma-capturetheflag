@@ -1,6 +1,6 @@
 --- @alias MapName string
 --- @alias Vector { x: number, y: number, z: number }
---- @alias OnPlaceCallback fun(pos1: Vector, pos2: Vector)
+--- @alias OnPlaceCallback fun(pos1: Vector, pos2: Vector, teams: unknown)
 --- @alias Flags { [string]: Vector }
 --- @alias StepData { dtime: number, mode: string, start_time: number, flags: Flags }
 --- @alias OnStepCallback fun(pos1: Vector, pos2: Vector, data: StepData)
@@ -226,5 +226,7 @@ core.register_chatcommand("map", {
 local TIME_SPEED = core.settings:get("time_speed")
 
 core.register_on_shutdown(function()
-	core.settings:set("time_speed", TIME_SPEED)
+	if TIME_SPEED then
+		core.settings:set("time_speed", TIME_SPEED)
+	end
 end)

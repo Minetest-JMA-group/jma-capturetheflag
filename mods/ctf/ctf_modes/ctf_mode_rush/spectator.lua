@@ -270,7 +270,8 @@ local function find_spectators_attached_to(anchor_name)
             local player = core.get_player_by_name(pname)
             if player then
                 local parent = player:get_attach()
-                if parent then
+                if parent and parent:is_player() then
+					---@cast parent PlayerRef
                     local parent_name = parent:get_player_name()
                     if parent_name == anchor_name then
                         table.insert(spectators, pname)

@@ -42,7 +42,7 @@ ctf_modebase = {
 	--- @type { [Team]: {[PlayerName]: Team[] }}
 	team_flag_takers = {},
 
-	--- @type { [Team]: PlayerName }
+	--- @type { [Team]: {name: string, team: Team} }
 	flag_taken = {},
 
 	--- @type { [Team]: boolean? }

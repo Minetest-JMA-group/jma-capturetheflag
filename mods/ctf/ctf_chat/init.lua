@@ -238,6 +238,7 @@ core.register_chatcommand("g", {
 })
 
 -- Main chat message formatting function
+---@diagnostic disable-next-line: duplicate-set-field
 function core.format_chat_message(name, message)
 	if filter_caps then
 		message = filter_caps.parse(name, message)

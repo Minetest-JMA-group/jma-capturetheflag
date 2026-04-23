@@ -22,6 +22,8 @@ end
 
 ctf_modebase.summary = {}
 
+---@overload fun(prev): nil
+---@return unknown, table, unknown, { title: string, special_row_title: string, game_stat: unknown?, winner: unknown?, duration: string, buttons: {previous: boolean}, allow_sort: boolean}
 function ctf_modebase.summary.get(prev)
 	if not prev then
 		local current_mode = ctf_modebase:get_current_mode()
@@ -140,11 +142,13 @@ local function show_for_player(name, prev)
 		rank_values._sort = player_sort_by[name]
 	end
 
+	local sr = special_rankings
+	local rv = rank_values
 	ctf_modebase.summary.show_gui(
 		name,
 		match_rankings,
-		special_rankings,
-		rank_values,
+		sr,
+		rv,
 		formdef
 	)
 	return true

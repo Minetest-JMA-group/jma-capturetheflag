@@ -48,7 +48,7 @@ ctf_teams = {
 	online_players = {},
 	--- @type Team[]
 	current_team_list = {},
-	--- @type PlayerName[]
+	--- @type { [PlayerName]: boolean? }
 	non_team_players = {},
 }
 

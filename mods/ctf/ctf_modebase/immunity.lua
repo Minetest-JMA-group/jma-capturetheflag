@@ -9,6 +9,7 @@ function ctf_modebase.is_immune(player)
 end
 
 local old_get_skin = ctf_cosmetics.get_skin
+---@diagnostic disable-next-line: duplicate-set-field
 ctf_cosmetics.get_skin = function(player, color)
 	if ctf_modebase.is_immune(player) then
 		return old_get_skin(player, color) .. "^[colorize:#fff:80^[multiply:#85beff"
@@ -59,12 +60,12 @@ function ctf_modebase.give_immunity(
 		pos = vector.new(0, 1.2, 0),
 		attract = {
 			kind = "point",
-			strength = 2,
+			strength = {min = 2, max = 2},
 			origin = vector.new(0, 1.2, 0),
 			origin_attached = player,
 			die_on_contact = true,
 		},
-		radius = { min = 0.8, max = 1.3, bias = 1 },
+		radius = { min = 0.8, max = 1.3, bias = 1.0 },
 
 		minexptime = 0.3,
 		maxexptime = 0.3,

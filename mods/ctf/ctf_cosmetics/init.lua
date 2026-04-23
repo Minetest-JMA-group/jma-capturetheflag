@@ -34,12 +34,14 @@ function ctf_cosmetics.get_colored_skin(player, color)
 	)
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function ctf_cosmetics.get_skin(player)
 	local pteam = ctf_teams.get(player)
 
 	return ctf_cosmetics.get_colored_skin(player, pteam and ctf_teams.team[pteam].color)
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function ctf_cosmetics.get_clothing_texture(player, clothing)
 	local texture = PlayerObj(player):get_meta():get_string("ctf_cosmetics_"..clothing)
 
@@ -51,6 +53,7 @@ function ctf_cosmetics.get_clothing_texture(player, clothing)
 
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function ctf_cosmetics.set_extra_clothing(player, extra_clothing)
 	local current = ctf_cosmetics.get_extra_clothing(player)
 
@@ -71,6 +74,7 @@ function ctf_cosmetics.set_extra_clothing(player, extra_clothing)
 	return PlayerObj(player):get_meta():set_string("ctf_cosmetics:extra_clothing", core.serialize(current))
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function ctf_cosmetics.get_extra_clothing(player)
 	local meta = PlayerObj(player):get_meta():get_string("ctf_cosmetics:extra_clothing")
 

@@ -272,7 +272,7 @@ function ctf_map.save_map(mapmeta)
         local tmp = { reps = {} }
         local vm = VoxelManip()
         pos1, pos2 = vm:read_from_map(pos1, pos2)
-        tmp.pos1, tmp.pos2 = pos1:subtract(mapmeta.offset), pos2:subtract(mapmeta.offset)
+		tmp.pos1, tmp.pos2 = pos1:subtract(mapmeta.offset), pos2:subtract(mapmeta.offset)
         local data = vm:get_data()
         local barrier_found = false
         for i, v in ipairs(data) do

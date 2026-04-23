@@ -12,7 +12,12 @@ function ctf_gui.show_formspec_dev(player, formname, formspec, formcontext)
 
 	local function interval()
 		if formspec:sub(1, 3) == "[f]" then
-			local result, form = pcall(loadstring(formspec:sub(4)), formcontext)
+			local func = loadstring(formspec:sub(4))
+			if not func then
+				ctf_gui.show_formspec(player, formname, "")
+				return
+			end
+			local result, form = pcall(func, formcontext)
 			ctf_gui.show_formspec(player, formname, result and form or "")
 		else
 			ctf_gui.show_formspec(player, formname, formspec)

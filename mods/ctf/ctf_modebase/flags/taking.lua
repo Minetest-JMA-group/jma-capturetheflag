@@ -109,6 +109,10 @@ function ctf_modebase.drop_flags(player)
 end
 
 function ctf_modebase.flag_on_punch(puncher, nodepos, node)
+	if not puncher or not puncher:is_player() then
+		return
+	end
+	---@cast puncher PlayerRef
 	local pname = puncher:get_player_name()
 	local pteam = ctf_teams.get(pname)
 

@@ -57,7 +57,9 @@ local function get_flag_status(you)
 		enemy_thief = enemy_thief.name
 	end
 
+	---@diagnostic disable-next-line: cast-local-type
 	your_thieves = concat_players(your_thieves)
+	---@diagnostic disable-next-line: cast-local-type
 	other_thieves = concat_players(other_thieves)
 
 	local format = function(template, ...)

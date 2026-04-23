@@ -133,8 +133,13 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 	nametag_players[player:get_player_name()] = nil
 
 	for n in pairs(table.copy(nametag_players)) do
+		local player_obj = core.get_player_by_name(n)
+		if not player_obj then
+			nametag_players[n] = nil
+			goto continue
+		end
 		local setting = ctf_settings.get(
-			core.get_player_by_name(n),
+			player_obj,
 			"ctf_modebase:teammate_nametag_style"
 		)
 
@@ -144,6 +149,7 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 			symbol_players[n] = true
 			nametag_players[n] = nil
 		end
+		::continue::
 	end
 
 	for k, v in ipairs(core.get_connected_players()) do
@@ -286,8 +292,10 @@ local function flag_event_notify(
 	end
 
 	local function send_notify(target, def)
+		local player_obj = PlayerObj(target)
+		if not player_obj then return end
 		if
-			ctf_settings.get(PlayerObj(target), "ctf_modebase:flag_notifications")
+			ctf_settings.get(player_obj, "ctf_modebase:flag_notifications")
 			== "true"
 		then
 			hud_events.new(target, def)
@@ -497,6 +505,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			if node_def then
 				local inv_image = node_def.inventory_image
 				if inv_image and inv_image ~= "" then
+					---@diagnostic disable-next-line: cast-local-type
 					image = inv_image
 				elseif node_def.tiles and node_def.tiles[1] then
 					local tiles1 = node_def.tiles[1]
@@ -975,7 +984,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			)
 
 			if not success then
-				core.log("error", result)
+				core.log("error", tostring(result))
 				result = false
 			end
 
@@ -1021,6 +1030,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		on_flag_take = function(player, teamname)
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(player)
+			if not pteam then return end
 			local tcolor = ctf_teams.team[pteam].color
 
 			ctf_modebase.remove_immunity(player)
@@ -1114,6 +1124,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local pteam = ctf_teams.get(pname)
 			if not pteam then
 				core.log("error", "Someone is capping a flag but is not a teammember :/")
+				return
 			end
 			local tcolor = ctf_teams.team[pteam].color
 
@@ -1250,6 +1261,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 				local match_rankings, special_rankings, rank_values, formdef =
 					ctf_modebase.summary.get()
+				---@cast match_rankings table
+				---@cast special_rankings table
+				---@cast rank_values table
+				---@cast formdef table
 				formdef.title = win_text
 
 				for _, pn in ipairs(ctf_teams.get_all_team_players()) do

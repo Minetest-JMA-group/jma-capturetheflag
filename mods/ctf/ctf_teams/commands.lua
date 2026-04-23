@@ -1,8 +1,8 @@
 local S = core.get_translator(core.get_current_modname())
 
 local do_set_team =
-	--- @param name  PlayerName
-	--- @param player PlayerName | ObjectRef
+	--- @param name PlayerName
+	--- @param player string
 	--- @param team Team
 	--- @return boolean, string
 	function(name, player, team)

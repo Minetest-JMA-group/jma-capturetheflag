@@ -99,8 +99,11 @@ core.register_tool("ctf_mode_classes:support_paxel", {
 	sound = { breaks = "default_tool_breaks" },
 
 	on_place = function(itemstack, user, pointed_thing)
+		if not user or not user:is_player() then return end
+		---@cast user PlayerRef
 		if pointed_thing and itemstack:get_wear() == 0 then
 			local pos = pointed_thing.under
+			if not pos then return end
 			if is_diggable(core.get_node(pos)) then
 				if not ctf_modebase.match_started then
 					hud_events.new(user, {

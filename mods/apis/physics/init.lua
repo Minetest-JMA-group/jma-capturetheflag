@@ -18,6 +18,8 @@ end)
 
 local function update(name)
 	local player = core.get_player_by_name(name)
+	if not player then return end
+	
 	local override = table.copy(default_overrides)
 
 	for _, layer in pairs(players[name]) do
@@ -39,6 +41,7 @@ end
 
 function physics.set(name, layer, modifiers)
 	name = PlayerName(name)
+	if not name then return end
 
 	if not players[name] then
 		return

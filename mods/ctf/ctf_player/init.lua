@@ -49,6 +49,7 @@ end
 
 core.register_on_joinplayer(function(player)
 	player_api.set_model(player, "character.b3d")
+	---@diagnostic disable-next-line: param-type-mismatch
 	player:set_local_animation(nil, nil, nil, nil, 0)
 	local name = player:get_player_name()
 	player_anim_data[name] = {
@@ -97,6 +98,7 @@ function ctf_player.set_stab_slash_anim(anim_type, player, extra_time)
 	player_set_animation(player, anim_type, 60)
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function player_api.globalstep(dtime)
 	for _, player in ipairs(core.get_connected_players()) do
 		local name = player:get_player_name()

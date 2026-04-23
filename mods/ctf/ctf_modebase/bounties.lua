@@ -24,7 +24,6 @@ local function calc_total_contributed_bounty(pname)
 	if contributed_bounties[pname] == nil then
 		return 0
 	end
-	--- @type number
 	local total = 0
 	for _, amount in pairs(contributed_bounties[pname].contributors) do
 		-- Make sure that amount is positive
@@ -39,6 +38,7 @@ end
 -- this has to be called
 ctf_teams.register_on_allocplayer(function()
 	local cur_mode = ctf_modebase:get_current_mode()
+	if not cur_mode then return end
 	for target_name, bounties2 in pairs(contributed_bounties) do
 		for contributor, amount in pairs(bounties2.contributors) do
 			if ctf_teams.get(target_name) == ctf_teams.get(contributor) then
@@ -273,12 +273,14 @@ ctf_api.register_on_match_end(function()
 end)
 
 --- @return Reward
+---@diagnostic disable-next-line: duplicate-set-field
 function ctf_modebase.bounties.bounty_reward_func()
 	return { bounty_kills = 1, score = 500 }
 end
 
 --- @param team_members string[]
 --- @return string
+---@diagnostic disable-next-line: duplicate-set-field
 function ctf_modebase.bounties.get_next_bounty(team_members)
 	return team_members[math.random(1, #team_members)]
 end
@@ -334,7 +336,7 @@ ctf_core.register_chatcommand_alias("list_bounties", "lb", {
 					"label[%d,0.1;%s: %s score]",
 					x,
 					bounty.name,
-					core.colorize("cyan", bounty.rewards.score)
+					core.colorize("cyan", tostring(bounty.rewards.score))
 				)
 
 				table.insert(output, label)
@@ -355,7 +357,7 @@ ctf_core.register_chatcommand_alias("list_bounties", "lb", {
 					"label[%d,0.1;%s: %s score]",
 					x,
 					pname,
-					core.colorize("cyan", calc_total_contributed_bounty(pname))
+					core.colorize("cyan", tostring(calc_total_contributed_bounty(pname)))
 				)
 				table.insert(output, label)
 				--- @type string
@@ -386,6 +388,7 @@ ctf_core.register_chatcommand_alias("put_bounty", "pb", {
 	func = function(name, param)
 		--- @type string, string
 		local player, amount_s = param:match("(%S+)%s+(%S+)")
+		---@diagnostic disable-next-line: cast-local-type
 		amount_s = tonumber(amount_s)
 		--- @type string | nil
 		local pteam = ctf_teams.get(player)
@@ -415,14 +418,16 @@ ctf_core.register_chatcommand_alias(
 		--- @param params string Passed parameters
 		--- @return boolean, string
 		func = function(name, params)
-			--- @type string?, number?
+			--- @type integer
+			---@diagnostic disable-next-line: assign-type-mismatch
 			local now = core.get_gametime()
-			if last_bounty_use[name] and now - last_bounty_use[name] < 5 then
-				local remaining = 5 - (now - last_bounty_use[name])
+			local last = last_bounty_use[name]
+			if last and now - last < 5 then
+				local remaining = 5 - (now - last)
 				return false,
 					S(
 						"You must wait @1 seconds before using this command again.",
-						remaining
+						tostring(remaining)
 					)
 			end
 			last_bounty_use[name] = now

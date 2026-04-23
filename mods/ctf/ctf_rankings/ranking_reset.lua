@@ -31,6 +31,8 @@ if ctf_rankings.do_reset then
 			local top = def.rankings.top
 			local time = core.get_us_time()
 			def.rankings.op_all(function(pname, value)
+				if not pname then return end
+				---@type string pname
 				if value ~= "null" then
 					local rank = core.parse_json(value)
 
@@ -50,13 +52,14 @@ if ctf_rankings.do_reset then
 
 					if current and current ~= "" then
 						current = core.parse_json(current)
-
+					end
+					if current then
 						current._last_reset = os.date("%m/%Y")
 						current[os.date("%m/%Y")][mode] = rank
 
 						mods:set_string(
 							PLAYER_RANKING_PREFIX .. pname,
-							core.write_json(current)
+							core.write_json(current) or ""
 						)
 					else
 						mods:set_string(
@@ -64,7 +67,7 @@ if ctf_rankings.do_reset then
 							core.write_json({
 								_last_reset = os.date("%m/%Y"),
 								[os.date("%m/%Y")] = { [mode] = rank },
-							})
+							}) or ""
 						)
 					end
 
@@ -81,20 +84,22 @@ if ctf_rankings.do_reset then
 			end)
 
 			after_timer = after_timer + ((core.get_us_time() - time) / 1e6)
-			time = ((core.get_us_time() - time) / 1e6) .. "s"
+			time = (core.get_us_time() - time) / 1e6
 
 			core.chat_send_all(
-				"Saved old rankings for mode " .. mode .. ". Took " .. time
+				"Saved old rankings for mode " .. mode .. ". Took " .. tostring(time) .. "s"
 			)
 			core.log(
 				"action",
-				"Saved old rankings for mode " .. mode .. ". Took " .. time
+				"Saved old rankings for mode " .. mode .. ". Took " .. tostring(time) .. "s"
 			)
 		end
 
 		for mode, def in pairs(ctf_modebase.modes) do
 			local time = core.get_us_time()
 			def.rankings.op_all(function(pname, value)
+				if not pname then return end
+				---@cast pname -nil
 				def.rankings:del(pname)
 
 				core.chat_send_all(
@@ -103,14 +108,14 @@ if ctf_rankings.do_reset then
 			end)
 
 			after_timer = after_timer + ((core.get_us_time() - time) / 1e6)
-			time = ((core.get_us_time() - time) / 1e6) .. "s"
+			time = (core.get_us_time() - time) / 1e6
 
 			core.chat_send_all(
-				"Reset rankings for mode " .. mode .. ". Took " .. time
+				"Reset rankings for mode " .. mode .. ". Took " .. tostring(time) .. "s"
 			)
 			core.log(
 				"action",
-				"Reset rankings for mode " .. mode .. ". Took " .. time
+				"Reset rankings for mode " .. mode .. ". Took " .. tostring(time) .. "s"
 			)
 		end
 
@@ -209,16 +214,18 @@ core.register_chatcommand("queue_ranking_reset", {
 		if not confirm[name] then
 			params = string.split(params, "%s", false, 3, true)
 
-			local day, month, year, hour = params[1], params[2], params[3], params[4]
+			local day, month, year, hour = tonumber(params[1]), tonumber(params[2]), tonumber(params[3]), tonumber(params[4])
 
 			if not day or not month then
 				return false
 			end
 
-			hour = math.min(math.max(tonumber(hour or 7), 0), 23)
-			day = math.min(math.max(tonumber(day), 1), 31)
-			month = math.min(math.max(tonumber(month), 1), 12)
-			year = math.max(tonumber(year or os.date("%Y")), tonumber(os.date("%Y")))
+			hour = math.min(math.max(hour or 7, 0), 23)
+			day = math.min(math.max(day or 1, 1), 31)
+			month = math.min(math.max(month or 1, 1), 12)
+			local current_year = tonumber(os.date("%Y")) or 0
+			local year_num = year or current_year
+			year = math.max(year_num, current_year)
 
 			if
 				type(day) ~= "number"

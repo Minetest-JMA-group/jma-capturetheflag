@@ -28,6 +28,10 @@ local function count_votes()
 	local no = 0
 	local abs = 0
 
+	if not votes then
+		return yes, no, abs
+	end
+
 	for _, vote in pairs(votes) do
 		if vote == "yes" then
 			yes = yes + 1

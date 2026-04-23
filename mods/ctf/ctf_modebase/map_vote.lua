@@ -41,20 +41,26 @@ local function show_mapchoose_form(player)
 	local elements = {}
 	local i = 1
 
+	if not map_sample then
+		return
+	end
 	-- Create vote buttons
 	for idx, mapID in ipairs(map_sample) do
-		local image_texture = ctf_modebase.map_catalog.maps[mapID].dirname
-			.. "_screenshot.png"
-		local image_path =
-			string.format("%s/textures/%s", core.get_modpath("ctf_map"), image_texture)
+		local map_info = ctf_modebase.map_catalog.maps[mapID]
+		if map_info then
+			local image_texture = map_info.dirname
+				.. "_screenshot.png"
+			local image_path =
+				string.format("%s/textures/%s", core.get_modpath("ctf_map"), image_texture)
 
-		if ctf_core.file_exists(image_path) then
-			elements["map_image_" .. idx] = {
-				type = "image",
-				pos = { x = i, y = 1 },
-				size = { x = 6, y = 4 },
-				texture = image_texture,
-			}
+			if ctf_core.file_exists(image_path) then
+				elements["map_image_" .. idx] = {
+					type = "image",
+					pos = { x = i, y = 1 },
+					size = { x = 6, y = 4 },
+					texture = image_texture,
+				}
+			end
 		end
 
 		elements["vote_button_" .. idx] = {
@@ -181,12 +187,14 @@ function ctf_modebase.map_vote.end_vote()
 	local vote_counts = {}
 	local reshuffle_votes = 0
 	local other_votes = 0
-	for _, mapID in pairs(votes) do
-		if mapID == RESHUFFLE then
-			reshuffle_votes = reshuffle_votes + 1
-		else
-			vote_counts[mapID] = (vote_counts[mapID] or 0) + 1
-			other_votes = other_votes + 1
+	if votes then
+		for _, mapID in pairs(votes) do
+			if mapID == RESHUFFLE then
+				reshuffle_votes = reshuffle_votes + 1
+			else
+				vote_counts[mapID] = (vote_counts[mapID] or 0) + 1
+				other_votes = other_votes + 1
+			end
 		end
 	end
 
@@ -222,14 +230,30 @@ function ctf_modebase.map_vote.end_vote()
 		winning_mapID = winning_mapIDs[random_index]
 	else
 		--if no votes were cast
-		winning_mapID = map_sample[1]
+		if map_sample and #map_sample > 0 then
+			winning_mapID = map_sample[1]
+		else
+			-- Fallback: use first available map
+			local all_maps = ctf_modebase.map_catalog.get_maps_for_mode(ctf_modebase.current_mode)
+			if all_maps and #all_maps > 0 then
+				winning_mapID = all_maps[1]
+			else
+				-- No maps available at all
+				winning_mapID = nil
+			end
+		end
 	end
 
-	local winner_name = ctf_modebase.map_catalog.map_names[winning_mapID]
-		or tostring(winning_mapID)
+	local winner_name
+	if winning_mapID then
+		winner_name = ctf_modebase.map_catalog.map_names[winning_mapID] or tostring(winning_mapID)
+	else
+		winner_name = "nil"
+	end
 	core.chat_send_all(S("Map voting is over. The next map will be @1", winner_name))
 
-	core.chat_send_all(S("Vote results:"))
+	if map_sample then
+		core.chat_send_all(S("Vote results:"))
 	for _, mapID in pairs(map_sample) do
 		local map_name = ctf_modebase.map_catalog.map_names[mapID]
 			or ("Unknown (" .. tostring(mapID) .. ")")
@@ -242,15 +266,21 @@ function ctf_modebase.map_vote.end_vote()
 			core.chat_send_all(S("@1 votes for @2", count, map_name))
 		end
 	end
+	end
 
-	ctf_modebase.map_catalog.select_map(winning_mapID)
-	ctf_modebase.start_match_after_map_vote()
+	if winning_mapID then
+		ctf_modebase.map_catalog.select_map(winning_mapID)
+		ctf_modebase.start_match_after_map_vote()
+	else
+		core.log("error", "map_vote: No map selected for voting")
+		core.chat_send_all(S("No map available for voting"))
+	end
 end
 
 core.register_on_joinplayer(function(player)
 	local pname = player:get_player_name()
 
-	if votes and not voted[pname] then
+	if votes and voted and not voted[pname] then
 		show_mapchoose_form(pname)
 		voted[pname] = false
 		voters_count = voters_count + 1
@@ -260,7 +290,7 @@ end)
 core.register_on_leaveplayer(function(player)
 	local pname = player:get_player_name()
 
-	if votes and not voted[pname] then
+	if votes and voted and not voted[pname] then
 		voters_count = voters_count - 1
 
 		if voters_count == 0 then

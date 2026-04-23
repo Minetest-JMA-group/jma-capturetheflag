@@ -155,8 +155,13 @@ end
 
 core.register_on_punchplayer(function(player, hitter, _, _, _, damage)
 	if player and hitter and player:get_hp() > 0 and damage > 0 then
+		---@cast player PlayerRef
 		local pname = player:get_player_name()
-		local hname = hitter:is_player() and hitter:get_player_name()
+		local hname
+		if hitter:is_player() then
+			---@cast hitter PlayerRef
+			hname = hitter:get_player_name()
+		end
 
 		if
 			hname
@@ -194,6 +199,8 @@ core.register_tool("ctf_healing:medkit", {
 	description = "Medkit",
 	inventory_image = "ctf_healing_medkit.png",
 	on_use = function(itemstack, user, pointed_thing)
+		---@cast user PlayerRef
+		if not user then return end
 		local uname = user:get_player_name()
 
 		if not healing_players[uname] then

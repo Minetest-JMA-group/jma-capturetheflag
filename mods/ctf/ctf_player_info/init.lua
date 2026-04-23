@@ -112,10 +112,9 @@ local function show_player_info(name, target_name)
 	end
 
 	local target_player = core.get_player_by_name(target_name)
-	local is_online = target_player ~= nil
 
 	-- Check if player exists (online or has rank data)
-	if not is_online then
+	if not target_player then
 		local found = false
 		for _, mode_name in ipairs(ctf_modebase.modelist) do
 			local mode_data = ctf_modebase.modes[mode_name]
@@ -133,7 +132,7 @@ local function show_player_info(name, target_name)
 	local league = ctf_jma_leagues.get_league(target_name)
 
 	local skin_texture
-	if is_online then
+	if target_player then
 		skin_texture = target_player:get_properties().textures[1] .. ",blank.png"
 	else
 		local stored = texture_data[target_name]
@@ -154,6 +153,7 @@ local function show_player_info(name, target_name)
 		end
 	end
 
+	local is_online = target_player ~= nil
 	ctf_gui.show_formspec(name, "ctf_player_info:" .. target_name, function(ctx)
 		return generate_formspec(ctx.selected_tab or 1, skin_texture, target_name, league, is_online, positions, rank_data)
 	end, {

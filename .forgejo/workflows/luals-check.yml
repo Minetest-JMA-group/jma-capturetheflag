@@ -1,0 +1,61 @@
+name: LuaLS Check
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  luals:
+    runs-on: codeberg-tiny
+
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Install dependencies
+        run: |
+          apt update
+          apt install -y curl jq
+
+      - name: Download Lua Language Server
+        run: |
+          # Fetch latest release info
+          LATEST_RELEASE=$(curl -s -H "Accept: application/vnd.github+json" https://api.github.com/repos/LuaLS/lua-language-server/releases/latest)
+          DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | jq -r '.assets[] | select(.name | contains("linux-x64")) | .browser_download_url')
+          curl -L -o lua-language-server.tar.gz "$DOWNLOAD_URL"
+          tar -xzf lua-language-server.tar.gz
+          mv bin/lua-language-server /usr/local/bin/lua-language-server
+          chmod +x /usr/local/bin/lua-language-server
+          # Verify version
+          lua-language-server --version
+
+      - name: Run LuaLS diagnostics
+        run: |
+          # Ensure .luarc.json exists (should be committed)
+          if [ ! -f .luarc.json ]; then
+            echo "Error: .luarc.json not found. Please generate it from .vscode/settings.json."
+            exit 1
+          fi
+          # Run diagnostics with JSON output
+          lua-language-server --check . --checklevel=Warning --check_format=json --check_out_path=/tmp/diagnostics.json
+          if [ -f /tmp/diagnostics.json ]; then
+            # Count total diagnostics across all files
+            TOTAL=$(jq '[.[] | length] | add' /tmp/diagnostics.json)
+            if [ "$TOTAL" -gt 0 ]; then
+              echo "Found $TOTAL diagnostic(s) across $(jq 'length' /tmp/diagnostics.json) file(s)"
+              # Print a summary (first 10 diagnostics)
+              echo "Summary (first 10):"
+              jq -r 'to_entries[] | "\(.key): \(.value[] | .message)"' /tmp/diagnostics.json | head -10
+              exit 1
+            else
+              echo "No diagnostics found"
+            fi
+          else
+            echo "No diagnostics file generated"
+            exit 1
+          fi

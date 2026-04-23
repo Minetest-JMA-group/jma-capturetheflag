@@ -53,6 +53,8 @@ core.register_tool("ctf_mode_potato:potato_launcher", {
 		if meta:get_int("overheat") == 1 then
 			return
 		end
+		if not user or not user:is_player() then return end
+		---@cast user PlayerRef
 
 		local shot_type = "powered"
 

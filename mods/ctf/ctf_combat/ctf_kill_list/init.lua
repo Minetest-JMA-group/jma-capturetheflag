@@ -147,9 +147,11 @@ function ctf_kill_list.add(killer, victim, weapon_image, comment)
 	local v_teamcolor = ctf_teams.get(victim)
 
 	if k_teamcolor then
+		---@diagnostic disable-next-line: cast-local-type
 		k_teamcolor = ctf_teams.team[k_teamcolor].color_hex
 	end
 	if v_teamcolor then
+		---@diagnostic disable-next-line: cast-local-type
 		v_teamcolor = ctf_teams.team[v_teamcolor].color_hex
 	end
 
