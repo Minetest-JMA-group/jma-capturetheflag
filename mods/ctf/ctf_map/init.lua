@@ -1,10 +1,11 @@
 --- @alias MapName string
 --- @alias Vector { x: number, y: number, z: number }
---- @alias OnPlaceCallback fun(pos1: Vector, pos2: Vector, teams: unknown)
+--- @alias OnPlaceCallback fun(mapmeta, teams: unknown)
 --- @alias Flags { [string]: Vector }
 --- @alias StepData { dtime: number, mode: string, start_time: number, flags: Flags }
---- @alias OnStepCallback fun(pos1: Vector, pos2: Vector, data: StepData)
+--- @alias OnStepCallback fun(mapmeta, data: StepData)
 --- @alias MapCallbacks { on_place: OnPlaceCallback?, on_step: OnStepCallback? }
+--- @alias MapPath string
 
 if not ctf_core.settings.server_mode or ctf_core.settings.server_mode == "play" then
 	assert(
@@ -23,7 +24,9 @@ ctf_map = {
 	skyboxes = { "none" },
 	current_map = false,
 	barrier_nodes = {}, -- populated in nodes.lua,
-	start_time = false,
+	--- @type number?
+	start_time = nil,
+	--- @return string
 	get_duration = function()
 		if not ctf_map.start_time then
 			return "-"
@@ -38,16 +41,19 @@ ctf_map = {
 		) -- seconds
 	end,
 
-	-- List of registered map folder names. Use `ctf_map.map_path` to get the path
+	-- Use `ctf_map.map_path` to get the path
+	--- @type MapName[]
 	registered_maps = {},
 
-	-- Table of map paths. Indexed by map's folder name
-	-- Doesn't include trailing '/'
+	-- MapPath doesn't include the trailing '/'
+	--- @type { [MapName]: MapPath }
 	map_path = {},
 	--- @type { [MapName]: MapCallbacks }
 	callbacks = {},
 }
 
+--- @param dirname string
+--- @param path_to_map MapPath
 function ctf_map.register_map(dirname, path_to_map)
 	if path_to_map:sub(-1) ~= "/" then
 		path_to_map = path_to_map .. "/"
@@ -62,6 +68,7 @@ function ctf_map.register_map(dirname, path_to_map)
 	ctf_map.map_path[dirname] = path_to_map .. dirname
 end
 
+--- @param string
 function ctf_map.register_maps_dir(path_to_folder)
 	if path_to_folder:sub(-1) ~= "/" then
 		path_to_folder = path_to_folder .. "/"
