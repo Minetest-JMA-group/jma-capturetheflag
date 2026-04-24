@@ -1,244 +1,308 @@
+--- @alias HitPoint { type: "object" | "node", under: Vector, intersection_point: Vector,
+--- ref: ObjectRef?}
+--- @alias RayCast any -- FIXME
+
 local hitstats_exists = core.global_exists("hit_statistics")
 
 local hud = mhud.init()
 local shoot_cooldown = ctf_core.init_cooldowns()
 
+--- @alias ScopedThing {
+--- item_name: ItemString,
+--- wielditem: table,
+--- hud: boolean,
+--- physics_override: string}
+
 ctf_ranged = {
+	--- @type { [PlayerName]: ScopedThing }
 	scoped = {},
 }
 
 local scoped = ctf_ranged.scoped
 local scale_const = 6
+local hit_sent = {}
+local rico_sent = nil
 
 core.register_craftitem("ctf_ranged:ammo", {
 	description = "Ammo\nUsed to reload guns",
 	inventory_image = "ctf_ranged_ammo.png",
 })
 
-local hit_sent = {}
-local rico_sent = nil
-local function process_ray(ray, user, look_dir, def)
-	local hitpoint = ray:hit_object_or_node({
-		node = function(ndef)
-			return (ndef.walkable == true and ndef.pointable == true)
-				or ndef.groups.liquid
-		end,
-		object = function(obj)
-			return obj:is_player() and obj ~= user
-		end,
-	})
+--- @param name PlayerName
+local function play_hit_sound(name)
+	if not hit_sent[name] then
+		hit_sent[name] = true
+		core.after(0.6, function()
+			hit_sent[name] = nil
+		end)
+		core.sound_play("ctf_ranged_hit", {
+			to_player = name,
+		})
+	end
 
-	if hitpoint then
-		if hitpoint.type == "node" then
-			local node = core.get_node(hitpoint.under)
-			local nodedef = core.registered_nodes[node.name]
+	core.sound_play("ctf_ranged_hit", {
+		to_player = name,
+		pitch = 1.2,
+		gain = 0.9,
+	}, true)
+end
+
+--- @param hitpoint HitPoint
+--- @param shooter ObjectRef
+--- @param look_dir Vector
+--- @param def GunDef
+--- @return boolean? True if it is supposed to travel further
+local function on_hit_node(hitpoint, shooter, look_dir, def)
+	local pos = hitpoint.under
+	local node = core.get_node(pos)
+	local nodedef = core.registered_nodes[node.name]
+
+	if
+		nodedef.on_ranged_shoot
+		or nodedef.groups.snappy
+		or (nodedef.groups.oddly_breakable_by_hand or 0) >= 3
+	then
+		if not core.is_protected(pos, shooter:get_player_name()) then
+			if hitstats_exists then
+				hit_statistics.maybe_record_shot(
+					shooter,
+					"block_destroyed",
+					shooter:get_wielded_item():get_name()
+				)
+			end
+			if nodedef.on_ranged_shoot then
+				nodedef.on_ranged_shoot(hitpoint.under, node, shooter, def.type)
+			else
+				core.dig_node(hitpoint.under)
+			end
+		elseif hitstats_exists then
+			hit_statistics.maybe_record_shot(
+				shooter,
+				"none",
+				shooter:get_wielded_item():get_name()
+			)
+		end
+
+		if def.type ~= "shotgun" then
+			core.add_particlespawner({
+				amount = 10,
+				time = 0.03,
+				minpos = hitpoint.intersection_point,
+				maxpos = hitpoint.intersection_point,
+				minvel = { x = -4, y = 2, z = -4 },
+				maxvel = { x = 4, y = 3, z = 4 },
+				minacc = { x = 0, y = -15, z = 0 },
+				maxacc = { x = 0, y = -15, z = 0 },
+				minexptime = 0.1,
+				maxexptime = 0.3,
+				minsize = 1,
+				maxsize = 2,
+				node = { name = nodedef.name },
+				collisiondetection = true,
+				collision_removal = false,
+				glow = 3,
+			})
+		end
+	else
+		if nodedef.walkable and nodedef.pointable then
+			core.add_particle({
+				pos = vector.subtract(
+					hitpoint.intersection_point,
+					vector.multiply(look_dir, 0.04)
+				),
+				velocity = vector.zero(),
+				acceleration = vector.zero(),
+				expirationtime = def.bullethole_lifetime or 3,
+				size = 1,
+				collisiondetection = false,
+				texture = "ctf_ranged_bullethole.png",
+			})
 
 			if
-				nodedef.on_ranged_shoot
-				or nodedef.groups.snappy
-				or (nodedef.groups.oddly_breakable_by_hand or 0) >= 3
+				not rico_sent
+				or vector.distance(rico_sent, hitpoint.intersection_point) > 10
 			then
-				if not core.is_protected(hitpoint.under, user:get_player_name()) then
-					if hitstats_exists then
-						hit_statistics.maybe_record_shot(
-							user,
-							"block_destroyed",
-							user:get_wielded_item():get_name()
-						)
-					end
-					if nodedef.on_ranged_shoot then
-						nodedef.on_ranged_shoot(hitpoint.under, node, user, def.type)
-					else
-						core.dig_node(hitpoint.under)
-					end
-				elseif hitstats_exists then
-					hit_statistics.maybe_record_shot(
-						user,
-						"none",
-						user:get_wielded_item():get_name()
-					)
+				if not rico_sent then
+					core.after(0.2, function()
+						rico_sent = nil
+					end)
 				end
+				rico_sent = hitpoint.intersection_point
 
-				if def.type ~= "shotgun" then
-					core.add_particlespawner({
-						amount = 10,
-						time = 0.03,
-						minpos = hitpoint.intersection_point,
-						maxpos = hitpoint.intersection_point,
-						minvel = { x = -4, y = 2, z = -4 },
-						maxvel = { x = 4, y = 3, z = 4 },
-						minacc = { x = 0, y = -15, z = 0 },
-						maxacc = { x = 0, y = -15, z = 0 },
-						minexptime = 0.1,
-						maxexptime = 0.3,
-						minsize = 1,
-						maxsize = 2,
-						node = { name = nodedef.name },
-						collisiondetection = true,
-						collision_removal = false,
-						glow = 3,
-					})
-				end
-			else
-				if nodedef.walkable and nodedef.pointable then
-					core.add_particle({
-						pos = vector.subtract(
-							hitpoint.intersection_point,
-							vector.multiply(look_dir, 0.04)
-						),
-						velocity = vector.zero(),
-						acceleration = vector.zero(),
-						expirationtime = def.bullethole_lifetime or 3,
-						size = 1,
-						collisiondetection = false,
-						texture = "ctf_ranged_bullethole.png",
-					})
-
-					if
-						not rico_sent
-						or vector.distance(rico_sent, hitpoint.intersection_point)
-							> 10
-					then
-						if not rico_sent then
-							core.after(0.2, function()
-								rico_sent = nil
-							end)
-						end
-						rico_sent = hitpoint.intersection_point
-
-						core.sound_play(
-							"ctf_ranged_ricochet",
-							{ gain = 2.4, pos = hitpoint.intersection_point }
-						)
-					end
-
-					if def.type ~= "shotgun" then
-						core.add_particlespawner({
-							amount = 10,
-							time = 0.03,
-							minpos = hitpoint.intersection_point,
-							maxpos = hitpoint.intersection_point,
-							minvel = { x = -4, y = 2, z = -4 },
-							maxvel = { x = 4, y = 3, z = 4 },
-							minacc = { x = 0, y = -15, z = 0 },
-							maxacc = { x = 0, y = -15, z = 0 },
-							minexptime = 0.2,
-							maxexptime = 0.4,
-							minsize = 1,
-							maxsize = 1,
-							node = { name = nodedef.name },
-							collisiondetection = true,
-							collision_removal = false,
-							glow = 14,
-						})
-					end
-
-					if hitstats_exists then
-						hit_statistics.maybe_record_shot(
-							user,
-							"bullethole",
-							user:get_wielded_item():get_name()
-						)
-					end
-				elseif nodedef.groups.liquid then
-					if def.type ~= "shotgun" then
-						core.add_particlespawner({
-							amount = 10,
-							time = 0.1,
-							minpos = hitpoint.intersection_point,
-							maxpos = hitpoint.intersection_point,
-							minvel = { x = look_dir.x * 3, y = 4, z = -look_dir.z * 3 },
-							maxvel = { x = look_dir.x * 4, y = 6, z = look_dir.z * 4 },
-							minacc = { x = 0, y = -10, z = 0 },
-							maxacc = { x = 0, y = -13, z = 0 },
-							minexptime = 1,
-							maxexptime = 1,
-							minsize = 0,
-							maxsize = 0,
-							collisiondetection = false,
-							glow = 3,
-							node = { name = nodedef.name },
-						})
-					end
-
-					if def.liquid_travel_dist then
-						process_ray(
-							rawf.bulletcast(
-								def.bullet,
-								hitpoint.intersection_point,
-								vector.add(
-									hitpoint.intersection_point,
-									vector.multiply(look_dir, def.liquid_travel_dist)
-								),
-								true,
-								false
-							),
-							user,
-							look_dir,
-							def
-						)
-					end
-				end
+				core.sound_play(
+					"ctf_ranged_ricochet",
+					{ gain = 2.4, pos = hitpoint.intersection_point }
+				)
 			end
-		elseif hitpoint.type == "object" then
-			local victim_name = hitpoint.ref:get_player_name()
-			local is_friend = ctf_teams.get(victim_name)
-				== ctf_teams.get(user:get_player_name())
 
-			if hitstats_exists then
-				if is_friend then
-					hit_statistics.maybe_record_shot(
-						user,
-						"teammate",
-						user:get_wielded_item():get_name()
-					)
-				else
-					hit_statistics.maybe_record_shot(
-						user,
-						"enemy",
-						user:get_wielded_item():get_name()
-					)
-				end
-			end
-			local name = user:get_player_name()
-			hitpoint.ref:punch(user, 1, {
-				full_punch_interval = 1,
-				damage_groups = { ranged = 1, [def.type] = 1, fleshy = def.damage },
-			}, look_dir)
-
-			if not hit_sent[name] then
-				hit_sent[name] = true
-				core.after(0.6, function()
-					hit_sent[name] = nil
-				end)
-				core.sound_play("ctf_ranged_hit", {
-					to_player = name,
+			if def.type ~= "shotgun" then
+				core.add_particlespawner({
+					amount = 10,
+					time = 0.03,
+					minpos = hitpoint.intersection_point,
+					maxpos = hitpoint.intersection_point,
+					minvel = { x = -4, y = 2, z = -4 },
+					maxvel = { x = 4, y = 3, z = 4 },
+					minacc = { x = 0, y = -15, z = 0 },
+					maxacc = { x = 0, y = -15, z = 0 },
+					minexptime = 0.2,
+					maxexptime = 0.4,
+					minsize = 1,
+					maxsize = 1,
+					node = { name = nodedef.name },
+					collisiondetection = true,
+					collision_removal = false,
+					glow = 14,
 				})
 			end
 
-			core.sound_play("ctf_ranged_hit", {
-				to_player = user:get_player_name(),
-				pitch = 1.2,
-				gain = 0.9,
-			}, true)
-		elseif hitstats_exists then
-			hit_statistics.maybe_record_shot(
-				user,
-				"none",
-				user:get_wielded_item():get_name()
-			)
+			if hitstats_exists then
+				hit_statistics.maybe_record_shot(
+					shooter,
+					"bullethole",
+					shooter:get_wielded_item():get_name()
+				)
+			end
+		elseif nodedef.groups.liquid then
+			if def.type ~= "shotgun" then
+				core.add_particlespawner({
+					amount = 10,
+					time = 0.1,
+					minpos = hitpoint.intersection_point,
+					maxpos = hitpoint.intersection_point,
+					minvel = { x = look_dir.x * 3, y = 4, z = -look_dir.z * 3 },
+					maxvel = { x = look_dir.x * 4, y = 6, z = look_dir.z * 4 },
+					minacc = { x = 0, y = -10, z = 0 },
+					maxacc = { x = 0, y = -13, z = 0 },
+					minexptime = 1,
+					maxexptime = 1,
+					minsize = 0,
+					maxsize = 0,
+					collisiondetection = false,
+					glow = 3,
+					node = { name = nodedef.name },
+				})
+			end
+
+			if def.liquid_travel_dist then
+				return true
+				--[[process_ray(
+						,
+						user,
+						look_dir,
+						def
+					)--]]
+			end
 		end
-	elseif hitstats_exists then
-		hit_statistics.maybe_record_shot(user, "none", user:get_wielded_item():get_name())
+	end
+end
+
+--- @param hitpoint HitPoint
+--- @param shooter ObjectRef?
+--- @param gundef GunDef
+--- @param look_dir Vector
+--- @param amount number
+local function change_hp(hitpoint, shooter, gundef, look_dir, amount)
+	if hitpoint.type == "object" and hitpoint.ref then
+		--- @type ObjectRef
+		local ref = hitpoint.ref
+		if amount < 0 then
+			ref:punch(shooter, 1, {
+				full_punch_interval = 1,
+				damage_groups = {
+					[gundef.type] = 1,
+					ranged = 1,
+					fleshy = -amount,
+				},
+			}, look_dir)
+		else
+			local current_hp = ref:get_hp()
+			ref:set_hp(current_hp + amount)
+			ctf_combat_mode.add_healer(ref, shooter, 1)
+		end
+	end
+end
+
+--- @type OnHitCallback
+local function on_hit(hitpoint, prev_hitpoint, shooter, look_dir, def, callbacks)
+	if hitpoint.type == "node" then
+		return on_hit_node(hitpoint, shooter, look_dir, def) or false
+	end
+	if hitpoint.type == "object" and hitpoint.ref then
+		local ref = hitpoint.ref
+		local victim_name = ref:get_player_name()
+
+		local is_friend = ctf_teams.get(victim_name)
+			== ctf_teams.get(shooter:get_player_name())
+
+		if hitstats_exists then
+			if is_friend then
+				hit_statistics.maybe_record_shot(
+					shooter,
+					"teammate",
+					shooter:get_wielded_item():get_name()
+				)
+			else
+				hit_statistics.maybe_record_shot(
+					shooter,
+					"enemy",
+					shooter:get_wielded_item():get_name()
+				)
+			end
+		end
+		local ret_val = nil
+		if is_friend then
+			ret_val =
+				callbacks.on_teammate_hit(hitpoint, prev_hitpoint, shooter, look_dir, def)
+		else
+			ret_val =
+				callbacks.on_enemy_hit(hitpoint, prev_hitpoint, shooter, look_dir, def)
+		end
+		play_hit_sound(shooter:get_player_name())
+		return ret_val
 	end
 end
 
 -- Can be overridden for custom behaviour
 ---@diagnostic disable-next-line: duplicate-set-field
+--- @param player ObjectRef
+--- @param name PlayerName
 function ctf_ranged.can_use_gun(player, name)
 	return true
 end
 
+--- @alias ItemString string
+--- @alias Bullet {
+--- texture: string,
+--- glow: number,
+--- spread: number?,
+--- particle_speed: number? }
+--- @alias OnHitCallbacks { on_teammate_hit: OnHitCallback, on_enemy_hit: OnHitCallback }
+--- @alias OnHitCallback fun(hitpoint: HitPoint, prev_hitpoint: HitPoint?, shooter: ObjectRef, look_dir: Vector, def: GunDef, callbacks: OnHitCallbacks?): boolean
+--- @alias OnUseCallback fun(bulletcast: any, shooter: ObjectRef, look_dir: Vector, def: GunDef)
+--- @alias GunDef {
+--- ammo: ItemString,
+--- texture: string,
+--- description: string,
+--- bullethole_lifetime: number?,
+--- type: string,
+--- tier: number,
+--- rounds: number,
+--- texture_overlay: string,
+--- wield_texture: string?,
+--- on_use: fun(player: ObjectRef),
+--- on_secondary_use: fun(player: ObjectRef),
+---	fire_interval: number,
+---	fire_sound: string,
+---	range: number,
+---	bullet: Bullet,
+---	automatic: boolean?,
+---	rightclick_func: fun(itemstack: string, user: ObjectRef, Pointed: any, ...),
+---	liquid_travel_dist: number?,
+--- on_use:  OnUseCallback}
+
+--- @param name string
+--- @param def GunDef
 function ctf_ranged.simple_register_gun(name, def)
 	core.register_tool(rawf.also_register_loaded_tool(name, {
 		description = def.description,
@@ -314,10 +378,7 @@ function ctf_ranged.simple_register_gun(name, def)
 			end
 
 			core.sound_play(def.fire_sound, { pos = user:get_pos() }, true)
-
-			for _, ray in pairs(rays) do
-				process_ray(ray, user, look_dir, def)
-			end
+			def.on_use(rays, user, look_dir, def)
 
 			if def.rounds > 0 then
 				return rawf.unload_weapon(itemstack)
@@ -381,25 +442,6 @@ function ctf_ranged.show_shoulder_scope(name, item_name, fov_mult)
 	if not player then
 		return
 	end
-	local item_range = core.registered_items[item_name].range or 4
-	local pos = player:get_pos()
-	local look_dir = player:get_look_dir()
-	local ray = core.raycast(pos, vector.add(pos, item_range), true)
-	for pointed_thing in ray do
-		local ppos = nil
-		if pointed_thing.type == "node" then
-			ppos = pointed_thing.under
-		elseif pointed_thing.type == "object" then
-			ppos = pointed_thing.ref:get_pos()
-		end
-		if not ppos then
-			if vector.dist(pos, ppos) <= item_range then
-				return
-			else
-				break
-			end
-		end
-	end
 
 	scoped[name] = {
 		item_name = item_name,
@@ -427,6 +469,79 @@ function ctf_ranged.hide_scope(name)
 	scoped[name] = nil
 end
 
+function ctf_ranged.chain_callbacks(...)
+	--- @param hitpoint HitPoint
+	--- @param shooter ObjectRef?
+	local function callback(hitpoint, shooter)
+		for _, callback2 in ipairs(arg) do
+			callback2(hitpoint, shooter)
+		end
+	end
+	return callback
+end
+--- @param hitpoint HitPoint
+--- @param shooter ObjectRef?
+--- @param gundef GunDef
+--- @param look_dir Vector
+function ctf_ranged.count_heal_for_meat_shield(hitpoint, shooter, gundef, look_dir) end
+
+--- @param damage number
+function ctf_ranged.on_damage_gun_use(damage)
+	--- @type OnUseCallback
+	local function on_damage_callback_inner(rays, shooter, look_dir, def)
+		local callbacks = {
+			--- @type OnHitCallback
+			on_teammate_hit = function(
+				hitpoint,
+				prev_hitpoint,
+				shooter,
+				look_dir,
+				def,
+				_
+			)
+			end,
+			--- @type OnHitCallback
+			on_enemy_hit = function(hitpoint, prev_hitpoint, shooter, look_dir, def, _)
+				counter = counter + 1
+				change_hp(hitpoint, shooter, def, look_dir, -damage)
+			end,
+		}
+		--- @type HitPoint?
+		local prev_hitpoint = nil
+		while #rays > 0 do
+			local ray = table.remove(rays)
+			local hitpoint = ray:hit_object_or_node({
+				node = function(ndef)
+					return (ndef.walkable and ndef.pointable) or ndef.groups.liquid
+				end,
+				object = function(obj)
+					return obj:is_player() and obj ~= shooter
+				end,
+			})
+			if
+				hitpoint
+				and on_hit(hitpoint, prev_hitpoint, shooter, look_dir, def, callbacks)
+			then
+				if hitpoint.type == "node" then
+					local bulletcast = rawf.bulletcast(
+						def.bullet,
+						hitpoint.intersection_point,
+						vector.add(
+							hitpoint.intersection_point,
+							vector.multiply(look_dir, def.liquid_travel_dist)
+						),
+						true,
+						false
+					)
+					table.insert(rays, bulletcast)
+				end
+			end
+			prev_hitpoint = hitpoint
+		end
+	end
+	return on_damage_callback_inner
+end
+
 ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
 	type = "pistol",
 	description = "Pistol\nDmg: 2 | FR: 0.6s | Mag: 75",
@@ -434,7 +549,6 @@ ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
 	fire_sound = "ctf_ranged_pistol",
 	rounds = 75,
 	range = 75,
-	damage = 2,
 	automatic = true,
 	fire_interval = 0.6,
 	liquid_travel_dist = 2,
@@ -446,6 +560,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
 			ctf_ranged.show_shoulder_scope(user:get_player_name(), item_name, 2)
 		end
 	end,
+	on_use = ctf_ranged.on_damage_gun_use(2),
 })
 
 ctf_ranged.simple_register_gun("ctf_ranged:rifle", {
@@ -455,7 +570,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:rifle", {
 	fire_sound = "ctf_ranged_rifle",
 	rounds = 40,
 	range = 150,
-	damage = 4,
+	on_use = ctf_ranged.on_damage_gun_use(4),
 	automatic = true,
 	fire_interval = 0.8,
 	liquid_travel_dist = 4,
@@ -472,7 +587,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:shotgun", {
 	},
 	rounds = 10,
 	range = 24,
-	damage = 1,
+	on_use = ctf_ranged.on_damage_gun_use(1),
 	fire_interval = 2,
 })
 
@@ -487,7 +602,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:assault_rifle", {
 	automatic = true,
 	rounds = 35,
 	range = 89,
-	damage = 2,
+	on_use = ctf_ranged.on_damage_gun_use(2),
 	fire_interval = 0.1,
 	liquid_travel_dist = 3,
 	rightclick_func = function(itemstack, user, pointed, ...)
@@ -507,7 +622,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper", {
 	fire_sound = "ctf_ranged_sniper",
 	rounds = 25,
 	range = 300,
-	damage = 12,
+	on_use = ctf_ranged.on_damage_gun_use(12),
 	fire_interval = 2,
 	liquid_travel_dist = 10,
 	rightclick_func = function(itemstack, user, pointed, ...)
@@ -527,7 +642,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
 	fire_sound = "ctf_ranged_sniper",
 	rounds = 20,
 	range = 400,
-	damage = 16,
+	on_use = ctf_ranged.on_damage_gun_use(16),
 	fire_interval = 2,
 	liquid_travel_dist = 15,
 	rightclick_func = function(itemstack, user, pointed, ...)
