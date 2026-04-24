@@ -11,11 +11,19 @@ local S = core.get_translator(core.get_current_modname())
 
 random_messages = {}
 
-if core.settings:get("random_messages_disabled") == "true" or ctf_core.settings.server_mode == "mapedit" then
+if
+	core.settings:get("random_messages_disabled") == "true"
+	or ctf_core.settings.server_mode == "mapedit"
+then
 	return
 end
 
 local messages = {
+	S("If in a map vote none of the 3 maps are good, you can do 'Reshuffle'."),
+	S("You think a class is unfair? Do /feedback and leave us a note."),
+	S(
+		"Note that the staff are busy with 'life' so we might not read your notes via /feedback in a timely manner"
+	),
 	S("You can give feedback to server admin and game developers using /feedback"),
 	S(
 		"Heal the flag thief on your team, and when they capture, you will also get a reward."
@@ -112,8 +120,9 @@ local messages = {
 	"Trapping teammates on purpose is strictly against the rules, doing so will result in a ban.",
 	"Use /block <username> to stop seeing messages sent by a user in the public or private chats.",
 	S(
-	"To report misbehaving players to moderators, please use /report <name> <action> or send the report on Discord: @1",
-		DISCORD_SERVER),
+		"To report misbehaving players to moderators, please use /report <name> <action> or send the report on Discord: @1",
+		DISCORD_SERVER
+	),
 	"If you need urgent help (for example, suicidal thoughts or self-harm), use /emergency. Abusing this command is subject to punishment.",
 }
 
