@@ -6,6 +6,7 @@
 --- @alias OnStepCallback fun(mapmeta, data: StepData)
 --- @alias MapCallbacks { on_place: OnPlaceCallback?, on_step: OnStepCallback? }
 --- @alias MapPath string
+--- @alias MapMeta any
 
 if not ctf_core.settings.server_mode or ctf_core.settings.server_mode == "play" then
 	assert(
