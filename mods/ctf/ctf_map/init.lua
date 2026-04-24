@@ -74,7 +74,7 @@ function ctf_map.register_map(dirname, path_to_map)
 	ctf_map.map_path[dirname] = path_to_map .. dirname
 end
 
---- @param string
+--- @param path_to_folder string
 function ctf_map.register_maps_dir(path_to_folder)
 	if path_to_folder:sub(-1) ~= "/" then
 		path_to_folder = path_to_folder .. "/"

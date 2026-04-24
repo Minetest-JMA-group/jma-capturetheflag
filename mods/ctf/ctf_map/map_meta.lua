@@ -64,7 +64,7 @@ end
 
 --- @param idx number
 --- @param dirname MapName
---- @return MapMeta
+--- @return MapMeta?
 function ctf_map.load_map_meta(idx, dirname)
 	assert(ctf_map.map_path[dirname], "Map " .. dirname .. " not found")
 	local meta = Settings(ctf_map.map_path[dirname] .. "/map.conf")
@@ -300,7 +300,7 @@ function ctf_map.save_map(mapmeta)
 	end
 
 	local barriers = {}
-	local pos1, pos2 = mapmeta.pos1:copy(), mapmeta.pos2:copy()
+	local pos1, pos2 = vector.copy(mapmeta.pos1), vector.copy(mapmeta.pos2)
 	local barrier_area =
 		{ pos1 = pos1:subtract(mapmeta.offset), pos2 = pos2:subtract(mapmeta.offset) }
 
