@@ -1,3 +1,4 @@
+--- @param map MapMeta
 function ctf_map.announce_map(map)
 	local msg = (
 		core.colorize("#fcdb05", "Map: ")
@@ -11,6 +12,8 @@ function ctf_map.announce_map(map)
 	core.chat_send_all(msg)
 end
 
+--- @param mapmeta MapMeta
+--- @param callback fun()
 function ctf_map.place_map(mapmeta, callback)
 	local dirname = mapmeta.dirname
 	local schempath = ctf_map.map_path[dirname] .. "/map.mts"
@@ -97,7 +100,7 @@ function ctf_map.place_map(mapmeta, callback)
 
 		callback()
 		if ctf_map.callbacks[dirname].on_place then
-			ctf_map.callbacks[dirname].on_place(mapmeta.pos1, mapmeta.pos2, mapmeta.teams)
+			ctf_map.callbacks[dirname].on_place(mapmeta)
 		end
 	end)
 end
@@ -105,6 +108,19 @@ end
 --
 --- VOXELMANIP FUNCTIONS
 --
+
+core.register_globalstep(function(dtime)
+	local current_map = ctf_map.current_map.dirname
+	local on_step = ctf_map.callbacks[current_map].on_step
+	if on_step then
+		local data = {
+			dtime = dtime,
+			start_time = ctf_map.start_time,
+			mode = ctf_modebase.current_mode,
+		}
+		on_step(dtime, data)
+	end
+end)
 
 local ID_IGNORE = core.CONTENT_IGNORE
 local ID_AIR = core.CONTENT_AIR

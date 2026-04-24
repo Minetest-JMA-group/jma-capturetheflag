@@ -1,12 +1,17 @@
 --- @alias MapName string
 --- @alias Vector { x: number, y: number, z: number }
---- @alias OnPlaceCallback fun(mapmeta, teams: unknown)
+--- @alias OnPlaceCallback fun(mapmeta)
 --- @alias Flags { [string]: Vector }
---- @alias StepData { dtime: number, mode: string, start_time: number, flags: Flags }
+--- @alias StepData { dtime: number, mode: string, start_time: number }
 --- @alias OnStepCallback fun(mapmeta, data: StepData)
 --- @alias MapCallbacks { on_place: OnPlaceCallback?, on_step: OnStepCallback? }
 --- @alias MapPath string
---- @alias MapMeta any
+--- @alias MapTeams table
+--- @alias MapChests table
+--- @alias MapPos { pos1: Vector, pos2: Vector }
+--- @alias MapPhysics { phy_gravity: number, phy_speed: number, phy_jump: number }
+--- @alias MapOther { chests: MapChests, teams: MapTeams, barrier_area: MapPos }
+--- @alias MapMeta MapPos | MapPhysics | MapOther | table
 
 if not ctf_core.settings.server_mode or ctf_core.settings.server_mode == "play" then
 	assert(
