@@ -110,7 +110,11 @@ end
 --
 
 core.register_globalstep(function(dtime)
-	local current_map = ctf_map.current_map.dirname
+	local current_map_meta = ctf_map.current_map
+	if not current_map_meta then
+		return
+	end
+	local current_map = current_map_meta.dirname
 	local on_step = ctf_map.callbacks[current_map].on_step
 	if on_step then
 		local data = {
