@@ -15,6 +15,7 @@ local function check_hit(pos1, pos2, obj)
 				and (
 					hit.intersection_point:distance(pos2) <= 1
 					or not core.registered_nodes[core.get_node(hit.under).name].walkable
+					or core.get_node(hit.under).name == "default:snow"
 				)
 			) or (hit.type == "object" and hit.ref ~= obj)
 		)
