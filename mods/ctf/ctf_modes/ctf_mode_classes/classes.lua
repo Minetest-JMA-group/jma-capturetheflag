@@ -75,7 +75,6 @@ core.register_on_mods_loaded(function()
 				count = " x" .. count
 			end
 
-
 			local desc = string.split(item:get_description(), "\n", false, 1)
 			items_markup = string.format(
 				"%s%s\n<item name=%s float=left width=48>\n\n\n",
@@ -240,7 +239,7 @@ ctf_ranged.simple_register_gun("ctf_mode_classes:ranged_rifle", {
 	fire_sound = "ctf_ranged_rifle",
 	rounds = 0,
 	range = 150,
-	damage = 5,
+	on_use = ctf_ranged.on_damage_gun_use(5),
 	fire_interval = 0.8,
 	liquid_travel_dist = 4,
 	rightclick_func = function(itemstack, user, pointed)
@@ -560,8 +559,8 @@ function classes.show_class_formspec(player)
 					form_y - 2.4,
 					(ctf_cosmetics.get_colored_skin(
 						player,
-						pteam and ctf_teams.team[pteam].color) ..
-					classes.get_skin_overlay(class, true)) or "",
+						pteam and ctf_teams.team[pteam].color
+					) .. classes.get_skin_overlay(class, true)) or "",
 				},
 				{
 					[[hypertext[%f,2.3;%f,%f;info;<global font=mono background=#00000044>
