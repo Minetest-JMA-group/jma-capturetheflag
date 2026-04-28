@@ -1,8 +1,9 @@
 local S = core.get_translator(core.get_current_modname())
 
-local landmines = {
-	-- { x = ..., y = ..., z = ...}
-}
+local ARM_TIME = 3
+
+--- @type Vector[]
+local landmines = {}
 
 local landmine_globalstep_counter = 0.0
 local LANDMINE_COUNTER_THRESHOLD = 0.025
@@ -150,7 +151,6 @@ core.register_node("ctf_landmine:landmine", {
 				end
 			end
 		end
-
 		return core.item_place(itemstack, placer, pointed_thing)
 	end,
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
@@ -161,10 +161,11 @@ core.register_node("ctf_landmine:landmine", {
 		local meta = core.get_meta(pos)
 		local name = placer:get_player_name()
 		local pteam = ctf_teams.get(placer)
-
 		meta:set_string("placer", name)
 		meta:set_string("pteam", pteam or "")
-		table.insert(landmines, pos)
+		core.after(ARM_TIME, function(landmines, pos)
+			table.insert(landmines, pos)
+		end, landmines, pos)
 	end,
 	on_punch = function(pos, _node, puncher, pointed_thing)
 		if is_self_landmine(puncher, pos) == false then
@@ -194,15 +195,10 @@ core.register_globalstep(function(dtime)
 	end
 	landmine_globalstep_counter = 0.0
 	for _idx, pos in pairs(landmines) do
-		local near_objs = core.get_objects_in_area(vector.new(
-			pos.x - 0.75,
-			pos.y - 0.75,
-			pos.z - 0.75
-		), vector.new(
-			pos.x + 0.75,
-			pos.y - 0.3,
-			pos.z + 0.75
-		))
+		local near_objs = core.get_objects_in_area(
+			vector.new(pos.x - 0.75, pos.y - 0.75, pos.z - 0.75),
+			vector.new(pos.x + 0.75, pos.y - 0.3, pos.z + 0.75)
+		)
 		local must_explode = false
 		for _, obj in pairs(near_objs) do
 			if is_self_landmine(obj, pos) == false then
