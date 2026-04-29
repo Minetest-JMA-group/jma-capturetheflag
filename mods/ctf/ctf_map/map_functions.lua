@@ -161,7 +161,7 @@ function ctf_map.remove_barrier(mapmeta, callback)
 
 			return vm
 		end, function(vm)
-			vm:write_to_map(false)
+			vm:write_to_map()
 
 			core.after(0.1, function()
 				local vm = VoxelManip(pos1, pos2)
