@@ -17,7 +17,10 @@ if not ipdb then
 end
 local mod_storage = ipdb.get_mod_storage(merger)
 if not mod_storage then
-	core.log("error", "[claim_cosmetics] Failed to initialize ipdb mod storage. /claim disabled")
+	core.log(
+		"error",
+		"[claim_cosmetics] Failed to initialize ipdb mod storage. /claim disabled"
+	)
 	return
 end
 
@@ -25,14 +28,21 @@ local function is_ipv4(str)
 	return str:match("^%d+%.%d+%.%d+%.%d+$") ~= nil
 end
 
-local cosmetics_func = core.registered_chatcommands["cosmetics"] and core.registered_chatcommands["cosmetics"].func
+local cosmetics_func = core.registered_chatcommands["cosmetics"]
+	and core.registered_chatcommands["cosmetics"].func
 assert(cosmetics_func, "[claim_cosmetics]: Cannot load cosmetics command")
 
 core.register_chatcommand("claim", {
 	description = "Claim crown and sunglasses as a reward for joining JMA Discord server",
 	func = function(name, params)
 		if core.get_player_by_name(name) then
-			core.chat_send_player(name, core.colorize("red", "You have to run this command from Discord while being offline in-game."))
+			core.chat_send_player(
+				name,
+				core.colorize(
+					"red",
+					"You have to run this command from Discord while being offline in-game."
+				)
+			)
 			return false, "JMA Discord Invite Link: https://discord.gg/SSd9XcCqZk"
 		end
 
@@ -48,16 +58,23 @@ core.register_chatcommand("claim", {
 
 		if passed_time < claim_timeout then
 			ctx:finalize()
-			return false, "You have to wait " .. algorithms.time_to_string(claim_timeout - passed_time) .. " before next claim"
+			return false,
+				"You have to wait " .. algorithms.time_to_string(
+					claim_timeout - passed_time
+				) .. " before next claim"
 		end
 
 		ctx:set_string("last_claim", tostring(curtime))
 		ctx:finalize()
 
-		cosmetics_func(name, "give " .. name .. " server_cosmetics:headwear:sunglasses:black")
+		cosmetics_func(
+			name,
+			"give " .. name .. " server_cosmetics:headwear:sunglasses:black"
+		)
 		cosmetics_func(name, "give " .. name .. " server_cosmetics:entity:crown:normal")
 
-		return true, "You have claimed cosmetics items. Check cosmetics tab in your inventory."
+		return true,
+			"You have claimed cosmetics items. Check cosmetics tab in your inventory."
 	end,
 })
 
@@ -110,7 +127,12 @@ core.register_chatcommand("claim_migrate", {
 							end
 							ctx:finalize()
 						else
-							core.log("warning", "[claim_cosmetics] No ipdb entry for " .. first_key .. " during migration, skipping.")
+							core.log(
+								"warning",
+								"[claim_cosmetics] No ipdb entry for "
+									.. first_key
+									.. " during migration, skipping."
+							)
 						end
 					end
 				end
