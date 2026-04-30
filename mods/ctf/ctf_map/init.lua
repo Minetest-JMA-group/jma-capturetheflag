@@ -22,6 +22,8 @@ end
 
 core.register_alias("mapgen_singlenode", "ctf_map:ignore")
 
+local S = core.get_translator(core.get_current_modname())
+
 ctf_map = {
 	DEFAULT_CHEST_AMOUNT = 42,
 	DEFAULT_START_TIME = 5900,
@@ -209,6 +211,27 @@ core.register_chatcommand("ctf_map", {
 		end
 
 		return false
+	end,
+})
+
+core.register_chatcommand("fullbright", {
+	description = S("Turn the map full bright or turn it off"),
+	privs = { ctf_map_editor = true, ctf_admin = true },
+	func = function()
+		local mapmeta = ctf_map.current_map
+		local vm = core.get_voxel_manip(mapmeta.pos1, mapmeta.pos2)
+		local BRIGHT_AIR_ID = core.get_content_id("ctf_map:bright_air")
+		local AIR_ID = core.CONTENT_AIR
+		local data = vm:get_data()
+		for idx, val in ipairs(data) do
+			if val == AIR_ID then
+				data[idx] = BRIGHT_AIR_ID
+			elseif val == BRIGHT_AIR_ID then
+				data[idx] = AIR_ID
+			end
+		end
+		vm:set_data(data)
+		vm:write_to_map()
 	end,
 })
 
