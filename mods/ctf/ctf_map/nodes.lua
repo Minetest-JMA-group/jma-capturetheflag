@@ -18,6 +18,18 @@ core.register_node("ctf_map:ignore", {
 	groups = { immortal = 1, disable_suffocation = 1, barrier = 1, ignore = 1 },
 })
 
+core.register_node("ctf_map:bright_air", {
+	description = S("Bright Air(for making the map full bright)"),
+	drawtype = "airlike",
+	inventory_image = "ctf_map_bright_air.png",
+	walkable = false,
+	buildable_to = true,
+	pointable = false,
+	paramtype = "light",
+	sunlight_propagates = true,
+	light_source = 14,
+})
+
 core.register_node("ctf_map:ind_glass", {
 	description = "Indestructible Barrier Glass",
 	drawtype = "glasslike_framed",
@@ -49,8 +61,7 @@ core.register_node("ctf_map:ind_glass_red", {
 	groups = { immortal = 1, barrier = 1 },
 	sounds = default.node_sound_glass_defaults(),
 })
-ctf_map.barrier_nodes[core.get_content_id("ctf_map:ind_glass_red")] =
-	core.CONTENT_AIR
+ctf_map.barrier_nodes[core.get_content_id("ctf_map:ind_glass_red")] = core.CONTENT_AIR
 
 core.register_node("ctf_map:ind_water", {
 	description = "Indestructible Water Barrier Glass",
@@ -192,7 +203,8 @@ local function make_immortal(def)
 	def.description = def.description and ("Indestructible " .. def.description)
 end
 
-local ind_damage_per_second = tonumber(core.settings:get("ctf_map_ind_damage_per_second")) or 5
+local ind_damage_per_second = tonumber(core.settings:get("ctf_map_ind_damage_per_second"))
+	or 5
 local queue = {}
 for name, def in pairs(core.registered_nodes) do
 	local mod, nodename = name:match("(..-):(.+)")
@@ -271,11 +283,15 @@ local chest_def = {
 			local name = player:get_player_name()
 
 			if not not_allowed_timer[name] then
-				core.chat_send_player(name,
-					S("You're not allowed to put things in treasure chests!"))
+				core.chat_send_player(
+					name,
+					S("You're not allowed to put things in treasure chests!")
+				)
 
 				not_allowed_timer[name] = true
-				core.after(1, function() not_allowed_timer[name] = nil end)
+				core.after(1, function()
+					not_allowed_timer[name] = nil
+				end)
 			end
 
 			return 0
