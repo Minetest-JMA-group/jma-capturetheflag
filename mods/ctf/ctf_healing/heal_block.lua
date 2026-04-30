@@ -4,14 +4,17 @@
 local BREAK_REWARD_PER_HP = 0.1
 local HEAL_DIG_REWARD_BASE = 20
 
+local S = core.get_translator(core.get_current_modname())
+
 core.register_node("ctf_healing:heal_block", {
-	description = "Healing Block\n"
-		.. "A block that heals players within a 3-block radius.\n"
-		.. "Place it on your team's territory to keep your allies healthy nearby.\n"
-		.. core.colorize(
-			"yellow",
-			"Warning: breaking this block will result in its loss, so defend it wisely!"
-		),
+	description = S("Healing Block") .. "\n" .. S(
+		"A block that heals players within a 3-block radius."
+	) .. "\n" .. S(
+		"Place it on your team's territory to keep your allies healthy nearby."
+	) .. "\n" .. core.colorize(
+		"yellow",
+		S("Warning: breaking this block will result in its loss, so defend it wisely!")
+	),
 	drawtype = "nodebox",
 	node_box = {
 		type = "fixed",
@@ -32,7 +35,9 @@ core.register_node("ctf_healing:heal_block", {
 	drop = "",
 
 	on_place = function(itemstack, placer, pointed_thing)
-		if not placer then return end
+		if not placer then
+			return
+		end
 		local pteam = ctf_teams.get(placer)
 		if pteam then
 			if
@@ -43,7 +48,7 @@ core.register_node("ctf_healing:heal_block", {
 			then
 				hud_events.new(placer, {
 					quick = true,
-					text = "Healing block can only be placed on your team's area.",
+					text = S("Healing block can only be placed on your team's area."),
 					color = "warning",
 				})
 				return
@@ -55,7 +60,9 @@ core.register_node("ctf_healing:heal_block", {
 
 	after_place_node = function(pos, placer)
 		core.get_node_timer(pos):start(1)
-		if not placer then return end
+		if not placer then
+			return
+		end
 		local pteam = ctf_teams.get(placer)
 		if pteam then
 			core.get_meta(pos):set_string("team", pteam)
@@ -83,7 +90,9 @@ core.register_node("ctf_healing:heal_block", {
 	end,
 
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
-		if not digger or not digger:is_player() then return end
+		if not digger or not digger:is_player() then
+			return
+		end
 		---@cast digger PlayerRef
 		local block_team = oldmetadata.fields.team
 		local player_team = ctf_teams.get(digger)
@@ -107,9 +116,10 @@ core.register_node("ctf_healing:heal_block", {
 
 			hud_events.new(digger, {
 				quick = true,
-				text = "You destroyed enemy's healing block! (+"
-					.. break_reward
-					.. " points)",
+				text = S(
+					"You destroyed enemy's healing block! (+@1 points)",
+					break_reward
+				),
 				color = "success",
 			})
 		end

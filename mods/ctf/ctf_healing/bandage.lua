@@ -1,5 +1,7 @@
 --Inspired from Andrey's bandages mod
 
+local S = core.get_translator(core.get_current_modname())
+
 ctf_healing = {}
 
 function ctf_healing.register_bandage(name, def)
@@ -25,7 +27,7 @@ function ctf_healing.register_bandage(name, def)
 				if ctf_teams.get(pname) ~= ctf_teams.get(uname) then
 					hud_events.new(uname, {
 						quick = true,
-						text = pname .. " isn't in your team!",
+						text = S("@1 isn't in your team!", pname),
 						color = "warning",
 					})
 					return
@@ -37,7 +39,7 @@ function ctf_healing.register_bandage(name, def)
 				if hp <= 0 then
 					hud_events.new(uname, {
 						quick = true,
-						text = pname .. " is dead!",
+						text = S("@1 is dead!", pname),
 						color = "warning",
 					})
 					return
@@ -46,7 +48,7 @@ function ctf_healing.register_bandage(name, def)
 				if hp >= limit then
 					hud_events.new(uname, {
 						quick = true,
-						text = pname .. " already has " .. limit .. " HP!",
+						text = S("@1 already has @2 HP!", pname, limit),
 						color = "warning",
 					})
 					return
@@ -68,12 +70,12 @@ function ctf_healing.register_bandage(name, def)
 					object:set_hp(hp)
 					hud_events.new(pname, {
 						quick = true,
-						text = uname .. " healed you!",
+						text = S("@1 healed you!", uname),
 						color = 0xC1FF44,
 					})
 					hud_events.new(uname, {
 						quick = true,
-						text = "You healed " .. pname .. "!",
+						text = S("You healed @1!", pname),
 						color = 0xC1FF44,
 					})
 				elseif type(result) == "string" then
@@ -133,9 +135,12 @@ end
 
 local HEAL_PERCENT = 0.75
 ctf_healing.register_bandage("ctf_healing:bandage", {
-	description = "Bandage\nHeals teammates for 3-4 HP until target's HP is equal to "
-		.. HEAL_PERCENT * 100
-		.. "% of their maximum HP",
+	description = S("Bandage")
+		.. "\n"
+		.. S(
+			"Heals teammates for 3-4 HP until target's HP is equal to @1% of their maximum HP",
+			HEAL_PERCENT * 100
+		),
 	inventory_image = "ctf_healing_bandage.png",
 	heal_percent = HEAL_PERCENT,
 })
