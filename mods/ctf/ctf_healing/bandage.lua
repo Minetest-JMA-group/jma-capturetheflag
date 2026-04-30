@@ -4,6 +4,10 @@ local S = core.get_translator(core.get_current_modname())
 
 ctf_healing = {}
 
+--- @alias BandageDef { after_heal: fun(obj: ObjectRef, user: ObjectRef)?, description: string,
+--- heal_percent: number, inventory_image: string, inventory_overlay: string?,
+--- wield_image: string?, heal_max: number?, heal_min: number? }
+
 function ctf_healing.register_bandage(name, def)
 	local tooldef = {
 		description = def.description,
@@ -85,6 +89,7 @@ function ctf_healing.register_bandage(name, def)
 						color = "warning",
 					})
 				end
+				def.after_heal(object, player)
 			elseif pointed_thing.type == "node" then
 				local node_pointed = core.get_node(pointed_thing.under)
 				local node_above = core.get_node(pointed_thing.under:offset(0, 1, 0))
@@ -143,4 +148,78 @@ ctf_healing.register_bandage("ctf_healing:bandage", {
 		),
 	inventory_image = "ctf_healing_bandage.png",
 	heal_percent = HEAL_PERCENT,
+})
+
+local SUPER_BANDAGE_HEAL_RADIUS = 3
+
+--- @param pos1 Vector
+--- @param pos2 Vector
+local function generate_random_pos_inside(pos1, pos2)
+	local x = (math.random() * pos2.x) % pos2.x + pos1.x
+	local y = (math.random() * pos2.y) % pos2.y + pos1.y
+	local z = (math.random() * pos2.z) % pos2.z + pos1.z
+	return {
+		x = x,
+		y = y,
+		z = z,
+	}
+end
+
+--- @param pos1 Vector
+--- @param pos2 Vector
+local function spawn_heal_particles(pos1, pos2)
+	core.chat_send_all(core.serialize(pos1))
+	core.chat_send_all(core.serialize(pos2))
+	for i = 1, 200 do
+		local pos = generate_random_pos_inside(pos1, pos2)
+		core.add_particle({
+			pos = pos,
+			velocity = { x = 0, y = 0.2, z = 0 },
+			expiration = 3,
+			size = 128,
+			texture = "ctf_healing_healing_particle.png",
+			glow = 2,
+		})
+	end
+end
+
+ctf_healing.register_bandage("ctf_healing:super_bandage", {
+	description = S("Super Bandage")
+		.. "\n"
+		.. S(
+			"Heal your teammate for 5-6 HP to their full HP, while also healing nearby teammates by 1-2HP"
+		),
+	inventory_image = "ctf_healing_super_bandage.png",
+	heal_percent = 1.0,
+	heal_min = 5,
+	heal_max = 6,
+	after_heal = function(obj, user)
+		-- Also heal nearby teammates for a taxicab radius of 3
+		if not obj:is_player() then
+			return
+		end
+		local pos_center = obj:get_pos()
+		local radius = {
+			x = SUPER_BANDAGE_HEAL_RADIUS,
+			y = SUPER_BANDAGE_HEAL_RADIUS,
+			z = SUPER_BANDAGE_HEAL_RADIUS,
+		}
+		local pos1 = vector.subtract(pos_center, radius)
+		local pos2 = vector.add(pos_center, radius)
+		spawn_heal_particles(pos1, pos2)
+		local objs = core.get_objects_in_area(pos1, pos2)
+		local team = ctf_teams.get(obj:get_player_name())
+		for _, obj2 in ipairs(objs) do
+			local team2 = ctf_teams.get(obj2:get_player_name())
+			if obj2:is_player() and team2 == team then
+				local current_hp = obj2:get_hp()
+				local to_heal = 1
+				if math.random() > 0.5 then
+					to_heal = 2
+				end
+				obj2:set_hp(current_hp + to_heal)
+				ctf_combat_mode.add_healer(obj2, user, 5)
+			end
+		end
+	end,
 })
