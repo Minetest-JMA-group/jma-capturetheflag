@@ -143,7 +143,7 @@ ctf_settings.register("ctf_mode_classes:simple_support_activate", {
 })
 
 ctf_melee.simple_register_sword("ctf_mode_classes:knight_sword", {
-	description = "Knight Sword\n" .. core.colorize(
+	description = "Knight Sword\nDmg: 7 FR: 0.7\n" .. core.colorize(
 		"gold",
 		"(Sneak/Run) + Rightclick to use Rage ability (Lasts "
 			.. KNIGHT_USAGE_TIME
