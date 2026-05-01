@@ -18,6 +18,19 @@ core.register_node("ctf_map:ignore", {
 	groups = { immortal = 1, disable_suffocation = 1, barrier = 1, ignore = 1 },
 })
 
+core.register_node("ctf_map:air_placeholder", {
+	description = S(
+		"Map Air placeholder(to use as a placeholder for replacing nodes with it)"
+	),
+	drawtype = "airlike",
+	inventory_image = "air.png",
+	walkable = false,
+	diggable = false,
+	buildable_to = false,
+	pointable = false,
+	sunlight_propagates = true,
+})
+
 core.register_node("ctf_map:bright_air", {
 	description = S("Bright Air(for making the map full bright)"),
 	drawtype = "airlike",

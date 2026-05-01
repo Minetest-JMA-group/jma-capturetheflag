@@ -132,6 +132,11 @@ core.register_tool("ctf_map:adminpick", {
 	on_drop = function(itemstack, dropper)
 		return itemstack
 	end,
+	pointabilities = {
+		nodes = {
+			["ctf_map:air_placeholder"] = true,
+		},
+	},
 })
 
 core.register_privilege("ctf_map_editor", {
