@@ -40,8 +40,11 @@ local function process_ray(ray, user, look_dir, def)
 			then
 				if not core.is_protected(hitpoint.under, user:get_player_name()) then
 					if hitstats_exists then
-						hit_statistics.maybe_record_shot(user, "block_destroyed",
-							user:get_wielded_item():get_name())
+						hit_statistics.maybe_record_shot(
+							user,
+							"block_destroyed",
+							user:get_wielded_item():get_name()
+						)
 					end
 					if nodedef.on_ranged_shoot then
 						nodedef.on_ranged_shoot(hitpoint.under, node, user, def.type)
@@ -49,8 +52,11 @@ local function process_ray(ray, user, look_dir, def)
 						core.dig_node(hitpoint.under)
 					end
 				elseif hitstats_exists then
-					hit_statistics.maybe_record_shot(user, "none",
-						user:get_wielded_item():get_name())
+					hit_statistics.maybe_record_shot(
+						user,
+						"none",
+						user:get_wielded_item():get_name()
+					)
 				end
 
 				if def.type ~= "shotgun" then
@@ -88,14 +94,22 @@ local function process_ray(ray, user, look_dir, def)
 						texture = "ctf_ranged_bullethole.png",
 					})
 
-					if not rico_sent or vector.distance(rico_sent, hitpoint.intersection_point) > 10 then
+					if
+						not rico_sent
+						or vector.distance(rico_sent, hitpoint.intersection_point)
+							> 10
+					then
 						if not rico_sent then
-							core.after(0.2, function() rico_sent = nil end)
+							core.after(0.2, function()
+								rico_sent = nil
+							end)
 						end
 						rico_sent = hitpoint.intersection_point
 
-						core.sound_play("ctf_ranged_ricochet",
-							{ gain = 2.4, pos = hitpoint.intersection_point })
+						core.sound_play(
+							"ctf_ranged_ricochet",
+							{ gain = 2.4, pos = hitpoint.intersection_point }
+						)
 					end
 
 					if def.type ~= "shotgun" then
@@ -120,8 +134,11 @@ local function process_ray(ray, user, look_dir, def)
 					end
 
 					if hitstats_exists then
-						hit_statistics.maybe_record_shot(user, "bullethole",
-							user:get_wielded_item():get_name())
+						hit_statistics.maybe_record_shot(
+							user,
+							"bullethole",
+							user:get_wielded_item():get_name()
+						)
 					end
 				elseif nodedef.groups.liquid then
 					if def.type ~= "shotgun" then
@@ -165,16 +182,22 @@ local function process_ray(ray, user, look_dir, def)
 			end
 		elseif hitpoint.type == "object" then
 			local victim_name = hitpoint.ref:get_player_name()
-			local is_friend = ctf_teams.get(victim_name) ==
-			ctf_teams.get(user:get_player_name())
+			local is_friend = ctf_teams.get(victim_name)
+				== ctf_teams.get(user:get_player_name())
 
 			if hitstats_exists then
 				if is_friend then
-					hit_statistics.maybe_record_shot(user, "teammate",
-						user:get_wielded_item():get_name())
+					hit_statistics.maybe_record_shot(
+						user,
+						"teammate",
+						user:get_wielded_item():get_name()
+					)
 				else
-					hit_statistics.maybe_record_shot(user, "enemy",
-						user:get_wielded_item():get_name())
+					hit_statistics.maybe_record_shot(
+						user,
+						"enemy",
+						user:get_wielded_item():get_name()
+					)
 				end
 			end
 			local name = user:get_player_name()
@@ -185,7 +208,9 @@ local function process_ray(ray, user, look_dir, def)
 
 			if not hit_sent[name] then
 				hit_sent[name] = true
-				core.after(0.6, function() hit_sent[name] = nil end)
+				core.after(0.6, function()
+					hit_sent[name] = nil
+				end)
 				core.sound_play("ctf_ranged_hit", {
 					to_player = name,
 				})
@@ -197,8 +222,11 @@ local function process_ray(ray, user, look_dir, def)
 				gain = 0.9,
 			}, true)
 		elseif hitstats_exists then
-			hit_statistics.maybe_record_shot(user, "none",
-				user:get_wielded_item():get_name())
+			hit_statistics.maybe_record_shot(
+				user,
+				"none",
+				user:get_wielded_item():get_name()
+			)
 		end
 	elseif hitstats_exists then
 		hit_statistics.maybe_record_shot(user, "none", user:get_wielded_item():get_name())
@@ -275,7 +303,7 @@ function ctf_ranged.simple_register_gun(name, def)
 			else
 				def.bullet = {
 					texture = "ctf_ranged_bullet.png^[colorize:#FFDB4C:255",
-					glow = 14
+					glow = 14,
 				}
 			end
 
@@ -352,6 +380,25 @@ function ctf_ranged.show_shoulder_scope(name, item_name, fov_mult)
 	local player = core.get_player_by_name(name)
 	if not player then
 		return
+	end
+	local item_range = core.registered_items[item_name].range or 4
+	local pos = player:get_pos()
+	local look_dir = player:get_look_dir()
+	local ray = core.raycast(pos, vector.add(pos, item_range), true)
+	for pointed_thing in ray do
+		local ppos = nil
+		if pointed_thing.type == "node" then
+			ppos = pointed_thing.under
+		elseif pointed_thing.type == "object" then
+			ppos = pointed_thing.ref:get_pos()
+		end
+		if not ppos then
+			if vector.dist(pos, ppos) <= item_range then
+				return
+			else
+				break
+			end
+		end
 	end
 
 	scoped[name] = {
