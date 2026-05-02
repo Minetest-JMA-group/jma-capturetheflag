@@ -218,7 +218,7 @@ core.register_tool("default:shovel_diamond", {
 --
 
 core.register_tool("default:axe_wood", {
-	description = S("Wooden Axe\nDmg: 2 FR: 1.0s"),
+	description = S("Wooden Axe@nDmg: 2 FR: 1.0s"),
 	inventory_image = "default_tool_woodaxe.png",
 	tool_capabilities = {
 		full_punch_interval = 1.0,
@@ -233,7 +233,7 @@ core.register_tool("default:axe_wood", {
 })
 
 core.register_tool("default:axe_stone", {
-	description = S("Stone Axe\nDmg: 3 FR: 1.2s"),
+	description = S("Stone Axe@nDmg: 3 FR: 1.2s"),
 	inventory_image = "default_tool_stoneaxe.png",
 	tool_capabilities = {
 		full_punch_interval = 1.2,
@@ -248,7 +248,7 @@ core.register_tool("default:axe_stone", {
 })
 
 core.register_tool("default:axe_bronze", {
-	description = S("Bronze Axe\nDmg: 4 FR: 1.0s"),
+	description = S("Bronze Axe@nDmg: 4 FR: 1.0s"),
 	inventory_image = "default_tool_bronzeaxe.png",
 	tool_capabilities = {
 		full_punch_interval = 1.0,
@@ -263,7 +263,7 @@ core.register_tool("default:axe_bronze", {
 })
 
 core.register_tool("default:axe_steel", {
-	description = S("Steel Axe\nDmg: 4 FR: 1.0s"),
+	description = S("Steel Axe@nDmg: 4 FR: 1.0s"),
 	inventory_image = "default_tool_steelaxe.png",
 	tool_capabilities = {
 		full_punch_interval = 1.0,
@@ -278,7 +278,7 @@ core.register_tool("default:axe_steel", {
 })
 
 core.register_tool("default:axe_mese", {
-	description = S("Mese Axe\nDmg: 6 FR: 0.9s"),
+	description = S("Mese Axe@nDmg: 6 FR: 0.9s"),
 	inventory_image = "default_tool_meseaxe.png",
 	tool_capabilities = {
 		full_punch_interval = 0.9,
@@ -293,7 +293,7 @@ core.register_tool("default:axe_mese", {
 })
 
 core.register_tool("default:axe_diamond", {
-	description = S("Diamond Axe\nDmg: 7 FR: 0.9s"),
+	description = S("Diamond Axe@nDmg: 7 FR: 0.9s"),
 	inventory_image = "default_tool_diamondaxe.png",
 	tool_capabilities = {
 		full_punch_interval = 0.9,
@@ -312,7 +312,7 @@ core.register_tool("default:axe_diamond", {
 --
 
 core.register_tool("default:sword_wood", {
-	description = S("Wooden Sword\nDmg: 2 FR: 1.0s"),
+	description = S("Wooden Sword@nDmg: 2 FR: 1.0s"),
 	inventory_image = "default_tool_woodsword.png",
 	tool_capabilities = {
 		full_punch_interval = 1,
@@ -327,7 +327,7 @@ core.register_tool("default:sword_wood", {
 })
 
 core.register_tool("default:sword_stone", {
-	description = S("Stone Sword\nDmg: 4 FR: 1.2s"),
+	description = S("Stone Sword@nDmg: 4 FR: 1.2s"),
 	inventory_image = "default_tool_stonesword.png",
 	tool_capabilities = {
 		full_punch_interval = 1.2,
@@ -342,7 +342,7 @@ core.register_tool("default:sword_stone", {
 })
 
 core.register_tool("default:sword_bronze", {
-	description = S("Bronze Sword\nDmg: 6 FR: 0.8s"),
+	description = S("Bronze Sword@nDmg: 6 FR: 0.8s"),
 	inventory_image = "default_tool_bronzesword.png",
 	tool_capabilities = {
 		full_punch_interval = 0.8,
@@ -357,7 +357,7 @@ core.register_tool("default:sword_bronze", {
 })
 
 core.register_tool("default:sword_steel", {
-	description = S("Steel Sword\nDmg: 6 FR: 0.8s"),
+	description = S("Steel Sword@nDmg: 6 FR: 0.8s"),
 	inventory_image = "default_tool_steelsword.png",
 	tool_capabilities = {
 		full_punch_interval = 0.8,
@@ -372,7 +372,7 @@ core.register_tool("default:sword_steel", {
 })
 
 core.register_tool("default:sword_mese", {
-	description = S("Mese Sword\nDmg: 7 FR: 0.7s"),
+	description = S("Mese Sword@nDmg: 7 FR: 0.7s"),
 	inventory_image = "default_tool_mesesword.png",
 	tool_capabilities = {
 		full_punch_interval = 0.7,
@@ -387,7 +387,7 @@ core.register_tool("default:sword_mese", {
 })
 
 core.register_tool("default:sword_diamond", {
-	description = S("Diamond Sword\nDmg: 8 FR: 0.7s"),
+	description = S("Diamond Sword@nDmg: 8 FR: 0.7s"),
 	inventory_image = "default_tool_diamondsword.png",
 	tool_capabilities = {
 		full_punch_interval = 0.7,
