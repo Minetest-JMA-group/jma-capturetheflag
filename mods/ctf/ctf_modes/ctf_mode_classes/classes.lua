@@ -241,7 +241,7 @@ ctf_ranged.simple_register_gun("ctf_mode_classes:ranged_rifle", {
 	fire_sound = "ctf_ranged_rifle",
 	rounds = 0,
 	range = 150,
-	on_use = ctf_ranged.on_damage_gun_use(5),
+	on_use = ctf_ranged.on_hp_change_gun_use(-5),
 	fire_interval = 0.8,
 	liquid_travel_dist = 4,
 	rightclick_func = function(itemstack, user, pointed)
