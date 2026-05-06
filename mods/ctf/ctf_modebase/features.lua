@@ -34,6 +34,8 @@ local default_item_value = {
 	["default:axe_steel"] = 1,
 	["default:shovel_mese"] = 1,
 	["ctf_ranged:pistol"] = 1,
+	["ctf_ranged:desert_eagle"] = 10,
+	["ctf_ranged:desert_eagle_loaded"] = 10,
 }
 ctf_core.testing = {
 	-- This is here temporarily, I'm modifying it with //lua and a code minimizer on the main server-
@@ -138,10 +140,8 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 			nametag_players[n] = nil
 			goto continue
 		end
-		local setting = ctf_settings.get(
-			player_obj,
-			"ctf_modebase:teammate_nametag_style"
-		)
+		local setting =
+			ctf_settings.get(player_obj, "ctf_modebase:teammate_nametag_style")
 
 		if setting == "3" then
 			nametag_players[n] = nil
@@ -293,11 +293,10 @@ local function flag_event_notify(
 
 	local function send_notify(target, def)
 		local player_obj = PlayerObj(target)
-		if not player_obj then return end
-		if
-			ctf_settings.get(player_obj, "ctf_modebase:flag_notifications")
-			== "true"
-		then
+		if not player_obj then
+			return
+		end
+		if ctf_settings.get(player_obj, "ctf_modebase:flag_notifications") == "true" then
 			hud_events.new(target, def)
 		end
 	end
@@ -768,7 +767,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					core.log("action", player:get_player_name() .. " detached")
 				end
 				if player.set_camera then
-					player:set_camera({mode = "any"})
+					player:set_camera({ mode = "any" })
 				end
 			end
 
@@ -1030,7 +1029,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		on_flag_take = function(player, teamname)
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(player)
-			if not pteam then return end
+			if not pteam then
+				return
+			end
 			local tcolor = ctf_teams.team[pteam].color
 
 			ctf_modebase.remove_immunity(player)
@@ -1170,7 +1171,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				),
 				color = "success",
 			}, { text = S("@1 has captured your flag!", pname), color = "warning" }, {
-				text = S("@1 has captured: @2 @3!", pname, teamnames_readable, flag_or_flags),
+				text = S(
+					"@1 has captured: @2 @3!",
+					pname,
+					teamnames_readable,
+					flag_or_flags
+				),
 				color = "light",
 			})
 
