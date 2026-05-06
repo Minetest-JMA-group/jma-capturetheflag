@@ -1,7 +1,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 -- Copyright (c) 2024 Ivan Shkatov (Maintainer_) ivanskatov672@gmail.com
 
-local BREAK_REWARD_PER_HP = 0.1
+local BREAK_REWARD_PER_HP = 0.3
 local HEAL_DIG_REWARD_BASE = 20
 
 local S = core.get_translator(core.get_current_modname())
