@@ -4,3 +4,6 @@ LoneWolfHT, CC-BY 4.0
 
 Stuart Jones - CC0 1.0 Universal (CC0 1.0)
 	* All the other textures in the folder
+
+ctf_ranged_desert_eagle.png is from https://github.com/daviddoesminetest/rangedweapons
+under CC-BY-SA 4.0

@@ -1,0 +1,16 @@
+Code is under LGPLv2.1. As of 5 May 2026,
+according to git blame, code owners are as follows:
+
+
+ - Farooq Karimi Zadeh
+ - LoneWolfHT
+ - Marko Petrović
+ - Nanowolf4
+ - Rithvik Ballari
+ - Zardshard
+ - olliy
+ - savilli
+
+The order is according to ASCII codes as recognized by Unix "sort".
+
+Licence of textures and sounds are specified in their respective directories.

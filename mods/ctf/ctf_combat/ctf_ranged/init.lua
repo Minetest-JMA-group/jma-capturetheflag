@@ -580,6 +580,19 @@ ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
 	on_use = ctf_ranged.on_damage_gun_use(2),
 })
 
+ctf_ranged.simple_register_gun("ctf_ranged:desert_eagle", {
+	type = "pistol",
+	description = "Desert Eagle\nDmg: 8 | FR: 2s | Mag: 14",
+	texture = "ctf_ranged_desert_eagle.png",
+	fire_sound = "ctf_ranged_desert_eagle",
+	rounds = 14,
+	range = 12,
+	automatic = true,
+	fire_interval = 2,
+	liquid_travel_dist = 8,
+	on_use = ctf_ranged.on_damage_gun_use(10),
+})
+
 ctf_ranged.simple_register_gun("ctf_ranged:rifle", {
 	type = "rifle",
 	description = "Rifle\nDmg: 1 | FR: 0.8s | Mag: 40",
