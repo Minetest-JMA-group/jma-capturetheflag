@@ -16,6 +16,7 @@ local class_props = {
 			"ctf_mode_classes:knight_sword",
 		},
 		disallowed_items = {
+			"ctf_healing:healing_pistol",
 			"ctf_ranged:rifle",
 			"ctf_ranged:assault_rifle",
 			"ctf_ranged:sniper_magnum",
@@ -53,6 +54,7 @@ local class_props = {
 		},
 		disallowed_items = {
 			"ctf_melee:",
+			"ctf_healing:healing_pistol",
 		},
 		disallowed_items_textures = {
 			["ctf_melee:"] = "default_tool_steelsword.png^ctf_modebase_group.png",
