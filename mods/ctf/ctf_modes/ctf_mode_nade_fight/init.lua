@@ -77,6 +77,7 @@ ctf_modebase.register_mode("nade_fight", {
 		["ctf_ranged:rifle_loaded"] = { rarity = 0.2 },
 		["ctf_ranged:shotgun_loaded"] = { rarity = 0.05 },
 		["ctf_ranged:assault_rifle_loaded"] = { rarity = 0.05 },
+		["ctf_ranged:desert_eagle_loaded"] = { rarity = 0.05 },
 
 		["ctf_map:unwalkable_dirt"] = {
 			min_count = 5,

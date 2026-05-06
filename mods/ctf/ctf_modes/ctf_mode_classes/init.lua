@@ -69,6 +69,7 @@ ctf_modebase.register_mode("classes", {
 
 		["ctf_ranged:pistol_loaded"] = { rarity = 0.2, max_stacks = 2 },
 		["ctf_ranged:shotgun_loaded"] = { rarity = 0.05 },
+		["ctf_ranged:desert_eagle_loaded"] = { rarity = 0.05 },
 		["ctf_ranged:assault_rifle_loaded"] = { rarity = 0.05 },
 		["ctf_ranged:sniper_magnum_loaded"] = { rarity = 0.05 },
 
