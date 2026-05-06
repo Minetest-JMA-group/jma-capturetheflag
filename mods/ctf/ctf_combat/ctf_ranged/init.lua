@@ -442,6 +442,24 @@ function ctf_ranged.show_shoulder_scope(name, item_name, fov_mult)
 	if not player then
 		return
 	end
+	local item_range = core.registered_items[item_name].range or 4
+	local pos = player:get_pos()
+	local ray = core.raycast(pos, vector.add(pos, item_range), true)
+	for pointed_thing in ray do
+		local ppos = nil
+		if pointed_thing.type == "node" then
+			ppos = pointed_thing.under
+		elseif pointed_thing.type == "object" then
+			ppos = pointed_thing.ref:get_pos()
+		end
+		if not ppos then
+			if vector.dist(pos, ppos) <= item_range then
+				return
+			else
+				break
+			end
+		end
+	end
 
 	scoped[name] = {
 		item_name = item_name,
