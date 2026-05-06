@@ -218,7 +218,7 @@ local function change_hp(hitpoint, shooter, gundef, look_dir, amount)
 		else
 			local current_hp = ref:get_hp()
 			ref:set_hp(current_hp + amount)
-			ctf_combat_mode.add_healer(ref, shooter, 1)
+			ctf_combat_mode.add_healer(ref, shooter, 60)
 		end
 	end
 end
