@@ -19,6 +19,7 @@ local class_props = {
 			"ctf_ranged:rifle",
 			"ctf_ranged:assault_rifle",
 			"ctf_ranged:sniper_magnum",
+			"ctf_ranged:desert_eagle",
 		},
 	},
 	support = {
@@ -36,6 +37,7 @@ local class_props = {
 			"ctf_ranged:shotgun",
 			"ctf_melee:",
 			"ctf_ranged:sniper_magnum",
+			"ctf_ranged:desert_eagle",
 		},
 		disallowed_items_textures = {
 			["ctf_melee:"] = "default_tool_steelsword.png^ctf_modebase_group.png",
