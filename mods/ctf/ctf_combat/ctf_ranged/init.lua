@@ -520,7 +520,6 @@ function ctf_ranged.on_damage_gun_use(damage)
 			end,
 			--- @type OnHitCallback
 			on_enemy_hit = function(hitpoint, prev_hitpoint, shooter, look_dir, def, _)
-				counter = counter + 1
 				change_hp(hitpoint, shooter, def, look_dir, -damage)
 			end,
 		}
