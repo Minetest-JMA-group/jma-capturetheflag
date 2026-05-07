@@ -1,6 +1,5 @@
 
-ctf_ranged_healing_pistol.png is from https://codeberg.org/Themostrandom. All rights are reserved
-and permission has been granted to be used in JMA CTF
+ctf_ranged_healing_pistol.png is from https://codeberg.org/Themostrandom under CC-BY 4.0
 
 ctf_ranged_healing_ammo.png is from Farooq Karimi Zadeh <fkz riseup dot net>
 under CC-BY 4.0 or later
