@@ -697,7 +697,9 @@ ctf_api.register_on_match_end(function()
 end)
 
 core.register_on_leaveplayer(function(player, timed_out)
-	minigun_exit_shooting_mode(player)
+	if minigun_is_in_shooting(player) then
+		minigun_exit_shooting_mode(player)
+	end
 end)
 
 ctf_ranged.simple_register_gun("ctf_ranged:minigun", {
