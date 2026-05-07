@@ -285,6 +285,7 @@ end
 --- @alias OnHitCallbacks { on_teammate_hit: OnHitCallback, on_enemy_hit: OnHitCallback }
 --- @alias OnHitCallback fun(hitpoint: HitPoint, prev_hitpoint: HitPoint?, shooter: ObjectRef, look_dir: Vector, def: GunDef, callbacks: OnHitCallbacks?): boolean
 --- @alias OnUseCallback fun(bulletcast: any, shooter: ObjectRef, look_dir: Vector, def: GunDef)
+--- @alias CanUseCallback fun(itemstack: string, shooter: ObjectRef): boolean
 --- @alias GunDef {
 --- ammo: ItemString,
 --- texture: string,
@@ -304,6 +305,7 @@ end
 ---	automatic: boolean?,
 ---	rightclick_func: fun(itemstack: string, user: ObjectRef, Pointed: any, ...),
 ---	liquid_travel_dist: number?,
+---	can_use: CanUseCallback?,
 --- on_use:  OnUseCallback}
 
 --- @param name string
@@ -345,6 +347,9 @@ function ctf_ranged.simple_register_gun(name, def)
 		loaded_def.groups.not_in_creative_inventory = nil
 		loaded_def.on_secondary_use = def.on_secondary_use
 		loaded_def.on_use = function(itemstack, user)
+			if def.can_use and def.can_use(itemstack, user) == false then
+				return
+			end
 			if not ctf_ranged.can_use_gun(user, name) then
 				core.sound_play("ctf_ranged_click", { pos = user:get_pos() }, true)
 				return
@@ -652,6 +657,79 @@ ctf_ranged.simple_register_gun("ctf_ranged:assault_rifle", {
 			local item_name = itemstack:get_name()
 			ctf_ranged.show_shoulder_scope(user:get_player_name(), item_name, 2)
 		end
+	end,
+})
+
+--- @alias PlayerPhysics table
+
+local SPEED_MULTIPLIER_WHILE_MINIGUN = 0.1
+local MINIGUN_MODE_CHANGE_DELAY = 0.2
+
+--- @type { [PlayerName]: PlayerPhysics }
+local minigun_mode_table = {}
+
+--- @param player ObjectRef
+local function minigun_enter_shooting_mode(player)
+	minigun_mode_table[player:get_player_name()] = player:get_physics_override()
+	player:set_physics_override({ speed = SPEED_MULTIPLIER_WHILE_MINIGUN })
+end
+
+--- @param player ObjectRef
+local function minigun_exit_shooting_mode(player)
+	local pname = player:get_player_name()
+	player:set_physics_override(minigun_mode_table[pname])
+	minigun_mode_table[pname] = nil
+end
+
+--- @param player ObjectRef
+--- @return boolean
+local function minigun_is_in_shooting(player)
+	return minigun_mode_table[player:get_player_name()] ~= nil
+end
+
+ctf_api.register_on_match_end(function()
+	for pname, _ in pairs(minigun_mode_table) do
+		local player = core.get_player_by_name(pname)
+		if player then
+			minigun_exit_shooting_mode(player)
+		end
+	end
+end)
+
+core.register_on_leaveplayer(function(player, timed_out)
+	minigun_exit_shooting_mode(player)
+end)
+
+ctf_ranged.simple_register_gun("ctf_ranged:minigun", {
+	type = "minigun",
+	description = "Mini-gun\nDmg: 4 | FR: 0.07s | Mag: 100\nRightclick to enter/exit shooting mode",
+	texture = "ctf_ranged_minigun.png",
+	fire_sound = "ctf_ranged_minigun",
+	bullet = {
+		spread = 2.5,
+	},
+	automatic = true,
+	rounds = 100,
+	range = 100,
+	ammo = "ctf_ranged:ammo 4",
+	can_use = function(itemstack, shooter)
+		return minigun_is_in_shooting(shooter)
+	end,
+	on_use = function(rays, shooter, look_dir, def)
+		if minigun_is_in_shooting(shooter) then
+			ctf_ranged.on_hp_change_gun_use(-4)(rays, shooter, look_dir, def)
+		end
+	end,
+	fire_interval = 0.07,
+	liquid_travel_dist = 20,
+	rightclick_func = function(itemstack, user, pointed, ...)
+		core.after(MINIGUN_MODE_CHANGE_DELAY, function(user2)
+			if minigun_is_in_shooting(user2) then
+				minigun_exit_shooting_mode(user2)
+			else
+				minigun_enter_shooting_mode(user2)
+			end
+		end, user)
 	end,
 })
 
