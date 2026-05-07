@@ -16,6 +16,7 @@ local class_props = {
 			"ctf_mode_classes:knight_sword",
 		},
 		disallowed_items = {
+			"ctf_healing:healing_pistol",
 			"ctf_ranged:rifle",
 			"ctf_ranged:assault_rifle",
 			"ctf_ranged:sniper_magnum",
@@ -53,6 +54,7 @@ local class_props = {
 		},
 		disallowed_items = {
 			"ctf_melee:",
+			"ctf_healing:healing_pistol",
 		},
 		disallowed_items_textures = {
 			["ctf_melee:"] = "default_tool_steelsword.png^ctf_modebase_group.png",
@@ -241,7 +243,7 @@ ctf_ranged.simple_register_gun("ctf_mode_classes:ranged_rifle", {
 	fire_sound = "ctf_ranged_rifle",
 	rounds = 0,
 	range = 150,
-	on_use = ctf_ranged.on_damage_gun_use(5),
+	on_use = ctf_ranged.on_hp_change_gun_use(-5),
 	fire_interval = 0.8,
 	liquid_travel_dist = 4,
 	rightclick_func = function(itemstack, user, pointed)

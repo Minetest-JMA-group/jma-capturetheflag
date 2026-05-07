@@ -26,6 +26,7 @@ local default_item_value = {
 	["ctf_ranged:rifle"] = 4,
 	["ctf_ranged:smg"] = 4,
 	["ctf_healing:bandage"] = 4,
+	["ctf_healing:healing_pistol"] = 4,
 	["default:shovel_diamond"] = 4,
 	["grenades:smoke"] = 2,
 	["ctf_ranged:pistol_loaded"] = 2,

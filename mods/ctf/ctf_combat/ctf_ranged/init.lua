@@ -218,7 +218,7 @@ local function change_hp(hitpoint, shooter, gundef, look_dir, amount)
 		else
 			local current_hp = ref:get_hp()
 			ref:set_hp(current_hp + amount)
-			ctf_combat_mode.add_healer(ref, shooter, 1)
+			ctf_combat_mode.add_healer(ref, shooter, 60)
 		end
 	end
 end
@@ -503,10 +503,10 @@ end
 --- @param look_dir Vector
 function ctf_ranged.count_heal_for_meat_shield(hitpoint, shooter, gundef, look_dir) end
 
---- @param damage number
-function ctf_ranged.on_damage_gun_use(damage)
+--- @param amount number
+function ctf_ranged.on_hp_change_gun_use(amount)
 	--- @type OnUseCallback
-	local function on_damage_callback_inner(rays, shooter, look_dir, def)
+	local function callback_inner(rays, shooter, look_dir, def)
 		local callbacks = {
 			--- @type OnHitCallback
 			on_teammate_hit = function(
@@ -517,10 +517,15 @@ function ctf_ranged.on_damage_gun_use(damage)
 				def,
 				_
 			)
+				if amount > 0 then
+					change_hp(hitpoint, shooter, def, look_dir, amount)
+				end
 			end,
 			--- @type OnHitCallback
 			on_enemy_hit = function(hitpoint, prev_hitpoint, shooter, look_dir, def, _)
-				change_hp(hitpoint, shooter, def, look_dir, -damage)
+				if amount < 0 then
+					change_hp(hitpoint, shooter, def, look_dir, amount)
+				end
 			end,
 		}
 		--- @type HitPoint?
@@ -556,7 +561,7 @@ function ctf_ranged.on_damage_gun_use(damage)
 			prev_hitpoint = hitpoint
 		end
 	end
-	return on_damage_callback_inner
+	return callback_inner
 end
 
 ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
@@ -577,7 +582,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
 			ctf_ranged.show_shoulder_scope(user:get_player_name(), item_name, 2)
 		end
 	end,
-	on_use = ctf_ranged.on_damage_gun_use(2),
+	on_use = ctf_ranged.on_hp_change_gun_use(-2),
 })
 
 ctf_ranged.simple_register_gun("ctf_ranged:desert_eagle", {
@@ -590,7 +595,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:desert_eagle", {
 	automatic = true,
 	fire_interval = 2,
 	liquid_travel_dist = 8,
-	on_use = ctf_ranged.on_damage_gun_use(10),
+	on_use = ctf_ranged.on_hp_change_gun_use(-10),
 })
 
 ctf_ranged.simple_register_gun("ctf_ranged:rifle", {
@@ -600,7 +605,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:rifle", {
 	fire_sound = "ctf_ranged_rifle",
 	rounds = 40,
 	range = 150,
-	on_use = ctf_ranged.on_damage_gun_use(4),
+	on_use = ctf_ranged.on_hp_change_gun_use(-4),
 	automatic = true,
 	fire_interval = 0.8,
 	liquid_travel_dist = 4,
@@ -617,7 +622,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:shotgun", {
 	},
 	rounds = 10,
 	range = 24,
-	on_use = ctf_ranged.on_damage_gun_use(1),
+	on_use = ctf_ranged.on_hp_change_gun_use(-1),
 	fire_interval = 2,
 })
 
@@ -632,7 +637,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:assault_rifle", {
 	automatic = true,
 	rounds = 35,
 	range = 89,
-	on_use = ctf_ranged.on_damage_gun_use(2),
+	on_use = ctf_ranged.on_hp_change_gun_use(-2),
 	fire_interval = 0.1,
 	liquid_travel_dist = 3,
 	rightclick_func = function(itemstack, user, pointed, ...)
@@ -652,7 +657,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper", {
 	fire_sound = "ctf_ranged_sniper",
 	rounds = 25,
 	range = 300,
-	on_use = ctf_ranged.on_damage_gun_use(12),
+	on_use = ctf_ranged.on_hp_change_gun_use(-12),
 	fire_interval = 2,
 	liquid_travel_dist = 10,
 	rightclick_func = function(itemstack, user, pointed, ...)
@@ -672,7 +677,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
 	fire_sound = "ctf_ranged_sniper",
 	rounds = 20,
 	range = 400,
-	on_use = ctf_ranged.on_damage_gun_use(16),
+	on_use = ctf_ranged.on_hp_change_gun_use(-16),
 	fire_interval = 2,
 	liquid_travel_dist = 15,
 	rightclick_func = function(itemstack, user, pointed, ...)
