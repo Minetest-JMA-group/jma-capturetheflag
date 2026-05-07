@@ -23,5 +23,5 @@ License Sounds: freesound.org
 - `sniper_rifles_rifle.ogg` (`CC0 1.0`)
   - Converted from [Battle Rifle.wav](https://freesound.org/people/morganpurkis/sounds/391725/) by [morganpurkis](https://freesound.org/people/morganpurkishttps://freesound.org/people/morganpurkis/sounds/391725/).
 
- - ctf_ranged_desert_eagle.ogg is under CC-BY-SA 4.0. The sound is from rangedweapons
-   mods(https://github.com/daviddoesminetest/rangedweapons)
+ - ctf_ranged_desert_eagle.ogg and ctf_ranged_minigun.ogg are under CC-BY-SA 4.0. The sounds are from rangedweapons
+   mod(https://github.com/daviddoesminetest/rangedweapons)
