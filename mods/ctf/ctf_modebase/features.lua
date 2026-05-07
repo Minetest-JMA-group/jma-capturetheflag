@@ -37,6 +37,7 @@ local default_item_value = {
 	["ctf_ranged:pistol"] = 1,
 	["ctf_ranged:desert_eagle"] = 10,
 	["ctf_ranged:desert_eagle_loaded"] = 10,
+	["ctf_ranged:minigun"] = 12,
 }
 ctf_core.testing = {
 	-- This is here temporarily, I'm modifying it with //lua and a code minimizer on the main server-
