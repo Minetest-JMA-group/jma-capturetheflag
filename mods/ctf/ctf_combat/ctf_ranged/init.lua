@@ -231,9 +231,14 @@ local function on_hit(hitpoint, prev_hitpoint, shooter, look_dir, def, callbacks
 	if hitpoint.type == "object" and hitpoint.ref then
 		local ref = hitpoint.ref
 		local victim_name = ref:get_player_name()
+		local victim_team = ctf_teams.get(victim_name)
+		local shooter_team = ctf_teams.get(shooter:get_player_name())
 
-		local is_friend = ctf_teams.get(victim_name)
-			== ctf_teams.get(shooter:get_player_name())
+		local is_friend = (victim_team == shooter_team)
+			and victim_team ~= nil
+			and shooter_team ~= nil
+		-- ^ The nil check is there, because when players are in Elysium, both of
+		-- them haven't got a team
 
 		if hitstats_exists then
 			if is_friend then
