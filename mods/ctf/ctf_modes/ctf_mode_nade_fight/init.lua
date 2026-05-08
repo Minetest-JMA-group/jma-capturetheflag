@@ -81,7 +81,7 @@ ctf_modebase.register_mode("nade_fight", {
 		["ctf_ranged:minigun_loaded"] = { rarity = 0.05 },
 
 		["ctf_healing:healing_pistol"] = {
-			rarity = 0.01,
+			rarity = 0.05,
 			max_stacks = 2,
 		},
 		["ctf_healing:ammo"] = {
