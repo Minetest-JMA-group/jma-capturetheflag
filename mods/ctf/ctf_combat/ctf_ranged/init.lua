@@ -670,8 +670,12 @@ local minigun_mode_table = {}
 
 --- @param player ObjectRef
 local function minigun_enter_shooting_mode(player)
-	minigun_mode_table[player:get_player_name()] = player:get_physics_override()
+	local pname = player:get_player_name()
+	minigun_mode_table[pname] = player:get_physics_override()
 	player:set_physics_override({ speed = SPEED_MULTIPLIER_WHILE_MINIGUN })
+	if sprint then
+		sprint.disable_for_player(pname)
+	end
 end
 
 --- @param player ObjectRef
@@ -679,6 +683,9 @@ local function minigun_exit_shooting_mode(player)
 	local pname = player:get_player_name()
 	player:set_physics_override(minigun_mode_table[pname])
 	minigun_mode_table[pname] = nil
+	if sprint then
+		sprint.enable_for_player(pname)
+	end
 end
 
 --- @param player ObjectRef
