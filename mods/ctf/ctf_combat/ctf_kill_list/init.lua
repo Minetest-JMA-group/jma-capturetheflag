@@ -34,6 +34,12 @@ local HUD_DEFINITIONS = {
 local kill_list = {}
 local player_settings = {}
 
+--- @param image string
+--- @return string
+local function resize_texture_to_16px(image)
+	return image .. "^[resize:16x16"
+end
+
 local image_scale_map = ctf_settings.settings["ctf_kill_list:tp_size"].image_scale_map
 local function update_kill_list_hud(player)
 	local player_name = PlayerName(player)
@@ -56,7 +62,7 @@ local function update_kill_list_hud(player)
 			if new then
 				if phud then
 					hud:change(player, hname, {
-						text = (new[i].text or new[i].image),
+						text = (new[i].text or resize_texture_to_16px(new[i].image)),
 						image_scale = img_scale,
 						color = new[i].color or 0xFFFFFF,
 					})
@@ -64,7 +70,7 @@ local function update_kill_list_hud(player)
 					local newhud = table.copy(HUD_DEFINITIONS[i])
 
 					newhud.offset.y = -(idx - 1) * HUD_LINE_HEIGHT
-					newhud.text = new[i].text or new[i].image
+					newhud.text = new[i].text or resize_texture_to_16px(new[i].image)
 					newhud.image_scale = img_scale
 					newhud.color = new[i].color or 0xFFFFFF
 					hud:add(player, hname, newhud)
