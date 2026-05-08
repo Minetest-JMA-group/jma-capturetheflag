@@ -11,6 +11,9 @@ local MIN_SPRINT = tonumber(core.settings:get("sprint_min") or 0.5)
 
 local players = {}
 
+--- @type { [PlayerName]: boolean }
+local disabled_ones = {}
+
 local HUDBAR_REGISTERED
 
 local function use_hudbars(player)
@@ -66,38 +69,50 @@ function sprint.get_sprint_info(name)
 	return players[name]
 end
 
+--- @param pname PlayerName
+function sprint.disable_for_player(pname)
+	disabled_ones[pname] = true
+end
+
+--- @param pname PlayerName
+function sprint.enable_for_player(pname)
+	disabled_ones[pname] = false
+end
+
 core.register_globalstep(function(dtime)
 	for name, info in pairs(players) do
-		local player = core.get_player_by_name(name)
-		--Check if the player should be sprinting
-		local controls = player:get_player_control()
-		local sprintRequested = controls.aux1
-			and (controls.up or controls.jump or (controls.sneak and controls.down))
+		if not disabled_ones[name] then
+			local player = core.get_player_by_name(name)
+			--Check if the player should be sprinting
+			local controls = player:get_player_control()
+			local sprintRequested = controls.aux1
+				and (controls.up or controls.jump or (controls.sneak and controls.down))
 
-		if sprintRequested and info.stamina > MIN_SPRINT then
-			if not info.sprinting then
-				info.sprinting = true
-				setSprinting(player, true)
-			end
-		else
-			if info.sprinting then
-				info.sprinting = false
-				setSprinting(player, false)
-			end
-		end
-
-		if sprintRequested then
-			if info.stamina > 0 then
-				info.stamina = info.stamina - dtime
-				if info.stamina < 0 then
-					info.stamina = 0
+			if sprintRequested and info.stamina > MIN_SPRINT then
+				if not info.sprinting then
+					info.sprinting = true
+					setSprinting(player, true)
 				end
-				updateHud(player, info)
+			else
+				if info.sprinting then
+					info.sprinting = false
+					setSprinting(player, false)
+				end
 			end
-		else
-			if info.stamina < STAMINA_MAX then
-				info.stamina = info.stamina + dtime * HEAL_RATE
-				updateHud(player, info)
+
+			if sprintRequested then
+				if info.stamina > 0 then
+					info.stamina = info.stamina - dtime
+					if info.stamina < 0 then
+						info.stamina = 0
+					end
+					updateHud(player, info)
+				end
+			else
+				if info.stamina < STAMINA_MAX then
+					info.stamina = info.stamina + dtime * HEAL_RATE
+					updateHud(player, info)
+				end
 			end
 		end
 	end
@@ -144,6 +159,7 @@ ctf_api.register_on_new_match(function()
 			updateHud(core.get_player_by_name(name), info)
 		end
 	end
+	disabled_ones = {}
 end)
 
 ctf_api.register_on_flag_take(function(taker, flag_team)
@@ -154,5 +170,7 @@ ctf_api.register_on_flag_take(function(taker, flag_team)
 end)
 
 core.register_on_leaveplayer(function(player)
-	players[player:get_player_name()] = nil
+	local pname = player:get_player_name()
+	players[pname] = nil
+	disabled_ones[pname] = nil
 end)
