@@ -2,6 +2,19 @@ local REGENERATE_TIME = 25 * 60 -- 25mins
 local CHAT_COLOR = "orange"
 local timer = nil
 
+local BLACKLIST_ITEMS = {
+	"ctf_ranged:pistol",
+	"ctf_ranged:desert_eagle",
+	"ctf_ranged:shotgun",
+	"ctf_ranged:rifle",
+	"ctf_ranged:assault_rifle",
+	"ctf_ranged:minigun",
+	"ctf_ranged:sniper",
+	"ctf_ranged:sniper_magnum",
+	"ctf_melee:",
+	"ctf_map:",
+}
+
 local S = core.get_translator(core.get_current_modname())
 
 ctf_api.register_on_match_start(function()
@@ -37,6 +50,13 @@ function ctf_modebase.regenerate_treasures()
 			pairs(ctf_map.treasure.treasure_from_string(ctf_map.current_map.treasures))
 		do
 			map_treasures[k] = v
+		end
+		for _, black_listed in ipairs(BLACKLIST_ITEMS) do
+			for item, _ in pairs(map_treasures) do
+				if string.find(item, black_listed) then
+					map_treasures[item] = nil
+				end
+			end
 		end
 		treasurefy_func = function(inv)
 			ctf_map.treasure.treasurefy_node(inv, map_treasures)
