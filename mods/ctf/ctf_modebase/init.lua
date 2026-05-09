@@ -88,7 +88,8 @@ ctf_core.include_files(
 	"recent_rankings.lua",
 	"bounty_algo.lua",
 	"features.lua",
-	"map_vote.lua"
+	"map_vote.lua",
+	"treasure_regenerate.lua"
 )
 
 core.register_on_mods_loaded(function()
