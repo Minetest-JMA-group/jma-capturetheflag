@@ -58,6 +58,12 @@ ctf_map = {
 	map_path = {},
 	--- @type { [MapName]: MapCallbacks }
 	callbacks = {},
+	--- @type (Vector | { vi: number })[]
+	treasure_chests = {},
+	--- Gets populated when the treasure chests are placed
+	--- and it doesn't change till next round of placements.
+	--- And as of writing this, placements happen only once
+	--- on match start. -- Farooq
 }
 
 --- @param dirname string

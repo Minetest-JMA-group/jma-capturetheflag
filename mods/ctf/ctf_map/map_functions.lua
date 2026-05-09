@@ -307,6 +307,7 @@ local function place_treasure_chests(
 	param2_data,
 	treasurefy_node_callback
 )
+	ctf_map.treasure_chests = {}
 	for i, a in pairs(mapmeta.chests) do
 		local place_positions = get_place_positions(a, data, pos1, pos2)
 
@@ -321,6 +322,7 @@ local function place_treasure_chests(
 			inv:set_list("main", {})
 			if treasurefy_node_callback then
 				treasurefy_node_callback(inv)
+				table.insert(ctf_map.treasure_chests, pos)
 			end
 		end
 
@@ -367,4 +369,14 @@ function ctf_map.prepare_map_nodes(
 	vm:set_param2_data(param2_data)
 	vm:update_liquids()
 	vm:write_to_map(false)
+end
+
+function ctf_map.regenerate_treasures(treasurefy_node_callback)
+	for _, pos in ipairs(ctf_map.treasure_chests) do
+		local node_name = core.get_node(pos).name
+		if node_name == "ctf_map:chest" or node_name == "ctf_map:chest_opened" then
+			local inv = core.get_meta(pos):get_inventory()
+			treasurefy_node_callback(inv)
+		end
+	end
 end
