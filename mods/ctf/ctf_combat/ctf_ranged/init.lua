@@ -388,7 +388,9 @@ function ctf_ranged.simple_register_gun(name, def)
 			end
 
 			core.sound_play(def.fire_sound, { pos = user:get_pos() }, true)
-			def.on_use(rays, user, look_dir, def)
+			if def.on_use then
+				def.on_use(rays, user, look_dir, def)
+			end
 
 			if def.rounds > 0 then
 				return rawf.unload_weapon(itemstack)
