@@ -116,12 +116,11 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			end
 
 			if reg_access ~= true then
-				local msg = tostring(reg_access) or S("You aren't allowed to access the team chest")
+				local msg = tostring(reg_access)
+					or S("You aren't allowed to access the team chest")
 				formspec = formspec
 					.. "label[0.75,3;"
-					.. core.formspec_escape(
-						core.wrap_text(msg, 60)
-					)
+					.. core.formspec_escape(core.wrap_text(msg, 60))
 					.. "]"
 
 				core.show_formspec(name, "ctf_teams:no_access", formspec)
@@ -151,12 +150,11 @@ for _, team in ipairs(ctf_teams.teamlist) do
 					.. core.formspec_escape(S("Pro players only"))
 					.. "]"
 			else
-				local msg = tostring(pro_access) or S("You aren't allowed to access the pro section")
+				local msg = tostring(pro_access)
+					or S("You aren't allowed to access the pro section")
 				formspec = formspec
 					.. "label[6.5,2;"
-					.. core.formspec_escape(
-						core.wrap_text(msg, 20)
-					)
+					.. core.formspec_escape(core.wrap_text(msg, 20))
 					.. "]"
 			end
 
@@ -329,7 +327,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 						cur_mode.recent_rankings.add(pname, { score = score }, true)
 						cmsg.push_message_player(
 							player,
-							string.format("+ %s: %s", score, item_desc)
+							"+ " .. score .. ": " .. item_desc
 						)
 					end
 				end
