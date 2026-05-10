@@ -339,6 +339,8 @@ function ctf_ranged.simple_register_gun(name, def)
 
 			return result
 		end,
+		on_place = def.rightclick_func,
+		on_secondary_use = def.rightclick_func,
 	}, function(loaded_def)
 		loaded_def.description = def.description .. " (Loaded)"
 		loaded_def.inventory_image = def.texture
