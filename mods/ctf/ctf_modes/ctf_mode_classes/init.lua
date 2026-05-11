@@ -73,7 +73,7 @@ ctf_modebase.register_mode("classes", {
 		["ctf_ranged:assault_rifle_loaded"] = { rarity = 0.05 },
 		["ctf_ranged:sniper_magnum_loaded"] = { rarity = 0.05 },
 
-		["ctf_healing:healing_pistol"] = {
+		["ctf_healing:healing_pistol_loaded"] = {
 			rarity = 0.05,
 			max_stacks = 2,
 		},
