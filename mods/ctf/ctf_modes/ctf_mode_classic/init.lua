@@ -50,7 +50,6 @@ ctf_modebase.register_mode("classic", {
 		["ctf_ranged:shotgun_loaded"] = { rarity = 0.05 },
 		["ctf_ranged:assault_rifle_loaded"] = { rarity = 0.05 },
 		["ctf_ranged:desert_eagle_loaded"] = { rarity = 0.05 },
-		["ctf_ranged:minigun_loaded"] = { rarity = 0.05 },
 
 		["ctf_ranged:ammo"] = {
 			min_count = 3,
