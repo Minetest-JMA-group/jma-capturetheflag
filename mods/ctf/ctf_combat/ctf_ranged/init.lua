@@ -605,7 +605,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:desert_eagle", {
 	texture = "ctf_ranged_desert_eagle.png",
 	fire_sound = "ctf_ranged_desert_eagle",
 	rounds = 14,
-	range = 12,
+	range = 24,
 	automatic = true,
 	fire_interval = 2,
 	liquid_travel_dist = 8,
