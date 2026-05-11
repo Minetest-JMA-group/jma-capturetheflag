@@ -39,14 +39,10 @@ local function play_hit_sound(name)
 		end)
 		core.sound_play("ctf_ranged_hit", {
 			to_player = name,
-		})
+			pitch = 1.2,
+			gain = 0.9,
+		}, true)
 	end
-
-	core.sound_play("ctf_ranged_hit", {
-		to_player = name,
-		pitch = 1.2,
-		gain = 0.9,
-	}, true)
 end
 
 --- @param hitpoint HitPoint
