@@ -578,6 +578,9 @@ end
 function ctf_ranged.on_hit_damage(amount)
 	local function on_enemy_hit(hitpoint, prev_hitpoint, shooter, look_dir, def)
 		change_hp(hitpoint, shooter, def, look_dir, -amount)
+		core.sound_play({
+			name = "ctf_ranged_hit",
+		}, { pos = hitpoint.ref:get_pos(), max_hear_distance = 4 }, true)
 	end
 	local function on_teammate_hit(hitpoint, prev_hitpoint, shooter, look_dir, def) end
 	return ctf_ranged.on_hp_change_gun_use(on_teammate_hit, on_enemy_hit)
