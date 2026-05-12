@@ -77,6 +77,9 @@ ctf_modebase.register_mode("classes", {
 			rarity = 0.05,
 			max_stacks = 2,
 		},
+		["ctf_healing:super_bandage"] = {
+			rarity = 0.05,
+		},
 		["ctf_healing:ammo"] = {
 			rarity = 0.2,
 			min_count = 1,
