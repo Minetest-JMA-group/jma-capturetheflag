@@ -184,13 +184,11 @@ local function spawn_heal_particles(pos1, pos2)
 end
 
 ctf_healing.register_bandage("ctf_healing:super_bandage", {
-	description = S("Super Bandage")
-		.. "\n"
-		.. S(
-			"Heal your teammate for 5-6 HP to their full HP, while also healing nearby teammates by 1-2HP"
-		),
+	description = S("Super Bandage") .. "\n" .. S(
+		"Heal your teammate for 5-6 HP, while also healing nearby teammates by 2-3HP"
+	),
 	inventory_image = "ctf_healing_super_bandage.png",
-	heal_percent = 1.0,
+	heal_percent = HEAL_PERCENT,
 	heal_min = 5,
 	heal_max = 6,
 	after_heal = function(obj, user)
@@ -210,15 +208,34 @@ ctf_healing.register_bandage("ctf_healing:super_bandage", {
 		local objs = core.get_objects_in_area(pos1, pos2)
 		local team = ctf_teams.get(obj:get_player_name())
 		for _, obj2 in ipairs(objs) do
-			local team2 = ctf_teams.get(obj2:get_player_name())
+			local target_name = obj2:get_player_name()
+			local team2 = ctf_teams.get(target_name)
 			if obj2:is_player() and team2 == team then
 				local current_hp = obj2:get_hp()
-				local to_heal = 1
+				local max_hp = obj2:get_properties().max_hp
+				local hp_add = 2
 				if math.random() > 0.5 then
-					to_heal = 2
+					hp_add = 3
 				end
-				obj2:set_hp(current_hp + to_heal)
-				ctf_combat_mode.add_healer(obj2, user, 5)
+				local result =
+					RunCallbacks(ctf_healing.registered_on_heal, user, obj2, hp_add)
+				local hp = math.min(current_hp + hp_add, max_hp)
+				local healer_name = user:get_player_name()
+				if not result and current_hp ~= max_hp then
+					obj2:set_hp(hp)
+					ctf_combat_mode.add_healer(obj2, user, 60)
+					hud_events.new(target_name, {
+						quick = true,
+						text = S("@1 healed you!", healer_name),
+						color = 0xC1FF44,
+					})
+				elseif type(result) == "string" then
+					hud_events.new(healer_name, {
+						quick = true,
+						text = result,
+						color = "warning",
+					})
+				end
 			end
 		end
 	end,
