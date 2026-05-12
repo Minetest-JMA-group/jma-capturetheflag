@@ -20,6 +20,7 @@ local class_props = {
 		},
 		disallowed_items = {
 			"ctf_healing:healing_pistol",
+			"ctf_healing:super_bandage",
 			"ctf_ranged:rifle",
 			"ctf_ranged:assault_rifle",
 			"ctf_ranged:sniper_magnum",
@@ -62,6 +63,7 @@ local class_props = {
 		disallowed_items = {
 			"ctf_melee:",
 			"ctf_healing:healing_pistol",
+			"ctf_healing:super_bandage",
 		},
 		disallowed_items_markup = {
 			["ctf_melee:"] = "default_tool_steelsword.png^ctf_modebase_group.png",
