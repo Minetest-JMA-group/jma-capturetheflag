@@ -3,7 +3,7 @@ core.register_craftitem("ctf_healing:ammo", {
 	inventory_image = "ctf_healing_healing_ammo.png",
 })
 
-local PISTOL_HEAL_AMOUNT = 2
+local PISTOL_HEAL_AMOUNT = 3
 
 local S = core.get_translator(core.get_current_modname())
 
@@ -53,7 +53,7 @@ ctf_ranged.simple_register_gun("ctf_healing:healing_pistol", {
 	fire_sound = "ctf_ranged_pistol",
 	rounds = 75,
 	range = 75,
-	fire_interval = 0.6,
+	fire_interval = 0.4,
 	liquid_travel_dist = 2,
 	on_use = ctf_ranged.on_hp_change_gun_use(on_teammate_hit, function()
 		return false
