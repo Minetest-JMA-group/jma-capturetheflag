@@ -29,6 +29,8 @@ ctf_map = {
 	DEFAULT_START_TIME = 5900,
 	CHAT_COLOR = "orange",
 	maps_dir = core.get_modpath("ctf_map") .. "/maps/",
+	--- @type string?
+	current_mode = nil,
 	skyboxes = { "none" },
 	current_map = false,
 	barrier_nodes = {}, -- populated in nodes.lua,

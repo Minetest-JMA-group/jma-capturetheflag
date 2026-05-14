@@ -371,6 +371,11 @@ function ctf_map.prepare_map_nodes(
 	vm:write_to_map(false)
 end
 
+--- @param mode string
+function ctf_map.set_current_mode(mode)
+	ctf_map.current_mode = mode
+end
+
 function ctf_map.regenerate_treasures(treasurefy_node_callback)
 	for _, pos in ipairs(ctf_map.treasure_chests) do
 		local node_name = core.get_node(pos).name
