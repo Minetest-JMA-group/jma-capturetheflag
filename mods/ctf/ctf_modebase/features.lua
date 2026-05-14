@@ -366,6 +366,71 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local team_list
 	local teams_left
 
+	--- @param player PlayerName
+	--- @param recent number?
+	--- @return table
+	local function get_ranking(player, recent)
+		recent = nil or 0.0
+		local complement = 1.0 - recent
+		local ranking = rankings:get(player)
+		local recent_rankings2 = recent_rankings.get(player)
+		return {
+			kills = (ranking.kills or 1) * complement
+				+ (recent_rankings2.kills or 1) * recent,
+			deaths = (ranking.deaths or 1) * complement
+				+ (recent_rankings2.deaths or 1) * recent,
+			kill_assists = (ranking.kill_assists or 1) * complement
+				+ (recent_rankings2.kill_assists or 1) * recent,
+			hp_healed = (ranking.hp_healed or 1) * complement
+				+ (recent_rankings2.hp_healed or 1) * recent,
+			capture_points = (ranking.capture_points or 1) * complement
+				+ (recent_rankings2.capture_points or 1) * recent,
+			build_points = (ranking.build_points or 1) * complement
+				+ (recent_rankings2.build_points or 1) * recent,
+		}
+	end
+
+	--- @alias ScoreFun fun(player: PlayerName, recent: number?): number
+
+	--- @type ScoreFun
+	local function get_pvp_score(player, recent)
+		local ranking = get_ranking(player, recent)
+		local kills = ranking.kills or 1
+		local deaths = rankings.deaths or 1
+		local assists = rankings.kill_assists or 1
+		return math.exp((kills + assists / 5) / deaths)
+	end
+
+	--- @type ScoreFun
+	local function get_build_score(player, recent)
+		local ranking = get_ranking(player, recent)
+		return ranking.build_score or 1
+	end
+
+	--- @type ScoreFun
+	local function get_capture_score(player, recent)
+		local ranking = get_ranking(player, recent)
+		return math.exp(ranking.capture_score or 1)
+	end
+
+	--- @type ScoreFun
+	local function get_heal_score(player, recent)
+		local ranking = get_ranking(player, recent)
+		local hp_healed = rankings.hp_healed or 1
+		local deaths = rankings.deaths or 1
+		return (hp_healed / 40) / deaths
+	end
+
+	--- @type ScoreFun
+	local function get_player_active_value(player, recent)
+		return get_pvp_score(player, recent) * get_capture_score(player, recent)
+	end
+
+	--- @type ScoreFun
+	local function get_player_passive_value(player, recent)
+		return get_heal_score(player, recent) * get_build_score(player, recent)
+	end
+
 	local function calculate_killscore(player, killer)
 		local pname = PlayerName(player)
 		local killer_name = PlayerName(killer)
