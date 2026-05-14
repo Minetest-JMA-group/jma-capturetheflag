@@ -9,7 +9,7 @@ ctf_modebase = {
 	--- @type GameMode[]
 	modelist = {},
 
-	--- Name of the mode currently being played. On server start this will be false
+	--- Name of the mode currently being played. On server start this will be nil
 	--- @type string?
 	current_mode = nil,
 
