@@ -53,7 +53,14 @@ ctf_modebase = {
 
 	--- @type { [PlayerName]: number? }
 	player_on_flag_attempt_streak = {},
+
+	--- @type boolean
+	first_kill_happened = false,
 }
+
+ctf_api.register_on_match_start(function()
+	ctf_modebase.first_kill_happened = false
+end)
 
 ctf_gui.old_init()
 

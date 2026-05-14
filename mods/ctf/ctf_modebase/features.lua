@@ -625,9 +625,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end
 	end
 
-	--- @param player ObjectRef
+	--- @param player PlayerName
 	--- @param reason "punch" | "combatlog" | string
-	--- @param killer ObjectRef?
+	--- @param killer PlayerName?
 	--- @param weapon_image string?
 	local function end_combat_mode(player, reason, killer, weapon_image)
 		local comment = nil
@@ -656,6 +656,32 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 		if killer then
 			local killscore = calculate_killscore(player, killer)
+			local is_first_match_kill = not ctf_modebase.first_kill_happened
+
+			--- If it's the first match kill, we give extra reward
+			--- and announce it in the public
+			if is_first_match_kill then
+				local multiplier = 1.5
+				local x = killscore % 10
+				if x > 5 and x <= 8 then
+					multiplier = 2
+				elseif x == 9 then
+					multiplier = 4
+				end
+				killscore = multiplier * killscore
+				core.chat_send_all(
+					core.colorize(
+						"orange",
+						S(
+							"First Kill! @1 killed @2 and got @3!",
+							killer,
+							player,
+							killscore
+						)
+					)
+				)
+				ctf_modebase.first_kill_happened = true
+			end
 
 			local rewards = { kills = 1, score = killscore }
 			local bounty = ctf_modebase.bounties.claim(player, killer)
