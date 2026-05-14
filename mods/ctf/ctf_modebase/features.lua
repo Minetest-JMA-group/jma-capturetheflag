@@ -625,6 +625,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end
 	end
 
+	--- @param player ObjectRef
+	--- @param reason "punch" | "combatlog" | string
+	--- @param killer ObjectRef?
+	--- @param weapon_image string?
 	local function end_combat_mode(player, reason, killer, weapon_image)
 		local comment = nil
 
@@ -713,6 +717,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		ctf_combat_mode.end_combat(player)
 	end
 
+	--- @param player ObjectRef
+	--- @param hitter ObjectRef
+	--- @return boolean, string
 	local function can_punchplayer(player, hitter)
 		if not ctf_modebase.match_started then
 			return false, S("The match hasn't started yet!")
@@ -862,6 +869,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			end
 			streak_bonus_received = {}
 		end,
+		--- @param player ObjectRef
 		team_allocator = function(player)
 			player = PlayerName(player)
 
@@ -1019,6 +1027,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local value = default_item_value[itemname]
 			return value or 0
 		end,
+		--- @param player ObjectRef
+		--- @param teamname Team
+		--- @return string?
 		can_take_flag = function(player, teamname)
 			if not ctf_modebase.match_started then
 				tp_player_near_flag(player)
@@ -1028,6 +1039,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end,
 		calculate_capture_reward = calculate_capture_reward,
 		calculate_killscore = calculate_killscore,
+		--- @param player ObjectRef
+		--- @param teamname Team
 		on_flag_take = function(player, teamname)
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(player)
@@ -1076,6 +1089,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			}, false)
 			ctf_modebase.flag_huds.track_capturer(pname, FLAG_CAPTURE_TIMER)
 		end,
+		--- @param player ObjectRef
+		--- @param teamnames Team[]
+		--- @param pteam Team
 		on_flag_drop = function(player, teamnames, pteam)
 			local pname = player:get_player_name()
 			local tcolor = pteam and ctf_teams.team[pteam].color or "#FFF"
@@ -1122,6 +1138,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			drop_flag(pteam)
 		end,
+		--- @param player ObjectRef
+		--- @param teamnames Team[]
 		on_flag_capture = function(player, teamnames)
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(pname)
@@ -1298,6 +1316,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				end
 			end
 		end,
+		--- @param player ObjectRef
+		--- @param new_team Team
 		on_allocplayer = function(player, new_team)
 			player:set_hp(player:get_properties().hp_max)
 
@@ -1326,6 +1346,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			tp_player_near_flag(player)
 		end,
+		--- @param player ObjectRef
 		on_leaveplayer = function(player)
 			if not ctf_modebase.match_started then
 				ctf_combat_mode.end_combat(player)
@@ -1339,6 +1360,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			recent_rankings.on_leaveplayer(pname)
 		end,
+		--- @param player ObjectRef
+		--- @param reason "punch" | "combatlog" | string
 		on_dieplayer = function(player, reason)
 			if not ctf_modebase.match_started then
 				return
@@ -1353,15 +1376,18 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				ctf_modebase.prepare_respawn_delay(player)
 			end
 		end,
+		--- @param player ObjectRef
 		on_respawnplayer = function(player)
 			tp_player_near_flag(player)
 		end,
+		--- @param pname PlayerName
 		player_is_pro = function(pname)
 			local rank = rankings:get(pname)
 			if is_pro(core.get_player_by_name(pname), rank) then
 				return true
 			end
 		end,
+		--- @param pname PlayerName
 		get_chest_access = function(pname)
 			local rank = rankings:get(pname)
 
@@ -1390,6 +1416,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			return "You need at least 10 score to access this chest", deny_pro
 		end,
 		can_punchplayer = can_punchplayer,
+		--- @param player ObjectRef
+		--- @param hitter ObjectRef
+		--- @param damage number
+		--- @param _ any
+		--- @param tool_capabilities table
+		--- @return boolean, string?
 		on_punchplayer = function(player, hitter, damage, _, tool_capabilities)
 			if not hitter:is_player() or player:get_hp() <= 0 then
 				return false
@@ -1420,6 +1452,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			return damage
 		end,
+		--- @param player ObjectRef
+		--- @param patient ObjectRef
+		--- @param amount number
 		on_healplayer = function(player, patient, amount)
 			if not ctf_modebase.match_started then
 				return "The match hasn't started yet!"
