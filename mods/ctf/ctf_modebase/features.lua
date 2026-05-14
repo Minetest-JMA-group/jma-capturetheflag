@@ -745,7 +745,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 	--- @param player ObjectRef
 	--- @param hitter ObjectRef
-	--- @return boolean, string
+	--- @return boolean, string?
 	local function can_punchplayer(player, hitter)
 		if not ctf_modebase.match_started then
 			return false, S("The match hasn't started yet!")
