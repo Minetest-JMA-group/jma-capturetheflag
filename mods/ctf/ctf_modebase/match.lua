@@ -38,6 +38,7 @@ function ctf_modebase.start_match_after_map_vote()
 		core.settings:set("time_speed", map.time_speed * 72)
 
 		ctf_map.announce_map(map)
+		ctf_map.set_current_mode(ctf_modebase.current_mode)
 		ctf_modebase.announce(
 			string.format(
 				"New match: %s map by %s, %s mode",
@@ -118,10 +119,7 @@ core.register_chatcommand("ctf_next", {
 	privs = { ctf_admin = true },
 	params = "[-f] [mode:technical modename] [technical mapname]",
 	func = function(name, param)
-		core.log(
-			"action",
-			string.format("[ctf_admin] %s ran /ctf_next %s", name, param)
-		)
+		core.log("action", string.format("[ctf_admin] %s ran /ctf_next %s", name, param))
 
 		local force = param == "-f"
 		if force then
@@ -180,4 +178,3 @@ core.register_chatcommand("ctf_skip", {
 		return true, "Skipping match..."
 	end,
 })
-
