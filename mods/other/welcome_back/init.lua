@@ -48,7 +48,7 @@ local function limit_reached(giver_name)
 
 	timestamp_table = clear_old_times(timestamp_table, giver_name)
 	storage:set_string(table_key, core.serialize(timestamp_table))
-	return #timestamp_table > msg_num_limit
+	return #timestamp_table > msg_num_limit or #timestamp_table == msg_num_limit
 end
 
 local function record_timestamp(giver_name)
