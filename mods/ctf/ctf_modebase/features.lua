@@ -733,7 +733,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				elseif x == 9 then
 					multiplier = 4
 				end
-				killscore = multiplier * killscore
+				killscore = math.ceil(multiplier * killscore)
 				core.chat_send_all(
 					core.colorize(
 						"orange",
