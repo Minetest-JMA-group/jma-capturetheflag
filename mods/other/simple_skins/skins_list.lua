@@ -147,4 +147,8 @@ return {
 		licence = "CC BY-I 3.5",
 		texture = "character_flagelite.png",
 	},
+	[36] = {
+	name = "Diver",
+	author = "DrEpicGTM",
+	},
 }
