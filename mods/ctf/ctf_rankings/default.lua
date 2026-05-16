@@ -10,6 +10,7 @@ return function(prefix, top)
 
 	local timer = core.get_us_time()
 	op_all(function(key, value)
+		--- @type Rank?
 		local rank = core.parse_json(value)
 
 		if rank ~= nil and rank.score then
@@ -36,7 +37,7 @@ return function(prefix, top)
 			local rank_str = self.modstorage:get_string(pname)
 
 			if not rank_str or rank_str == "" then
-				return false
+				return {}
 			end
 
 			return core.parse_json(rank_str)
