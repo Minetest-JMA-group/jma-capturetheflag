@@ -398,7 +398,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local kills = ranking.kills or 1
 		local deaths = rankings.deaths or 1
 		local assists = rankings.kill_assists or 1
-		return math.exp((kills + assists / 5) / deaths)
+		return (kills + assists / 5) / deaths
 	end
 
 	--- @type ScoreFun
@@ -410,7 +410,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	--- @type ScoreFun
 	local function get_capture_point(player, recent)
 		local ranking = get_ranking(player, recent)
-		return math.exp(ranking.capture_points or 1)
+		return ranking.capture_points or 1
 	end
 
 	--- @type ScoreFun
