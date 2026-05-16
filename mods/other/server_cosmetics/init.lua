@@ -142,6 +142,9 @@ server_cosmetics = {
 				_preview_rot_offset = {y = 180},
 				_preview_shift = {x = -0.35, y = -1.05},
 				_preview_scale = 0.88,
+				_anims = {
+					idle = {x = 1, y = 1},
+				},
 				["normal"] = {"server_cosmetics_straw_hat.png"},
 			},
 		}
