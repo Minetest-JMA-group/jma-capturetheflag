@@ -1,5 +1,6 @@
 --- @alias Rank { place: number?, kills: number?, deaths: number?, kill_assists: number?,
---- capture_points: number?, build_points: number, hp_healed: number?, score: number?}
+--- capture_points: number?, build_points: number, hp_healed: number?, score: number?,
+--- flag_captures: number? }
 
 --- @alias RankGetFun fun(pname: PlayerName): Rank
 --- @alias RankSetFun fun(pname: PlayerName, newrankings: Rank, erase_unset: boolean?)
