@@ -73,6 +73,18 @@ end
 
 ctf_teams.get = ctf_teams.get_player_team
 
+--- @param team Team
+--- @return PlayerName[]
+function ctf_teams.get_team_members(team)
+	local members = {}
+	for pname, team2 in pairs(ctf_teams.player_team) do
+		if team == team2 then
+			table.insert(members, pname)
+		end
+	end
+	return members
+end
+
 --
 --- Allocation
 --
