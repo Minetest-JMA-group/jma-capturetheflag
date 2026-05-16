@@ -23,7 +23,7 @@ end
 --- @param new_team Team?
 --- @param force boolean?
 --- @return nil
-function ctf_teams.set(player, new_team, force)
+function ctf_teams.set_player_team(player, new_team, force)
 	--- @type string
 	player = PlayerName(player)
 
@@ -59,15 +59,19 @@ function ctf_teams.set(player, new_team, force)
 	)
 end
 
+ctf_teams.set = ctf_teams.set_player_team
+
 --- Which team is the player on if any?
 --- @param player PlayerName | ObjectRef
 --- @return Team?
-function ctf_teams.get(player)
+function ctf_teams.get_player_team(player)
 	--- @type PlayerName
 	player = PlayerName(player)
 
 	return ctf_teams.player_team[player]
 end
+
+ctf_teams.get = ctf_teams.get_player_team
 
 --
 --- Allocation
