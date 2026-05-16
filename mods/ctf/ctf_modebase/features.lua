@@ -1383,7 +1383,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				" has captured the flag in @1 and got @2 points and @3 capoints!",
 				ctf_map.get_duration(),
 				capture_reward,
-				capture_points
+				math.floor(capture_points)
 			)
 			local teamnames_readable = HumanReadable(teamnames)
 			local flag_or_flags = S("flag")
