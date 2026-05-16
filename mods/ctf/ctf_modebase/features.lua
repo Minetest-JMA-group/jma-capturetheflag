@@ -402,15 +402,15 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	end
 
 	--- @type ScoreFun
-	local function get_build_score(player, recent)
+	local function get_build_point(player, recent)
 		local ranking = get_ranking(player, recent)
-		return ranking.build_score or 1
+		return ranking.build_points or 1
 	end
 
 	--- @type ScoreFun
-	local function get_capture_score(player, recent)
+	local function get_capture_point(player, recent)
 		local ranking = get_ranking(player, recent)
-		return math.exp(ranking.capture_score or 1)
+		return math.exp(ranking.capture_points or 1)
 	end
 
 	--- @type ScoreFun
@@ -423,12 +423,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 	--- @type ScoreFun
 	local function get_player_active_value(player, recent)
-		return get_pvp_score(player, recent) * get_capture_score(player, recent)
+		return get_pvp_score(player, recent) * get_capture_point(player, recent)
 	end
 
 	--- @type ScoreFun
 	local function get_player_passive_value(player, recent)
-		return get_heal_score(player, recent) * get_build_score(player, recent)
+		return get_heal_score(player, recent) * get_build_point(player, recent)
 	end
 
 	local function calculate_killscore(player, killer)
