@@ -39,7 +39,7 @@ function vanish.on(player, options)
 		hp_max = 20,
 	})
 
-	player:set_hp(20) -- immortal
+	player:set_hp(5000) -- immortal
 
 	local armor_groups = table.copy(vanish.old_armor_groups[name] or {})
 	armor_groups.immortal = 1
