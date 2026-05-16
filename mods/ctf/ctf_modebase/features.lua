@@ -78,11 +78,13 @@ local S = core.get_translator(core.get_current_modname())
 
 local hud = mhud.init()
 local LOADING_SCREEN_TARGET_TIME = 5
+--- @type number?
 local loading_screen_time
 
 -- tag: map_image
 local old_announce = ctf_modebase.map_chosen
 function ctf_modebase.map_chosen(map, ...)
+	--- @type boolean
 	local found = false
 	for _, p in pairs(core.get_connected_players()) do
 		if hud:exists(p, "loading_screen") then
@@ -166,8 +168,11 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 	symbol_nametag.object:set_observers(symbol_players)
 end
 
+--- @type boolean
 local tags_hidden = false
+--- @type boolean
 local update_timer = false
+--- @param time number?
 local function update_playertags(time)
 	if not update_timer and not tags_hidden then
 		update_timer = true
@@ -260,6 +265,9 @@ function ctf_modebase.show_loading_screen()
 	loading_screen_time = core.get_us_time()
 end
 
+--- @param player ObjectRef
+--- @param rank Rank
+--- @return boolean
 local function is_pro(player, rank)
 	local pro_chest = player
 		and player
@@ -280,6 +288,15 @@ local function is_pro(player, rank)
 	end
 end
 
+--- @alias FlagNotifMessage { text: string, color: string? }
+
+--- @param pname PlayerName
+--- @param pteam Team
+--- @param flags_taken (string | string[])?
+--- @param to_player_msg FlagNotifMessage
+--- @param to_teammates_msg FlagNotifMessage
+--- @param to_victims_msg FlagNotifMessage
+--- @param to_others_msg FlagNotifMessage
 local function flag_event_notify(
 	pname,
 	pteam,
@@ -364,8 +381,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local FLAG_CAPTURE_TIMER = 60 * 3
 	--- @type boolean
 	local many_teams = false
-	--- @type Team[]?
-	local team_list
+	--- @type Team[]
+	local team_list = {}
 	--- @type number?
 	local teams_left
 
@@ -1185,7 +1202,17 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				string.format("Player %s (team %s)%s", pname, pteam, text)
 			)
 
-			celebrate_team(ctf_teams.get(pname))
+			local the_team = ctf_teams.get(pname)
+			if the_team then
+				celebrate_team(the_team)
+			else
+				core.log(
+					"error",
+					"A player attempted a flag but is not member of any team! name: "
+						.. pname
+				)
+			end
+
 			recent_rankings.add(pname, {
 				flag_attempts = 1,
 			}, false)
