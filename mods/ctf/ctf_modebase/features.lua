@@ -362,8 +362,11 @@ ctf_settings.register("ctf_modebase:teammate_nametag_style", {
 ctf_modebase.features = function(rankings, recent_rankings)
 	local FLAG_MESSAGE_COLOR = "#d9b72a"
 	local FLAG_CAPTURE_TIMER = 60 * 3
+	--- @type boolean
 	local many_teams = false
+	--- @type Team[]?
 	local team_list
+	--- @type number?
 	local teams_left
 
 	--- @param player PlayerName
@@ -647,6 +650,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		return true
 	end
 
+	--- @param teamname Team
 	local function celebrate_team(teamname)
 		for _, player in ipairs(core.get_connected_players()) do
 			local pname = player:get_player_name()
@@ -673,6 +677,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end
 	end
 
+	--- @param teamname Team
 	local function drop_flag(teamname)
 		for _, player in ipairs(core.get_connected_players()) do
 			local pname = player:get_player_name()
