@@ -431,6 +431,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		return get_heal_score(player, recent) * get_build_point(player, recent)
 	end
 
+	--- @param team Team
+	--- @return number
+	local function get_team_value(team)
+		return 0 -- TODO
+	end
+
 	local function calculate_killscore(player, killer)
 		local pname = PlayerName(player)
 		local killer_name = PlayerName(killer)
