@@ -386,6 +386,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	--- @type number?
 	local teams_left
 
+	local DIVIDER = 200
+
 	--- @param player PlayerName
 	--- @param recent number?
 	--- @return table
@@ -429,8 +431,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 	--- @type ScoreFun
 	local function get_capture_point(player, recent)
-		local ranking = get_ranking(player, recent)
-		return ranking.capture_points or 1
+		--local ranking = get_ranking(player, recent)
+		return 1
 	end
 
 	--- @type ScoreFun
@@ -438,23 +440,87 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local ranking = get_ranking(player, recent)
 		local hp_healed = rankings.hp_healed or 1
 		local deaths = rankings.deaths or 1
-		return (hp_healed / 40) / deaths
+		--- 60 is 2*hp_knight
+		return (hp_healed / 60) / deaths
 	end
 
 	--- @type ScoreFun
 	local function get_player_active_value(player, recent)
-		return get_pvp_score(player, recent) * get_capture_point(player, recent)
+		return get_pvp_score(player, recent) * get_capture_point(player, recent) / DIVIDER
 	end
 
 	--- @type ScoreFun
 	local function get_player_passive_value(player, recent)
-		return get_heal_score(player, recent) * get_build_point(player, recent)
+		return get_heal_score(player, recent) * get_build_point(player, recent) / DIVIDER
+	end
+
+	--- @type ScoreFun
+	local function get_player_value(player, recent)
+		return get_player_active_value(player, recent)
+			* get_player_passive_value(player, recent)
+			/ DIVIDER
 	end
 
 	--- @param team Team
+	--- @param recent number
 	--- @return number
-	local function get_team_value(team)
-		return 0 -- TODO
+	local function get_team_value(team, recent)
+		local members = ctf_teams.get_team_members(team)
+		local total_value = 0
+		for _, member in ipairs(members) do
+			total_value = get_player_value(member, recent) * total_value
+		end
+		return total_value
+	end
+
+	--- @param loser_teams Team[]
+	--- @param winner_team Team
+	--- @param other_teams Team[]
+	--- @param flag_thief PlayerName
+	--- @param match_time number
+	--- @return number
+	local function calculate_capture_points(
+		loser_teams,
+		winner_team,
+		other_teams,
+		flag_thief,
+		match_time
+	)
+		local MAXIMUM_MATCH_TIME = 3600
+		local recent_part = 1.0
+			- math.min(match_time, MAXIMUM_MATCH_TIME) / MAXIMUM_MATCH_TIME
+		local loser_teams_val = 1
+		for _, loser_team in ipairs(loser_teams) do
+			loser_teams_val = get_team_value(loser_team, recent_part) * loser_teams_val
+		end
+		local winner_team_val = get_team_value(winner_team, recent_part)
+		local other_teams_val_combined = 1
+		for _, t in ipairs(other_teams) do
+			other_teams_val_combined = other_teams_val_combined
+				* get_team_value(t, recent_part)
+		end
+		local thief_val = get_player_active_value(flag_thief, 0.25)
+		return (loser_teams_val / winner_team_val)
+			+ (winner_team_val / other_teams_val_combined)
+			+ (loser_teams_val / thief_val)
+	end
+
+	local function new_calculate_killscore(player, killer)
+		local pname = PlayerName(player)
+		local killer_name = PlayerName(killer)
+		local pteam = ctf_teams.get_player_team(pname)
+		if not pteam then
+			return 0
+		end
+		local player_val = get_player_value(pname, 0.66)
+		core.debug(
+			string.format(
+				"%s killed %s and would have got %f",
+				killer_name,
+				pname,
+				player_val
+			)
+		)
 	end
 
 	local function calculate_killscore(player, killer)
@@ -1290,11 +1356,34 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			local team_scores = recent_rankings.teams()
 			local capture_reward = calculate_capture_reward(pteam, teamnames)
+			local other_teams = {}
+			for _, t1 in ipairs(team_list) do
+				local include = true
+				for _, target_team in ipairs(teamnames) do
+					if t1 == target_team or t1 == pteam then
+						include = false
+					end
+				end
+				if include then
+					table.insert(other_teams)
+				end
+			end
+
+			local capture_points = calculate_capture_points(
+				teamnames,
+				pteam,
+				other_teams,
+				pname,
+				os.time() - ctf_modebase.match_start_time
+			)
+
+			recent_rankings.add(pname, { capture_points = capture_points }, true)
 
 			local text = S(
-				" has captured the flag in @1 and got @2 points!",
+				" has captured the flag in @1 and got @2 points and @3 capoints!",
 				ctf_map.get_duration(),
-				capture_reward
+				capture_reward,
+				capture_points
 			)
 			local teamnames_readable = HumanReadable(teamnames)
 			local flag_or_flags = S("flag")

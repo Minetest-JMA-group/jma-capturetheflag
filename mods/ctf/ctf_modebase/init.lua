@@ -56,10 +56,14 @@ ctf_modebase = {
 
 	--- @type boolean
 	first_kill_happened = false,
+
+	--- @type number?
+	match_start_time = nil,
 }
 
 ctf_api.register_on_match_start(function()
 	ctf_modebase.first_kill_happened = false
+	ctf_modebase.match_start_time = os.time()
 end)
 
 ctf_gui.old_init()
