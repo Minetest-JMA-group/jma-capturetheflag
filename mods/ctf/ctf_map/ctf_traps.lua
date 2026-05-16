@@ -260,6 +260,7 @@ core.register_node("ctf_map:reinforced_cobble", {
 	tiles = { "ctf_map_reinforced_cobble.png" },
 	is_ground_content = false,
 	groups = { cracky = 1, stone = 2 },
+	on_blast = function() end,
 	sounds = default.node_sound_stone_defaults(),
 })
 
@@ -270,6 +271,7 @@ core.register_node("ctf_map:reinforced_glass", {
 		"default_glass_detail.png",
 	},
 	groups = { cracky = 2 },
+	on_blast = function() end,
 	sounds = default.node_sound_glass_defaults(),
 	drawtype = "glasslike_framed_optional",
 	use_texture_alpha = "clip",
