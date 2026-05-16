@@ -1365,7 +1365,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					end
 				end
 				if include then
-					table.insert(other_teams)
+					table.insert(other_teams, t1)
 				end
 			end
 
