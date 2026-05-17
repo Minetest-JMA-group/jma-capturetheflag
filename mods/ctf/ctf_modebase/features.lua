@@ -1404,7 +1404,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local capture_points_display = math.round(capture_points)
 
 			local text = S(
-				" has captured the flag in @1 and got @2 points and @3 CPs!",
+				" has captured the flag in @1 and got @2 points and @3 CapCoins!",
 				ctf_map.get_duration(),
 				capture_reward,
 				capture_points_display
@@ -1413,7 +1413,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local flag_or_flags = S("flag")
 			if many_teams then
 				text = S(
-					" has captured the flag of team(s) @1 in @2 and got @3 points and @4 CPs!",
+					" has captured the flag of team(s) @1 in @2 and got @3 points and @4 CapCoins!",
 					teamnames_readable,
 					ctf_map.get_duration(),
 					capture_reward,
