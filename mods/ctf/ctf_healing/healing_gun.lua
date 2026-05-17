@@ -1,11 +1,11 @@
-core.register_craftitem("ctf_healing:ammo", {
-	description = "Healing Ammo\nUsed to reload healing guns",
-	inventory_image = "ctf_healing_healing_ammo.png",
-})
-
 local PISTOL_HEAL_AMOUNT = 3
 
 local S = core.get_translator(core.get_current_modname())
+
+core.register_craftitem("ctf_healing:ammo", {
+	description = S("Healing Ammo") .. "\n" .. S("Used to reload healing guns"),
+	inventory_image = "ctf_healing_healing_ammo.png",
+})
 
 --- @type OnHitCallback
 local function on_teammate_hit(hitpoint, prev_hitpoint, shooter, look_dir, def)
@@ -48,7 +48,7 @@ end
 
 ctf_ranged.simple_register_gun("ctf_healing:healing_pistol", {
 	type = "pistol",
-	description = "Healing Pistol\nHeals teammates on hit",
+	description = S("Healing Pistol") .. "\n" .. S("Heals teammates on hit"),
 	texture = "ctf_healing_healing_pistol.png",
 	fire_sound = "ctf_ranged_pistol",
 	rounds = 75,
