@@ -57,10 +57,16 @@ local function rank(name, mode_name, mode_data, pname)
 			core.colorize("#63d437", HumanReadable(pair[1] .. "/" .. pair[2])),
 			core.colorize(
 				"#ffea00",
-				tostring(0.1
-					* math.round(
-						10 * ((prank[pair[1]] or 0) / math.max(prank[pair[2]] or 0, 1))
-					))
+				tostring(
+					0.1
+						* math.round(
+							10
+								* (
+									(prank[pair[1]] or 0)
+									/ math.max(prank[pair[2]] or 0, 1)
+								)
+						)
+				)
 			)
 		)
 	end
@@ -95,6 +101,25 @@ ctf_core.register_chatcommand_alias("rank", "r", {
 		else
 			return rank(name, mode_name, mode_data, pname)
 		end
+	end,
+})
+
+ctf_core.register_chatcommand_alias("capoint", "cp", {
+	description = "Get capoints of a player or yourself in all modes",
+	params = "[playername]",
+	func = function(name, param)
+		local player = name
+		if param and param ~= "" then
+			player = param
+		end
+		core.debug("doing it for " .. player)
+		local return_str = ""
+		for mode_name, mode_data in pairs(ctf_modebase.modes) do
+			local capoints = mode_data.rankings:get(player).capture_points or 0
+			return_str = return_str .. string.format("%s: %f\n", mode_name, capoints)
+		end
+		core.debug(return_str)
+		return true, return_str
 	end,
 })
 
@@ -137,7 +162,7 @@ core.register_chatcommand("donate", {
 		if score == "-1" then
 			score = "50%"
 		end
-		
+
 		if type(score) == "string" then -- string.match will crash if it's not a string so better safe than sorry
 			if string.match(score, "%%$") then -- The player is requesting a percentage of their score
 				local pc = ctf_core.to_number(score:sub(1, -2))
@@ -193,8 +218,15 @@ core.register_chatcommand("donate", {
 		current_mode.recent_rankings.add(pname, { score = score }, true)
 		current_mode.recent_rankings.add(name, { score = -score }, true)
 
-		if dmessage ~= "" and core.global_exists("simplemod") and simplemod.is_muted(name) then
-			core.chat_send_player(name, "You're muted, you can't send donate messages. Check /sblog for details. Bypassing the mute through any way will result in a ban.")
+		if
+			dmessage ~= ""
+			and core.global_exists("simplemod")
+			and simplemod.is_muted(name)
+		then
+			core.chat_send_player(
+				name,
+				"You're muted, you can't send donate messages. Check /sblog for details. Bypassing the mute through any way will result in a ban."
+			)
 			dmessage = ""
 		end
 
@@ -338,11 +370,7 @@ core.register_chatcommand("reset_mode_rankings", {
 			)
 		)
 		return true,
-			string.format(
-				"Reset rankings for mode %s (%d players).",
-				mode_name,
-				count
-			)
+			string.format("Reset rankings for mode %s (%d players).", mode_name, count)
 	end,
 })
 
