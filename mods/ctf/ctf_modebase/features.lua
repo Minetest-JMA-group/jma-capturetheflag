@@ -466,7 +466,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	--- @return number
 	local function get_team_value(team, recent)
 		local members = ctf_teams.get_team_members(team)
-		local total_value = 0
+		local total_value = 1
 		for _, member in ipairs(members) do
 			total_value = get_player_value(member, recent) * total_value
 		end
