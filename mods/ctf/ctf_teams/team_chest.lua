@@ -7,6 +7,9 @@ local blacklist = {
 
 local S = core.get_translator(core.get_current_modname())
 
+--- Table to track which chest each player is currently viewing
+local player_chest_positions = {}
+
 --- Does the player have access to the chest?
 --- Example usage: `has_normal, has_pro = get_chest_access(name)`
 --- @param name PlayerName
@@ -103,9 +106,9 @@ for _, team in ipairs(ctf_teams.teamlist) do
 
 			local formspec = table.concat({
 				"size[10,12]",
-				default.get_hotbar_bg(1, 7.85),
-				"list[current_player;main;1,7.85;8,1;]",
-				"list[current_player;main;1,9.08;8,3;8]",
+				default.get_hotbar_bg(1.4, 7.85),
+				"list[current_player;main;1.4,7.85;8,1;]",
+				"list[current_player;main;1.4,9.08;8,3;8]",
 			}, "")
 
 			local reg_access, pro_access
@@ -116,11 +119,12 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			end
 
 			if reg_access ~= true then
-				local msg = tostring(reg_access)
-					or S("You aren't allowed to access the team chest")
+				local msg = tostring(reg_access) or S("You aren't allowed to access the team chest")
 				formspec = formspec
 					.. "label[0.75,3;"
-					.. core.formspec_escape(core.wrap_text(msg, 60))
+					.. core.formspec_escape(
+						core.wrap_text(msg, 60)
+					)
 					.. "]"
 
 				core.show_formspec(name, "ctf_teams:no_access", formspec)
@@ -150,20 +154,27 @@ for _, team in ipairs(ctf_teams.teamlist) do
 					.. core.formspec_escape(S("Pro players only"))
 					.. "]"
 			else
-				local msg = tostring(pro_access)
-					or S("You aren't allowed to access the pro section")
+				local msg = tostring(pro_access) or S("You aren't allowed to access the pro section")
 				formspec = formspec
 					.. "label[6.5,2;"
-					.. core.formspec_escape(core.wrap_text(msg, 20))
+					.. core.formspec_escape(
+						core.wrap_text(msg, 20)
+					)
 					.. "]"
 			end
 
 			formspec = formspec
+			    .. "label[0,7.3;Take ammo]"
+				.. "image_button[0,7.85;0.9,0.9;ctf_ranged_ammo.png;ammo_1;1]"
+				.. "image_button[0,8.75;0.9,0.9;ctf_ranged_ammo.png;ammo_3;3]"
+				.. "image_button[0,9.65;0.9,0.9;ctf_ranged_ammo.png;ammo_6;6]"
 				.. "listring["
 				.. chestinv
 				.. ";main]"
 				.. "listring[current_player;main]"
 
+			-- Store position for field handler
+			player_chest_positions[name] = { pos = pos, team = team }
 			core.show_formspec(name, "ctf_teams:chest", formspec)
 		end
 
@@ -354,3 +365,76 @@ for _, team in ipairs(ctf_teams.teamlist) do
 		core.register_node("ctf_teams:chest_" .. team, def)
 	end
 end
+
+--- Handle quick ammo button clicks
+core.register_on_player_receive_fields(function(player, formname, fields)
+	if formname ~= "ctf_teams:chest" then
+		return
+	end
+
+	local name = player:get_player_name()
+	local chest_data = player_chest_positions[name]
+
+	if not chest_data then
+		return
+	end
+
+	local amount = nil
+	if fields.ammo_1 then
+		amount = 1
+	elseif fields.ammo_3 then
+		amount = 3
+	elseif fields.ammo_6 then
+		amount = 6
+	else
+		return
+	end
+
+	local pos = chest_data.pos
+	local team = chest_data.team
+
+	-- Check if player still has access
+	local flag_captured = ctf_modebase.flag_captured[team]
+	if not flag_captured and team ~= ctf_teams.get(name) then
+		return
+	end
+
+	local reg_access, pro_access = get_chest_access(name)
+
+	if ctf_rankings.backend == "dummy" then
+		reg_access, pro_access = true, true
+	end
+
+	if reg_access ~= true then
+		return
+	end
+
+	-- Get inventories
+	local chest_inv = core.get_inventory({ type = "node", pos = pos })
+	local player_inv = player:get_inventory()
+	local ammo_itemstring = "ctf_ranged:ammo"
+
+	local total_taken = ItemStack()
+	local remaining = amount
+
+	-- Try pro section first if they have access
+	if pro_access == true then
+		local pro_taken = chest_inv:remove_item("pro", ammo_itemstring .. " " .. remaining)
+		total_taken:add_item(pro_taken)
+		remaining = remaining - pro_taken:get_count()
+	end
+
+	-- Take from main section for remaining
+	if remaining > 0 then
+		local main_taken = chest_inv:remove_item("main", ammo_itemstring .. " " .. remaining)
+		total_taken:add_item(main_taken)
+	end
+
+	-- Add to player inventory
+	local leftover = player_inv:add_item("main", total_taken)
+
+	-- Return any leftover to the chest
+	if leftover:get_count() > 0 then
+		chest_inv:add_item("main", leftover)
+	end
+end)
