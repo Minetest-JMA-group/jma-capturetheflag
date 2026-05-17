@@ -1,7 +1,5 @@
 ctf_kill_list = {}
 
-local kill_list_toggle = {}
-
 local hud = mhud.init()
 
 local KILLSTAT_REMOVAL_TIME = 30
@@ -37,14 +35,8 @@ local kill_list = {}
 local player_settings = {}
 
 local image_scale_map = ctf_settings.settings["ctf_kill_list:tp_size"].image_scale_map
-
 local function update_kill_list_hud(player)
 	local player_name = PlayerName(player)
-
-	if not kill_list_toggle[player_name] then
-		return
-	end
-
 	local ps = player_settings[player_name]
 	if not ps then
 		return
@@ -95,21 +87,7 @@ function ctf_kill_list.apply_settings(player, update_hud)
 
 	player_settings[player_name] = ps
 
-	if kill_list_toggle[player_name] == nil then
-		kill_list_toggle[player_name] = true
-	end
-
 	if update_hud then
-
-		if not kill_list_toggle[player_name] then
-			if hud.huds[player_name] then
-				for i in pairs(hud.huds[player_name]) do
-					hud:remove(player, i)
-				end
-			end
-			return
-		end
-
 		if hud.huds[player_name] then
 			for i in pairs(hud.huds[player_name]) do
 				hud:remove(player, i)
@@ -148,30 +126,6 @@ core.register_globalstep(function(dtime)
 	end
 end)
 
-function ctf_kill_list.disable(player)
-	local player_name = PlayerName(player)
-	kill_list_toggle[player_name] = false
-
-	--remove the HUD
-	if hud.huds[player_name] then
-		for i in pairs(hud.huds[player_name]) do
-			hud:remove(player, i)
-		end
-	end
-end
-
-function ctf_kill_list.enable(player)
-	local player_name = PlayerName(player)
-	kill_list_toggle[player_name] = true
-
-	--add the HUD
-	if hud.huds[player_name] then
-		for i in pairs(hud.huds[player_name]) do
-			hud:add(player, i)
-		end
-	end
-end
-
 ctf_api.register_on_match_end(function()
 	kill_list = {}
 	hud:clear_all()
@@ -193,9 +147,11 @@ function ctf_kill_list.add(killer, victim, weapon_image, comment)
 	local v_teamcolor = ctf_teams.get(victim)
 
 	if k_teamcolor then
+		---@diagnostic disable-next-line: cast-local-type
 		k_teamcolor = ctf_teams.team[k_teamcolor].color_hex
 	end
 	if v_teamcolor then
+		---@diagnostic disable-next-line: cast-local-type
 		v_teamcolor = ctf_teams.team[v_teamcolor].color_hex
 	end
 

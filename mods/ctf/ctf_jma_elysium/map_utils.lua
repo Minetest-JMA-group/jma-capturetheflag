@@ -60,7 +60,9 @@ function ctf_jma_elysium.restore_nodemeta(mapname)
 		end
 
 		local def = core.registered_nodes[saved.node_name]
+		---@diagnostic disable-next-line: undefined-field
 		if def._update then
+			---@diagnostic disable-next-line: undefined-field
 			def._update(saved_pos)
 		end
 
@@ -113,11 +115,11 @@ function ctf_jma_elysium.save_meta(mapname)
 			local t = {}
 			local has_meta = false
 
-			if next(meta.fields) then
+			if meta and meta.fields and next(meta.fields) then
 				has_meta = true
 				t.meta_fields = meta.fields
 			end
-			if next(meta.inventory) then
+			if meta and meta.inventory and next(meta.inventory) then
 				has_meta = true
 				t.inventory = serialize_inventory(meta.inventory)
 			end
