@@ -1,3 +1,5 @@
+local S = core.get_translator(core.get_current_modname())
+
 local function get_gamemode(param)
 	local opt_param, mode_param = ctf_modebase.match_mode(param)
 
@@ -31,8 +33,7 @@ local function rank(name, mode_name, mode_data, pname)
 	local prank = mode_data.rankings:get(pname) -- [p]layer [rank]
 
 	if not prank then
-		return false,
-			string.format("Player %s has no rankings in mode %s\n", pname, mode_name)
+		return false, S("Player @1 has no rankings in mode @2\n", pname, mode_name)
 	end
 
 	local return_str = string.format(
@@ -82,7 +83,7 @@ local function rank(name, mode_name, mode_data, pname)
 end
 
 ctf_core.register_chatcommand_alias("rank", "r", {
-	description = "Get the rank of yourself or a player",
+	description = S("Get the rank of yourself or a player"),
 	params = "[ mode:all | mode:technical modename] <playername>",
 	func = function(name, param)
 		local mode_name, mode_data, pname = get_gamemode(param)
@@ -130,12 +131,14 @@ ctf_api.register_on_match_end(function()
 end)
 
 core.register_chatcommand("donate", {
-	description = "Donate your match score to your teammate\nCan be used only once in 10 minutes",
+	description = S(
+		"Donate your match score to your teammate\nCan be used only once in 10 minutes"
+	),
 	params = "<playername> <score> [message]",
 	func = function(name, param)
 		local current_mode = ctf_modebase:get_current_mode()
 		if not current_mode or not ctf_modebase.match_started then
-			return false, "The match hasn't started yet!"
+			return false, S("The match hasn't started yet!")
 		end
 
 		local pname, score, dmessage = string.match(param, "^(%S*) (%S*)(.*)$")
@@ -151,7 +154,7 @@ core.register_chatcommand("donate", {
 		end
 
 		if not pname then
-			return false, "You should provide the player name!"
+			return false, S("You should provide the player name!")
 		end
 
 		local cur_score = math.min(
@@ -174,42 +177,42 @@ core.register_chatcommand("donate", {
 
 		score = ctf_core.to_number(score)
 		if not score then
-			return false, "You should provide score amount!"
+			return false, S("You should provide score amount!")
 		end
 
 		score = math.floor(score)
 
 		if score < 5 then
-			return false, "You should donate at least 5 score!"
+			return false, S("You should donate at least 5 score!")
 		end
 
 		if score > 400 then
-			return false, "You can donate no more than 400 score!"
+			return false, S("You can donate no more than 400 score!")
 		end
 
 		if pname == name then
-			return false, "You cannot donate to yourself!"
+			return false, S("You cannot donate to yourself!")
 		end
 
 		local team = ctf_teams.get(pname)
 
 		if not team then
-			return false, string.format("Player %s is not online!", pname)
+			return false, S("Player @1 is not online!", pname)
 		end
 
 		if team ~= ctf_teams.get(name) then
-			return false, string.format("Player %s is not on your team!", pname)
+			return false, S("Player @1 is not on your team!", pname)
 		end
 
 		if score > cur_score / 2 then
-			return false, "You can donate only half of your match score!"
+			return false, S("You can donate only half of your match score!")
 		end
 
 		if donate_timer[name] and donate_timer[name] + 300 > os.time() then
 			local time_diff = donate_timer[name] + 300 - os.time()
 			return false,
-				string.format(
-					"You can donate only once in 5 minutes! You can donate again in %dm %ds.",
+				S(
+					"You can donate only once in 5 minutes! You can donate again in @1m @2s.",
 					math.floor(time_diff / 60),
 					time_diff % 60
 				)
@@ -225,14 +228,15 @@ core.register_chatcommand("donate", {
 		then
 			core.chat_send_player(
 				name,
-				"You're muted, you can't send donate messages. Check /sblog for details. Bypassing the mute through any way will result in a ban."
+				S(
+					"You're muted, you can't send donate messages. Check /sblog for details. Bypassing the mute through any way will result in a ban."
+				)
 			)
 			dmessage = ""
 		end
 
 		donate_timer[name] = os.time()
-		local donate_text =
-			string.format("%s donated %s score to %s%s", name, score, pname, dmessage)
+		local donate_text = S("@1 donated @2 score to @3@4", name, score, pname, dmessage)
 		core.chat_send_all(core.colorize("#00EEFF", donate_text))
 		ctf_modebase.announce(donate_text)
 
@@ -253,7 +257,7 @@ local allow_reset = {}
 core.register_chatcommand("reset_rankings", {
 	description = core.colorize(
 		"red",
-		"Resets rankings of you or another player to nothing"
+		S("Resets rankings of you or another player to nothing")
 	),
 	params = "[mode:technical modename] <playername>",
 	func = function(name, param)
@@ -277,14 +281,12 @@ core.register_chatcommand("reset_rankings", {
 					)
 				)
 				return true,
-					string.format(
-						"Rankings reset for player '%s' in mode %s",
-						pname,
-						mode_name
-					)
+					S("Rankings reset for player '@1' in mode @2", pname, mode_name)
 			else
 				return false,
-					"The ctf_admin priv is required to reset the rankings of other players!"
+					S(
+						"The ctf_admin priv is required to reset the rankings of other players!"
+					)
 			end
 		else
 			local key = string.format("%s:%s", mode_name, name)
@@ -314,7 +316,7 @@ core.register_chatcommand("reset_rankings", {
 					mode_name
 				)
 			)
-			return true, "Your rankings have been reset"
+			return true, S("Your rankings have been reset")
 		end
 	end,
 })
@@ -375,7 +377,7 @@ core.register_chatcommand("reset_mode_rankings", {
 })
 
 core.register_chatcommand("top50", {
-	description = "Show the top 50 players",
+	description = S("Show the top 50 players"),
 	params = "[mode:technical modename]",
 	func = function(name, param)
 		local mode_name, mode_data = get_gamemode(param)
@@ -402,7 +404,7 @@ core.register_chatcommand("top50", {
 
 		mode_data.summary_ranks._sort = "score"
 		ctf_modebase.summary.show_gui_sorted(name, top50, {}, mode_data.summary_ranks, {
-			title = "Top 50 Players",
+			title = S("Top 50 Players"),
 			gamemode = mode_name,
 			disable_nonuser_colors = true,
 		})
@@ -410,7 +412,7 @@ core.register_chatcommand("top50", {
 })
 
 core.register_chatcommand("make_pro", {
-	description = "Make yourself or another player a pro",
+	description = S("Make yourself or another player a pro"),
 	params = "[mode:technical modename] <playername>",
 	privs = { ctf_admin = true },
 	func = function(name, param)
@@ -421,12 +423,12 @@ core.register_chatcommand("make_pro", {
 		end
 
 		if not pname then
-			return false, "You should provide the player name!"
+			return false, S("You should provide the player name!")
 		end
 
 		local old_ranks = mode_data.rankings:get(pname)
 		if not old_ranks then
-			return false, string.format("Player '%s' has no rankings!", pname)
+			return false, S("Player '@1' has no rankings!", pname)
 		end
 
 		mode_data.rankings:add(
@@ -444,7 +446,7 @@ core.register_chatcommand("make_pro", {
 				dump(old_ranks)
 			)
 		)
-		return true, string.format("Player '%s' is now a pro!", pname)
+		return true, S("Player '@1' is now a pro!", pname)
 	end,
 })
 
