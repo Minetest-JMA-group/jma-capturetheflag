@@ -527,12 +527,16 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			return 0
 		end
 		local player_val = get_player_value(pname, 0.66)
+		local player_pvp_val = get_pvp_score(pname, 0.66)
+		local killer_pvp_val = get_pvp_score(killer_name, 0.66)
+		local score1 = player_pvp_val / killer_pvp_val
 		core.debug(
 			string.format(
-				"%s killed %s and would have got %f",
+				"%s killed %s and would have got (%f, %f)",
 				killer_name,
 				pname,
-				player_val
+				player_val,
+				score1
 			)
 		)
 	end
