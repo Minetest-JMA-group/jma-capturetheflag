@@ -106,9 +106,9 @@ for _, team in ipairs(ctf_teams.teamlist) do
 
 			local formspec = table.concat({
 				"size[10,12]",
-				default.get_hotbar_bg(1.4, 7.85),
-				"list[current_player;main;1.4,7.85;8,1;]",
-				"list[current_player;main;1.4,9.08;8,3;8]",
+				default.get_hotbar_bg(1.1, 7.85),
+				"list[current_player;main;1.1,7.85;8,1;]",
+				"list[current_player;main;1.1,9.08;8,3;8]",
 			}, "")
 
 			local reg_access, pro_access
@@ -119,12 +119,11 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			end
 
 			if reg_access ~= true then
-				local msg = tostring(reg_access) or S("You aren't allowed to access the team chest")
+				local msg = tostring(reg_access)
+					or S("You aren't allowed to access the team chest")
 				formspec = formspec
 					.. "label[0.75,3;"
-					.. core.formspec_escape(
-						core.wrap_text(msg, 60)
-					)
+					.. core.formspec_escape(core.wrap_text(msg, 60))
 					.. "]"
 
 				core.show_formspec(name, "ctf_teams:no_access", formspec)
@@ -154,20 +153,19 @@ for _, team in ipairs(ctf_teams.teamlist) do
 					.. core.formspec_escape(S("Pro players only"))
 					.. "]"
 			else
-				local msg = tostring(pro_access) or S("You aren't allowed to access the pro section")
+				local msg = tostring(pro_access)
+					or S("You aren't allowed to access the pro section")
 				formspec = formspec
 					.. "label[6.5,2;"
-					.. core.formspec_escape(
-						core.wrap_text(msg, 20)
-					)
+					.. core.formspec_escape(core.wrap_text(msg, 20))
 					.. "]"
 			end
 
 			formspec = formspec
-			    .. "label[0,7.3;Take ammo]"
-				.. "image_button[0,7.85;0.9,0.9;ctf_ranged_ammo.png;ammo_1;1]"
-				.. "image_button[0,8.75;0.9,0.9;ctf_ranged_ammo.png;ammo_3;3]"
-				.. "image_button[0,9.65;0.9,0.9;ctf_ranged_ammo.png;ammo_6;6]"
+				.. "vertlabel[0.04,8;Take ammo]"
+				.. "image_button[0.24,7.85;0.9,0.9;ctf_ranged_ammo.png;ammo_1;1]"
+				.. "image_button[0.24,8.75;0.9,0.9;ctf_ranged_ammo.png;ammo_3;3]"
+				.. "image_button[0.24,9.65;0.9,0.9;ctf_ranged_ammo.png;ammo_6;6]"
 				.. "listring["
 				.. chestinv
 				.. ";main]"
@@ -419,14 +417,16 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 
 	-- Try pro section first if they have access
 	if pro_access == true then
-		local pro_taken = chest_inv:remove_item("pro", ammo_itemstring .. " " .. remaining)
+		local pro_taken =
+			chest_inv:remove_item("pro", ammo_itemstring .. " " .. remaining)
 		total_taken:add_item(pro_taken)
 		remaining = remaining - pro_taken:get_count()
 	end
 
 	-- Take from main section for remaining
 	if remaining > 0 then
-		local main_taken = chest_inv:remove_item("main", ammo_itemstring .. " " .. remaining)
+		local main_taken =
+			chest_inv:remove_item("main", ammo_itemstring .. " " .. remaining)
 		total_taken:add_item(main_taken)
 	end
 
