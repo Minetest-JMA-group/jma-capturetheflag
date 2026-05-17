@@ -449,21 +449,21 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local pvp_score = get_pvp_score(player, recent)
 		local capoints = get_capture_point(player, recent)
 
-		return pvp_score + capoints + pvp_score * capoints / DIVIDER
+		return pvp_score + capoints + math.sqrt(capoints * pvp_score)
 	end
 
 	--- @type ScoreFun
 	local function get_player_passive_value(player, recent)
 		local heal_score = get_heal_score(player, recent)
 		local build_score = get_build_point(player, recent)
-		return heal_score + build_score + heal_score * build_score / DIVIDER
+		return heal_score + build_score + math.sqrt(heal_score * build_score)
 	end
 
 	--- @type ScoreFun
 	local function get_player_value(player, recent)
 		local passive_val = get_player_passive_value(player, recent)
 		local active_val = get_player_active_value(player, recent)
-		return passive_val + active_val + passive_val * active_val / DIVIDER
+		return passive_val + active_val + math.sqrt(passive_val * active_val)
 	end
 
 	--- @param team Team
@@ -493,25 +493,30 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	)
 		local MAXIMUM_MATCH_TIME = 3600
 		local recent_part = math.min(match_time, MAXIMUM_MATCH_TIME) / MAXIMUM_MATCH_TIME
-		local loser_teams_val = 1
+		local loser_teams_val = 0
 		for _, loser_team in ipairs(loser_teams) do
-			loser_teams_val = get_team_value(loser_team, recent_part) * loser_teams_val
+			loser_teams_val = get_team_value(loser_team, recent_part) + loser_teams_val
 		end
 		core.debug("recent part is " .. tostring(recent_part))
 		local winner_team_val = get_team_value(winner_team, recent_part)
-		local other_teams_val_combined = 1
-		for _, t in ipairs(other_teams) do
-			other_teams_val_combined = other_teams_val_combined
-				* get_team_value(t, recent_part)
+		local other_teams_val_combined
+		if #other_teams > 0 then
+			other_teams_val_combined = 1
+			for _, t in ipairs(other_teams) do
+				other_teams_val_combined = other_teams_val_combined
+					* get_team_value(t, recent_part)
+			end
 		end
 		local thief_val = get_player_active_value(flag_thief, 0.25)
 		core.debug(string.format("w val: %f", winner_team_val))
-		core.debug(string.format("o val: %f", other_teams_val_combined))
+		core.debug(string.format("o val: %f", other_teams_val_combined or -1.0))
 		core.debug(string.format("L val: %f", loser_teams_val))
 		core.debug(string.format("T val: %f", thief_val))
-		return (loser_teams_val / winner_team_val)
-			+ (winner_team_val / other_teams_val_combined)
-			+ (loser_teams_val / thief_val)
+		local retval = loser_teams_val / winner_team_val + loser_teams_val / thief_val + 1
+		if other_teams_val_combined ~= nil then
+			retval = retval + winner_team_val / other_teams_val_combined
+		end
+		return retval
 	end
 
 	local function new_calculate_killscore(player, killer)
@@ -1392,21 +1397,23 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			core.debug("capoints: " .. tostring(capture_points))
 
 			recent_rankings.add(pname, { capture_points = capture_points }, true)
+			local capture_points_display = math.round(capture_points)
 
 			local text = S(
-				" has captured the flag in @1 and got @2 points and @3 capoints!",
+				" has captured the flag in @1 and got @2 points and @3 CPs!",
 				ctf_map.get_duration(),
 				capture_reward,
-				math.round(capture_points)
+				capture_points_display
 			)
 			local teamnames_readable = HumanReadable(teamnames)
 			local flag_or_flags = S("flag")
 			if many_teams then
 				text = S(
-					" has captured the flag of team(s) @1 in @2 and got @3 points!",
+					" has captured the flag of team(s) @1 in @2 and got @3 points and @4 CPs!",
 					teamnames_readable,
 					ctf_map.get_duration(),
-					capture_reward
+					capture_reward,
+					capture_points_display
 				)
 				flag_or_flags = S("flags")
 			end
