@@ -203,7 +203,6 @@ function ctf_jma_elysium.join(player, joined_callback)
 
 		local can_join, reason = ctf_jma_elysium.can_player_join_elysium(player_name)
 		if not can_join then
-			---@cast reason -nil
 			core.chat_send_player(player_name, reason)
 			ctf_jma_elysium.on_joining[player_name] = nil
 			return false
@@ -231,6 +230,9 @@ function ctf_jma_elysium.join(player, joined_callback)
 		player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
 
 		playertag.set(player, playertag.TYPE_BUILTIN)
+
+		ctf_kill_list.disable(player)
+		ctf_modebase.flag_sound_toggle(player, false)
 
 		-- Just in case
 		player:set_properties({
@@ -293,7 +295,7 @@ function ctf_jma_elysium.join(player, joined_callback)
 		ctf_jma_elysium.show_wait_formspec(name)
 
 		ctf_map.emerge_with_callbacks(nil, map.pos1, map.pos2, function()
-			core.place_schematic(vector.add(map.pos1, map.map_offset), map.file, "0")
+			core.place_schematic(vector.add(map.pos1, map.map_offset), map.file, 0)
 			ctf_jma_elysium.loaded_maps.main = true
 			ctf_jma_elysium.restore_nodemeta("main")
 			core.after(3, handle_player, player)
@@ -327,6 +329,9 @@ function ctf_jma_elysium.leave(player)
 	end
 
 	core.chat_send_all(S("@1 has left Elysium", name))
+
+	ctf_kill_list.enable(player)
+	ctf_modebase.flag_sound_toggle(player, true)
 
 	local inv = player:get_inventory()
 	inv:set_list("main", {})

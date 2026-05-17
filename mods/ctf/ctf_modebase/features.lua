@@ -26,7 +26,6 @@ local default_item_value = {
 	["ctf_ranged:rifle"] = 4,
 	["ctf_ranged:smg"] = 4,
 	["ctf_healing:bandage"] = 4,
-	["ctf_healing:healing_pistol"] = 4,
 	["default:shovel_diamond"] = 4,
 	["grenades:smoke"] = 2,
 	["ctf_ranged:pistol_loaded"] = 2,
@@ -35,9 +34,6 @@ local default_item_value = {
 	["default:axe_steel"] = 1,
 	["default:shovel_mese"] = 1,
 	["ctf_ranged:pistol"] = 1,
-	["ctf_ranged:desert_eagle"] = 10,
-	["ctf_ranged:desert_eagle_loaded"] = 10,
-	["ctf_ranged:minigun"] = 12,
 }
 ctf_core.testing = {
 	-- This is here temporarily, I'm modifying it with //lua and a code minimizer on the main server-
@@ -78,13 +74,13 @@ local S = core.get_translator(core.get_current_modname())
 
 local hud = mhud.init()
 local LOADING_SCREEN_TARGET_TIME = 5
---- @type number?
 local loading_screen_time
+
+local player_sound_setting_table = {}
 
 -- tag: map_image
 local old_announce = ctf_modebase.map_chosen
 function ctf_modebase.map_chosen(map, ...)
-	--- @type boolean
 	local found = false
 	for _, p in pairs(core.get_connected_players()) do
 		if hud:exists(p, "loading_screen") then
@@ -139,13 +135,10 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 	nametag_players[player:get_player_name()] = nil
 
 	for n in pairs(table.copy(nametag_players)) do
-		local player_obj = core.get_player_by_name(n)
-		if not player_obj then
-			nametag_players[n] = nil
-			goto continue
-		end
-		local setting =
-			ctf_settings.get(player_obj, "ctf_modebase:teammate_nametag_style")
+		local setting = ctf_settings.get(
+			core.get_player_by_name(n),
+			"ctf_modebase:teammate_nametag_style"
+		)
 
 		if setting == "3" then
 			nametag_players[n] = nil
@@ -153,7 +146,6 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 			symbol_players[n] = true
 			nametag_players[n] = nil
 		end
-		::continue::
 	end
 
 	for k, v in ipairs(core.get_connected_players()) do
@@ -168,11 +160,8 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 	symbol_nametag.object:set_observers(symbol_players)
 end
 
---- @type boolean
 local tags_hidden = false
---- @type boolean
 local update_timer = false
---- @param time number?
 local function update_playertags(time)
 	if not update_timer and not tags_hidden then
 		update_timer = true
@@ -265,9 +254,6 @@ function ctf_modebase.show_loading_screen()
 	loading_screen_time = core.get_us_time()
 end
 
---- @param player ObjectRef
---- @param rank Rank
---- @return boolean
 local function is_pro(player, rank)
 	local pro_chest = player
 		and player
@@ -288,15 +274,6 @@ local function is_pro(player, rank)
 	end
 end
 
---- @alias FlagNotifMessage { text: string, color: string? }
-
---- @param pname PlayerName
---- @param pteam Team
---- @param flags_taken (string | string[])?
---- @param to_player_msg FlagNotifMessage
---- @param to_teammates_msg FlagNotifMessage
---- @param to_victims_msg FlagNotifMessage
---- @param to_others_msg FlagNotifMessage
 local function flag_event_notify(
 	pname,
 	pteam,
@@ -311,11 +288,10 @@ local function flag_event_notify(
 	end
 
 	local function send_notify(target, def)
-		local player_obj = PlayerObj(target)
-		if not player_obj then
-			return
-		end
-		if ctf_settings.get(player_obj, "ctf_modebase:flag_notifications") == "true" then
+		if
+			ctf_settings.get(PlayerObj(target), "ctf_modebase:flag_notifications")
+			== "true"
+		then
 			hud_events.new(target, def)
 		end
 	end
@@ -376,152 +352,16 @@ ctf_settings.register("ctf_modebase:teammate_nametag_style", {
 	end,
 })
 
+function ctf_modebase.flag_sound_toggle(player_name, active)
+	player_sound_setting_table[player_name] = active
+end
+
 ctf_modebase.features = function(rankings, recent_rankings)
 	local FLAG_MESSAGE_COLOR = "#d9b72a"
 	local FLAG_CAPTURE_TIMER = 60 * 3
-	--- @type boolean
 	local many_teams = false
-	--- @type Team[]
-	local team_list = {}
-	--- @type number?
+	local team_list
 	local teams_left
-
-	local DIVIDER = 200
-
-	--- @param player PlayerName
-	--- @param recent number?
-	--- @return table
-	local function get_ranking(player, recent)
-		recent = nil or 0.0
-		local complement = 1.0 - recent
-		local ranking = rankings:get(player)
-		local recent_rankings2 = recent_rankings.get(player)
-		return {
-			kills = (ranking.kills or 1) * complement
-				+ (recent_rankings2.kills or 1) * recent,
-			deaths = (ranking.deaths or 1) * complement
-				+ (recent_rankings2.deaths or 1) * recent,
-			kill_assists = (ranking.kill_assists or 1) * complement
-				+ (recent_rankings2.kill_assists or 1) * recent,
-			hp_healed = (ranking.hp_healed or 1) * complement
-				+ (recent_rankings2.hp_healed or 1) * recent,
-			capture_points = (ranking.capture_points or 1) * complement
-				+ (recent_rankings2.capture_points or 1) * recent,
-			build_points = (ranking.build_points or 1) * complement
-				+ (recent_rankings2.build_points or 1) * recent,
-		}
-	end
-
-	--- @alias ScoreFun fun(player: PlayerName, recent: number?): number
-
-	--- @type ScoreFun
-	local function get_pvp_score(player, recent)
-		local ranking = get_ranking(player, recent)
-		local kills = ranking.kills or 1
-		local deaths = rankings.deaths or 1
-		local assists = rankings.kill_assists or 1
-		return (kills + assists / 5) / deaths
-	end
-
-	--- @type ScoreFun
-	local function get_build_point(player, recent)
-		local ranking = get_ranking(player, recent)
-		return ranking.build_points or 1
-	end
-
-	--- @type ScoreFun
-	local function get_capture_point(player, recent)
-		--local ranking = get_ranking(player, recent)
-		return 1
-	end
-
-	--- @type ScoreFun
-	local function get_heal_score(player, recent)
-		local ranking = get_ranking(player, recent)
-		local hp_healed = rankings.hp_healed or 1
-		local deaths = rankings.deaths or 1
-		--- 60 is 2*hp_knight
-		return (hp_healed / 60) / deaths
-	end
-
-	--- @type ScoreFun
-	local function get_player_active_value(player, recent)
-		return get_pvp_score(player, recent) * get_capture_point(player, recent) / DIVIDER
-	end
-
-	--- @type ScoreFun
-	local function get_player_passive_value(player, recent)
-		return get_heal_score(player, recent) * get_build_point(player, recent) / DIVIDER
-	end
-
-	--- @type ScoreFun
-	local function get_player_value(player, recent)
-		return get_player_active_value(player, recent)
-			* get_player_passive_value(player, recent)
-			/ DIVIDER
-	end
-
-	--- @param team Team
-	--- @param recent number
-	--- @return number
-	local function get_team_value(team, recent)
-		local members = ctf_teams.get_team_members(team)
-		local total_value = 0
-		for _, member in ipairs(members) do
-			total_value = get_player_value(member, recent) * total_value
-		end
-		return total_value
-	end
-
-	--- @param loser_teams Team[]
-	--- @param winner_team Team
-	--- @param other_teams Team[]
-	--- @param flag_thief PlayerName
-	--- @param match_time number
-	--- @return number
-	local function calculate_capture_points(
-		loser_teams,
-		winner_team,
-		other_teams,
-		flag_thief,
-		match_time
-	)
-		local MAXIMUM_MATCH_TIME = 3600
-		local recent_part = 1.0
-			- math.min(match_time, MAXIMUM_MATCH_TIME) / MAXIMUM_MATCH_TIME
-		local loser_teams_val = 1
-		for _, loser_team in ipairs(loser_teams) do
-			loser_teams_val = get_team_value(loser_team, recent_part) * loser_teams_val
-		end
-		local winner_team_val = get_team_value(winner_team, recent_part)
-		local other_teams_val_combined = 1
-		for _, t in ipairs(other_teams) do
-			other_teams_val_combined = other_teams_val_combined
-				* get_team_value(t, recent_part)
-		end
-		local thief_val = get_player_active_value(flag_thief, 0.25)
-		return (loser_teams_val / winner_team_val)
-			+ (winner_team_val / other_teams_val_combined)
-			+ (loser_teams_val / thief_val)
-	end
-
-	local function new_calculate_killscore(player, killer)
-		local pname = PlayerName(player)
-		local killer_name = PlayerName(killer)
-		local pteam = ctf_teams.get_player_team(pname)
-		if not pteam then
-			return 0
-		end
-		local player_val = get_player_value(pname, 0.66)
-		core.debug(
-			string.format(
-				"%s killed %s and would have got %f",
-				killer_name,
-				pname,
-				player_val
-			)
-		)
-	end
 
 	local function calculate_killscore(player, killer)
 		local pname = PlayerName(player)
@@ -663,7 +503,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			if node_def then
 				local inv_image = node_def.inventory_image
 				if inv_image and inv_image ~= "" then
-					---@diagnostic disable-next-line: cast-local-type
 					image = inv_image
 				elseif node_def.tiles and node_def.tiles[1] then
 					local tiles1 = node_def.tiles[1]
@@ -733,50 +572,28 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		return true
 	end
 
-	--- @param teamname Team
 	local function celebrate_team(teamname)
 		for _, player in ipairs(core.get_connected_players()) do
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(pname)
 
-			local sound_volume = (
-				tonumber(ctf_settings.get(player, "ctf_modebase:flag_sound_volume"))
-				or 10.0
-			) / 10
 
-			if pteam == teamname then
-				core.sound_play("ctf_modebase_trumpet_positive", {
-					to_player = pname,
-					gain = sound_volume,
-					pitch = 1.0,
-				}, true)
-			else
-				core.sound_play("ctf_modebase_trumpet_negative", {
-					to_player = pname,
-					gain = sound_volume,
-					pitch = 1.0,
-				}, true)
-			end
-		end
-	end
+			if player_sound_setting_table[pname] == true then
+				local sound_volume = (
+					tonumber(ctf_settings.get(player, "ctf_modebase:flag_sound_volume"))
+					or 10.0
+				) / 10
 
-	--- @param teamname Team
-	local function drop_flag(teamname)
-		for _, player in ipairs(core.get_connected_players()) do
-			local pname = player:get_player_name()
-			local pteam = ctf_teams.get(pname)
-
-			if pteam then
 				if pteam == teamname then
-					core.sound_play("ctf_modebase_drop_flag_negative", {
+					core.sound_play("ctf_modebase_trumpet_positive", {
 						to_player = pname,
-						gain = 0.2,
+						gain = sound_volume,
 						pitch = 1.0,
 					}, true)
 				else
-					core.sound_play("ctf_modebase_drop_flag_positive", {
+					core.sound_play("ctf_modebase_trumpet_negative", {
 						to_player = pname,
-						gain = 0.2,
+						gain = sound_volume,
 						pitch = 1.0,
 					}, true)
 				end
@@ -784,10 +601,31 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end
 	end
 
-	--- @param player PlayerName
-	--- @param reason "punch" | "combatlog" | string
-	--- @param killer PlayerName?
-	--- @param weapon_image string?
+	local function drop_flag(teamname)
+		for _, player in ipairs(core.get_connected_players()) do
+			local pname = player:get_player_name()
+			local pteam = ctf_teams.get(pname)
+
+			if player_sound_setting_table[pname] == true then
+				if pteam then
+					if pteam == teamname then
+						core.sound_play("ctf_modebase_drop_flag_negative", {
+							to_player = pname,
+							gain = 0.2,
+							pitch = 1.0,
+						}, true)
+					else
+						core.sound_play("ctf_modebase_drop_flag_positive", {
+							to_player = pname,
+							gain = 0.2,
+							pitch = 1.0,
+						}, true)
+					end
+				end
+			end
+		end
+	end
+
 	local function end_combat_mode(player, reason, killer, weapon_image)
 		local comment = nil
 
@@ -815,32 +653,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 		if killer then
 			local killscore = calculate_killscore(player, killer)
-			local is_first_match_kill = not ctf_modebase.first_kill_happened
-
-			--- If it's the first match kill, we give extra reward
-			--- and announce it in the public
-			if is_first_match_kill then
-				local multiplier = 1.5
-				local x = killscore % 10
-				if x > 5 and x <= 8 then
-					multiplier = 2
-				elseif x == 9 then
-					multiplier = 4
-				end
-				killscore = math.ceil(multiplier * killscore)
-				core.chat_send_all(
-					core.colorize(
-						"orange",
-						S(
-							"First Kill! @1 killed @2 and got @3!",
-							killer,
-							player,
-							killscore
-						)
-					)
-				)
-				ctf_modebase.first_kill_happened = true
-			end
 
 			local rewards = { kills = 1, score = killscore }
 			local bounty = ctf_modebase.bounties.claim(player, killer)
@@ -902,9 +714,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		ctf_combat_mode.end_combat(player)
 	end
 
-	--- @param player ObjectRef
-	--- @param hitter ObjectRef
-	--- @return boolean, string?
 	local function can_punchplayer(player, hitter)
 		if not ctf_modebase.match_started then
 			return false, S("The match hasn't started yet!")
@@ -961,7 +770,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					core.log("action", player:get_player_name() .. " detached")
 				end
 				if player.set_camera then
-					player:set_camera({ mode = "any" })
+					player:set_camera({mode = "any"})
 				end
 			end
 
@@ -1054,7 +863,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			end
 			streak_bonus_received = {}
 		end,
-		--- @param player ObjectRef
 		team_allocator = function(player)
 			player = PlayerName(player)
 
@@ -1178,7 +986,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			)
 
 			if not success then
-				core.log("error", tostring(result))
+				core.log("error", result)
 				result = false
 			end
 
@@ -1212,9 +1020,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local value = default_item_value[itemname]
 			return value or 0
 		end,
-		--- @param player ObjectRef
-		--- @param teamname Team
-		--- @return string?
 		can_take_flag = function(player, teamname)
 			if not ctf_modebase.match_started then
 				tp_player_near_flag(player)
@@ -1224,14 +1029,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end,
 		calculate_capture_reward = calculate_capture_reward,
 		calculate_killscore = calculate_killscore,
-		--- @param player ObjectRef
-		--- @param teamname Team
 		on_flag_take = function(player, teamname)
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(player)
-			if not pteam then
-				return
-			end
 			local tcolor = ctf_teams.team[pteam].color
 
 			ctf_modebase.remove_immunity(player)
@@ -1268,25 +1068,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				string.format("Player %s (team %s)%s", pname, pteam, text)
 			)
 
-			local the_team = ctf_teams.get(pname)
-			if the_team then
-				celebrate_team(the_team)
-			else
-				core.log(
-					"error",
-					"A player attempted a flag but is not member of any team! name: "
-						.. pname
-				)
-			end
-
+			celebrate_team(ctf_teams.get(pname))
 			recent_rankings.add(pname, {
 				flag_attempts = 1,
 			}, false)
 			ctf_modebase.flag_huds.track_capturer(pname, FLAG_CAPTURE_TIMER)
 		end,
-		--- @param player ObjectRef
-		--- @param teamnames Team[]
-		--- @param pteam Team
 		on_flag_drop = function(player, teamnames, pteam)
 			local pname = player:get_player_name()
 			local tcolor = pteam and ctf_teams.team[pteam].color or "#FFF"
@@ -1333,14 +1120,11 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			drop_flag(pteam)
 		end,
-		--- @param player ObjectRef
-		--- @param teamnames Team[]
 		on_flag_capture = function(player, teamnames)
 			local pname = player:get_player_name()
 			local pteam = ctf_teams.get(pname)
 			if not pteam then
 				core.log("error", "Someone is capping a flag but is not a teammember :/")
-				return
 			end
 			local tcolor = ctf_teams.team[pteam].color
 
@@ -1356,34 +1140,11 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			local team_scores = recent_rankings.teams()
 			local capture_reward = calculate_capture_reward(pteam, teamnames)
-			local other_teams = {}
-			for _, t1 in ipairs(team_list) do
-				local include = true
-				for _, target_team in ipairs(teamnames) do
-					if t1 == target_team or t1 == pteam then
-						include = false
-					end
-				end
-				if include then
-					table.insert(other_teams, t1)
-				end
-			end
-
-			local capture_points = calculate_capture_points(
-				teamnames,
-				pteam,
-				other_teams,
-				pname,
-				os.time() - ctf_modebase.match_start_time
-			)
-
-			recent_rankings.add(pname, { capture_points = capture_points }, true)
 
 			local text = S(
-				" has captured the flag in @1 and got @2 points and @3 capoints!",
+				" has captured the flag in @1 and got @2 points!",
 				ctf_map.get_duration(),
-				capture_reward,
-				math.floor(capture_points)
+				capture_reward
 			)
 			local teamnames_readable = HumanReadable(teamnames)
 			local flag_or_flags = S("flag")
@@ -1409,12 +1170,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				),
 				color = "success",
 			}, { text = S("@1 has captured your flag!", pname), color = "warning" }, {
-				text = S(
-					"@1 has captured: @2 @3!",
-					pname,
-					teamnames_readable,
-					flag_or_flags
-				),
+				text = S("@1 has captured: @2 @3!", pname, teamnames_readable, flag_or_flags),
 				color = "light",
 			})
 
@@ -1505,10 +1261,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 				local match_rankings, special_rankings, rank_values, formdef =
 					ctf_modebase.summary.get()
-				---@cast match_rankings table
-				---@cast special_rankings table
-				---@cast rank_values table
-				---@cast formdef table
 				formdef.title = win_text
 
 				for _, pn in ipairs(ctf_teams.get_all_team_players()) do
@@ -1534,8 +1286,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				end
 			end
 		end,
-		--- @param player ObjectRef
-		--- @param new_team Team
 		on_allocplayer = function(player, new_team)
 			player:set_hp(player:get_properties().hp_max)
 
@@ -1564,7 +1314,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			tp_player_near_flag(player)
 		end,
-		--- @param player ObjectRef
 		on_leaveplayer = function(player)
 			if not ctf_modebase.match_started then
 				ctf_combat_mode.end_combat(player)
@@ -1578,8 +1327,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			recent_rankings.on_leaveplayer(pname)
 		end,
-		--- @param player ObjectRef
-		--- @param reason "punch" | "combatlog" | string
 		on_dieplayer = function(player, reason)
 			if not ctf_modebase.match_started then
 				return
@@ -1594,18 +1341,15 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				ctf_modebase.prepare_respawn_delay(player)
 			end
 		end,
-		--- @param player ObjectRef
 		on_respawnplayer = function(player)
 			tp_player_near_flag(player)
 		end,
-		--- @param pname PlayerName
 		player_is_pro = function(pname)
 			local rank = rankings:get(pname)
 			if is_pro(core.get_player_by_name(pname), rank) then
 				return true
 			end
 		end,
-		--- @param pname PlayerName
 		get_chest_access = function(pname)
 			local rank = rankings:get(pname)
 
@@ -1634,12 +1378,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			return "You need at least 10 score to access this chest", deny_pro
 		end,
 		can_punchplayer = can_punchplayer,
-		--- @param player ObjectRef
-		--- @param hitter ObjectRef
-		--- @param damage number
-		--- @param _ any
-		--- @param tool_capabilities table
-		--- @return boolean, string?
 		on_punchplayer = function(player, hitter, damage, _, tool_capabilities)
 			if not hitter:is_player() or player:get_hp() <= 0 then
 				return false
@@ -1670,9 +1408,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			return damage
 		end,
-		--- @param player ObjectRef
-		--- @param patient ObjectRef
-		--- @param amount number
 		on_healplayer = function(player, patient, amount)
 			if not ctf_modebase.match_started then
 				return "The match hasn't started yet!"
