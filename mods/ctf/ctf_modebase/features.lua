@@ -815,6 +815,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 		if killer then
 			local killscore = calculate_killscore(player, killer)
+			new_calculate_killscore(player, killer)
+			--TODO: when the values are finetuned, change and use the new calculation method
+			-- --Farooq
+
 			local is_first_match_kill = not ctf_modebase.first_kill_happened
 
 			--- If it's the first match kill, we give extra reward
