@@ -38,7 +38,9 @@ end
 -- this has to be called
 ctf_teams.register_on_allocplayer(function()
 	local cur_mode = ctf_modebase:get_current_mode()
-	if not cur_mode then return end
+	if not cur_mode then
+		return
+	end
 	for target_name, bounties2 in pairs(contributed_bounties) do
 		for contributor, amount in pairs(bounties2.contributors) do
 			if ctf_teams.get(target_name) == ctf_teams.get(contributor) then
@@ -430,7 +432,6 @@ ctf_core.register_chatcommand_alias(
 						tostring(remaining)
 					)
 			end
-			last_bounty_use[name] = now
 
 			local bname, amount = string.match(params, "([^%s]*) ([^%s]*)")
 			amount = tonumber(amount)
@@ -502,6 +503,7 @@ ctf_core.register_chatcommand_alias(
 				total,
 				bname
 			)
+			last_bounty_use[name] = now
 			core.chat_send_all(core.colorize(CHAT_COLOR, msg))
 			return true, S("Bounty placed!")
 		end,
