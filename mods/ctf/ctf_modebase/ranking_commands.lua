@@ -105,8 +105,8 @@ ctf_core.register_chatcommand_alias("rank", "r", {
 	end,
 })
 
-ctf_core.register_chatcommand_alias("capoint", "cp", {
-	description = "Get capoints of a player or yourself in all modes",
+ctf_core.register_chatcommand_alias("capcoin", "cc", {
+	description = "Get capcoins of a player or yourself in all modes [EXPERIMENTAL]",
 	params = "[playername]",
 	func = function(name, param)
 		local player = name
