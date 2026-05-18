@@ -463,6 +463,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local function get_player_value(player, recent)
 		local passive_val = get_player_passive_value(player, recent)
 		local active_val = get_player_active_value(player, recent)
+		core.debug(string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val)
 		return passive_val + active_val + math.sqrt(passive_val * active_val)
 	end
 
@@ -473,7 +474,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local members = ctf_teams.get_team_members(team)
 		local total_value = 0
 		for _, member in ipairs(members) do
-			total_value = get_player_value(member, recent) + total_value
+			local player_val = get_player_value(member, recent)
+			core.debug("val of " .. member .. " : " .. tostring(player_val))
+			total_value = player_val + total_value
 		end
 		total_value = math.max(total_value, 1)
 		return total_value * total_value
@@ -1401,26 +1404,23 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				pname,
 				os.time() - ctf_modebase.match_start_time
 			)
-			core.debug("capoints: " .. tostring(capture_points))
+			core.debug("CapCoins: " .. tostring(capture_points))
 
 			recent_rankings.add(pname, { capture_points = capture_points }, true)
-			local capture_points_display = math.round(capture_points)
 
 			local text = S(
-				" has captured the flag in @1 and got @2 points and @3 CapCoins!",
+				" has captured the flag in @1 and got @2 points!",
 				ctf_map.get_duration(),
 				capture_reward,
-				capture_points_display
 			)
 			local teamnames_readable = HumanReadable(teamnames)
 			local flag_or_flags = S("flag")
 			if many_teams then
 				text = S(
-					" has captured the flag of team(s) @1 in @2 and got @3 points and @4 CapCoins!",
+					" has captured the flag of team(s) @1 in @2 and got @3 points!",
 					teamnames_readable,
 					ctf_map.get_duration(),
 					capture_reward,
-					capture_points_display
 				)
 				flag_or_flags = S("flags")
 			end
