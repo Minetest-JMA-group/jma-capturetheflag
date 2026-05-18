@@ -136,6 +136,7 @@ function ctf_jma_elysium.save_meta(mapname)
 	end
 
 	storage:set_string("meta_" .. mapname, core.serialize(to_save))
+	vm:close()
 	return true, count
 end
 
@@ -190,6 +191,7 @@ function ctf_jma_elysium.replace_nodes_with_ctf_map(mapname)
 
 	vm:set_data(data)
 	vm:write_to_map(true)
+	vm:close()
 
 	return replaced_count, skipped_count
 end
