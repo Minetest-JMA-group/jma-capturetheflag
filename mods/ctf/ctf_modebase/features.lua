@@ -463,7 +463,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local function get_player_value(player, recent)
 		local passive_val = get_player_passive_value(player, recent)
 		local active_val = get_player_active_value(player, recent)
-		core.debug(string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val)
+		core.debug(string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val))
 		return passive_val + active_val + math.sqrt(passive_val * active_val)
 	end
 
