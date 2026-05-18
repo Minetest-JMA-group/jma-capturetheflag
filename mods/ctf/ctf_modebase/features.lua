@@ -535,16 +535,39 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			return 0
 		end
 		local player_val = get_player_value(pname, 0.66)
-		local player_pvp_val = get_pvp_score(pname, 0.66)
-		local killer_pvp_val = get_pvp_score(killer_name, 0.66)
+		local player_passive_val = get_player_passive_value(pname, 0.66)
+		local player_pvp_val = get_pvp_score(pname, 0.0)
+		local killer_pvp_val = get_pvp_score(killer_name, 0.0)
+		local killer_val = get_player_value(killer_name, 0.66)
 		local score1 = player_pvp_val / killer_pvp_val
+		core.debug(string.format("[NEW K] %s killing %s", killer_name, pname))
 		core.debug(
 			string.format(
-				"%s killed %s and would have got (%f, %f)",
-				killer_name,
+				"[NEW K] target %s r=0.66 overall,pvp(r=0),passive vals: %f, %f, %f",
 				pname,
 				player_val,
-				score1
+				player_pvp_val,
+				player_passive_val
+			)
+		)
+		core.debug(
+			string.format(
+				"[NEW K] killer %s r=0.66 overall,pvp(r=0) vals: %f, %f",
+				killer_name,
+				killer_val,
+				killer_pvp_val
+			)
+		)
+		local player_recent_val = get_player_value(pname, 1.0)
+		local player_p_recent_val = get_player_passive_value(pname, 1.0)
+		local player_a_recent_val = get_player_active_value(pname, 1.0)
+		core.debug(
+			string.format(
+				"[NEW K] target %s recent overall,active,passive vals: %f, %f, %f",
+				pname,
+				player_recent_val,
+				player_a_recent_val,
+				player_p_recent_val
 			)
 		)
 	end
