@@ -160,13 +160,15 @@ function ctf_map.remove_barrier(mapmeta, callback)
 			vm:set_data(data)
 
 			return vm
-		end, function(vm)
-			vm:write_to_map(false)
+		end, function(vm_arg)
+			vm_arg:write_to_map(false)
 
 			core.after(0.1, function()
-				local vm = VoxelManip(pos1, pos2)
-				vm:update_liquids()
+				local vm2 = VoxelManip(pos1, pos2)
+				vm2:update_liquids()
+				vm2:close()
 			end)
+			vm_arg:close()
 
 			callback()
 		end, vm, ctf_map.barrier_nodes)
@@ -188,13 +190,16 @@ function ctf_map.remove_barrier(mapmeta, callback)
 			end
 
 			return vm
-		end, function(vm)
-			vm:write_to_map(false)
+		end, function(vm_arg)
+			vm_arg:write_to_map(false)
 
 			core.after(0.1, function()
-				local vm = VoxelManip(mapmeta.pos1, mapmeta.pos2)
-				vm:update_liquids()
+				local vm2 = VoxelManip(mapmeta.pos1, mapmeta.pos2)
+				vm2:update_liquids()
+				vm2:close()
 			end)
+
+			vm_arg:close()
 
 			callback()
 		end, vm, mapmeta.barriers)
@@ -369,6 +374,7 @@ function ctf_map.prepare_map_nodes(
 	vm:set_param2_data(param2_data)
 	vm:update_liquids()
 	vm:write_to_map(false)
+	vm:close()
 end
 
 --- @param mode string

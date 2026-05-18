@@ -330,6 +330,7 @@ function ctf_map.save_map(mapmeta)
 			end
 		end
 		tmp.max = #data
+		vm:close()
 		if barrier_found then
 			table.insert(barriers, tmp)
 		end
