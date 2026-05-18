@@ -471,11 +471,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	--- @return number
 	local function get_team_value(team, recent)
 		local members = ctf_teams.get_team_members(team)
-		local total_value = 1
+		local total_value = 0
 		for _, member in ipairs(members) do
-			total_value = get_player_value(member, recent) * total_value
+			total_value = get_player_value(member, recent) + total_value
 		end
-		return total_value
+		total_value = math.max(total_value, 1)
+		return total_value * total_value
 	end
 
 	--- @param loser_teams Team[]
@@ -501,11 +502,13 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local winner_team_val = get_team_value(winner_team, recent_part)
 		local other_teams_val_combined
 		if #other_teams > 0 then
-			other_teams_val_combined = 1
+			other_teams_val_combined = 0
 			for _, t in ipairs(other_teams) do
 				other_teams_val_combined = other_teams_val_combined
-					* get_team_value(t, recent_part)
+					+ get_team_value(t, recent_part)
 			end
+			other_teams_val_combined = math.max(other_teams_val_combined, 1)
+			other_teams_val_combined = math.pow(other_teams_val_combined, 2)
 		end
 		local thief_val = get_player_active_value(flag_thief, 0.25)
 		core.debug(string.format("w val: %f", winner_team_val))
