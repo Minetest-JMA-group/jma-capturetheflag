@@ -463,7 +463,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local function get_player_value(player, recent)
 		local passive_val = get_player_passive_value(player, recent)
 		local active_val = get_player_active_value(player, recent)
-		core.debug(string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val))
+		core.debug(
+			string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val)
+		)
 		return passive_val + active_val + math.sqrt(passive_val * active_val)
 	end
 
@@ -1411,7 +1413,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local text = S(
 				" has captured the flag in @1 and got @2 points!",
 				ctf_map.get_duration(),
-				capture_reward,
+				capture_reward
 			)
 			local teamnames_readable = HumanReadable(teamnames)
 			local flag_or_flags = S("flag")
@@ -1420,7 +1422,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					" has captured the flag of team(s) @1 in @2 and got @3 points!",
 					teamnames_readable,
 					ctf_map.get_duration(),
-					capture_reward,
+					capture_reward
 				)
 				flag_or_flags = S("flags")
 			end
