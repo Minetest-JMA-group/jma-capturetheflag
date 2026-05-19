@@ -440,8 +440,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local ranking = get_ranking(player, recent)
 		local hp_healed = rankings.hp_healed or 1
 		local deaths = rankings.deaths or 1
-		--- 60 is 2*hp_knight
-		return (hp_healed / 60) / deaths
+		--- 15 is knight_hp / 2
+		return (hp_healed / 15) / deaths
 	end
 
 	--- @type ScoreFun
@@ -497,8 +497,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		flag_thief,
 		match_time
 	)
-		local MAXIMUM_MATCH_TIME = 3600
-		local recent_part = math.min(match_time, MAXIMUM_MATCH_TIME) / MAXIMUM_MATCH_TIME
+		local recent_part = 0.0
 		local loser_teams_val = 0
 		for _, loser_team in ipairs(loser_teams) do
 			loser_teams_val = get_team_value(loser_team, recent_part) + loser_teams_val
@@ -515,11 +514,17 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			other_teams_val_combined = math.max(other_teams_val_combined, 1)
 			other_teams_val_combined = math.pow(other_teams_val_combined, 2)
 		end
-		local thief_val = get_player_active_value(flag_thief, 0.25)
+		local thief_val = get_player_active_value(flag_thief, 0)
 		core.debug(string.format("w val: %f", winner_team_val))
 		core.debug(string.format("o val: %f", other_teams_val_combined or -1.0))
 		core.debug(string.format("L val: %f", loser_teams_val))
 		core.debug(string.format("T val: %f", thief_val))
+		core.debug(
+			string.format(
+				"T reward alt: %f",
+				math.exp(loser_teams_val / thief_val / thief_val)
+			)
+		)
 		local retval = loser_teams_val / winner_team_val + loser_teams_val / thief_val + 1
 		if other_teams_val_combined ~= nil then
 			retval = retval + winner_team_val / other_teams_val_combined
@@ -539,7 +544,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local player_pvp_val = get_pvp_score(pname, 0.0)
 		local killer_pvp_val = get_pvp_score(killer_name, 0.0)
 		local killer_val = get_player_value(killer_name, 0.66)
-		local score1 = player_pvp_val / killer_pvp_val
 		core.debug(string.format("[NEW K] %s killing %s", killer_name, pname))
 		core.debug(
 			string.format(
@@ -570,6 +574,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				player_p_recent_val
 			)
 		)
+		local player_r_pvp_val = get_pvp_score(pname, 0.66)
+		local killer_r_pvp_val = get_pvp_score(killer_name, 0.66)
+		local alt_score_p1 = math.pow(2, player_r_pvp_val / killer_r_pvp_val)
+		core.debug(string.format("[NEW K] New alt score p1: %f", alt_score_p1))
 	end
 
 	local function calculate_killscore(player, killer)
