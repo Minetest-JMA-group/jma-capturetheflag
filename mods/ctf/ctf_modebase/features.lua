@@ -1351,11 +1351,26 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		on_flag_drop = function(player, teamnames, pteam)
 			local pname = player:get_player_name()
 			local tcolor = pteam and ctf_teams.team[pteam].color or "#FFF"
+			local attempt_reward =
+				calculate_attempt_reward(pteam, player:get_pos(), "death", teamnames)
+			recent_rankings.add(pname, {
+				score = attempt_reward,
+			}, false)
 
-			local text = " has dropped the flag"
+			local colored_thief_name = core.colorize(tcolor, pname)
+			local text = S(
+				"@1 has dropped the flag but got @2",
+				colored_thief_name,
+				attempt_reward
+			)
 			local teamnames_notify = "Your teammate " .. pname .. text
 			if many_teams then
-				text = " has dropped the flag of team(s) " .. HumanReadable(teamnames)
+				text = S(
+					"@1 has dropped the flag of team(s) @2 but got @3",
+					colored_thief_name,
+					HumanReadable(teamnames),
+					attempt_reward
+				)
 				teamnames_notify = "Your teammate " .. pname .. text
 			end
 
@@ -1369,17 +1384,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				{ text = pname .. text, color = "light" }
 			)
 
-			core.chat_send_all(
-				core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text)
-			)
-			recent_rankings.add(pname, {
-				score = calculate_attempt_reward(
-					pteam,
-					player:get_pos(),
-					"death",
-					teamnames
-				),
-			}, false)
+			core.chat_send_all(core.colorize(FLAG_MESSAGE_COLOR, text))
 			ctf_modebase.announce(
 				string.format("Player %s (team %s)%s", pname, pteam, text)
 			)
