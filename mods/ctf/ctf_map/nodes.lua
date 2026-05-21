@@ -191,6 +191,7 @@ core.register_node("ctf_map:placeholder10", {
 local mod_prefixes = {
 	default = "",
 	stairs = "",
+	vessels = "",
 	wool = "wool_",
 	walls = "walls_",
 }
