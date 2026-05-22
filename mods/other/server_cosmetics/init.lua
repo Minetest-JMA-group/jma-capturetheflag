@@ -70,6 +70,7 @@ server_cosmetics = {
 				["2022"] = {"server_cosmetics_santa_hat.png^(server_cosmetics_santa_hat_overlay.png^[multiply:green)"},
 				["2023"] = {"server_cosmetics_santa_hat.png^(server_cosmetics_santa_hat_overlay.png^[multiply:purple)"},
 				["2024"] = {"server_cosmetics_santa_hat.png^(server_cosmetics_santa_hat_overlay.png^[multiply:blue)"},
+				["2025"] = {"server_cosmetics_santa_hat.png^(server_cosmetics_santa_hat_overlay.png^[multiply:blue)"},
 			},
 
 			map_creator_helmet = {
