@@ -394,8 +394,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local function get_ranking(player, recent)
 		recent = nil or 0.0
 		local complement = 1.0 - recent
-		local ranking = rankings:get(player)
-		local recent_rankings2 = recent_rankings.get(player)
+		local ranking = rankings:get(player) or {}
+		local recent_rankings2 = recent_rankings.get(player) or {}
 		return {
 			kills = (ranking.kills or 1) * complement
 				+ (recent_rankings2.kills or 1) * recent,
