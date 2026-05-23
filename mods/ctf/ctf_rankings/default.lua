@@ -11,7 +11,12 @@ return function(prefix, top)
 	local timer = core.get_us_time()
 	op_all(function(key, value)
 		--- @type Rank?
-		local rank = core.parse_json(value)
+		local rank
+		if value == "" then
+			rank = {}
+		else
+			rank = core.parse_json(value)
+		end
 
 		if rank ~= nil and rank.score then
 			top:set(key, rank.score)
