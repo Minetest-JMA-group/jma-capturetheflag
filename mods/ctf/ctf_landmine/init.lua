@@ -22,6 +22,9 @@ local function is_self_landmine(object_ref, pos)
 	local team = meta:get_string("pteam")
 	local placer = meta:get_string("placer")
 	local pname = object_ref:get_player_name()
+	if not placer or placer == "" then
+		return nil -- the landmine isn't armed yet
+	end
 	if pname == "" then
 		return nil -- the object ref is not a player
 	end
@@ -161,11 +164,11 @@ core.register_node("ctf_landmine:landmine", {
 		local meta = core.get_meta(pos)
 		local name = placer:get_player_name()
 		local pteam = ctf_teams.get(placer)
-		meta:set_string("placer", name)
-		meta:set_string("pteam", pteam or "")
-		core.after(ARM_TIME, function(landmines, pos)
+		core.after(ARM_TIME, function(landmines, pos, meta, name, pteam)
 			table.insert(landmines, pos)
-		end, landmines, pos)
+			meta:set_string("placer", name)
+			meta:set_string("pteam", pteam or "")
+		end, landmines, pos, meta, name, pteam)
 	end,
 	on_punch = function(pos, _node, puncher, pointed_thing)
 		if is_self_landmine(puncher, pos) == false then
