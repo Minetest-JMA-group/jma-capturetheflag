@@ -274,6 +274,50 @@ ctf_api.register_on_match_end(function()
 	end
 end)
 
+--- @type integer
+local BOUNTY_LEAVE_TIMEOUT = 30
+--- @type { [string]: integer }
+local left_players = {} -- tracks when players leave with os.time() timestamp
+
+core.register_on_leaveplayer(function(player)
+	local pname = player:get_player_name()
+	left_players[pname] = os.time()
+end)
+
+local last_check = 0
+core.register_globalstep(function(dtime)
+	last_check = last_check + dtime
+	if last_check < 10 then
+		return
+	end
+	last_check = 0
+
+	local current_time = os.time()
+	for pname, leave_time in pairs(left_players) do
+		if current_time - leave_time >= BOUNTY_LEAVE_TIMEOUT then
+			if not core.get_player_by_name(pname) then
+				-- Remove game bounty
+				for tname, bounty in pairs(game_bounties) do
+					if bounty.name == pname then
+						core.chat_send_all(
+							core.colorize(CHAT_COLOR, S("[Bounty] @1 is no longer bountied (left the game)", pname))
+						)
+						game_bounties[tname] = nil
+						break
+					end
+				end
+
+				-- Clear contributed bounties
+				if contributed_bounties[pname] then
+					contributed_bounties[pname] = nil
+				end
+
+				left_players[pname] = nil
+			end
+		end
+	end
+end)
+
 --- @return Reward
 ---@diagnostic disable-next-line: duplicate-set-field
 function ctf_modebase.bounties.bounty_reward_func()
