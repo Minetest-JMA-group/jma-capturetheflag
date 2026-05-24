@@ -315,7 +315,7 @@ core.register_globalstep(function(dtime)
 
 				-- Clear contributed bounties
 				if contributed_bounties[pname] then
-					contributed_bounties[pname] = nil
+					ctf_modebase.bounties.clear_bounty(pname, true)
 				end
 
 				left_players[pname] = nil
