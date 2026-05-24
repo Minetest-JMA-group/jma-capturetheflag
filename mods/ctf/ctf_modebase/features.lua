@@ -1,5 +1,6 @@
 --- @alias Vec3 { x: number, y: number, z: number }
 --- @alias Vec2 { x: number, y: number }
+--- @alias ScoreFun fun(player: PlayerName, recent: number?): number
 
 --- @type { [string]: number }
 local default_item_value = {
@@ -1013,6 +1014,112 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local streak_bonus_received = {}
 
 	return {
+
+		--- @param player PlayerName
+		--- @param recent number?
+		--- @return table
+		get_ranking = function(player, recent)
+			recent = nil or 0.0
+			local complement = 1.0 - recent
+			local ranking = rankings:get(player) or {}
+			local recent_rankings2 = recent_rankings.get(player) or {}
+			return {
+				kills = (ranking.kills or 1) * complement
+					+ (recent_rankings2.kills or 1) * recent,
+				deaths = (ranking.deaths or 1) * complement
+					+ (recent_rankings2.deaths or 1) * recent,
+				kill_assists = (ranking.kill_assists or 1) * complement
+					+ (recent_rankings2.kill_assists or 1) * recent,
+				hp_healed = (ranking.hp_healed or 1) * complement
+					+ (recent_rankings2.hp_healed or 1) * recent,
+				capture_points = (ranking.capture_points or 1) * complement
+					+ (recent_rankings2.capture_points or 1) * recent,
+				build_points = (ranking.build_points or 1) * complement
+					+ (recent_rankings2.build_points or 1) * recent,
+			}
+		end,
+
+		--- @type ScoreFun
+		get_pvp_score = function(player, recent)
+			local ranking = get_ranking(player, recent)
+			local kills = ranking.kills or 1
+			local deaths = rankings.deaths or 1
+			local assists = rankings.kill_assists or 1
+			return (kills + assists / 5) / deaths
+		end,
+
+		--- @type ScoreFun
+		get_build_point = function(player, recent)
+			local ranking = get_ranking(player, recent)
+			return ranking.build_points or 1
+		end,
+
+		--- @type ScoreFun
+		get_capture_point = function(player, recent)
+			--local ranking = get_ranking(player, recent)
+			return 1
+		end,
+
+		--- @type ScoreFun
+		get_heal_score = function(player, recent)
+			local ranking = get_ranking(player, recent)
+			local hp_healed = rankings.hp_healed or 1
+			local deaths = rankings.deaths or 1
+			--- 15 is knight_hp / 2
+			return (hp_healed / 15) / deaths
+		end,
+
+		--- @type ScoreFun
+		get_player_active_value = function(player, recent)
+			local pvp_score = get_pvp_score(player, recent)
+			local capoints = get_capture_point(player, recent)
+			core.debug(
+				string.format("(pvp, ca, %f) = %f %f", recent or 1.0, pvp_score, capoints)
+			)
+
+			return pvp_score + capoints + math.sqrt(capoints * pvp_score)
+		end,
+
+		--- @type ScoreFun
+		get_player_passive_value = function(player, recent)
+			local heal_score = get_heal_score(player, recent)
+			local build_score = get_build_point(player, recent)
+			core.debug(
+				string.format(
+					"(h, b, %f) = %f %f",
+					recent or 1.0,
+					heal_score,
+					build_score
+				)
+			)
+			return heal_score + build_score + math.sqrt(heal_score * build_score)
+		end,
+
+		--- @type ScoreFun
+		get_player_value = function(player, recent)
+			local passive_val = get_player_passive_value(player, recent)
+			local active_val = get_player_active_value(player, recent)
+			core.debug(
+				string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val)
+			)
+			return passive_val + active_val + math.sqrt(passive_val * active_val)
+		end,
+
+		--- @param team Team
+		--- @param recent number
+		--- @return number
+		get_team_value = function(team, recent)
+			local members = ctf_teams.get_team_members(team)
+			local total_value = 0
+			for _, member in ipairs(members) do
+				local player_val = get_player_value(member, recent)
+				core.debug("val of " .. member .. " : " .. tostring(player_val))
+				total_value = player_val + total_value
+			end
+			total_value = math.max(total_value, 1)
+			return total_value * total_value
+		end,
+
 		on_new_match = function()
 			team_list = {}
 			for tname in pairs(ctf_map.current_map.teams) do
