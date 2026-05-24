@@ -66,11 +66,15 @@ for wool_color, white_wool in pairs(WOOL_COLOR_TO_WHITE) do
 				return false
 			end
 
+			local inv = digger:get_inventory()
+			if not inv then
+				return false
+			end
+
 			-- Remove the node
 			core.remove_node(pos)
 
 			-- Give the player white wool
-			local inv = digger:get_inventory()
 			inv:add_item("main", white_wool)
 
 			return true
