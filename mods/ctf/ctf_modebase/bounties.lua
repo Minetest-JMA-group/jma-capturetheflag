@@ -300,7 +300,13 @@ core.register_globalstep(function(dtime)
 				for tname, bounty in pairs(game_bounties) do
 					if bounty.name == pname then
 						core.chat_send_all(
-							core.colorize(CHAT_COLOR, S("[Bounty] @1 is no longer bountied (left the game)", pname))
+							core.colorize(
+								CHAT_COLOR,
+								S(
+									"[Bounty] @1 is no longer bountied (left the game)",
+									pname
+								)
+							)
 						)
 						game_bounties[tname] = nil
 						break
@@ -556,6 +562,30 @@ ctf_core.register_chatcommand_alias(
 
 function ctf_modebase.bounties.get_unclaimed_player_bounties()
 	return contributed_bounties
+end
+
+--- @param pname PlayerName
+--- @param return_ boolean?
+function ctf_modebase.bounties.clear_bounty(pname, return_)
+	local contributed_bounty = contributed_bounties[pname]
+	if return_ then
+		for bounty_donator, bounty_amount in pairs(contributed_bounty.contributors) do
+			ctf_modebase:recent_rankings().add(bounty_donator, {
+				amount = bounty_amount,
+			})
+		end
+	end
+	contributed_bounties[pname] = nil
+end
+
+--- @return PlayerName[]
+function ctf_modebase.bounties.get_targets_of_contributed_bounties()
+	--- @type PlayerName[]
+	local retval = {}
+	for pname, _ in pairs(contributed_bounties) do
+		table.insert(retval, pname)
+	end
+	return retval
 end
 
 function ctf_modebase.bounties.clear_player_bounties()
