@@ -315,7 +315,22 @@ core.register_globalstep(function(dtime)
 
 				-- Clear contributed bounties
 				if contributed_bounties[pname] then
-					ctf_modebase.bounties.clear_bounty(pname, true)
+					local donors = ctf_modebase.bounties.clear_bounty(pname, true)
+					local donors_s = ""
+					for _, donor in ipairs(donors) do
+						donors_s = donors_s .. ", " .. donor
+					end
+					donors_s = string.sub(donors_s, 3)
+					core.chat_send_all(
+						core.colorize(
+							CHAT_COLOR,
+							S(
+								"[Contributed Bounty] @1 is no longer bountied. Points returned to: @2",
+								pname,
+								donors_s
+							)
+						)
+					)
 				end
 
 				left_players[pname] = nil
@@ -566,16 +581,25 @@ end
 
 --- @param pname PlayerName
 --- @param return_ boolean?
+--- @return PlayerName[]
 function ctf_modebase.bounties.clear_bounty(pname, return_)
+	local current_mode = ctf_modebase:get_current_mode()
+	if not current_mode then
+		return {}
+	end
 	local contributed_bounty = contributed_bounties[pname]
+	--- @type PlayerName[]
+	local donors = {}
 	if return_ then
 		for bounty_donator, bounty_amount in pairs(contributed_bounty.contributors) do
-			ctf_modebase:recent_rankings().add(bounty_donator, {
+			current_mode.recent_rankings.add(bounty_donator, {
 				amount = bounty_amount,
 			})
+			table.insert(donors, bounty_donator)
 		end
 	end
 	contributed_bounties[pname] = nil
+	return donors
 end
 
 --- @return PlayerName[]
