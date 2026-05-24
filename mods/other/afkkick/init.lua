@@ -7,9 +7,9 @@ to this software to the public domain worldwide. This software is
 distributed without any warranty.
 ]]
 
-local MAX_INACTIVE_TIME = 480
+local MAX_INACTIVE_TIME = 300
 local CHECK_INTERVAL = 5
-local WARN_TIME = 400
+local WARN_TIME = 200
 
 local players = {}
 local checkTimer = 0
