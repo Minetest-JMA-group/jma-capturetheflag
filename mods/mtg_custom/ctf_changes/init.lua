@@ -232,3 +232,4 @@ end)
 
 dofile(core.get_modpath("ctf_changes") .. "/item_despawning.lua")
 dofile(core.get_modpath("ctf_changes") .. "/ctf_lava.lua")
+dofile(core.get_modpath("ctf_changes") .. "/wool_team_color.lua")
