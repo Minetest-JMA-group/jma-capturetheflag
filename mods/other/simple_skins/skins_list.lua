@@ -106,26 +106,6 @@ return {
 		name = "Koro Sensei",
 		author = "0Hi9l",
 	},
-	[25] = {
-		name = "SWAT Officer",
-		author = "DrEpicGTM",
-	},
-	[26] = {
-		name = "Captain Merica",
-		author = "DrEpicGTM",
-	},
-	[27] = {
-		name = "Ninja",
-		author = "DrEpicGTM",
-	},
-	[28] = {
-		name = "Hazmat Jeff",
-		author = "DrEpicGTM",
-	},
-	[29] = {
-		name = "Red Iron",
-		author = "DrEpicGTM",
-	},
 	[31] = {
 		name = "Wolf!!!",
 		author = "Rin",
