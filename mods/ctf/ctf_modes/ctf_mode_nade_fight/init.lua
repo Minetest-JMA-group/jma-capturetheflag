@@ -212,6 +212,14 @@ ctf_modebase.register_mode("nade_fight", {
 		}
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
+	get_player_value = features.get_player_value,
+	get_player_active_value = features.get_player_active_value,
+	get_player_passive_value = features.get_player_passive_value,
+	get_pvp_score = features.get_pvp_score,
+	get_heal_score = features.get_heal_score,
+	get_capture_score = features.get_capture_score,
+	get_build_score = features.get_build_score,
+	get_team_value = features.get_team_value,
 	on_mode_start = function()
 		ctf_modebase.bounties.bounty_reward_func =
 			ctf_modebase.bounty_algo.kd.bounty_reward_func
