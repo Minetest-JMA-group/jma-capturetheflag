@@ -448,6 +448,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local function get_player_active_value(player, recent)
 		local pvp_score = get_pvp_score(player, recent)
 		local capoints = get_capture_point(player, recent)
+		core.debug(
+			string.format("(pvp, ca, %f) = %f %f", recent or 1.0, pvp_score, capoints)
+		)
 
 		return pvp_score + capoints + math.sqrt(capoints * pvp_score)
 	end
@@ -456,6 +459,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local function get_player_passive_value(player, recent)
 		local heal_score = get_heal_score(player, recent)
 		local build_score = get_build_point(player, recent)
+		core.debug(
+			string.format("(h, b, %f) = %f %f", recent or 1.0, heal_score, build_score)
+		)
 		return heal_score + build_score + math.sqrt(heal_score * build_score)
 	end
 
