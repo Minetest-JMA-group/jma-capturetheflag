@@ -149,6 +149,36 @@ return {
 		author = "DrEpicGTM",
 		texture = "character_red_iron.png",
 	},
+	[41] = {
+		name = "Ancient Mercenary",
+		author = "DrEpicGTM",
+		texture = "character_ancient_mercenary.png",
+	},
+	[42] = {
+		name = "Sack Jarrow",
+		author = "DrEpicGTM",
+		texture = "character_sack_jarrow.png",
+	},
+	[43] = {
+		name = "Diver",
+		author = "DrEpicGTM",
+		texture = "character_diver.png",
+	},
+	[44] = {
+		name = "Professor",
+		author = "DrEpicGTM",
+		texture = "character_professor.png",
+	},
+	[45] = {
+		name = "Bush Soldier",
+		author = "DrEpicGTM",
+		texture = "character_bush_soldier.png",
+	},
+	[46] = {
+		name = "NFL Player",
+		author = "DrEpicGTM",
+		texture = "character_nfl_player.png",
+	},
 
 	-- Add new skins here with higher IDs (max 199) --
 }
