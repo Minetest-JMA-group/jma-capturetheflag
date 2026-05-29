@@ -1472,13 +1472,13 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			local colored_thief_name = core.colorize(tcolor, pname)
 			local text = S(
-				"@1 has dropped the flag but got @2",
+				"@1 has dropped the flag but got @2 point(s)",
 				colored_thief_name,
 				attempt_reward
 			)
 			if many_teams then
 				text = S(
-					"@1 has dropped the flag of team(s) @2 but got @3",
+					"@1 has dropped the flag of team(s) @2 but got @3 point(s)",
 					colored_thief_name,
 					HumanReadable(teamnames),
 					attempt_reward
