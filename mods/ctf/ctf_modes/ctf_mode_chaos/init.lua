@@ -14,11 +14,11 @@ local allow_once = false
 
 ctf_modebase.register_mode("chaos", {
 	on_prevote = function()
-		local today = tonumber(os.date("%w"))
-		if today == 0 or today == 6 or allow_once then
-			allow_once = false
-			return true
-		end
+		-- local today = tonumber(os.date("%w"))
+		-- if today == 0 or today == 6 or allow_once then
+		-- 	allow_once = false
+		-- 	return true
+		-- end
 		return false
 	end,
 	vote_label = core.colorize("orange", "Weekend mode"),
