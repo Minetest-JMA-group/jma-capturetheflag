@@ -900,7 +900,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					core.colorize(
 						"orange",
 						S(
-							"First Kill! @1 killed @2 and got @3!",
+							"First Kill! @1 killed @2 and got @3 points!",
 							killer,
 							player,
 							killscore
