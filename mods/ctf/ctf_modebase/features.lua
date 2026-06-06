@@ -879,7 +879,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 		if killer then
 			local killscore = calculate_killscore(player, killer)
-			new_calculate_killscore(player, killer)
+			--new_calculate_killscore(player, killer)
 			--TODO: when the values are finetuned, change and use the new calculation method
 			-- --Farooq
 
@@ -1546,7 +1546,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					table.insert(other_teams, t1)
 				end
 			end
-
+			--[[
 			local capture_points = calculate_capture_points(
 				teamnames,
 				pteam,
@@ -1557,6 +1557,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			core.debug("CapCoins: " .. tostring(capture_points))
 
 			recent_rankings.add(pname, { capture_points = capture_points }, true)
+			--]]
 
 			local text = S(
 				" has captured the flag in @1 and got @2 points!",
