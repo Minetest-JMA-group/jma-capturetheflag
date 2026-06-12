@@ -38,6 +38,12 @@ end
 function ctf_cosmetics.get_skin(player)
 	local pteam = ctf_teams.get(player)
 
+	if player and player.set_properties then
+		player:set_properties({
+			use_texture_alpha = "blend"
+		})
+	end
+
 	return ctf_cosmetics.get_colored_skin(player, pteam and ctf_teams.team[pteam].color)
 end
 
