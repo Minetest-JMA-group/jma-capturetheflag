@@ -40,7 +40,7 @@ function ctf_cosmetics.get_skin(player)
 
 	if player and player.set_properties then
 		player:set_properties({
-			use_texture_alpha = "blend"
+			use_texture_alpha = true,
 		})
 	end
 
