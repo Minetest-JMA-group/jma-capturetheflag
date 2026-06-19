@@ -38,100 +38,132 @@ local function player_vote(name, mapID)
 end
 
 local function show_mapchoose_form(player)
-	local elements = {}
-	local i = 1
-
 	if not map_sample then
 		return
 	end
-	-- Create vote buttons
-	for idx, mapID in ipairs(map_sample) do
-		local map_info = ctf_modebase.map_catalog.maps[mapID]
-		if map_info then
-			local image_texture = map_info.dirname
-				.. "_screenshot.png"
-			local image_path =
-				string.format("%s/textures/%s", core.get_modpath("ctf_map"), image_texture)
 
-			if ctf_core.file_exists(image_path) then
-				elements["map_image_" .. idx] = {
-					type = "image",
-					pos = { x = i, y = 1 },
-					size = { x = 6, y = 4 },
-					texture = image_texture,
-				}
+	ctf_gui.show_formspec(player, "ctf_modebase:map_select", function(ctx)
+		local num_maps = #map_sample
+		local form_x = num_maps * 7 + 1
+		local form_y = 9.8
+
+		local out = {
+			"formspec_version[4]",
+			{ "size[%f,%f]", form_x, form_y },
+			{
+				"hypertext[0.2,0.2;%f,1.4;title;<center><big>%s</big>\n%s</center>]",
+				form_x - 0.4,
+				core.formspec_escape(S("Vote for the next map")),
+				core.formspec_escape(S("Please click on the map that you would like to play next!")),
+			},
+		}
+
+		-- Background behind images
+		table.insert(out, {
+			"box[0,1.5;%f,6.2;#232323]",
+			form_x,
+		})
+
+		for idx, mapID in ipairs(map_sample) do
+			local map_info = ctf_modebase.map_catalog.maps[mapID]
+			if map_info then
+				local image_texture = map_info.dirname
+					.. "_screenshot.png"
+				local image_path = string.format(
+					"%s/textures/%s",
+					core.get_modpath("ctf_map"),
+					image_texture
+				)
+
+				local x_pos = (idx - 1) * 7 + 1
+				if ctf_core.file_exists(image_path) then
+					table.insert(out, {
+						"image[%f,2;6,4;%s]",
+						x_pos,
+						image_texture,
+					})
+				end
 			end
+
+			local x_pos = (idx - 1) * 7 + 2
+			local map_name = ctf_modebase.map_catalog.map_names[mapID]
+			table.insert(out, {
+				"button_exit[%f,6.3;4,1;vote_%d;%s]",
+				x_pos,
+				idx,
+				core.formspec_escape(map_name),
+			})
 		end
 
-		elements["vote_button_" .. idx] = {
-			type = "button",
-			exit = true,
-			label = ctf_modebase.map_catalog.map_names[mapID],
-			pos = { x = i + 1, y = 6 },
-			size = { x = 4, y = 1 },
-			func = function(playername, fields, field_name)
-				player_vote(playername, mapID)
-			end,
-		}
-		i = i + 7
-	end
-	local buttons_size_x = 3
-	local gap_between_buttons = 0.5
-	local start_pos = i / 2
-	if done_reshuffle_once then
-		start_pos = start_pos - buttons_size_x - gap_between_buttons
-	else
-		-- 1.5 is number of buttons which are in one half of the screen(horizontally)
-		start_pos = start_pos - 1.5 * buttons_size_x - gap_between_buttons
-	end
+		-- Compute start_pos using original formula: i/2 adjusted for button count
+		-- i after the loop = 1 + num_maps * 7
+		local buttons_size_x = 3
+		local gap_between_buttons = 0.5
+		local i = 1 + num_maps * 7
+		local start_pos = i / 2
+		if done_reshuffle_once then
+			start_pos = start_pos - buttons_size_x - gap_between_buttons
+		else
+			start_pos = start_pos - 1.5 * buttons_size_x - gap_between_buttons
+		end
 
-	-- Add quit button
-	elements["quit_button"] = {
-		type = "button",
-		exit = true,
-		label = S("Exit Game"),
-		pos = { x = start_pos, y = 8 },
-		size = { x = buttons_size_x, y = 0.6 },
-		func = function(playername, fields, field_name)
-			core.kick_player(
-				playername,
-				S("You clicked 'Exit Game' in the map vote formspec")
-			)
-		end,
-	}
-
-	start_pos = start_pos + buttons_size_x + gap_between_buttons
-	if not done_reshuffle_once then
-		elements["reshuffle_button"] = {
-			type = "button",
-			exit = true,
-			label = S("Reshuffle"),
-			pos = { x = start_pos, y = 8 },
-			size = { x = buttons_size_x, y = 0.6 },
-			func = function(playername, fields, field_name)
-				player_vote(playername, RESHUFFLE)
-			end,
-		}
+		table.insert(out, {
+			"button_exit[%f,8.5;%f,0.6;quit_button;%s]",
+			start_pos,
+			buttons_size_x,
+			core.formspec_escape(S("Exit Game")),
+		})
 		start_pos = start_pos + buttons_size_x + gap_between_buttons
-	end
 
-	elements["abstain_button"] = {
-		type = "button",
-		exit = true,
-		label = S("Abstain"),
-		pos = { x = start_pos, y = 8 },
-		size = { x = buttons_size_x, y = 0.6 },
-		func = function(playername, fields, field_name)
-			player_vote(playername, nil)
+		if not done_reshuffle_once then
+			table.insert(out, {
+				"button_exit[%f,8.5;%f,0.6;reshuffle_button;%s]",
+				start_pos,
+				buttons_size_x,
+				core.formspec_escape(S("Reshuffle")),
+			})
+			start_pos = start_pos + buttons_size_x + gap_between_buttons
+		end
+
+		table.insert(out, {
+			"button_exit[%f,8.5;%f,0.6;abstain_button;%s]",
+			start_pos,
+			buttons_size_x,
+			core.formspec_escape(S("Abstain")),
+		})
+
+		return ctf_gui.list_to_formspec_str(out)
+	end, {
+	_on_formspec_input = function(pname, _, fields)
+			if fields.quit_button then
+				core.kick_player(
+					pname,
+					S("You clicked 'Exit Game' in the map vote formspec")
+				)
+				return
+			end
+
+			if fields.reshuffle_button then
+				player_vote(pname, RESHUFFLE)
+				return
+			end
+
+			if fields.abstain_button then
+				player_vote(pname, nil)
+				return
+			end
+
+			for field_name in pairs(fields) do
+				local idx = field_name:match("^vote_(%d+)$")
+				if idx then
+					idx = tonumber(idx)
+					if idx >= 1 and idx <= #map_sample then
+						player_vote(pname, map_sample[idx])
+						return
+					end
+				end
+			end
 		end,
-	}
-
-	ctf_gui.old_show_formspec(player, "ctf_modebase:map_select", {
-		size = { x = i, y = 11 },
-		title = S("Vote for the next map"),
-		description = S("Please click on the map that you would like to play next!"),
-		header_height = 1.4,
-		elements = elements,
 	})
 end
 

@@ -1,3 +1,4 @@
+local S = core.get_translator(core.get_current_modname())
 local VOTING_TIME = 30
 local DEFAULT_MAX_ROUNDS = 5
 
@@ -42,110 +43,73 @@ local function player_vote(name, length)
 end
 
 local function show_modechoose_form(player)
-	local max_rounds = get_mode_max_rounds(new_mode)
+	local vote_setting = "ask"
 
-	local player_obj = core.get_player_by_name(player)
-	if not player_obj then
-		return
-	end
-	local vote_setting = ctf_settings.get(
-		player_obj,
-		"ctf_modebase:default_vote_" .. new_mode
-	)
+	if ctf_settings.settings["ctf_modebase:default_vote_" .. new_mode] then
+		vote_setting = ctf_settings.get(core.get_player_by_name(player),
+			"ctf_modebase:default_vote_" .. new_mode)
 
-	vote_setting =
-		ctf_settings.settings["ctf_modebase:default_vote_" .. new_mode]._list_map[tonumber(
-			vote_setting
-		)]
-
-	if vote_setting ~= "ask" and vote_setting > max_rounds then
-		---@diagnostic disable-next-line: cast-local-type
-		vote_setting = max_rounds
+		vote_setting = ctf_settings.settings["ctf_modebase:default_vote_" .. new_mode]
+		._list_map[tonumber(vote_setting)]
 	end
 
 	if vote_setting ~= "ask" then
 		core.after(0, function()
-			if not core.get_player_by_name(player) then
-				return
-			end
+			if not core.get_player_by_name(player) then return end
 
-			core.chat_send_player(
-				player,
-				string.format(
-					"Voting for "
-						.. get_mode_vote_title(new_mode)
-						.. ". Automatic vote: "
-						.. vote_setting
-						.. "\n"
-						.. 'To change the automatic vote settings, go to the "Settings" tab of your inventory.'
-				)
-			)
+			core.chat_send_player(player, S("Voting for @1. Automatic vote: @2.",
+					HumanReadable(new_mode), vote_setting) ..
+				"\n" ..
+				S(
+				"To change the automatic vote settings, go to the \"Settings\" tab of your inventory."))
 			player_vote(player, vote_setting)
 		end)
 
 		return
 	end
 
-	local elements = {}
+	ctf_gui.show_formspec(player, "ctf_modebase:mode_select", function(ctx)
+		-- EDITOR: Fix crash
+		-- local S = function(x) return x end
 
-	local i = 0.4
-	local vote = 0
-	while vote <= max_rounds do
-		local vote_num = vote
-		local label = tostring(vote)
-		if vote_num == 0 then
-			label = "Skip"
-		end
-		elements[string.format("vote_%d", vote_num)] = {
-			type = "button",
-			label = label,
-			exit = true,
-			pos = { "center", i },
-			size = { 1.4, 0.7 },
-			func = function()
-				if votes then
-					player_vote(player, vote_num)
+		local out = {
+			"formspec_version[4]",
+			"size[8.7,11.1]",
+			{
+				"hypertext[0.2,0.2;8,2.4;title;<center><big>%s: %s</big>\n%s\n%s</center>]",
+				S("Mode"),
+				HumanReadable(new_mode),
+				S("Please vote on how many matches you would like to play."),
+				S(
+				"You can change your default vote for this mode via the Settings tab (in your inventory)")
+			},
+			"button_exit[3.7,2.5;1.4,0.7;vote;0]",
+			"button_exit[3.7,3.5;1.4,0.7;vote;1]",
+			"button_exit[3.7,4.5;1.4,0.7;vote;2]",
+			"button_exit[3.7,5.5;1.4,0.7;vote;3]",
+			"button_exit[3.7,6.5;1.4,0.7;vote;4]",
+			"button_exit[3.7,7.5;1.4,0.7;vote;5]",
+			"button_exit[2.9,9.5;3.0,0.7;quit_button;Exit Game]",
+		}
+
+		return ctf_gui.list_to_formspec_str(out)
+	end, {
+		new_mode = new_mode,
+		_on_formspec_input = function(pname, context, fields)
+			if fields.quit_button then
+				core.kick_player(pname,
+					S("You clicked 'Exit Game' in the mode vote formspec"))
+				return
+			end
+
+			if fields.vote then
+				local vnum = tonumber(fields.vote)
+
+				if type(vnum) == "number" and vnum >= 0 and vnum <= 5 then
+					player_vote(player, vnum)
 				end
-			end,
-		}
-
-		vote = vote + 1
-		i = i + 1
-	end
-
-	i = i + 1.2
-	elements["quit_button"] = {
-		type = "button",
-		exit = true,
-		label = "Exit Game",
-		pos = { x = "center", y = i },
-		func = function(playername, fields, field_name)
-			core.kick_player(
-				playername,
-				"You clicked 'Exit Game' in the mode vote formspec"
-			)
-		end,
-	}
-	i = i + (ctf_gui.ELEM_SIZE.y - 0.2)
-
-	local mode_def = ctf_modebase.modes[new_mode]
-	if mode_def.vote_label then
-		elements["label"] = {
-			type = "label",
-			label = mode_def.vote_label,
-			centered = true,
-			pos = { x = 0, y = i + 0.9 },
-			size = { x = 8, y = 0.5 },
-		}
-	end
-
-	ctf_gui.old_show_formspec(player, "ctf_modebase:mode_select", {
-		size = { x = 8, y = i + 3.5 },
-		title = "Mode: " .. get_mode_vote_title(new_mode),
-		description = "Please vote on how many matches you would like to play.\n"
-			.. "You can change your default vote for this mode via the Settings tab (in your inventory)",
-		header_height = 2.4,
-		elements = elements,
+			end
+		end
 	})
 end
 

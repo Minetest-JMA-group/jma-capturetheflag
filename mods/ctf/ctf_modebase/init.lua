@@ -66,7 +66,7 @@ ctf_api.register_on_match_start(function()
 	ctf_modebase.match_start_time = os.time()
 end)
 
-ctf_gui.old_init()
+ctf_gui.init()
 
 local S = core.get_translator(core.get_current_modname())
 -- Can be added to by other mods, like irc
