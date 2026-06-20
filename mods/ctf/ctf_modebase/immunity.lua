@@ -181,3 +181,18 @@ end)
 core.register_on_leaveplayer(function(player)
 	ctf_modebase.remove_immunity(player)
 end)
+
+core.register_on_punchplayer(function (player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
+	if not player or not hitter then
+		return
+	end
+
+	if not ctf_modebase.is_immune(hitter) then
+		return
+	end
+
+	local pteam, hteam = ctf_teams.get(player), ctf_teams.get(hitter)
+	if not pteam == hteam then
+		ctf_modebase.remove_respawn_immunity(hitter)
+	end
+end)
