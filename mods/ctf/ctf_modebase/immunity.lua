@@ -231,3 +231,15 @@ core.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack, po
 
 	ctf_modebase.remove_respawn_immunity(placer)
 end)
+
+core.register_on_dignode(function(pos, oldnode, digger)
+	if not digger then
+		return
+	end
+
+	if not ctf_modebase.is_immune(digger) then
+		return
+	end
+
+	ctf_modebase.remove_respawn_immunity(digger)
+end)
