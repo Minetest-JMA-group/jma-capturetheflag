@@ -219,3 +219,15 @@ core.register_globalstep(function (dtime)
 		end
 	end
 end)
+
+core.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack, pointed_thing)
+	if not placer then
+		return
+	end
+
+	if not ctf_modebase.is_immune(placer) then
+		return
+	end
+
+	ctf_modebase.remove_respawn_immunity(placer)
+end)
