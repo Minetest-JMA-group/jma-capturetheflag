@@ -127,6 +127,10 @@ core.register_chatcommand("feedback", {
 	params = S("[Your feedback]"),
 	description = S("Write developers and server admins a feedback about the game."),
 	func = function(pname, params)
+		if core.global_exists("simplemod") and simplemod.is_muted(pname) then
+			return false, S("You are currently muted and cannot submit feedback.")
+		end
+
 		if params ~= "" then
 			if record_feedback(pname, params) then
 				return true,
