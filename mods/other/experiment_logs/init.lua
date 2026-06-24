@@ -90,8 +90,8 @@ function experiment_logs.log(experiment_name, text, target)
 	)
 	local number_of_sent = 0
 	for _, player in ipairs(players) do
-		local master = ctf_settings.get(player, "experiment_logs:subscribed")
-		local this = ctf_settings.get(player, experiment_setting)
+		local master = ctf_settings.get(player, "experiment_logs:subscribed") == "true"
+		local this = ctf_settings.get(player, experiment_setting) == "true"
 		local pname = player:get_player_name()
 		core.debug(
 			string.format(
