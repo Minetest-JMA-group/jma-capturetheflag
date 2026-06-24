@@ -168,8 +168,7 @@ end
 --- @param pos1 Vector
 --- @param pos2 Vector
 local function spawn_heal_particles(pos1, pos2)
-	core.chat_send_all(core.serialize(pos1))
-	core.chat_send_all(core.serialize(pos2))
+	-- TODO
 	for i = 1, 200 do
 		local pos = generate_random_pos_inside(pos1, pos2)
 		core.add_particle({
@@ -188,7 +187,7 @@ ctf_healing.register_bandage("ctf_healing:super_bandage", {
 		"Heal your teammate for 5-6 HP, while also healing nearby teammates by 2-3HP"
 	),
 	inventory_image = "ctf_healing_super_bandage.png",
-	heal_percent = HEAL_PERCENT,
+	heal_percent = HEAL_PERCENT * 1.1,
 	heal_min = 5,
 	heal_max = 6,
 	after_heal = function(obj, user)
