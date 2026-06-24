@@ -78,7 +78,7 @@ ctf_core.testing = {
 local S = core.get_translator(core.get_current_modname())
 
 local hud = mhud.init()
-local LOADING_SCREEN_TARGET_TIME = 5
+local LOADING_SCREEN_TARGET_TIME = 3
 --- @type number?
 local loading_screen_time
 
@@ -375,6 +375,15 @@ ctf_settings.register("ctf_modebase:teammate_nametag_style", {
 		)
 		update_playertags()
 	end,
+})
+
+ctf_settings.register("ctf_modebase:auto_look_at_killer", {
+	type = "bool",
+	label = S("Auto-look at killer on death"),
+	description = S(
+		"Automatically rotate your camera to look at the player who killed you."
+	),
+	default = "false",
 })
 
 ctf_modebase.features = function(rankings, recent_rankings)
@@ -1134,9 +1143,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					player:set_detach()
 					core.log("action", player:get_player_name() .. " detached")
 				end
-				if player.set_camera then
-					player:set_camera({ mode = "any" })
-				end
+				player:set_camera({ mode = "any" })
 			end
 
 			if #delete_queue > 0 and delete_queue._map ~= ctf_map.current_map.dirname then
@@ -1840,9 +1847,16 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					weapon_image
 				)
 
-				-- Turn player's camera to face the killer
-				local dir = vector.direction(player:get_pos(), hitter:get_pos())
-				player:set_look_horizontal(core.dir_to_yaw(dir))
+                -- Rotate player camera to killer
+                if ctf_settings.get(player, "ctf_modebase:auto_look_at_killer") == "true" then
+                    local player_pos = player:get_pos()
+					local hitter_pos = hitter:get_pos()
+					if vector.distance(player_pos, hitter_pos) < 15 then
+						local dir = vector.direction(player_pos, hitter_pos)
+						player:set_look_horizontal(core.dir_to_yaw(dir))
+						player:set_look_vertical(-math.asin(dir.y))
+					end
+				end
 			elseif player:get_player_name() ~= hitter:get_player_name() then
 				ctf_combat_mode.add_hitter(player, hitter, weapon_image, 15)
 			end
