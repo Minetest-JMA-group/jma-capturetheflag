@@ -1487,16 +1487,13 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				score = attempt_reward,
 			}, false)
 
-			local colored_thief_name = core.colorize(tcolor, pname)
 			local text = S(
-				"@1 has dropped the flag but got @2 point(s)",
-				colored_thief_name,
+				" has dropped the flag but got @1 point(s)",
 				attempt_reward
 			)
 			if many_teams then
 				text = S(
-					"@1 has dropped the flag of team(s) @2 but got @3 point(s)",
-					colored_thief_name,
+					" has dropped the flag of team(s) @1 but got @2 point(s)",
 					HumanReadable(teamnames),
 					attempt_reward
 				)
@@ -1510,10 +1507,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				nil,
 				{ text = teamnames_notify, color = "light" },
 				{ text = S("@1 has dropped your flag!", pname), color = "success" },
-				{ text = text, color = "light" }
+				{ text = pname .. text, color = "light" }
 			)
 
-			core.chat_send_all(core.colorize(FLAG_MESSAGE_COLOR, text))
+			core.chat_send_all(core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text))
 			ctf_modebase.announce(
 				string.format("Player %s (team %s)%s", pname, pteam, text)
 			)
