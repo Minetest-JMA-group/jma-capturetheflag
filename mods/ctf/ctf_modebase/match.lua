@@ -4,6 +4,8 @@ ctf_modebase.restart_on_next_match = false -- used by server_restart mod to rest
 ctf_modebase.map_on_next_match = nil
 ctf_modebase.mode_on_next_match = nil
 
+local S = core.get_translator(core.get_current_modname())
+
 -- Overridable
 ---@diagnostic disable-next-line: duplicate-set-field
 function ctf_modebase.map_chosen(map) end
@@ -26,6 +28,26 @@ function ctf_modebase.start_match_after_mode_vote()
 	else
 		ctf_modebase.map_vote.start_vote()
 	end
+end
+
+if experiment_logs then
+	experiment_logs.register_new_experiment(
+		"new_team_alloc",
+		S("New team allocation algorithm based on value of each player"),
+		S(
+			"In the new algorithm, the game tries to allocate players such that 'sum value'"
+		)
+			.. "\n"
+			.. S(
+				"of teams do not differ significantly. Note that the 'sum' used might not be just"
+			)
+			.. "\n"
+			.. S(
+				"normal addition. Because when 2 players are combined, the influence is bigger"
+			)
+			.. "\n"
+			.. S("than when each of them work alone")
+	)
 end
 
 function ctf_modebase.start_match_after_map_vote()
@@ -77,15 +99,16 @@ function ctf_modebase.start_match_after_map_vote()
 		end
 
 		local get_player_value = ctf_modebase:get_current_mode().get_player_value
-		-- Now randomly assign players
+		-- Now assign players equally per teams
+		local t = 1
 		for pname, _ in pairs(players_to_assign) do
-			local t = math.random(i - 1) -- A random team
 			--- @type PlayerValue
 			local v = {
 				pname = pname,
 				val = get_player_value(pname, 0.0),
 			}
-			table.insert(allocation[t], v)
+			table.insert(allocation[(t % #allocation) + 1], v)
+			t = t + 1
 		end
 
 		--- A team's value equals to product
@@ -121,7 +144,7 @@ function ctf_modebase.start_match_after_map_vote()
 
 		--- @param end_bound number
 		local function random_int(end_bound)
-			return 1 + math.floor(math.random * 100000 % end_bound)
+			return 1 + math.floor(math.random() * 100000 % end_bound)
 		end
 
 		-- Now, we've got an optimization problem. We've got
@@ -135,7 +158,15 @@ function ctf_modebase.start_match_after_map_vote()
 		-- also harder to implement it in Lua. --Farooq
 		local temperature = 10
 		local step = 0.5
+		-- There is nothing to do if there aren't enough players
+		-- to allocate...
+		if #ctf_teams.get_all_team_players() <= #allocation then
+			temperature = -1
+		end
 		while temperature > 0 do
+			if #ctf_teams.get_all_team_players() <= 2 then
+				break
+			end
 			local team_a = random_int(#allocation)
 			local team_b = random_int(#allocation)
 			if team_a ~= team_b then
@@ -189,23 +220,29 @@ function ctf_modebase.start_match_after_map_vote()
 			end
 		end
 
-		-- Now we announce it to the public chat. Let's receive comments
-		-- and feedback from the player
-		--- @type string[]
-		local teams_str = {}
-		for index, team in ipairs(allocation) do
-			if teams_str[index] == nil then
-				teams_str[index] = ""
+		if experiment_logs then
+			-- Now we announce it to the chat. Let's receive comments
+			-- and feedback from the player
+			--- @type string[]
+			local teams_str = {}
+			for index, team in ipairs(allocation) do
+				if teams_str[index] == nil then
+					teams_str[index] = string.format("Team %d: ", index)
+				end
+				for _, p_val in ipairs(team) do
+					teams_str[index] = teams_str[index] .. " " .. p_val.pname
+				end
 			end
-			for _, p_val in ipairs(team) do
-				teams_str[index] = teams_str[index] .. " " .. p_val.pname
+			local final_str = ""
+			for _, str in ipairs(teams_str) do
+				final_str = final_str .. str .. "\n"
 			end
+			experiment_logs.log(
+				"new_team_alloc",
+				"New allocation would've been:\n" .. final_str,
+				"|team_players|"
+			)
 		end
-		local final_str = ""
-		for _, str in ipairs(teams_str) do
-			final_str = final_str .. str .. "\n"
-		end
-		core.chat_send_all(string.format("New team allocation would be:\n%s", final_str))
 
 		ctf_teams.allocate_teams(ctf_map.current_map.teams)
 
