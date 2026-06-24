@@ -2,6 +2,8 @@
 --- @alias Vec2 { x: number, y: number }
 --- @alias ScoreFun fun(player: PlayerName, recent: number?): number
 
+local S = core.get_translator(core.get_current_modname())
+
 --- @type { [string]: number }
 local default_item_value = {
 	["ctf_melee:sword_diamond"] = 12,
@@ -75,7 +77,37 @@ ctf_core.testing = {
 	end,
 }
 
-local S = core.get_translator(core.get_current_modname())
+if experiment_logs then
+	experiment_logs.register_new_experiment(
+		"capcoin",
+		S("New ingame reward named CapCoin"),
+		S("The idea is introducing a new reward named CapCoin")
+			.. "\n"
+			.. S("which is given to players who capture.")
+			.. "\n"
+			.. S("This would be a metric on who is a better flag capturer")
+			.. "\n"
+			.. S("and also could possibly be used as a currency ig.")
+			.. "\n"
+			.. S(
+				"Currently value of each reward is based on each team's value(heal,kill,build)"
+			)
+			.. "\n"
+			.. S("And also value of the flag thief(KD, heal, former caps)")
+	)
+
+	experiment_logs.register_new_experiment(
+		"new_killscore",
+		S("New method of calculation of killscore"),
+		S(
+			"The new method under test is based on PvP skills of both the killer and the target"
+		)
+			.. "\n"
+			.. S(
+				"As well as much did the target have value for their team during the match"
+			)
+	)
+end
 
 local hud = mhud.init()
 local LOADING_SCREEN_TARGET_TIME = 3
@@ -504,14 +536,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	--- @param winner_team Team
 	--- @param other_teams Team[]
 	--- @param flag_thief PlayerName
-	--- @param match_time number
 	--- @return number
-	local function calculate_capture_points(
+	local function calculate_capture_coins(
 		loser_teams,
 		winner_team,
 		other_teams,
-		flag_thief,
-		match_time
+		flag_thief
 	)
 		local recent_part = 0.0
 		local loser_teams_val = 0
@@ -553,47 +583,27 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local killer_name = PlayerName(killer)
 		local pteam = ctf_teams.get_player_team(pname)
 		if not pteam then
+			core.debug(pname .. " was not in a team when killed")
 			return 0
 		end
-		local player_val = get_player_value(pname, 0.66)
-		local player_passive_val = get_player_passive_value(pname, 0.66)
-		local player_pvp_val = get_pvp_score(pname, 0.0)
-		local killer_pvp_val = get_pvp_score(killer_name, 0.0)
-		local killer_val = get_player_value(killer_name, 0.66)
-		core.debug(string.format("[NEW K] %s killing %s", killer_name, pname))
-		core.debug(
-			string.format(
-				"[NEW K] target %s r=0.66 overall,pvp(r=0),passive vals: %f, %f, %f",
-				pname,
-				player_val,
-				player_pvp_val,
-				player_passive_val
+		local player_val = get_player_value(pname, 1.0)
+		local player_pvp_val = get_pvp_score(pname, 0.5)
+		local killer_pvp_val = get_pvp_score(killer_name, 0.5)
+		local vals_ratio = player_pvp_val / killer_pvp_val
+		local score = player_val * vals_ratio
+		if experiment_logs then
+			experiment_logs.log(
+				"new_killscore",
+				S(
+					"You would have got @1 points for killing @2. Ratio of your PvP vals is @3",
+					score,
+					pname,
+					vals_ratio
+				),
+				killer_name
 			)
-		)
-		core.debug(
-			string.format(
-				"[NEW K] killer %s r=0.66 overall,pvp(r=0) vals: %f, %f",
-				killer_name,
-				killer_val,
-				killer_pvp_val
-			)
-		)
-		local player_recent_val = get_player_value(pname, 1.0)
-		local player_p_recent_val = get_player_passive_value(pname, 1.0)
-		local player_a_recent_val = get_player_active_value(pname, 1.0)
-		core.debug(
-			string.format(
-				"[NEW K] target %s recent overall,active,passive vals: %f, %f, %f",
-				pname,
-				player_recent_val,
-				player_a_recent_val,
-				player_p_recent_val
-			)
-		)
-		local player_r_pvp_val = get_pvp_score(pname, 0.66)
-		local killer_r_pvp_val = get_pvp_score(killer_name, 0.66)
-		local alt_score_p1 = math.pow(2, player_r_pvp_val / killer_r_pvp_val)
-		core.debug(string.format("[NEW K] New alt score p1: %f", alt_score_p1))
+		end
+		return score
 	end
 
 	local function calculate_killscore(player, killer)
@@ -888,7 +898,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 		if killer then
 			local killscore = calculate_killscore(player, killer)
-			--new_calculate_killscore(player, killer)
+			new_calculate_killscore(player, killer)
 			--TODO: when the values are finetuned, change and use the new calculation method
 			-- --Farooq
 
@@ -1064,7 +1074,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end,
 
 		--- @type ScoreFun
-		get_capture_point = function(player, recent)
+		get_capture_coin = function(player, recent)
 			--local ranking = get_ranking(player, recent)
 			return 1
 		end,
@@ -1072,8 +1082,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- @type ScoreFun
 		get_heal_score = function(player, recent)
 			local ranking = get_ranking(player, recent)
-			local hp_healed = rankings.hp_healed or 1
-			local deaths = rankings.deaths or 1
+			local hp_healed = ranking.hp_healed or 1
+			local deaths = ranking.deaths or 1
 			--- 15 is knight_hp / 2
 			return (hp_healed / 15) / deaths
 		end,
@@ -1081,12 +1091,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- @type ScoreFun
 		get_player_active_value = function(player, recent)
 			local pvp_score = get_pvp_score(player, recent)
-			local capoints = get_capture_point(player, recent)
+			local capcoins = get_capture_coin(player, recent)
 			core.debug(
-				string.format("(pvp, ca, %f) = %f %f", recent or 1.0, pvp_score, capoints)
+				string.format("(pvp, cc, %f) = %f %f", recent or 1.0, pvp_score, capcoins)
 			)
 
-			return pvp_score + capoints + math.sqrt(capoints * pvp_score)
+			return pvp_score + capcoins + math.sqrt(capcoins * pvp_score)
 		end,
 
 		--- @type ScoreFun
@@ -1553,18 +1563,21 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					table.insert(other_teams, t1)
 				end
 			end
-			--[[
-			local capture_points = calculate_capture_points(
-				teamnames,
-				pteam,
-				other_teams,
-				pname,
-				os.time() - ctf_modebase.match_start_time
-			)
-			core.debug("CapCoins: " .. tostring(capture_points))
 
-			recent_rankings.add(pname, { capture_points = capture_points }, true)
-			--]]
+			local capture_coins =
+				calculate_capture_coins(teamnames, pteam, other_teams, pname)
+			core.debug("CapCoins: " .. tostring(capture_coins))
+			if experiment_logs then
+				experiment_logs.log(
+					"capcoin",
+					S("@1 got @2 capcoins", pname, capture_coins),
+					"|all|"
+				)
+			else
+				core.debug("experiment_logs mod not available")
+			end
+
+			recent_rankings.add(pname, { capture_coins = capture_coins }, true)
 
 			local text = S(
 				" has captured the flag in @1 and got @2 points!",
