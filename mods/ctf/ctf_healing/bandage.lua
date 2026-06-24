@@ -213,7 +213,7 @@ ctf_healing.register_bandage("ctf_healing:super_bandage", {
 			local team2 = ctf_teams.get(target_name)
 			if obj2:is_player() and team2 == team then
 				local current_hp = obj2:get_hp()
-				local max_hp = obj2:get_properties().max_hp
+				local max_hp = obj2:get_properties().hp_max
 				local hp_add = 2
 				if math.random() > 0.5 then
 					hp_add = 3
