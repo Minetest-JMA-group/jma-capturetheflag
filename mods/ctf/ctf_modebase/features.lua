@@ -596,9 +596,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				"new_killscore",
 				S(
 					"You would have got @1 points for killing @2. Ratio of your PvP vals is @3",
-					score,
+					string.format("%.2f", score),
 					pname,
-					vals_ratio
+					string.format("%.3f", vals_ratio)
 				),
 				{ killer_name }
 			)
@@ -1570,7 +1570,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			if experiment_logs then
 				experiment_logs.log(
 					"capcoin",
-					S("@1 got @2 capcoins", pname, capture_coins),
+					S("@1 got @2 capcoins", pname, string.format("%.2f", capture_coins)),
 					"|all|"
 				)
 			else
