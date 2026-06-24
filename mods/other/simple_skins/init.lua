@@ -69,6 +69,17 @@ function skins.get_skin(name, skin_id)
 	return "character_" .. skins.default_skin .. ".png"
 end
 
+function skins.get_current_skin_id(name)
+	local skin_id = skins.skins[name]
+    if not skin_id then
+        skin_id = storage:get_int(player_skin_key:format(name))
+    end
+    if skin_id and skin_id > 0 and skins.catalog[skin_id] then
+        return skin_id
+    end
+	return skins.default_skin
+end
+
 function skins.set_player_skin(name, skin_id, no_save)
 	if not skins.catalog[skin_id] then
 		return false, "Skin ID does not exist in the catalog."

@@ -1,28 +1,4 @@
-ctf_player_info = {}
-
 ctf_gui.init()
-
-local texture_config_path = core.get_worldpath() .. "/ctf_player_textures.conf"
-
-local function load_texture_config()
-	local file = io.open(texture_config_path, "r")
-	if not file then
-		return {}
-	end
-	local content = file:read("*a")
-	file:close()
-	return core.deserialize(content) or {}
-end
-
-local function save_texture_config(data)
-	local file = io.open(texture_config_path, "w")
-	if file then
-		file:write(core.serialize(data))
-		file:close()
-	end
-end
-
-local texture_data = load_texture_config()
 
 local modes = {"classes", "classic", "nade_fight", "chaos", "rush"}
 local mode_names = {"Classes", "Classic", "Nade", "Chaos", "Rush"}
@@ -32,7 +8,7 @@ local function generate_formspec(tab, skin_texture, target_name, league, is_onli
 	positions = positions or {}
 	rank_data = rank_data or {}
 
-	local status_text  = is_online and "Online" or "Offline"	
+	local status_text  = is_online and "Online" or "Offline"
 	local status_color = is_online and "#00ff88" or "#ff5555"
 
 	local league_data    = ctf_jma_leagues.leagues[league] or {}
@@ -135,9 +111,8 @@ local function show_player_info(name, target_name)
 	if target_player then
 		skin_texture = target_player:get_properties().textures[1] .. ",blank.png"
 	else
-		local stored = texture_data[target_name]
-		local texture = stored and stored[1] or "character.png"
-		skin_texture = texture .. ",blank.png"
+		local skin_id = skins.get_current_skin_id(target_name)
+		skin_texture = skins.get_skin(target_name, skin_id) .. ",blank.png"
 	end
 
 	local rank_data = {}
@@ -172,13 +147,6 @@ local function show_player_info(name, target_name)
 		end
 	})
 end
-
-core.register_on_joinplayer(function(player)
-	local name = player:get_player_name()
-	local textures = player:get_properties().textures
-	texture_data[name] = textures
-	save_texture_config(texture_data)
-end)
 
 core.register_chatcommand("player_info", {
 	params = "[name]",
