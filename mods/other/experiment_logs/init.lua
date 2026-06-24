@@ -7,7 +7,8 @@ experiment_logs = {}
 
 ctf_settings.register("experiments_log:subscribed", {
 	type = "bool",
-	label = S("Master setting to receive logs about experiments"),
+	label = S("[Experiment logs] ")
+		.. S("Master setting to receive logs about experiments"),
 	description = S(
 		"By enabling this, you'll receive logs in chat whenever an experiment is going in the game. This is for receiving feedback from players."
 	),
@@ -31,7 +32,7 @@ function experiment_logs.register_new_experiment(technical_name, label, descript
 	end
 	ctf_settings.register("experiment_logs:" .. technical_name, {
 		type = "bool",
-		label = label,
+		label = S("[Experiment log] ") .. label,
 		description = description,
 		default = "false",
 	})
