@@ -88,7 +88,6 @@ function experiment_logs.log(experiment_name, text, target)
 			#players
 		)
 	)
-	return
 	local number_of_sent = 0
 	for _, player in ipairs(players) do
 		local master = ctf_settings.get(player, "experiment_logs:subscribed")
