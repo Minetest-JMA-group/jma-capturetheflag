@@ -32,7 +32,7 @@ function experiment_logs.register_new_experiment(technical_name, label, descript
 	end
 	ctf_settings.register("experiment_logs:" .. technical_name, {
 		type = "bool",
-		label = S("[Experiment log] ") .. label,
+		label = S("[Experiment logs] ") .. label,
 		description = description,
 		default = "false",
 	})
