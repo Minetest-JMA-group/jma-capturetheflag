@@ -35,13 +35,14 @@ function experiment_logs.register_new_experiment(technical_name, label, descript
 		description = description,
 		default = "false",
 	})
+	experiments[technical_name] = true
 end
 
 --- Send a chat message to all players who have subscribed to
 --- experiment logs
 --- @param experiment_name string
 --- @param text string
---- @param target ("|team_players|" | "|all|" | string)?
+--- @param target ("|team_players|" | "|all|" | "|not_team_players|" | PlayerName[])?
 --- @return number
 function experiment_logs.log(experiment_name, text, target)
 	if not experiments[experiment_name] then
@@ -55,24 +56,42 @@ function experiment_logs.log(experiment_name, text, target)
 		return -1
 	end
 	local experiment_setting = "experiment_logs:" .. experiment_name
-	local players = nil
-	if target == "|team_players|" then
-		players = ctf_teams.get_all_team_players()
+	core.debug("Experiment setting name is " .. experiment_setting)
+	local team_players = ctf_teams.get_all_team_players()
+	local connected_players = core.get_connected_players()
+	--- @type table
+	local players = {}
+	if target == "|team_players|" or target == "|not_team_players|" then
+		for _, player in ipairs(connected_players) do
+			local is_team_player = ctf_teams.get(player:get_player_name())
+			if target == "|team_players|" and is_team_player then
+				table.insert(players, player)
+			elseif target == "|not_team_players|" and not is_team_player then
+				table.insert(players, player)
+			end
+		end
 	elseif target == "|all|" or target == nil then
-		players = core.get_connected_players()
+		players = connected_players
 	elseif type(target) == "table" then
-		players = target
-	elseif type(target) == "string" then
-		players = { target }
+		for _, pname in ipairs(target) do
+			table.insert(players, core.get_player_by_name(pname))
+		end
 	else
 		core.log("warning", "In experiment_logs.log, target has an invalid type or value")
 		return -1
 	end
+	core.debug(
+		string.format(
+			"Sending experiment log of %s to %d players",
+			experiment_name,
+			#players
+		)
+	)
 	local number_of_sent = 0
 	for _, player in ipairs(players) do
-		local pname = PlayerName(player)
-		local master = ctf_settings.get(pname, "experiment_logs:subscribed")
-		local this = ctf_settings.get(pname, experiment_setting)
+		local master = ctf_settings.get(player, "experiment_logs:subscribed")
+		local this = ctf_settings.get(player, experiment_setting)
+		local pname = player:get_player_name()
 		core.debug(
 			string.format(
 				"Player %s has got these values for experiment logs (master, this): %s %s",
@@ -81,10 +100,7 @@ function experiment_logs.log(experiment_name, text, target)
 				this
 			)
 		)
-		if
-			ctf_settings.get(pname, "experiment_logs:subscribed")
-			and ctf_settings.get(pname, experiment_setting)
-		then
+		if master and this then
 			number_of_sent = number_of_sent + 1
 			core.chat_send_player(pname, S("[Experiment] ") .. text)
 		end
