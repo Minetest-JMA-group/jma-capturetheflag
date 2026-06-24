@@ -95,18 +95,18 @@ local function is_elysium_player(name)
 end
 
 local function get_alive_counts()
-    local counts = {}
-    for team, players in pairs(state.alive_players) do
-        local count = 0
-        for pname in pairs(players) do
-            local p = core.get_player_by_name(pname)
-            if p and p:get_hp() > 0 and not is_elysium_player(pname) then
-                count = count + 1
-            end
-        end
-        counts[team] = count
-    end
-    return counts
+	local counts = {}
+	for team, players in pairs(state.alive_players) do
+		local count = 0
+		for pname in pairs(players) do
+			local p = core.get_player_by_name(pname)
+			if p and p:get_hp() > 0 and not is_elysium_player(pname) then
+				count = count + 1
+			end
+		end
+		counts[team] = count
+	end
+	return counts
 end
 
 timer.setup({
@@ -256,7 +256,11 @@ end
 timer.set_timeout_handler(end_round_due_to_time)
 
 ctf_api.register_on_match_start(function()
-	if ctf_modebase.current_mode ~= "rush" or not state.match_id or state.round_timer_active then
+	if
+		ctf_modebase.current_mode ~= "rush"
+		or not state.match_id
+		or state.round_timer_active
+	then
 		return
 	end
 
@@ -309,9 +313,9 @@ local function restore_all_players()
 			state.eliminated[name] = nil
 
 			local team = ctf_teams.get(name)
-            if team then
-                state.alive_players[team] = nil
-            end
+			if team then
+				state.alive_players[team] = nil
+			end
 		end
 	end
 	for _, player in ipairs(core.get_connected_players()) do
@@ -439,6 +443,14 @@ ctf_modebase.register_mode("rush", {
 		}
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
+	get_player_value = features.get_player_value,
+	get_player_active_value = features.get_player_active_value,
+	get_player_passive_value = features.get_player_passive_value,
+	get_pvp_score = features.get_pvp_score,
+	get_heal_score = features.get_heal_score,
+	get_capture_score = features.get_capture_score,
+	get_build_score = features.get_build_score,
+	get_team_value = features.get_team_value,
 	on_mode_start = function()
 		ctf_modebase.bounties.bounty_reward_func =
 			ctf_modebase.bounty_algo.kd.bounty_reward_func
@@ -511,7 +523,10 @@ ctf_modebase.register_mode("rush", {
 		if old_team and state.alive_players[old_team] then
 			state.alive_players[old_team][pname] = nil
 
-			if not state.team_defeated[old_team] and not next(state.alive_players[old_team]) then
+			if
+				not state.team_defeated[old_team]
+				and not next(state.alive_players[old_team])
+			then
 				check_for_winner(old_team)
 			else
 				timer.update_round_huds()
@@ -553,7 +568,9 @@ ctf_modebase.register_mode("rush", {
 	end,
 	on_leaveplayer = function(player)
 		local pname = player and player:get_player_name()
-		if not pname then return end
+		if not pname then
+			return
+		end
 		local team = state.initial_team[pname]
 		if is_elysium_player(pname) then
 			if team and state.alive_players[team] then
@@ -697,65 +714,75 @@ ctf_modebase.register_mode("rush", {
 
 -- Register elysium callbacks if elysium module is available
 if ctf_jma_elysium then
-    ctf_jma_elysium.register_on_prejoin(function(player)
-        if ctf_modebase.current_mode ~= "rush" then return end
-        local name = player:get_player_name()
+	ctf_jma_elysium.register_on_prejoin(function(player)
+		if ctf_modebase.current_mode ~= "rush" then
+			return
+		end
+		local name = player:get_player_name()
 
-        -- Remove player from their team in rush mode first so we don't reattach to them
-        local player_team = ctf_teams.get(name)
-        for team, players in pairs(state.alive_players) do
-            if players[name] then
-                player_team = player_team or team
-                state.alive_players[team][name] = nil
-                -- Check if team is now empty
-                if not next(state.alive_players[team]) then
-                    check_for_winner(team)
-                else
-                    -- Update HUDs to reflect player left team
-                    timer.update_round_huds()
-                end
-                break
-            end
-        end
+		-- Remove player from their team in rush mode first so we don't reattach to them
+		local player_team = ctf_teams.get(name)
+		for team, players in pairs(state.alive_players) do
+			if players[name] then
+				player_team = player_team or team
+				state.alive_players[team][name] = nil
+				-- Check if team is now empty
+				if not next(state.alive_players[team]) then
+					check_for_winner(team)
+				else
+					-- Update HUDs to reflect player left team
+					timer.update_round_huds()
+				end
+				break
+			end
+		end
 
-        -- Reassign spectators (detaches them if no anchor remains)
-        if player_team then
-            spectator.reassign_team_spectators(player_team)
-        end
-    end)
+		-- Reassign spectators (detaches them if no anchor remains)
+		if player_team then
+			spectator.reassign_team_spectators(player_team)
+		end
+	end)
 
-    ctf_jma_elysium.register_on_leave(function(player, elysium_data)
-        if ctf_modebase.current_mode ~= "rush" then return end
+	ctf_jma_elysium.register_on_leave(function(player, elysium_data)
+		if ctf_modebase.current_mode ~= "rush" then
+			return
+		end
 
-        -- When leaving elysium, check if player should rejoin their team
-        -- The player will be reallocated via normal team allocation flow
-        -- Just ensure HUD is updated
-        timer.update_round_huds()
-    end)
-
+		-- When leaving elysium, check if player should rejoin their team
+		-- The player will be reallocated via normal team allocation flow
+		-- Just ensure HUD is updated
+		timer.update_round_huds()
+	end)
 end
 
 core.register_globalstep(function(dtime)
-    if ctf_modebase.current_mode ~= "rush" then return end
-    timer.on_globalstep(dtime)
+	if ctf_modebase.current_mode ~= "rush" then
+		return
+	end
+	timer.on_globalstep(dtime)
 end)
 
 core.register_on_joinplayer(function(player)
-
-    local name = player:get_player_name()
-    if is_elysium_player(name) then
-        spectator.restore_privs(name)
-        spectator.disable_vanish(player)
-        state.eliminated[name] = nil
-        state.participants[name] = nil
-        return
-    end
-    local spec_state = spectator.get_spectator_state(name)
-    if not spec_state or not spec_state.match then return end
-    if not is_rush_active() or not state.match_id or spec_state.match ~= state.match_id then
-        spectator.restore_privs(name)
-        return
-    end
+	local name = player:get_player_name()
+	if is_elysium_player(name) then
+		spectator.restore_privs(name)
+		spectator.disable_vanish(player)
+		state.eliminated[name] = nil
+		state.participants[name] = nil
+		return
+	end
+	local spec_state = spectator.get_spectator_state(name)
+	if not spec_state or not spec_state.match then
+		return
+	end
+	if
+		not is_rush_active()
+		or not state.match_id
+		or spec_state.match ~= state.match_id
+	then
+		spectator.restore_privs(name)
+		return
+	end
 
 	if type(spec_state.team) == "string" and spec_state.team ~= "" then
 		state.initial_team[name] = spec_state.team

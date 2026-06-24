@@ -4,6 +4,8 @@ ctf_modebase.restart_on_next_match = false -- used by server_restart mod to rest
 ctf_modebase.map_on_next_match = nil
 ctf_modebase.mode_on_next_match = nil
 
+local S = core.get_translator(core.get_current_modname())
+
 -- Overridable
 ---@diagnostic disable-next-line: duplicate-set-field
 function ctf_modebase.map_chosen(map) end
@@ -26,6 +28,26 @@ function ctf_modebase.start_match_after_mode_vote()
 	else
 		ctf_modebase.map_vote.start_vote()
 	end
+end
+
+if experiment_logs then
+	experiment_logs.register_new_experiment(
+		"new_team_alloc",
+		S("New team allocation algorithm based on value of each player"),
+		S(
+			"In the new algorithm, the game tries to allocate players such that 'sum value'"
+		)
+			.. "\n"
+			.. S(
+				"of teams do not differ significantly. Note that the 'sum' used might not be just"
+			)
+			.. "\n"
+			.. S(
+				"normal addition. Because when 2 players are combined, the influence is bigger"
+			)
+			.. "\n"
+			.. S("than when each of them work alone")
+	)
 end
 
 function ctf_modebase.start_match_after_map_vote()
@@ -51,13 +73,181 @@ function ctf_modebase.start_match_after_map_vote()
 		ctf_modebase.on_new_match()
 
 		ctf_modebase.in_game = true
+
+		local current_map = ctf_map.current_map
+		local current_mode = ctf_modebase.current_mode
+		if not current_map then
+			return
+		end
+
+		--- @alias PlayerValue { pname: PlayerName, val: number }
+		--- @type PlayerValue[][] Each slot is an array for a team
+		local allocation = {}
+		local i = 1
+		for team, _ in pairs(current_map.teams) do
+			allocation[i] = {}
+			i = i + 1
+		end
+
+		--- @type { [PlayerName]: boolean }
+		local players_to_assign = {}
+		for _, player in ipairs(core.get_connected_players()) do
+			local pname = player:get_player_name()
+			if pname ~= "" and not ctf_teams.non_team_players[pname] then
+				players_to_assign[pname] = true
+			end
+		end
+
+		local get_player_value = ctf_modebase:get_current_mode().get_player_value
+		-- Now assign players equally per teams
+		local t = 1
+		for pname, _ in pairs(players_to_assign) do
+			--- @type PlayerValue
+			local v = {
+				pname = pname,
+				val = get_player_value(pname, 0.0),
+			}
+			table.insert(allocation[(t % #allocation) + 1], v)
+			t = t + 1
+		end
+
+		--- A team's value equals to product
+		--- of values of all its players
+		--- @param team PlayerValue[]
+		--- @return number
+		local function get_team_value(team)
+			local val = 1
+			for _, p_val in ipairs(team) do
+				val = val * p_val.val
+			end
+			return val
+		end
+
+		--- Compute differece between teams
+		--- @param allocation2 PlayerValue[][]
+		--- @return number
+		local function get_teams_difference(allocation2)
+			--- @type number
+			local difference = 0
+			--- @type number[]
+			local team_vals = {}
+			for index, team in ipairs(allocation2) do
+				team_vals[index] = get_team_value(team)
+			end
+			for index = 1, #team_vals - 1 do
+				local this_val = team_vals[index]
+				local next_val = team_vals[index + 1]
+				difference = difference + math.abs(this_val - next_val)
+			end
+			return difference
+		end
+
+		--- @param end_bound number
+		local function random_int(end_bound)
+			return 1 + math.floor(math.random() * 100000 % end_bound)
+		end
+
+		-- Now, we've got an optimization problem. We've got
+		-- many "buckets" and we are supposed to minimize
+		-- "team_value" difference between teams.
+		-- This is called Backpack problem. Here instead of
+		-- solving this problem directly, we use
+		-- Simulated Annealing to optimize it. I've got
+		-- two reasons for this. First, I believe directly solving
+		-- the problem will be slow. Second, I think it'll be
+		-- also harder to implement it in Lua. --Farooq
+		local temperature = 10
+		local step = 0.5
+		-- There is nothing to do if there aren't enough players
+		-- to allocate...
+		if #ctf_teams.get_all_team_players() <= #allocation then
+			temperature = -1
+		end
+		while temperature > 0 do
+			if #ctf_teams.get_all_team_players() <= 2 then
+				break
+			end
+			local team_a = random_int(#allocation)
+			local team_b = random_int(#allocation)
+			if team_a ~= team_b then
+				--- @type number
+				local current_difference = get_teams_difference(allocation)
+				--- @type PlayerValue[][]
+				local new_allocation = table.copy(allocation)
+				local team_a_len = #new_allocation[team_a]
+				local team_b_len = #new_allocation[team_b]
+				-- There is 10% chance we would remove a player
+				-- from one team and add to another one
+				if math.random() < 0.1 then
+					local p_val =
+						table.remove(new_allocation[team_a], random_int(team_a_len))
+					table.insert(allocation[team_b], p_val)
+				else
+					local player_val_a =
+						table.remove(new_allocation[team_a], random_int(team_a_len))
+					local player_val_b =
+						table.remove(new_allocation[team_b], random_int(team_b_len))
+					table.insert(allocation[team_b], player_val_a)
+					table.insert(allocation[team_a], player_val_b)
+				end
+				local new_difference = get_teams_difference(new_allocation)
+				-- As in accord with SA, if the new combination is better than the old one
+				-- just pick the new one.
+				if new_difference - current_difference < 0 then
+					allocation = new_allocation
+					core.debug(
+						string.format("Team allocation new diff: %f", new_difference)
+					)
+				else
+					-- if the new allocation is worse, there still will be a small
+					-- chance that it'll be picked. The chance depends on the
+					-- current temperature as well as how much worse the new
+					-- one is.
+					local diff = new_difference - current_difference
+					if math.random() >= math.exp(-diff / temperature) then
+						allocation = new_allocation
+						core.debug(
+							string.format("Team allocation new diff: %f", new_difference)
+						)
+					end
+				end
+				temperature = temperature - step
+				--- We consider a difference of 0.5 or smaller
+				--- as negligible
+				if new_difference < 0.5 then
+					break
+				end
+			end
+		end
+
+		if experiment_logs then
+			-- Now we announce it to the chat. Let's receive comments
+			-- and feedback from the player
+			--- @type string[]
+			local teams_str = {}
+			for index, team in ipairs(allocation) do
+				if teams_str[index] == nil then
+					teams_str[index] = string.format("Team %d: ", index)
+				end
+				for _, p_val in ipairs(team) do
+					teams_str[index] = teams_str[index] .. " " .. p_val.pname
+				end
+			end
+			local final_str = ""
+			for _, str in ipairs(teams_str) do
+				final_str = final_str .. str .. "\n"
+			end
+			experiment_logs.log(
+				"new_team_alloc",
+				"New allocation would've been:\n" .. final_str,
+				"|team_players|"
+			)
+		end
+
 		ctf_teams.allocate_teams(ctf_map.current_map.teams)
 
 		ctf_modebase.current_mode_matches_played = ctf_modebase.current_mode_matches_played
 			+ 1
-
-		local current_map = ctf_map.current_map
-		local current_mode = ctf_modebase.current_mode
 
 		if table.indexof(current_map.game_modes, current_mode) == -1 then
 			local concat =
