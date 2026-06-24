@@ -1096,7 +1096,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				string.format("(pvp, cc, %f) = %f %f", recent or 1.0, pvp_score, capcoins)
 			)
 
-			return pvp_score + capcoins + math.sqrt(capcoins * pvp_score)
+			return math.sqrt(pvp_score * capcoins * 1.05)
 		end,
 
 		--- @type ScoreFun
@@ -1111,7 +1111,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					build_score
 				)
 			)
-			return heal_score + build_score + math.sqrt(heal_score * build_score)
+			return math.sqrt(heal_score * build_score * 1.05)
 		end,
 
 		--- @type ScoreFun
@@ -1121,7 +1121,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			core.debug(
 				string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val)
 			)
-			return passive_val + active_val + math.sqrt(passive_val * active_val)
+			return math.sqrt(passive_val * active_val * 1.5)
 		end,
 
 		--- @param team Team
