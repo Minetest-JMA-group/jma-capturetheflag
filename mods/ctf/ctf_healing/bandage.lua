@@ -89,7 +89,9 @@ function ctf_healing.register_bandage(name, def)
 						color = "warning",
 					})
 				end
-				def.after_heal(object, player)
+				if def.after_heal then
+					def.after_heal(object, player)
+				end
 			elseif pointed_thing.type == "node" then
 				local node_pointed = core.get_node(pointed_thing.under)
 				local node_above = core.get_node(pointed_thing.under:offset(0, 1, 0))
