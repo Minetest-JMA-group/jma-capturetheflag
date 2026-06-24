@@ -3,9 +3,6 @@ ctf_core = {
 		-- server_mode = core.settings:get("ctf_server_mode") or "play",
 		server_mode = core.settings:get_bool("creative_mode", false) and "mapedit"
 			or "play",
-		low_ram_mode = core.settings:get("ctf_low_ram_mode") or false,
-		meta_write_interval = tonumber(minetest.settings:get("ctf_meta_write_interval") or
-		"0"),
 	},
 }
 
@@ -30,6 +27,5 @@ end
 ctf_core.include_files(
 	"helpers.lua",
 	"privileges.lua",
-    "cooldowns.lua",
-	"player_meta.lua"
+    "cooldowns.lua"
 )
