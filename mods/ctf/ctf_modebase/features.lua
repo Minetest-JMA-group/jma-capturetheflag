@@ -595,7 +595,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			experiment_logs.log(
 				"new_killscore",
 				S(
-					"You would have got @1 points for killing @2. Ratio of your PvP vals is @3",
+					"You would have got @1 points for killing @2. Ratio of victim:killer PvP is @3",
 					string.format("%.2f", score),
 					pname,
 					string.format("%.3f", vals_ratio)
@@ -1487,10 +1487,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				score = attempt_reward,
 			}, false)
 
-			local text = S(
-				" has dropped the flag but got @1 point(s)",
-				attempt_reward
-			)
+			local text = S(" has dropped the flag but got @1 point(s)", attempt_reward)
 			if many_teams then
 				text = S(
 					" has dropped the flag of team(s) @1 but got @2 point(s)",
@@ -1510,7 +1507,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				{ text = pname .. text, color = "light" }
 			)
 
-			core.chat_send_all(core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text))
+			core.chat_send_all(
+				core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text)
+			)
 			ctf_modebase.announce(
 				string.format("Player %s (team %s)%s", pname, pteam, text)
 			)
@@ -1857,9 +1856,11 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					weapon_image
 				)
 
-                -- Rotate player camera to killer
-                if ctf_settings.get(player, "ctf_modebase:auto_look_at_killer") == "true" then
-                    local player_pos = player:get_pos()
+				-- Rotate player camera to killer
+				if
+					ctf_settings.get(player, "ctf_modebase:auto_look_at_killer") == "true"
+				then
+					local player_pos = player:get_pos()
 					local hitter_pos = hitter:get_pos()
 					if vector.distance(player_pos, hitter_pos) < 15 then
 						local dir = vector.direction(player_pos, hitter_pos)
