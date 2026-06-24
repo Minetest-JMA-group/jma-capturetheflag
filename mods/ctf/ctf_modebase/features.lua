@@ -591,7 +591,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					pname,
 					vals_ratio
 				),
-				killer_name
+				{ killer_name }
 			)
 		end
 		return score
