@@ -51,6 +51,9 @@ ctf_modebase = {
 	--- @type { [PlayerName]: (number[])?}
 	flag_attempt_history = {},
 
+	--- @type ({ team: Team, target_team: Team, time: number})[]
+	flag_attempt_history_all = {},
+
 	--- @type { [PlayerName]: number? }
 	player_on_flag_attempt_streak = {},
 

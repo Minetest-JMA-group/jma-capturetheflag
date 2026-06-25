@@ -100,13 +100,15 @@ if experiment_logs then
 	experiment_logs.register_new_experiment(
 		"new_killscore",
 		S("New method of calculation of killscore"),
-		S(
-			"The new method under test is based on PvP skills of both the killer and the target"
-		)
+		S("The new method under test is based on PvP skills of both sides")
 			.. "\n"
-			.. S(
-				"As well as much did the target have value for their team during the match"
-			)
+			.. S("As well as 'value' of the victim in the current match")
+	)
+
+	experiment_logs.register_new_experiment(
+		"new_killscore_detail",
+		S("More details about the new method for killscore"),
+		S("Send value of the victim as well as PvP ratio of both sides")
 	)
 end
 
@@ -591,17 +593,25 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local player_pvp_val = get_pvp_score(pname, 0.5)
 		local killer_pvp_val = get_pvp_score(killer_name, 0.5)
 		local vals_ratio = player_pvp_val / killer_pvp_val
-		local score = player_val * vals_ratio
+		local score = math.floor(math.max(player_val * vals_ratio, 1))
 		if experiment_logs then
 			experiment_logs.log(
 				"new_killscore",
 				S(
-					"You would have got @1 points for killing @2. Ratio of victim:killer PvP is @3",
-					string.format("%.2f", score),
-					pname,
-					string.format("%.3f", vals_ratio)
+					"You would have got @1 points for killing @2.",
+					string.format("%.0f", score),
+					pname
 				),
 				{ killer_name }
+			)
+			experiment_logs.log(
+				"new_killscore_detail",
+				S(
+					"Value of @1 is @2. Victim:Killer PvP ratio is @3",
+					pname,
+					string.format("%0.2f", player_val),
+					string.format("%0.2f", vals_ratio)
+				)
 			)
 		end
 		return score

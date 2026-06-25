@@ -66,6 +66,44 @@ local function get_streak_color(attempts)
 	end
 end
 
+--- @param target_team Team
+--- @return boolean
+local function are_attempts_on_target_too_fast(target_team)
+	--- We assume a "base" threshold. If the attempts happened within this timeframe,
+	--- they are too fast.
+	--- @type number In seconds
+	local threshold = 3
+	--- Let's add a bit of randomness :)
+	local r = 1 + math.random() - 0.5
+	threshold = threshold * r
+
+	--- Now get the last two attempts on this team
+	local last_attempt_time = nil
+	local last_last_attempt_time = nil
+	for i = #ctf_modebase.flag_attempt_history_all, 1, -1 do
+		local attempt = ctf_modebase.flag_attempt_history_all[i]
+		if attempt.target_team == target_team then
+			if not last_attempt_time then
+				last_attempt_time = attempt.time
+			elseif not last_last_attempt_time then
+				last_last_attempt_time = attempt.time
+			else
+				break
+			end
+		end
+	end
+	if not last_attempt_time then
+		return false
+	end
+	if not last_last_attempt_time then
+		return false
+	end
+	if math.abs(last_last_attempt_time - last_attempt_time) > threshold then
+		return false
+	end
+	return true
+end
+
 local function drop_flags(player, pteam)
 	local pname = player:get_player_name()
 	local flagteams = ctf_modebase.taken_flags[pname]
@@ -165,6 +203,11 @@ function ctf_modebase.flag_on_punch(puncher, nodepos, node)
 			ctf_modebase.flag_attempt_history[pname] = {}
 		end
 		table.insert(ctf_modebase.flag_attempt_history[pname], os.time())
+
+		table.insert(ctf_modebase.flag_attempt_history_all, {
+			team = target_team,
+			time = os.time(),
+		})
 
 		local number_of_attempts = 0
 		local total_time = 0 -- should be less than 60*10 = 10 minutes
