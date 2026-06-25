@@ -1,13 +1,30 @@
+--- @alias SettingType "bool" | "bar" | "field" | "list"
+--- @alias SettingDef {
+--- type: SettingType,
+--- default: string?,
+--- list: table?,
+--- description: string?,
+--- on_change: fun(player: PlayerRef, new_value: string?),
+--- label: string,
+--- min: number?,
+--- max: number?,
+--- step: number?,
+--- }
+
 ctf_settings = {
+	--- @type { [string]: SettingDef }
 	settings = {},
+	--- @type string[]
 	settings_list = {},
 }
 
-local FORMSIZE = {x = 8, y = 9.1}
+local FORMSIZE = { x = 8, y = 9.1 }
 local SCROLLBAR_W = 0.4
 
 core.after(0, function()
-	table.sort(ctf_settings.settings_list, function(a, b) return a < b end)
+	table.sort(ctf_settings.settings_list, function(a, b)
+		return a < b
+	end)
 end)
 
 --[[
@@ -23,21 +40,24 @@ Settings should only be registered at loadtime
 	end
 }
 ]]
----@param def table
+--- @param name string
+--- @param def SettingDef
 function ctf_settings.register(name, def)
 	ctf_settings.settings[name] = def
 	table.insert(ctf_settings.settings_list, name)
 end
 
 ---@param player PlayerRef
+---@param setting string
+---@param value string
 function ctf_settings.set(player, setting, value)
-	player:get_meta():set_string("ctf_settings:"..setting, value)
+	player:get_meta():set_string("ctf_settings:" .. setting, value)
 end
 
 ---@param player PlayerRef
 ---@return string Returns the player's chosen setting value, the default given at registration, or if both are unset: ""
 function ctf_settings.get(player, setting)
-	local value = player:get_meta():get_string("ctf_settings:"..setting)
+	local value = player:get_meta():get_string("ctf_settings:" .. setting)
 	local info = ctf_settings.settings[setting]
 
 	return value == "" and (info and info.default) or value
@@ -49,15 +69,21 @@ end
 -- @param visible_l the length of the scroll_container and scrollbar
 -- @param total_l length of the scrollable area
 -- @param scroll_factor as passed to scroll_container
-local function make_scrollbaroptions_for_scroll_container(visible_l, total_l, scroll_factor)
-
+local function make_scrollbaroptions_for_scroll_container(
+	visible_l,
+	total_l,
+	scroll_factor
+)
 	assert(total_l >= visible_l)
 
 	local thumb_size = (visible_l / total_l) * (total_l - visible_l)
 
 	local max = total_l - visible_l
 
-	return ("scrollbaroptions[min=0;max=%f;thumbsize=%f]"):format(max / scroll_factor, thumb_size / scroll_factor)
+	return ("scrollbaroptions[min=0;max=%f;thumbsize=%f]"):format(
+		max / scroll_factor,
+		thumb_size / scroll_factor
+	)
 end
 
 core.register_on_mods_loaded(function()
@@ -90,7 +116,7 @@ core.register_on_mods_loaded(function()
 						settingdef.label or setting,
 						context.setting[setting],
 						setting,
-						settingdef.description or HumanReadable(setting)
+						settingdef.description or HumanReadable(setting),
 					}
 
 					lastypos = lastypos + 0.5
@@ -105,34 +131,39 @@ core.register_on_mods_loaded(function()
 					setting_list[k] = {
 						"dropdown[0,%f;%f;%s;%s;%d]tooltip[0,%f;%f,0.6;%s]",
 						lastypos,
-						math.max(FORMSIZE.x / 2, math.min(FORMSIZE.x - SCROLLBAR_W + 2, 0.5 + (max_len * 0.23))),
+						math.max(
+							FORMSIZE.x / 2,
+							math.min(FORMSIZE.x - SCROLLBAR_W + 2, 0.5 + (max_len * 0.23))
+						),
 						setting,
 						settingdef.list,
 						context.setting[setting],
 						--label
 						lastypos,
-						(FORMSIZE.x/1.7) - 0.3,
+						(FORMSIZE.x / 1.7) - 0.3,
 						settingdef.description or HumanReadable(setting),
 					}
 					lastypos = lastypos + 0.6
 				elseif settingdef.type == "bar" then
 					lastypos = lastypos + 0.7
 					setting_list[k] = {
-						"label[0,%f;%s: %d%%]"..
-						"scrollbaroptions[min=%d;max=%d;smallstep=%d]"..
-						"scrollbar[0,%f;%f,0.4;horizontal;%s;%s]",
+						"label[0,%f;%s: %d%%]"
+							.. "scrollbaroptions[min=%d;max=%d;smallstep=%d]"
+							.. "scrollbar[0,%f;%f,0.4;horizontal;%s;%s]",
 						lastypos - 0.5,
 						settingdef.label or HumanReadable(setting),
 						(
 							tonumber(context.setting[setting])
-							/
-							((settingdef.max - settingdef.min) - tonumber(settingdef.default))
+							/ (
+								(settingdef.max - settingdef.min)
+								- tonumber(settingdef.default)
+							)
 						) * 100,
 						settingdef.min or 0,
 						settingdef.max or 10,
 						settingdef.step or 1,
 						lastypos,
-						FORMSIZE.x - SCROLLBAR_W -2,
+						FORMSIZE.x - SCROLLBAR_W - 2,
 						setting,
 						context.setting[setting],
 					}
@@ -154,7 +185,7 @@ core.register_on_mods_loaded(function()
 						1.5, -- button width
 						setting,
 						lastypos,
-						(FORMSIZE.x/1.7) - 0.3,
+						(FORMSIZE.x / 1.7) - 0.3,
 						settingdef.description or HumanReadable(setting),
 					}
 					lastypos = lastypos + 0.5
@@ -162,23 +193,38 @@ core.register_on_mods_loaded(function()
 			end
 
 			local form = {
-				{"box[-0.1,-0.1;%f,%f;#00000055]", FORMSIZE.x - SCROLLBAR_W, FORMSIZE.y},
-				{"scroll_container[-0.1,0.3;%f,%f;settings_scrollbar;vertical;0.1]",
+				{
+					"box[-0.1,-0.1;%f,%f;#00000055]",
+					FORMSIZE.x - SCROLLBAR_W,
+					FORMSIZE.y,
+				},
+				{
+					"scroll_container[-0.1,0.3;%f,%f;settings_scrollbar;vertical;0.1]",
 					FORMSIZE.x - SCROLLBAR_W + 2,
-					FORMSIZE.y + 0.7
+					FORMSIZE.y + 0.7,
 				},
 				ctf_gui.list_to_formspec_str(setting_list),
 				"scroll_container_end[]",
-				make_scrollbaroptions_for_scroll_container(FORMSIZE.y, math.max(lastypos+1, FORMSIZE.y + 0.7), 0.072),
-				{"scrollbar[%f,-0.1;%f,%f;vertical;settings_scrollbar;%f]",
+				make_scrollbaroptions_for_scroll_container(
+					FORMSIZE.y,
+					math.max(lastypos + 1, FORMSIZE.y + 0.7),
+					0.072
+				),
+				{
+					"scrollbar[%f,-0.1;%f,%f;vertical;settings_scrollbar;%f]",
 					FORMSIZE.x - SCROLLBAR_W,
 					SCROLLBAR_W,
 					FORMSIZE.y,
-					context.settings_scrollbar or 0
+					context.settings_scrollbar or 0,
 				},
 			}
 
-			return sfinv.make_formspec(player, context, ctf_gui.list_to_formspec_str(form), false)
+			return sfinv.make_formspec(
+				player,
+				context,
+				ctf_gui.list_to_formspec_str(form),
+				false
+			)
 		end,
 		on_player_receive_fields = function(self, player, context, fields)
 			local refresh = false
@@ -186,7 +232,7 @@ core.register_on_mods_loaded(function()
 			for field, value in pairs(fields) do
 				-- Universal handler for all Apply/OK buttons
 				-- Button name: apply_<setting>
-				if field:sub(1,6) == "apply_" then
+				if field:sub(1, 6) == "apply_" then
 					local sname = field:sub(7)
 					local setting = ctf_settings.settings[sname]
 					if setting and setting.type == "field" then
@@ -236,7 +282,10 @@ core.register_on_mods_loaded(function()
 					elseif setting.type == "bar" then
 						local scrollevent = core.explode_scrollbar_event(value)
 
-						if scrollevent.value and context.setting[field] ~= tostring(scrollevent.value) then
+						if
+							scrollevent.value
+							and context.setting[field] ~= tostring(scrollevent.value)
+						then
 							context.setting[field] = tostring(scrollevent.value)
 							ctf_settings.set(player, field, tostring(scrollevent.value))
 
@@ -250,16 +299,18 @@ core.register_on_mods_loaded(function()
 				end
 			end
 
-			if not refresh then return end
+			if not refresh then
+				return
+			end
 
 			if fields.settings_scrollbar then
-				local scrollevent = core.explode_scrollbar_event(fields.settings_scrollbar)
+				local scrollevent =
+					core.explode_scrollbar_event(fields.settings_scrollbar)
 
 				if scrollevent.value then
 					context.settings_scrollbar = scrollevent.value
 				end
 			end
-
 
 			sfinv.set_page(player, sfinv.get_page(player))
 		end,
