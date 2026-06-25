@@ -475,7 +475,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	end
 
 	--- @type ScoreFun
-	local function get_capture_point(player, recent)
+	local function get_capture_coin(player, recent)
 		--local ranking = get_ranking(player, recent)
 		return 1
 	end
@@ -483,8 +483,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	--- @type ScoreFun
 	local function get_heal_score(player, recent)
 		local ranking = get_ranking(player, recent)
-		local hp_healed = rankings.hp_healed or 1
-		local deaths = rankings.deaths or 1
+		local hp_healed = ranking.hp_healed or 1
+		local deaths = ranking.deaths or 1
 		--- 15 is knight_hp / 2
 		return (hp_healed / 15) / deaths
 	end
@@ -492,12 +492,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	--- @type ScoreFun
 	local function get_player_active_value(player, recent)
 		local pvp_score = get_pvp_score(player, recent)
-		local capoints = get_capture_point(player, recent)
+		local capcoins = get_capture_coin(player, recent)
 		core.debug(
-			string.format("(pvp, ca, %f) = %f %f", recent or 1.0, pvp_score, capoints)
+			string.format("(pvp, ca, %f) = %f %f", recent or 1.0, pvp_score, capcoins)
 		)
 
-		return pvp_score + capoints + math.sqrt(capoints * pvp_score)
+		return math.log(math.pow(3, pvp_score) + math.pow(3, capcoins), 3)
 	end
 
 	--- @type ScoreFun
@@ -507,7 +507,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		core.debug(
 			string.format("(h, b, %f) = %f %f", recent or 1.0, heal_score, build_score)
 		)
-		return heal_score + build_score + math.sqrt(heal_score * build_score)
+		return math.log(math.pow(3, heal_score) + math.pow(3, build_score), 3)
 	end
 
 	--- @type ScoreFun
@@ -517,7 +517,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		core.debug(
 			string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val)
 		)
-		return passive_val + active_val + math.sqrt(passive_val * active_val)
+		return math.sqrt(passive_val * active_val * 1.25)
 	end
 
 	--- @param team Team
