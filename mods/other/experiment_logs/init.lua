@@ -1,11 +1,18 @@
-local S = core.get_translator(core.get_current_modname())
+local modname = core.get_current_modname()
+local S = core.get_translator(modname)
 
 --- @type { [string]: boolean }
 local experiments = {}
 
 experiment_logs = {}
 
-ctf_settings.register("experiment_logs:subscribed", {
+--- @param name string
+--- @return string
+local function mod_setting(name)
+	return string.format("%s:%s", modname, name)
+end
+
+ctf_settings.register(mod_setting("subscribed"), {
 	type = "bool",
 	label = S("[Experiment logs] ")
 		.. S("Master setting to receive logs about experiments"),
@@ -30,7 +37,7 @@ function experiment_logs.register_new_experiment(technical_name, label, descript
 		)
 		return
 	end
-	ctf_settings.register("experiment_logs:" .. technical_name, {
+	ctf_settings.register(mod_setting(technical_name), {
 		type = "bool",
 		label = S("[Experiment logs] ") .. label,
 		description = description,
@@ -56,9 +63,8 @@ function experiment_logs.log(experiment_name, text, target)
 		)
 		return -1
 	end
-	local experiment_setting = "experiment_logs:" .. experiment_name
+	local experiment_setting = mod_setting(experiment_name)
 	core.debug("Experiment setting name is " .. experiment_setting)
-	local team_players = ctf_teams.get_all_team_players()
 	local connected_players = core.get_connected_players()
 	--- @type table
 	local players = {}
@@ -93,7 +99,7 @@ function experiment_logs.log(experiment_name, text, target)
 	)
 	local number_of_sent = 0
 	for _, player in ipairs(players) do
-		local master = ctf_settings.get(player, "experiment_logs:subscribed") == "true"
+		local master = ctf_settings.get(player, mod_setting("subscribed")) == "true"
 		local this = ctf_settings.get(player, experiment_setting) == "true"
 		local pname = player:get_player_name()
 		core.debug(
