@@ -86,7 +86,7 @@ function experiment_logs.log(experiment_name, text, target)
 	end
 	core.debug(
 		string.format(
-			"Sending experiment log of %s to %d players",
+			"Sending experiment log of %s to max %d players",
 			experiment_name,
 			#players
 		)
