@@ -75,7 +75,10 @@ function experiment_logs.log(experiment_name, text, target)
 		players = connected_players
 	elseif type(target) == "table" then
 		for _, pname in ipairs(target) do
-			table.insert(players, core.get_player_by_name(pname))
+			local player = core.get_player_by_name(pname)
+			if player then
+				table.insert(players, player)
+			end
 		end
 	else
 		core.log("warning", "In experiment_logs.log, target has an invalid type or value")
