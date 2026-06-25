@@ -8,6 +8,7 @@ local S = core.get_translator(core.get_current_modname())
 local default_item_value = {
 	["ctf_melee:sword_diamond"] = 12,
 	["ctf_ranged:shotgun_loaded"] = 12,
+	["ctf_healing:super_bandage"] = 12,
 	["ctf_melee:sword_mese"] = 11,
 	["ctf_ranged:shotgun"] = 10,
 	["ctf_ranged:sniper_magnum_loaded"] = 12,
