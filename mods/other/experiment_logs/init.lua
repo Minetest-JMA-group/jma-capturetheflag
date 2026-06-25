@@ -5,7 +5,7 @@ local experiments = {}
 
 experiment_logs = {}
 
-ctf_settings.register("experiments_log:subscribed", {
+ctf_settings.register("experiment_logs:subscribed", {
 	type = "bool",
 	label = S("[Experiment logs] ")
 		.. S("Master setting to receive logs about experiments"),
