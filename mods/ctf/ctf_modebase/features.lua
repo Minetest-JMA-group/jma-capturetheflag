@@ -611,7 +611,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					pname,
 					string.format("%0.2f", player_val),
 					string.format("%0.2f", vals_ratio)
-				)
+				),
+				{ killer_name }
 			)
 		end
 		return score
