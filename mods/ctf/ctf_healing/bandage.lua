@@ -15,6 +15,15 @@ function ctf_healing.register_bandage(name, def)
 		inventory_overlay = def.inventory_overlay,
 		wield_image = def.wield_image,
 		on_use = function(itemstack, player, pointed_thing)
+			local pname = player:get_player_name()
+			if restrict_item then
+				if restrict_item.is_restricted_for_player(pname, name) then
+					hud_events.new(player, {
+						text = S("You cannot use this item!"),
+					})
+					return
+				end
+			end
 			if pointed_thing.type == "object" then
 				local object = pointed_thing.ref
 				if not object:is_player() then
