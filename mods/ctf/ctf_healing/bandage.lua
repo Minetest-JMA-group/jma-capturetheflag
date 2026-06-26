@@ -167,9 +167,9 @@ local SUPER_BANDAGE_HEAL_RADIUS = 3
 --- @param pos1 Vector
 --- @param pos2 Vector
 local function generate_random_pos_inside(pos1, pos2)
-	local x = (math.random() * pos2.x) % pos2.x + pos1.x
-	local y = (math.random() * pos2.y) % pos2.y + pos1.y
-	local z = (math.random() * pos2.z) % pos2.z + pos1.z
+	local x = math.random(pos1.x, pos2.x) + math.random() - 0.5
+	local y = math.random(pos1.y, pos2.y) + math.random() - 0.5
+	local z = math.random(pos1.z, pos2.z) + math.random() - 0.5
 	return {
 		x = x,
 		y = y,
@@ -180,19 +180,40 @@ end
 --- @param pos1 Vector
 --- @param pos2 Vector
 local function spawn_heal_particles(pos1, pos2)
-	-- TODO
 	for i = 1, 200 do
+		local expire = math.random() * 3
+		local y_velocity = math.random() * 0.5
 		local pos = generate_random_pos_inside(pos1, pos2)
 		core.add_particle({
 			pos = pos,
-			velocity = { x = 0, y = 0.2, z = 0 },
-			expiration = 3,
-			size = 128,
+			velocity = { x = 0, y = y_velocity, z = 0 },
+			acceleration = { x = 0, y = 0, z = 0 },
+			expirationtime = expire,
+			size = 1,
+			collisiondetection = false,
+			collision_removal = false,
+			object_collision = true,
+			vertical = false,
 			texture = "ctf_healing_healing_particle.png",
-			glow = 2,
+			glow = 4,
 		})
 	end
 end
+
+core.register_chatcommand("spawn_hp", {
+	func = function(name, param)
+		local player = core.get_player_by_name(name)
+		local pos_center = player:get_pos()
+		local radius = {
+			x = SUPER_BANDAGE_HEAL_RADIUS,
+			y = SUPER_BANDAGE_HEAL_RADIUS,
+			z = SUPER_BANDAGE_HEAL_RADIUS,
+		}
+		local pos1 = vector.add(pos_center, radius)
+		local pos2 = vector.subtract(pos_center, radius)
+		spawn_heal_particles(pos1, pos2)
+	end,
+})
 
 ctf_healing.register_bandage("ctf_healing:super_bandage", {
 	description = S("Super Bandage") .. "\n" .. S(
