@@ -206,6 +206,14 @@ core.register_tool("ctf_healing:medkit", {
 			return
 		end
 		local uname = user:get_player_name()
+		if restrict_item then
+			if restrict_item.is_restricted_for_player(uname, "ctf_healing:medkit") then
+				hud_events.new(user, {
+					text = S("You cannot use this item!"),
+				})
+				return
+			end
+		end
 
 		if not healing_players[uname] then
 			start_medkit_heal(uname)
