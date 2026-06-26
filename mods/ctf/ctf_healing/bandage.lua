@@ -20,6 +20,7 @@ function ctf_healing.register_bandage(name, def)
 				if restrict_item.is_restricted_for_player(pname, name) then
 					hud_events.new(player, {
 						text = S("You cannot use this item!"),
+						quick = true,
 					})
 					return
 				end
