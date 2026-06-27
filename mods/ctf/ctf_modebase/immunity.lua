@@ -2,6 +2,7 @@ local hud = mhud.init()
 
 local RESPAWN_IMMUNITY_SECONDS = 10
 local MAX_DISTANCE_FROM_FLAG = 5
+local CHECK_INTERVAL = 1
 -- The value is a table if it's respawn immunity and false if it's a custom immunity
 local immune_players = {}
 
@@ -201,14 +202,15 @@ end)
 local last_check = 0
 core.register_globalstep(function (dtime)
 	last_check = last_check + dtime
-	if last_check >= 1 then
-		last_check = 0
-		for player, _ in pairs(immune_players) do
-			local player_obj = PlayerObj(player)
-			if not player_obj then
-				return
-			end
 
+	if last_check <= CHECK_INTERVAL then
+		return
+	end
+
+	last_check = 0
+	for player, _ in pairs(immune_players) do
+		local player_obj = PlayerObj(player)
+		if player_obj then
 			local team_color = ctf_teams.get(player_obj)
 			local team = ctf_map.current_map.teams[team_color]
 
