@@ -1507,14 +1507,14 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					attempt_reward
 				)
 			end
-			local teamnames_notify = S("Your teammate ") .. text
+			local teammates_notify = S("Your teammate ") .. pname .. text
 
 			flag_event_notify(
 				pname,
 				pteam,
 				teamnames,
 				nil,
-				{ text = teamnames_notify, color = "light" },
+				{ text = teammates_notify, color = "light" },
 				{ text = S("@1 has dropped your flag!", pname), color = "success" },
 				{ text = pname .. text, color = "light" }
 			)
