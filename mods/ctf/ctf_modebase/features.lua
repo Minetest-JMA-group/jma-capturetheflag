@@ -497,7 +497,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			string.format("(pvp, ca, %f) = %f %f", recent or 1.0, pvp_score, capcoins)
 		)
 
-		return math.log(math.pow(3, pvp_score) + math.pow(3, capcoins), 3)
+		return math.pow(pvp_score * capcoins, 1.5)
 	end
 
 	--- @type ScoreFun
@@ -507,7 +507,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		core.debug(
 			string.format("(h, b, %f) = %f %f", recent or 1.0, heal_score, build_score)
 		)
-		return math.log(math.pow(3, heal_score) + math.pow(3, build_score), 3)
+		return math.pow(heal_score * build_score, 1.5)
 	end
 
 	--- @type ScoreFun
