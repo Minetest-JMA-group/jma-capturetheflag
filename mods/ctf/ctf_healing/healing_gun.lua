@@ -53,7 +53,7 @@ ctf_ranged.simple_register_gun("ctf_healing:healing_pistol", {
 	fire_sound = "ctf_ranged_pistol",
 	rounds = 75,
 	range = 75,
-	fire_interval = 0.4,
+	fire_interval = 0.1,
 	liquid_travel_dist = 2,
 	on_use = ctf_ranged.on_hp_change_gun_use(on_teammate_hit, function()
 		return false
