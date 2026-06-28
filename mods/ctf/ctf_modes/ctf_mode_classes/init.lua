@@ -1,3 +1,5 @@
+ctf_mode_classes = {}
+
 local rankings = ctf_rankings.init()
 local recent_rankings = ctf_modebase.recent_rankings(rankings)
 local features = ctf_modebase.features(rankings, recent_rankings)
