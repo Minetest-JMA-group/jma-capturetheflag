@@ -181,7 +181,7 @@ end
 --- @param pos2 Vector
 local function spawn_heal_particles(pos1, pos2)
 	for i = 1, 200 do
-		local expire = math.random() * 3
+		local expire = math.random() * 2
 		local y_velocity = math.random() * 0.5
 		local pos = generate_random_pos_inside(pos1, pos2)
 		core.add_particle({
