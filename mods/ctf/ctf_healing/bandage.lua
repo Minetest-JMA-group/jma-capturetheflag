@@ -28,6 +28,10 @@ function ctf_healing.register_bandage(name, def)
 			if pointed_thing.type == "object" then
 				local object = pointed_thing.ref
 				if not object:is_player() then
+					local entity = object:get_luaentity()
+					if entity.name == "__builtin:item" and entity.on_punch then
+						entity:on_punch(player)
+					end
 					return
 				end
 
