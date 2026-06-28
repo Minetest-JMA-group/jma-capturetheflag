@@ -200,21 +200,6 @@ local function spawn_heal_particles(pos1, pos2)
 	end
 end
 
-core.register_chatcommand("spawn_hp", {
-	func = function(name, param)
-		local player = core.get_player_by_name(name)
-		local pos_center = player:get_pos()
-		local radius = {
-			x = SUPER_BANDAGE_HEAL_RADIUS,
-			y = SUPER_BANDAGE_HEAL_RADIUS,
-			z = SUPER_BANDAGE_HEAL_RADIUS,
-		}
-		local pos1 = vector.add(pos_center, radius)
-		local pos2 = vector.subtract(pos_center, radius)
-		spawn_heal_particles(pos1, pos2)
-	end,
-})
-
 ctf_healing.register_bandage("ctf_healing:super_bandage", {
 	description = S("Super Bandage") .. "\n" .. S(
 		"Heal your teammate for 5-6 HP, while also healing nearby teammates by 2-3HP"
