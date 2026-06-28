@@ -220,6 +220,10 @@ function ctf_modebase.start_match_after_map_vote()
 			end
 		end
 
+		core.debug(
+			"The new team allocation algorithm result: " .. core.serialize(allocation)
+		)
+
 		if experiment_logs then
 			-- Now we announce it to the chat. Let's receive comments
 			-- and feedback from the player
