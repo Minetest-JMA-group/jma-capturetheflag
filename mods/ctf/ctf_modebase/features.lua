@@ -595,24 +595,41 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local vals_ratio = player_pvp_val / killer_pvp_val
 		local score = math.floor(math.max(player_val * vals_ratio, 1))
 		if experiment_logs then
+			local score_formatted = string.format("%.0f", score)
+			local player_val_formatted = string.format("%0.2f", player_val)
+			local vals_ratio_formatted = string.format("%0.2f", vals_ratio)
+			experiment_logs.log(
+				"new_killscore",
+				S("You would have got @1 points for killing @2.", score_formatted, pname),
+				{ killer_name }
+			)
 			experiment_logs.log(
 				"new_killscore",
 				S(
-					"You would have got @1 points for killing @2.",
-					string.format("%.0f", score),
-					pname
+					"@1 would've got @1 points for killing you.",
+					killer_name,
+					score_formatted
 				),
-				{ killer_name }
+				{ pname }
 			)
 			experiment_logs.log(
 				"new_killscore_detail",
 				S(
 					"Value of @1 is @2. Victim:Killer PvP ratio is @3",
 					pname,
-					string.format("%0.2f", player_val),
-					string.format("%0.2f", vals_ratio)
+					player_val_formatted,
+					vals_ratio_formatted
 				),
 				{ killer_name }
+			)
+			experiment_logs.log(
+				"new_killscore_detail",
+				S(
+					"Value of you is @1. Victim:Killer PvP ratio is @2",
+					player_val_formatted,
+					vals_ratio_formatted
+				),
+				{ pname }
 			)
 		end
 		return score
@@ -703,8 +720,14 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				return math.ceil(capture_reward / 3)
 			end
 		else
-			-- If the reason is timeout, then give 1/3 of the cap reward
-			return capture_reward / 3
+			-- If the reason is timeout, then give 1/2 of the cap reward
+			-- if self flag is also stolen. Otherwise, give 1/5 of the cap
+			-- reward.
+			if ctf_modebase.flag_taken[team] then
+				return capture_reward / 2
+			else
+				return capture_reward / 5
+			end
 		end
 	end
 
