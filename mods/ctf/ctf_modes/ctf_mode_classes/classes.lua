@@ -331,6 +331,49 @@ local IMMUNITY_TIME = 6
 local IMMUNITY_COOLDOWN = 28
 local HEAL_PERCENT = 0.8
 
+function ctf_mode_classes.bandage_rightclick(itemstack, user, pointed)
+	if ctf_settings.get(user, "ctf_mode_classes:simple_support_activate") ~= "true" then
+		local ctl = user:get_player_control()
+		if not ctl.sneak and not ctl.aux1 then
+			return
+		end
+	end
+
+	local pname = user:get_player_name()
+
+	if itemstack:get_wear() == 0 then
+		if ctf_modebase.taken_flags[pname] then
+			hud_events.new(user, {
+				quick = true,
+				text = "You can't become immune while holding the flag",
+				color = "warning",
+			})
+			return
+		end
+
+		ctf_modebase.give_immunity(user)
+
+		local step = math.floor(65534 / IMMUNITY_TIME)
+		ctf_modebase.update_wear.start_update(
+			pname,
+			itemstack,
+			step,
+			false,
+			function(item_id)
+				ctf_modebase.remove_immunity(user)
+				local dstep = math.floor(65534 / IMMUNITY_COOLDOWN)
+				ctf_modebase.update_wear.start_update(pname, itemstack, dstep, true)
+			end,
+			function()
+				ctf_modebase.remove_immunity(user)
+			end
+		)
+
+		itemstack:set_wear(1)
+		return itemstack
+	end
+end
+
 ctf_healing.register_bandage("ctf_mode_classes:support_bandage", {
 	description = string.format(
 		"Bandage\nHeals teammates for 4-5 HP until target's HP is equal to %d%% of their maximum HP\n"
@@ -348,50 +391,7 @@ ctf_healing.register_bandage("ctf_mode_classes:support_bandage", {
 	heal_percent = HEAL_PERCENT,
 	heal_min = 4,
 	heal_max = 5,
-	rightclick_func = function(itemstack, user, pointed)
-		if
-			ctf_settings.get(user, "ctf_mode_classes:simple_support_activate") ~= "true"
-		then
-			local ctl = user:get_player_control()
-			if not ctl.sneak and not ctl.aux1 then
-				return
-			end
-		end
-
-		local pname = user:get_player_name()
-
-		if itemstack:get_wear() == 0 then
-			if ctf_modebase.taken_flags[pname] then
-				hud_events.new(user, {
-					quick = true,
-					text = "You can't become immune while holding the flag",
-					color = "warning",
-				})
-				return
-			end
-
-			ctf_modebase.give_immunity(user)
-
-			local step = math.floor(65534 / IMMUNITY_TIME)
-			ctf_modebase.update_wear.start_update(
-				pname,
-				itemstack,
-				step,
-				false,
-				function(item_id)
-					ctf_modebase.remove_immunity(user)
-					local dstep = math.floor(65534 / IMMUNITY_COOLDOWN)
-					ctf_modebase.update_wear.start_update(pname, itemstack, dstep, true)
-				end,
-				function()
-					ctf_modebase.remove_immunity(user)
-				end
-			)
-
-			itemstack:set_wear(1)
-			return itemstack
-		end
-	end,
+	rightclick_func = ctf_mode_classes.bandage_rightclick,
 })
 
 function classes.get_name(player)
