@@ -606,7 +606,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			experiment_logs.log(
 				"new_killscore",
 				S(
-					"@1 would've got @1 points for killing you.",
+					"@1 would've got @2 points for killing you.",
 					killer_name,
 					score_formatted
 				),
