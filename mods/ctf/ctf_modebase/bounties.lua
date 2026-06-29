@@ -1,13 +1,13 @@
 --- @alias Reward { bounty_kills?: integer, score: number }
---- @alias ContributedBounty { contributors: { [string]: number } }
---- @alias GameBounty { name: string, rewards: Reward, msg: string }
+--- @alias ContributedBounty { contributors: { [PlayerName]: number } }
+--- @alias GameBounty { name: PlayerName, rewards: Reward, msg: string }
 --- @type "orange"
 local CHAT_COLOR = "orange"
 --- @type nil | table
 local timer = nil
---- @type { [string]: GameBounty }
+--- @type { [Team]: GameBounty }
 local game_bounties = {} -- bounties assigned by the game
---- @type { [string]: ContributedBounty }-- bounties contributed by the players
+--- @type { [PlayerName]: ContributedBounty }-- bounties contributed by the players
 local contributed_bounties = {}
 --- @type number
 local PLAYER_BOUNTY_CAP = 100
@@ -218,7 +218,6 @@ function ctf_modebase.bounties.claim(player, killer)
 	return rewards
 end
 
---- @return nil
 function ctf_modebase.bounties.reassign()
 	local teams = {}
 
