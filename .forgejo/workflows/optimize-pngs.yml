@@ -1,0 +1,59 @@
+name: Optimize PNGs
+
+on:
+  push:
+    paths:
+      - '**/*.png'
+
+jobs:
+  optimize-pngs:
+    runs-on: replace-me
+
+    steps:
+      - uses: https://code.forgejo.org/actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache oxipng
+        uses: https://code.forgejo.org/actions/cache@v4
+        with:
+          path: ~/.cache/oxipng/oxipng
+          key: oxipng-v9.1.2
+
+      - name: Download oxipng
+        if: steps.cache-oxipng.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.cache/oxipng
+          curl -L \
+            https://github.com/shssoichiro/oxipng/releases/download/v9.1.2/oxipng-9.1.2-x86_64-unknown-linux-musl.tar.gz \
+            -o /tmp/oxipng.tar.gz
+          tar -xzf /tmp/oxipng.tar.gz -C ~/.cache/oxipng --strip-components=1
+          chmod +x ~/.cache/oxipng/oxipng
+          echo "$HOME/.cache/oxipng" >> "$GITHUB_PATH"
+
+      - name: Optimize changed PNGs
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            FILES=$(git ls-files '*.png')
+          else
+            FILES=$(git diff --name-only --diff-filter=ACM "$BEFORE_SHA" HEAD -- '*.png')
+          fi
+          if [ -z "$FILES" ]; then
+            echo "No new or modified PNGs to optimize"
+          else
+            oxipng --opt max --strip safe $FILES
+          fi
+
+      - name: Commit
+        run: |
+          git config user.name "$(git log -1 --format='%an')"
+          git config user.email "$(git log -1 --format='%ae')"
+          git add -- '*.png' ':(glob)**/*.png'
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Optimize PNGs with oxipng [skip ci]"
+            git push
+          fi
