@@ -707,3 +707,6 @@ core.register_entity("ctf_modebase:bounty_skull", {
 	},
 })
 core.register_on_joinplayer(update_bounty_skull_observers)
+core.register_on_leaveplayer(function(player)
+	remove_bounty_skull(player:get_player_name())
+end)
