@@ -683,7 +683,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	--- @return number
 	local function calculate_capture_reward(team, target_teams)
 		local team_scores = recent_rankings.teams()
-		local capture_reward = 0
+		local capture_reward = 18
 		for _, lost_team in ipairs(target_teams) do
 			local score = ((team_scores[lost_team] or {}).score or 0) / 4
 			score = math.max(10, math.min(900, score))
