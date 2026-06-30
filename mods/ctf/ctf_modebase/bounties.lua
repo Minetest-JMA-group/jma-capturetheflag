@@ -34,6 +34,67 @@ local function calc_total_contributed_bounty(pname)
 	return total
 end
 
+--- @param pname PlayerName
+local function remove_bounty_skull(pname)
+	local player = core.get_player_by_name(pname)
+	if not player then
+		return
+	end
+	for _, child in ipairs(player:get_children()) do
+		local luaentity = child and child:get_luaentity()
+		if luaentity and luaentity.name == "ctf_modebase:bounty_skull" then
+			child:remove()
+		end
+	end
+end
+
+--- @param only ("game" | "contributed")?
+local function update_bounty_skull_observers(only)
+	--- @type PlayerName[]
+	local targets = {}
+	if not only or only == "game" then
+		for _, game_bounty in pairs(game_bounties) do
+			table.insert(targets, game_bounty.name)
+		end
+	end
+	if not only or only == "contributed" then
+		for pname, _ in pairs(contributed_bounties) do
+			table.insert(targets, pname)
+		end
+	end
+	for _, target in ipairs(targets) do
+		local target_team = ctf_teams.get(target)
+		--- @type { [PlayerName]: boolean }
+		local observers = {}
+		local player = core.get_player_by_name(target)
+		if player then
+			--- @type ObjectRef?
+			local skull_obj = nil
+			for _, child in ipairs(player:get_children()) do
+				local entity = child and child:get_luaentity()
+				if entity and entity.name == "ctf_modebase:bounty_skull" then
+					skull_obj = child
+				end
+			end
+			if not skull_obj then
+				skull_obj = core.add_entity(player:get_pos(), "ctf_modebase:bounty_skull")
+				if skull_obj then
+					skull_obj:set_attach(player, "", { x = 0, y = 21, z = 0 })
+				end
+			end
+			for _, player2 in ipairs(core.get_connected_players()) do
+				local p2name = player2:get_player_name()
+				if target_team ~= ctf_teams.get(p2name) then
+					observers[p2name] = true
+				end
+			end
+			if skull_obj then
+				skull_obj:set_observers(observers)
+			end
+		end
+	end
+end
+
 -- Whenever players change team, e.g. in many team maps or on rejoin
 -- this has to be called
 ctf_teams.register_on_allocplayer(function()
@@ -49,12 +110,14 @@ ctf_teams.register_on_allocplayer(function()
 			end
 		end
 	end
+	update_bounty_skull_observers("contributed")
 end)
 
 --- Clean ups
 --- @return nil
 local function cleanup_contributed_bounty()
 	for bname, bounty_data in pairs(contributed_bounties) do
+		remove_bounty_skull(bname)
 		for contributor, score in pairs(bounty_data.contributors) do
 			if score <= 0 then
 				bounty_data.contributors[contributor] = nil
@@ -138,6 +201,7 @@ local function set(pname, pteam, rewards)
 	end
 
 	game_bounties[pteam] = { name = pname, rewards = rewards, msg = bounty_message }
+	update_bounty_skull_observers("game")
 end
 
 --- @param pname string
@@ -147,6 +211,7 @@ local function remove(pname, pteam)
 	core.chat_send_all(
 		core.colorize(CHAT_COLOR, S("[Bounty] @1 is no longer bountied", pname))
 	)
+	remove_bounty_skull(pname)
 	game_bounties[pteam] = nil
 end
 
@@ -187,6 +252,7 @@ function ctf_modebase.bounties.claim(player, killer)
 		--- @type string
 		local bounty_kill_text = messages[math.random(1, #messages)]
 		core.chat_send_all(core.colorize(CHAT_COLOR, bounty_kill_text))
+		remove_bounty_skull(player)
 	end
 
 	game_bounties[pteam] = nil
@@ -209,6 +275,7 @@ function ctf_modebase.bounties.claim(player, killer)
 		core.chat_send_all(core.colorize(CHAT_COLOR, player_bounty_text))
 		ctf_modebase.announce(player_bounty_text)
 		contributed_bounties[player] = nil
+		remove_bounty_skull(player)
 	end
 
 	if rewards and rewards.bounty_kills == 0 then
@@ -253,6 +320,7 @@ function ctf_modebase.bounties.reassign()
 			set(new, tname, ctf_modebase.bounties.bounty_reward_func(new))
 		end
 	end
+	update_bounty_skull_observers("game")
 end
 
 --- @return nil
@@ -266,6 +334,9 @@ end
 ctf_api.register_on_match_start(ctf_modebase.bounties.reassign_timer)
 
 ctf_api.register_on_match_end(function()
+	for _, game_bounty in pairs(game_bounties) do
+		remove_bounty_skull(game_bounty.name)
+	end
 	game_bounties = {}
 	if timer then
 		timer:cancel()
@@ -308,6 +379,7 @@ core.register_globalstep(function(dtime)
 							)
 						)
 						game_bounties[tname] = nil
+						update_bounty_skull_observers("game")
 						break
 					end
 				end
@@ -330,6 +402,7 @@ core.register_globalstep(function(dtime)
 							)
 						)
 					)
+					update_bounty_skull_observers("contributed")
 				end
 
 				left_players[pname] = nil
@@ -379,6 +452,7 @@ ctf_teams.register_on_allocplayer(
 		if #output > 0 then
 			core.chat_send_player(pname, table.concat(output, "\n"))
 		end
+		update_bounty_skull_observers("game")
 	end
 )
 
@@ -464,6 +538,7 @@ ctf_core.register_chatcommand_alias("put_bounty", "pb", {
 		--- @type number
 		local amount = ctf_core.to_number(amount_s)
 		set(player, pteam, { bounty_kills = 1, score = amount })
+		update_bounty_skull_observers("game")
 		return true, S("Successfully placed a bounty of @1 on @2!", amount, player)
 	end,
 })
@@ -569,6 +644,7 @@ ctf_core.register_chatcommand_alias(
 			)
 			last_bounty_use[name] = now
 			core.chat_send_all(core.colorize(CHAT_COLOR, msg))
+			update_bounty_skull_observers("contributed")
 			return true, S("Bounty placed!")
 		end,
 	}
@@ -598,6 +674,7 @@ function ctf_modebase.bounties.clear_bounty(pname, return_)
 		end
 	end
 	contributed_bounties[pname] = nil
+	remove_bounty_skull(pname)
 	return donors
 end
 
@@ -612,5 +689,21 @@ function ctf_modebase.bounties.get_targets_of_contributed_bounties()
 end
 
 function ctf_modebase.bounties.clear_player_bounties()
+	for pname, _ in pairs(contributed_bounties) do
+		remove_bounty_skull(pname)
+	end
 	contributed_bounties = {}
 end
+
+core.register_entity("ctf_modebase:bounty_skull", {
+	initial_properties = {
+		visual = "sprite",
+		visual_size = { x = 0.3, y = 0.3, z = 0.3 },
+		textures = { "ctf_modebase_skull.png" },
+		glow = 1,
+		pointable = false,
+		collide_with_objects = false,
+		physical = false,
+	},
+})
+core.register_on_joinplayer(update_bounty_skull_observers)
