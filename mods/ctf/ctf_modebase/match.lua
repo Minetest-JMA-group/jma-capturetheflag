@@ -142,11 +142,6 @@ function ctf_modebase.start_match_after_map_vote()
 			return difference
 		end
 
-		--- @param end_bound number
-		local function random_int(end_bound)
-			return 1 + math.floor(math.random() * 100000 % end_bound)
-		end
-
 		-- Now, we've got an optimization problem. We've got
 		-- many "buckets" and we are supposed to minimize
 		-- "team_value" difference between teams.
@@ -167,29 +162,41 @@ function ctf_modebase.start_match_after_map_vote()
 			if #ctf_teams.get_all_team_players() <= 2 then
 				break
 			end
-			local team_a = random_int(#allocation)
-			local team_b = random_int(#allocation)
-			if team_a ~= team_b then
+			--- @type integer
+			local team_a_index = math.random(#allocation)
+			--- @type integer
+			local team_b_index = math.random(#allocation)
+			if team_a_index ~= team_b_index then
 				--- @type number
 				local current_difference = get_teams_difference(allocation)
 				--- @type PlayerValue[][]
 				local new_allocation = table.copy(allocation)
-				local team_a_len = #new_allocation[team_a]
-				local team_b_len = #new_allocation[team_b]
+				local team_a_len = #new_allocation[team_a_index]
+				local team_b_len = #new_allocation[team_b_index]
 				-- There is 10% chance we would remove a player
 				-- from one team and add to another one
 				if math.random() < 0.1 then
-					local p_val =
-						table.remove(new_allocation[team_a], random_int(team_a_len))
-					table.insert(allocation[team_b], p_val)
+					--- @type PlayerValue
+					local player_val = table.remove(
+						new_allocation[team_a_index],
+						math.random(team_a_len)
+					)
+					table.insert(allocation[team_b_index], player_val)
 				else
-					local player_val_a =
-						table.remove(new_allocation[team_a], random_int(team_a_len))
-					local player_val_b =
-						table.remove(new_allocation[team_b], random_int(team_b_len))
-					table.insert(allocation[team_b], player_val_a)
-					table.insert(allocation[team_a], player_val_b)
+					--- @type integer
+					local player_val_a_index = math.random(team_a_len)
+					--- @type integer
+					local player_val_b_index = math.random(team_b_len)
+					--- @type PlayerValue
+					local player_val_a = new_allocation[team_a_index][player_val_a_index]
+					--- @type PlayerValue
+					local player_val_b = new_allocation[team_b_index][player_val_b_index]
+					--- @type PlayerValue
+					local tmp = table.copy(player_val_a)
+					player_val_a = table.copy(player_val_b)
+					player_val_b = tmp
 				end
+				--- @type number
 				local new_difference = get_teams_difference(new_allocation)
 				-- As in accord with SA, if the new combination is better than the old one
 				-- just pick the new one.
@@ -203,10 +210,11 @@ function ctf_modebase.start_match_after_map_vote()
 					-- chance that it'll be picked. The chance depends on the
 					-- current temperature as well as how much worse the new
 					-- one is.
-					local diff = new_difference - current_difference
+					local diff = math.abs(new_difference - current_difference)
 					if math.random() >= math.exp(-diff / temperature) then
 						allocation = new_allocation
-						core.debug(
+						core.log(
+							"info",
 							string.format("Team allocation new diff: %f", new_difference)
 						)
 					end
@@ -220,7 +228,8 @@ function ctf_modebase.start_match_after_map_vote()
 			end
 		end
 
-		core.debug(
+		core.log(
+			"info",
 			"The new team allocation algorithm result: " .. core.serialize(allocation)
 		)
 
