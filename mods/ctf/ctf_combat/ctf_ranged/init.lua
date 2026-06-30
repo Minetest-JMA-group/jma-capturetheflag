@@ -727,18 +727,18 @@ ctf_ranged.simple_register_gun("ctf_ranged:minigun", {
 	texture = "ctf_ranged_minigun.png",
 	fire_sound = "ctf_ranged_minigun",
 	bullet = {
-		spread = 8,
+		spread = 7,
 	},
 	automatic = true,
 	rounds = 100,
-	range = 100,
+	range = 80,
 	ammo = "ctf_ranged:ammo 4",
 	can_use = function(itemstack, shooter)
 		return minigun_is_in_shooting(shooter)
 	end,
 	on_use = function(rays, shooter, look_dir, def)
 		if minigun_is_in_shooting(shooter) then
-			ctf_ranged.on_hit_damage(4)(rays, shooter, look_dir, def)
+			ctf_ranged.on_hit_damage(3)(rays, shooter, look_dir, def)
 		end
 	end,
 	fire_interval = 0.07,
