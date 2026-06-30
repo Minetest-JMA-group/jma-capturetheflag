@@ -76,7 +76,7 @@ if not builtin_item or type(builtin_item.set_item) ~= "function" or type(builtin
 	return
 end
 
---- @type {[string]: ObjectRef}
+--- @type {[string]: {object: ObjectRef, check_for_despawn: fun(self: table), timer: table|false}}
 local active_items = {}
 
 local item = {

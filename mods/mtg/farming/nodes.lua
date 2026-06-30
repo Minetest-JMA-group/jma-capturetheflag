@@ -183,9 +183,13 @@ core.register_abm({
 	chance = 4,
 	action = function(pos, node)
 		local n_def = core.registered_nodes[node.name] or nil
+		---@diagnostic disable-next-line: undefined-field
 		local wet = n_def.soil.wet or nil
+		---@diagnostic disable-next-line: undefined-field
 		local base = n_def.soil.base or nil
+		---@diagnostic disable-next-line: undefined-field
 		local dry = n_def.soil.dry or nil
+		---@diagnostic disable-next-line: undefined-field
 		if not n_def or not n_def.soil or not wet or not base or not dry then
 			return
 		end

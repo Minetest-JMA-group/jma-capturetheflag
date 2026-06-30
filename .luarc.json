@@ -2,6 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
   "runtime.version": "LuaJIT",
   "workspace.library": [
+    ".luals/",
     ".vscode/lua_definitions/"
   ],
   "workspace.ignoreDir": [
@@ -11,7 +12,31 @@
     "maps"
   ],
   "diagnostics.globals": [
+    "algorithms",
+    "block_msgs",
+    "chat_lib",
+    "chatplus",
     "core",
-    "minetest"
+    "dump",
+    "dungeon_loot",
+    "filter",
+    "filter_caps",
+    "hit_statistics",
+    "ipdb",
+    "ItemStack",
+    "mcl_formspec",
+    "minetest",
+    "playtime",
+    "PseudoRandom",
+    "rawf",
+    "relays",
+    "Settings",
+    "simplemod",
+    "utf8_simple",
+    "vector",
+    "VoxelArea",
+    "VoxelManip",
+    "worldedit",
+    "xban"
   ]
 }

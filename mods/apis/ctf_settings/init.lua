@@ -9,6 +9,7 @@
 --- min: number?,
 --- max: number?,
 --- step: number?,
+--- _list_map: table<integer, string>?,
 --- }
 
 ctf_settings = {

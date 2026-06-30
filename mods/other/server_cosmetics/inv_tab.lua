@@ -31,6 +31,7 @@ sfinv.register_page("server_cosmetics:customize", {
 	title = "Customize",
 	get = function(self, player, context)
 		local pname = player:get_player_name()
+		---@type table<string, {_key: string, color: string|string[]}>
 		local current = ctf_cosmetics.get_extra_clothing(player)
 		local props = player:get_properties()
 		local walk_anim = player_api.registered_models[props.mesh].animations.walk

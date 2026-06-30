@@ -93,6 +93,7 @@ core.register_entity(":__builtin:falling_node", {
 		collisionbox = {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5}
 	},
 
+	---@param meta table
 	set_node = function(self, node, meta)
 
 		self.node = node
@@ -108,6 +109,7 @@ core.register_entity(":__builtin:falling_node", {
 			for i, stack in pairs(list) do
 
 				if type(stack) == "userdata" then
+					---@diagnostic disable-next-line: undefined-field
 					list[i] = stack:to_string()
 				end
 			end

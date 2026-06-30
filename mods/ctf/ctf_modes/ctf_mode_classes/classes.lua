@@ -158,6 +158,7 @@ ctf_melee.simple_register_sword("ctf_mode_classes:knight_sword", {
 	wield_image = "default_tool_bronzesword.png",
 	damage_groups = { fleshy = 7 },
 	full_punch_interval = 0.7,
+	---@param itemstack ItemStack
 	rightclick_func = function(itemstack, user, pointed)
 		if
 			ctf_settings.get(user, "ctf_mode_classes:simple_knight_activate") ~= "true"
@@ -245,6 +246,7 @@ ctf_ranged.simple_register_gun("ctf_mode_classes:ranged_rifle", {
 	on_use = ctf_ranged.on_hit_damage(5),
 	fire_interval = 0.8,
 	liquid_travel_dist = 4,
+	---@param itemstack ItemStack
 	rightclick_func = function(itemstack, user, pointed)
 		local ctl = user:get_player_control()
 

@@ -23,15 +23,31 @@ jobs:
           apt install -y curl jq
 
       - name: Download Lua Language Server
+        id: luals-version
         run: |
-          # Fetch latest release info
-          LATEST_RELEASE=$(curl -s -H "Accept: application/vnd.github+json" https://api.github.com/repos/LuaLS/lua-language-server/releases/latest)
-          DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | jq -r '.assets[] | select(.name | contains("linux-x64")) | .browser_download_url')
-          curl -L -o lua-language-server.tar.gz "$DOWNLOAD_URL"
-          tar -xzf lua-language-server.tar.gz
-          mv bin/lua-language-server /usr/local/bin/lua-language-server
-          chmod +x /usr/local/bin/lua-language-server
-          # Verify version
+          LATEST=$(curl -s -H "Accept: application/vnd.github+json" https://api.github.com/repos/LuaLS/lua-language-server/releases/latest)
+          VERSION=$(echo "$LATEST" | jq -r '.tag_name')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download Lua Language Server
+        uses: actions/cache@v4
+        id: cache-luals
+        with:
+          path: /opt/lua-language-server
+          key: luals-${{ steps.luals-version.outputs.version }}
+
+      - name: Download Lua Language Server
+        if: steps.cache-luals.outputs.cache-hit != 'true'
+        run: |
+          LATEST=$(curl -s -H "Accept: application/vnd.github+json" https://api.github.com/repos/LuaLS/lua-language-server/releases/latest)
+          DOWNLOAD_URL=$(echo "$LATEST" | jq -r '.assets[] | select(.name | contains("linux-x64")) | .browser_download_url')
+          curl -L -o /tmp/lua-language-server.tar.gz "$DOWNLOAD_URL"
+          mkdir -p /opt/lua-language-server
+          tar -xzf /tmp/lua-language-server.tar.gz -C /opt/lua-language-server
+
+      - name: Setup LuaLS symlink
+        run: |
+          ln -sf /opt/lua-language-server/bin/lua-language-server /usr/local/bin/lua-language-server
           lua-language-server --version
 
       - name: Run LuaLS diagnostics
@@ -42,15 +58,15 @@ jobs:
             exit 1
           fi
           # Run diagnostics with JSON output
-          lua-language-server --check . --checklevel=Warning --check_format=json --check_out_path=/tmp/diagnostics.json
+          lua-language-server --check . --checklevel=Warning --check_format=json --check_out_path=/tmp/diagnostics.json || true
           if [ -f /tmp/diagnostics.json ]; then
             # Count total diagnostics across all files
             TOTAL=$(jq '[.[] | length] | add' /tmp/diagnostics.json)
             if [ "$TOTAL" -gt 0 ]; then
               echo "Found $TOTAL diagnostic(s) across $(jq 'length' /tmp/diagnostics.json) file(s)"
-              # Print a summary (first 10 diagnostics)
-              echo "Summary (first 10):"
-              jq -r 'to_entries[] | "\(.key): \(.value[] | .message)"' /tmp/diagnostics.json | head -10
+              # Print a summary (first 15 diagnostics)
+              echo "Summary (first 15):"
+              jq -r '[to_entries[] | .key as $file | .value[] | "\($file): \(.message)"] | .[:15][]' /tmp/diagnostics.json
               exit 1
             else
               echo "No diagnostics found"
