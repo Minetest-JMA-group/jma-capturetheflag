@@ -521,7 +521,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- is log(b^x + b^y) where b is the base. I've chosen a base of 10,
 		--- so the sum will be maximum of the two values, plus a little more.
 		local combined_val = passive_val
-			+ math.log10(1 + math.pow(10, passive_val / active_val))
+			+ math.log10(1 + math.pow(10, passive_val - active_val))
 		core.log("info", string.format("Value of %s is %.3f", player, combined_val))
 		return combined_val
 	end
