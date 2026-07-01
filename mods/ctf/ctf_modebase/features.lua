@@ -525,10 +525,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val)
 		)
 		--- This is sum done in logarithm semi-ring. That is log-sum of x + y
-		--- is log(b^x + b^y) where b is the base. I've chosen a base of 10,
-		--- so the sum will be maximum of the two values, plus a little more.
+		--- is log(b^x + b^y) where b is the base. I've chosen a base of e,
+		--- so the sum will be maximum of the two values, possibly plus a little more.
 		local combined_val = passive_val
-			+ math.log10(1 + math.pow(10, passive_val - active_val))
+			+ math.log(1 + math.exp(active_val - passive_val), math.exp(1))
 		core.log("info", string.format("Value of %s is %.3f", player, combined_val))
 		return combined_val
 	end
