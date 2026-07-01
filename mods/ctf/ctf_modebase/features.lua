@@ -421,6 +421,13 @@ ctf_settings.register("ctf_modebase:auto_look_at_killer", {
 	default = "false",
 })
 
+ctf_settings.register("ctf_modebase:know_your_killscore", {
+	type = "bool",
+	label = S("Receive your kill score after getting killed"),
+	description = S("The game will tell you how much points you gave to your killer"),
+	default = "true",
+})
+
 ctf_modebase.features = function(rankings, recent_rankings)
 	local FLAG_MESSAGE_COLOR = "#d9b72a"
 	local FLAG_CAPTURE_TIMER = 60 * 3
@@ -980,9 +987,23 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			end
 
 			recent_rankings.add(killer, rewards)
-
 			if ctf_teams.get(killer) then
 				ctf_kill_list.add(killer, player, weapon_image, comment)
+				--- @type PlayerRef?
+				local player_ref = core.get_player_by_name(player)
+				if
+					player_ref
+					and ctf_settings.get(
+							player_ref,
+							"ctf_modebase:know_your_killscore"
+						)
+						== "true"
+				then
+					hud_events.new(player, {
+						text = S("@1 got @2 for you", killer, math.floor(rewards.score)),
+						channel = 2,
+					})
+				end
 			end
 
 			-- share kill score with other hitters
