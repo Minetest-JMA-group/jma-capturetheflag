@@ -1,3 +1,5 @@
+local S = core.get_translator(core.get_current_modname())
+
 core.register_node("ctf_map:unwalkable_dirt", {
 	description = "Unwalkable Dirt",
 	tiles = { "default_dirt.png^[colorize:#ffff00:19" },
@@ -26,23 +28,10 @@ core.register_node("ctf_map:unwalkable_cobble", {
 --- Spike Trap
 --
 
-core.register_node("ctf_map:spike", {
-	description = "Spike\n7 DPS\nDamages enemies that walk on it",
-	drawtype = "plantlike",
-	tiles = { "ctf_map_spike.png" },
-	inventory_image = "ctf_map_spike.png",
-	use_texture_alpha = "clip",
-	paramtype = "light",
-	paramtype2 = "meshoptions",
-	sunlight_propagates = true,
-	walkable = false,
-	damage_per_second = 5,
-	groups = { cracky = 1, level = 2 },
-	selection_box = {
-		type = "fixed",
-		fixed = { -0.5, -0.5, -0.5, 0.5, 0, 0.5 },
-	},
-	on_place = function(itemstack, placer, pointed_thing)
+--- @param prefix string
+--- @return fun(itemstack: ItemStack, placer: (PlayerRef|LuaEntityRef)?, pointed_thing: any): ItemStack
+local function spike_on_place_wrapper(prefix)
+	local function on_place_inner(itemstack, placer, pointed_thing)
 		if placer and placer:is_player() then
 			---@cast placer PlayerRef
 			local pteam = ctf_teams.get(placer)
@@ -62,7 +51,7 @@ core.register_node("ctf_map:spike", {
 					return itemstack
 				end
 
-				local newitemstack = ItemStack("ctf_map:spike_" .. pteam)
+				local newitemstack = ItemStack(prefix .. pteam)
 				newitemstack:set_count(itemstack:get_count())
 
 				local result = core.item_place(newitemstack, placer, pointed_thing, 34)
@@ -78,63 +67,128 @@ core.register_node("ctf_map:spike", {
 		end
 
 		return core.item_place(itemstack, placer, pointed_thing, 34)
-	end,
-})
+	end
+	return on_place_inner
+end
 
-for _, team in ipairs(ctf_teams.teamlist) do
-	local spikecolor = ctf_teams.team[team].color
+--- @alias SpikeDef {
+--- title: string,
+--- level: number,
+--- cracky: number,
+--- texture: string,
+--- damage: number}
+--- @type { [string]: SpikeDef }
+local spikes = {
+	["spike"] = {
+		title = "Spike",
+		level = 2,
+		cracky = 1.5,
+		texture = "ctf_map_spike.png",
+		damage = 7,
+	},
+	["spike_mese"] = {
+		title = "Mese Spike",
+		level = 3,
+		cracky = 1,
+		texture = "ctf_map_spike_mese.png",
+		damage = 9,
+	},
+	["spike_diamond"] = {
+		title = "Diamond Spike",
+		level = 3,
+		cracky = 1,
+		texture = "ctf_map_spike_diamond.png",
+		damage = 10,
+	},
+	["spike_double_mese"] = {
+		title = "Double Mese Spike",
+		level = 3,
+		cracky = 1,
+		texture = "ctf_map_spike_double_mese.png",
+		damage = 12,
+	},
+	["spike_double_diamond"] = {
+		title = "Double Diamond Spike",
+		level = 3,
+		cracky = 1,
+		texture = "ctf_map_spike_double_diamond.png",
+		damage = 13,
+	},
+}
 
-	core.register_node("ctf_map:spike_" .. team, {
-		description = HumanReadable(team) .. " Team Spike",
+--- @param name string
+--- @param def SpikeDef
+--- @param team ({ overlay: string, drop: string })?
+local function register_spike(name, def, team)
+	local on_place = nil
+	if not team then
+		on_place = spike_on_place_wrapper(string.format("ctf_map:%s_", name))
+	end
+
+	core.register_node("ctf_map:" .. name, {
+		description = S(def.title) .. "\n" .. S("@1 DPS", def.damage) .. "\n" .. S(
+			"Damages enemies that walk on it"
+		),
+		drop = (team and team.drop) or nil,
 		drawtype = "plantlike",
-		tiles = { "ctf_map_spike.png^[colorize:" .. spikecolor .. ":150" },
-		inventory_image = "ctf_map_spike.png^[colorize:" .. spikecolor .. ":150",
+		tiles = { def.texture .. ((team and team.overlay) or "") },
+		inventory_image = def.texture .. ((team and team.overlay) or ""),
 		use_texture_alpha = "clip",
 		paramtype = "light",
 		paramtype2 = "meshoptions",
 		sunlight_propagates = true,
 		walkable = false,
 		damage_per_second = 5,
-		groups = { cracky = 1, level = 2 },
-		drop = "ctf_map:spike",
+		groups = { cracky = def.cracky, level = def.level },
 		selection_box = {
 			type = "fixed",
 			fixed = { -0.5, -0.5, -0.5, 0.5, 0, 0.5 },
 		},
-		on_place = function(itemstack, placer, pointed_thing)
-			local item, pos = core.item_place(itemstack, placer, pointed_thing, 34)
-			if item and placer and placer:is_player() then
-				---@cast placer PlayerRef
-				local pname = placer:get_player_name()
-				core
-					.get_meta(pointed_thing.above)
-					:set_string("placer_team", ctf_teams.get(pname) or "")
-				core.get_meta(pointed_thing.above):set_string("placer", pname)
-			end
-			return item, pos
-		end,
+		on_place = on_place,
 	})
 end
 
+for name, def in pairs(spikes) do
+	register_spike(name, def)
+end
+
+for _, team in ipairs(ctf_teams.teamlist) do
+	local spikecolor = ctf_teams.team[team].color
+
+	for name, def in pairs(spikes) do
+		register_spike(string.format("%s_%s", name, team), def, {
+			overlay = string.format("^[colorize:%s:150", spikecolor),
+			drop = name,
+		})
+	end
+end
+
 core.register_on_player_hpchange(function(player, hp_change, reason)
-	if reason.type == "node_damage" then
+	if
+		reason.type == "node_damage"
+		and #reason.node >= 13
+		and reason.node:sub(1, 13) == "ctf_map:spike"
+	then
 		local team = ctf_teams.get(player)
 
-		if team and reason.node == string.format("ctf_map:spike_%s", team) then
+		local spike_name, spike_team = reason.node:match("ctf_map:(.*)_(.*)")
+
+		if team and team == spike_team then
 			return 0, true
 		end
 		if reason.node_pos then
 			local meta = core.get_meta(reason.node_pos)
 			local pteam = meta:get_string("placer_team")
 			local pname = meta:get_string("placer")
+			local damage = (spikes[spike_name] and spikes[spike_name].damage) or 1
 			if pteam ~= team then
 				local placer = core.get_player_by_name(pname)
 				if ctf_teams.get(pname) == team then
-					player:set_hp(player:get_hp() - 7)
-					return -7, false
+					player:set_hp(player:get_hp() - damage)
+					return -damage, false
 				elseif placer then
-					player:punch(placer, 1, { fleshy = 7, spike = 1 })
-					return -7, false
+					player:punch(placer, 1, { fleshy = damage, spike = 1 })
+					return -damage, false
 				end
 			end
 		end
