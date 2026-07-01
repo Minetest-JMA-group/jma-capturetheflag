@@ -162,6 +162,30 @@ crafting.register_recipe({
 })
 
 crafting.register_recipe({
+	output = "ctf_map:spike_mese",
+	items = { "ctf_map:spike", "default:mese_crystal 2" },
+	always_known = false,
+})
+
+crafting.register_recipe({
+	output = "ctf_map:spike_double_mese",
+	items = { "ctf_map:spike_mese", "default:mese_crystal 2" },
+	always_known = false,
+})
+
+crafting.register_recipe({
+	output = "ctf_map:spike_diamond",
+	items = { "ctf_map:spike", "default:diamond 2" },
+	always_known = false,
+})
+
+crafting.register_recipe({
+	output = "ctf_map:spike_double_diamond",
+	items = { "ctf_map:spike_diamond", "default:diamond 2" },
+	always_known = false,
+})
+
+crafting.register_recipe({
 	output = "ctf_map:damage_cobble",
 	items = { "ctf_map:unwalkable_cobble", "ctf_map:spike" },
 	always_known = false,
@@ -169,7 +193,7 @@ crafting.register_recipe({
 
 crafting.register_recipe({
 	output = "ctf_map:damage_glass 6",
-	items  = { "default:glass 6", "ctf_map:spike" },
+	items = { "default:glass 6", "ctf_map:spike" },
 	always_known = false,
 })
 
@@ -181,7 +205,7 @@ crafting.register_recipe({
 
 crafting.register_recipe({
 	output = "ctf_map:reinforced_glass 4",
-	items  = { "default:glass 6", "default:steel_ingot" },
+	items = { "default:glass 6", "default:steel_ingot" },
 	always_known = false,
 })
 
@@ -190,4 +214,3 @@ crafting.register_recipe({
 	items = { "default:steel_ingot", "grenades:frag" },
 	always_known = false,
 })
-
