@@ -428,6 +428,15 @@ ctf_settings.register("ctf_modebase:know_your_killscore", {
 	default = "true",
 })
 
+--- @param x number
+--- @param y number
+--- @param base number?
+--- @return number
+local function log_sum(x, y, base)
+	local base = base or math.exp(1)
+	return x + math.log(1 + math.pow(base, y - x))
+end
+
 ctf_modebase.features = function(rankings, recent_rankings)
 	local FLAG_MESSAGE_COLOR = "#d9b72a"
 	local FLAG_CAPTURE_TIMER = 60 * 3
@@ -504,7 +513,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			string.format("(pvp, ca, %f) = %f %f", recent or 1.0, pvp_score, capcoins)
 		)
 
-		return math.pow(pvp_score * capcoins, 1.5)
+		return pvp_score + capcoins + math.min(pvp_score, capcoins)
 	end
 
 	--- @type ScoreFun
@@ -514,7 +523,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		core.debug(
 			string.format("(h, b, %f) = %f %f", recent or 1.0, heal_score, build_score)
 		)
-		return math.pow(heal_score * build_score, 1.5)
+		return heal_score + build_score + math.min(heal_score, build_score)
 	end
 
 	--- @type ScoreFun
