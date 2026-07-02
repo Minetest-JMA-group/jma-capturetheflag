@@ -35,7 +35,7 @@ function ctf_modebase.summary.get(prev)
 				game_stat = game_stat,
 				winner = winner,
 				duration = ctf_map.get_duration(),
-				map = ctf_map.current_map.name,
+				map = type(ctf_map.current_map) == "table" and ctf_map.current_map.name or nil,
 				buttons = {previous = previous ~= nil},
 				allow_sort = true,
 			}
