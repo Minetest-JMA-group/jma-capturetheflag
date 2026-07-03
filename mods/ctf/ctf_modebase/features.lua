@@ -1864,6 +1864,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				return "The match hasn't started yet!"
 			end
 
+			if ctf_modebase.is_immune(player) then
+				ctf_modebase.remove_respawn_immunity(player)
+			end
+
 			local score = nil
 
 			if ctf_combat_mode.in_combat(patient) then
