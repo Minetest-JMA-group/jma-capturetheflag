@@ -213,7 +213,7 @@ local function change_hp(hitpoint, shooter, gundef, look_dir, amount)
 					fleshy = -amount,
 				},
 			}, look_dir)
-		else
+		elseif shooter then
 			local current_hp = ref:get_hp()
 			ref:set_hp(current_hp + amount)
 			ctf_combat_mode.add_healer(ref, shooter, 60)
@@ -235,11 +235,12 @@ end
 
 --- @type OnHitCallback
 local function on_hit(hitpoint, prev_hitpoint, shooter, look_dir, def, callbacks)
+	--- @type ObjectRef?
+	local ref = hitpoint.ref
 	if hitpoint.type == "node" then
 		return on_hit_node(hitpoint, shooter, look_dir, def) or false
 	end
-	if hitpoint.type == "object" and hitpoint.ref then
-		local ref = hitpoint.ref
+	if hitpoint.type == "object" and ref then
 		local victim_name = ref:get_player_name()
 		local victim_team = ctf_teams.get(victim_name)
 		local shooter_team = ctf_teams.get(shooter:get_player_name())
@@ -276,6 +277,7 @@ local function on_hit(hitpoint, prev_hitpoint, shooter, look_dir, def, callbacks
 		play_hit_sound(shooter:get_player_name())
 		return ret_val
 	end
+	return false
 end
 
 -- Can be overridden for custom behaviour
@@ -293,7 +295,13 @@ end
 --- spread: number?,
 --- particle_speed: number? }
 --- @alias OnHitCallbacks { on_teammate_hit: OnHitCallback, on_enemy_hit: OnHitCallback }
---- @alias OnHitCallback fun(hitpoint: HitPoint, prev_hitpoint: HitPoint?, shooter: ObjectRef, look_dir: Vector, def: GunDef, callbacks: OnHitCallbacks?): boolean
+--- @alias OnHitCallback fun(
+--- hitpoint: HitPoint,
+--- prev_hitpoint: HitPoint?,
+--- shooter: ObjectRef,
+--- look_dir: Vector,
+--- def: GunDef,
+--- callbacks: OnHitCallbacks?): boolean
 --- @alias OnUseCallback fun(bulletcast: any, shooter: ObjectRef, look_dir: Vector, def: GunDef)
 --- @alias CanUseCallback fun(itemstack: string, shooter: ObjectRef): boolean
 --- @alias GunDef {
@@ -313,7 +321,7 @@ end
 ---	range: number,
 ---	bullet: Bullet,
 ---	automatic: boolean?,
----	rightclick_func: fun(itemstack: string, user: ObjectRef, Pointed: any, ...),
+---	rightclick_func: fun(itemstack: ItemStack, user: ObjectRef, Pointed: any, ...),
 ---	liquid_travel_dist: number?,
 ---	can_use: CanUseCallback?,
 --- on_use:  OnUseCallback}
@@ -801,6 +809,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
 -- Hide scope if currently wielded item is not the same item
 -- player wielded when scoping
 
+--- @type number
 local time = 0
 core.register_globalstep(function(dtime)
 	time = time + dtime
