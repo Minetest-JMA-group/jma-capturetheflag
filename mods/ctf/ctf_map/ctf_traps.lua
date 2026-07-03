@@ -29,8 +29,9 @@ core.register_node("ctf_map:unwalkable_cobble", {
 --
 
 --- @param prefix string
+--- @param team Team?
 --- @return fun(itemstack: ItemStack, placer: (PlayerRef|LuaEntityRef)?, pointed_thing: any): ItemStack
-local function spike_on_place_wrapper(prefix)
+local function spike_on_place_wrapper(prefix, team)
 	local function on_place_inner(itemstack, placer, pointed_thing)
 		if placer and placer:is_player() then
 			---@cast placer PlayerRef
@@ -57,7 +58,11 @@ local function spike_on_place_wrapper(prefix)
 				local result = core.item_place(newitemstack, placer, pointed_thing, 34)
 
 				if result then
-					core.get_meta(pointed_thing.above):set_string("placer", pname)
+					local meta = core.get_meta(pointed_thing.above)
+					meta:set_string("placer", pname)
+					if team then
+						meta:set_string("placer_team", ctf_teams.get(pname))
+					end
 
 					itemstack:set_count(result:get_count())
 				end
@@ -118,11 +123,12 @@ local spikes = {
 
 --- @param name string
 --- @param def SpikeDef
---- @param team ({ overlay: string, drop: string })?
+--- @param team ({ overlay: string, drop: string, team: Team })?
 local function register_spike(name, def, team)
 	local on_place = nil
 	if not team then
-		on_place = spike_on_place_wrapper(string.format("ctf_map:%s_", name))
+		on_place =
+			spike_on_place_wrapper(string.format("ctf_map:%s_", name), team and team.team)
 	end
 
 	core.register_node("ctf_map:" .. name, {
@@ -152,13 +158,14 @@ for name, def in pairs(spikes) do
 	register_spike(name, def)
 end
 
-for _, team in ipairs(ctf_teams.teamlist) do
-	local spikecolor = ctf_teams.team[team].color
+for team, team_def in pairs(ctf_teams.team) do
+	local spikecolor = team_def.color
 
 	for name, def in pairs(spikes) do
 		register_spike(string.format("%s_%s", name, team), def, {
 			overlay = string.format("^[colorize:%s:150", spikecolor),
 			drop = "ctf_map:" .. name,
+			team = team,
 		})
 	end
 end
