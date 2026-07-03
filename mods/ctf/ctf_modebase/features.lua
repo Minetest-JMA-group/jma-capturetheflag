@@ -582,24 +582,50 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		return combined_val
 	end
 
-	--- @param team Team
-	--- @param recent number
+	--- @param team_a Team
+	--- @param team_b Team
+	--- @param recent number?
 	--- @return number
-	local function get_team_value(team, recent)
-		local members = ctf_teams.get_team_members(team)
-		local total_value = 0
-		for _, member in ipairs(members) do
-			local player_val = get_player_value(member, recent)
-			core.debug("val of " .. member .. " : " .. tostring(player_val))
-			total_value = player_val + total_value
+	local function compare_team_values(team_a, team_b, recent)
+		-- A team value equals product of values of team members.
+		-- Here we compute ratio of team_a:team_b. However, a problem
+		-- is that we cannot compute each product then divide them as it's
+		-- likely that the number will overflow and become inf like in
+		-- get_player_value. --Farooq
+
+		recent = recent or 1.0
+		--- @type PlayerName[]
+		local team_a_members = ctf_teams.get_team_members(team_a)
+		--- @type PlayerName[]
+		local team_b_members = ctf_teams.get_team_members(team_b)
+		--- @type integer
+		local bigger_team_len = #team_a_members
+		if #team_b_members > #team_a_members then
+			bigger_team_len = #team_b_members
 		end
-		total_value = math.max(total_value, 1)
-		return total_value * total_value
+		--- @type number
+		local teams_ratio = 1
+		for i = 1, bigger_team_len do
+			local player_a = team_a_members[i]
+			local player_b = team_b_members[i]
+			--- @type number
+			local a_val = 1
+			if player_a then
+				a_val = get_player_value(player_a, recent)
+			end
+			--- @type number
+			local b_val = 1
+			if player_b then
+				b_val = get_player_value(player_b, recent)
+			end
+			teams_ratio = (a_val / b_val) * teams_ratio
+		end
+		return teams_ratio
 	end
 
 	--- @param loser_teams Team[]
 	--- @param winner_team Team
-	--- @param other_teams Team[]
+	--- @param other_teams Team[]?
 	--- @param flag_thief PlayerName
 	--- @return number
 	local function calculate_capture_coins(
@@ -608,39 +634,36 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		other_teams,
 		flag_thief
 	)
-		local recent_part = 0.0
-		local loser_teams_val = 0
+		other_teams = other_teams or {}
+		-- Comparing value of loser teams to thief's team
+		--- @type number
+		local ratios = 0
+		--- @type integer
+		local loser_team_members = 0
 		for _, loser_team in ipairs(loser_teams) do
-			loser_teams_val = get_team_value(loser_team, recent_part) + loser_teams_val
+			ratios = ratios + compare_team_values(loser_team, winner_team)
+			loser_team_members = loser_team_members
+				+ #ctf_teams.get_team_members(loser_team)
 		end
-		core.debug("recent part is " .. tostring(recent_part))
-		local winner_team_val = get_team_value(winner_team, recent_part)
-		local other_teams_val_combined
-		if #other_teams > 0 then
-			other_teams_val_combined = 0
-			for _, t in ipairs(other_teams) do
-				other_teams_val_combined = other_teams_val_combined
-					+ get_team_value(t, recent_part)
-			end
-			other_teams_val_combined = math.max(other_teams_val_combined, 1)
-			other_teams_val_combined = math.pow(other_teams_val_combined, 2)
+
+		-- If there are other teams, they would likely try to kill the flag
+		-- thief even tho it's not their flag. So we also count them but
+		-- we assume their impact is half. --Farooq
+
+		for _, other_team in pairs(other_teams) do
+			ratios = ratios + compare_team_values(other_team, winner_team) / 2
 		end
-		local thief_val = get_player_active_value(flag_thief, 0)
-		core.debug(string.format("w val: %f", winner_team_val))
-		core.debug(string.format("o val: %f", other_teams_val_combined or -1.0))
-		core.debug(string.format("L val: %f", loser_teams_val))
-		core.debug(string.format("T val: %f", thief_val))
-		core.debug(
-			string.format(
-				"T reward alt: %f",
-				math.exp(loser_teams_val / thief_val / thief_val)
-			)
-		)
-		local retval = loser_teams_val / winner_team_val + loser_teams_val / thief_val + 1
-		if other_teams_val_combined ~= nil then
-			retval = retval + winner_team_val / other_teams_val_combined
-		end
-		return retval
+
+		-- Now we also need active value of the thief which is
+		-- capture skill and pvp skill combined. And we need to
+		-- compare it to number of players in the loser team(s)
+		--- @type number
+		local thief_val = get_player_active_value(flag_thief, 0.5)
+
+		--- @type integer
+		local cap_coins = math.ceil(10 * ratios * loser_team_members / thief_val)
+
+		return cap_coins
 	end
 
 	local function new_calculate_killscore(player, killer)
