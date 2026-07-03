@@ -256,7 +256,6 @@ function ctf_modebase.bounties.claim(player, killer)
 	end
 
 	game_bounties[pteam] = nil
-
 	if contributed_bounties[player] then
 		local score = calc_total_contributed_bounty(player)
 		if rewards == nil then
