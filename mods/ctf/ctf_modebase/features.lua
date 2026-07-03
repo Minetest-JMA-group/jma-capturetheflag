@@ -458,34 +458,34 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local ranking = rankings:get(player) or {}
 		local recent_rankings2 = recent_rankings.get(player) or {}
 		return {
-			kills = (ranking.kills or 1) * complement
-				+ (recent_rankings2.kills or 1) * recent,
+			kills = (ranking.kills or 0) * complement
+				+ (recent_rankings2.kills or 0) * recent,
 			deaths = (ranking.deaths or 1) * complement
 				+ (recent_rankings2.deaths or 1) * recent,
-			kill_assists = (ranking.kill_assists or 1) * complement
-				+ (recent_rankings2.kill_assists or 1) * recent,
-			hp_healed = (ranking.hp_healed or 1) * complement
-				+ (recent_rankings2.hp_healed or 1) * recent,
+			kill_assists = (ranking.kill_assists or 0) * complement
+				+ (recent_rankings2.kill_assists or 0) * recent,
+			hp_healed = (ranking.hp_healed or 0) * complement
+				+ (recent_rankings2.hp_healed or 0) * recent,
 			capture_coins = (ranking.capture_coins or 1) * complement
 				+ (recent_rankings2.capture_coins or 1) * recent,
-			build_points = (ranking.build_points or 1) * complement
-				+ (recent_rankings2.build_points or 1) * recent,
+			build_points = (ranking.build_points or 0) * complement
+				+ (recent_rankings2.build_points or 0) * recent,
 		}
 	end
 
 	--- @type ScoreFun
 	local function get_pvp_score(player, recent)
 		local ranking = get_ranking(player, recent)
-		local kills = ranking.kills or 1
+		local kills = ranking.kills or 0
 		local deaths = rankings.deaths or 1
-		local assists = rankings.kill_assists or 1
+		local assists = rankings.kill_assists or 0
 		return (kills + assists / 5) / deaths
 	end
 
 	--- @type ScoreFun
 	local function get_build_point(player, recent)
 		local ranking = get_ranking(player, recent)
-		return ranking.build_points or 1
+		return ranking.build_points or 0
 	end
 
 	--- @type ScoreFun
@@ -497,7 +497,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	--- @type ScoreFun
 	local function get_heal_score(player, recent)
 		local ranking = get_ranking(player, recent)
-		local hp_healed = ranking.hp_healed or 1
+		local hp_healed = ranking.hp_healed or 0
 		local deaths = ranking.deaths or 1
 		--- 15 is knight_hp / 2
 		return (hp_healed / 15) / deaths
