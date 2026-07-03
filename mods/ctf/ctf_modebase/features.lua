@@ -1049,6 +1049,23 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				ctf_modebase.first_kill_happened = true
 			end
 
+			-- Give additional score if the killer's team has stolen the flag
+			-- 25% extra for each stolen flag
+			--- @type number
+			local thief_team_multiplier = 1
+			--- @type Team?
+			local killer_team = ctf_teams.get(killer)
+
+			if killer_team then
+				for _, thief in pairs(ctf_modebase.flag_taken) do
+					if thief.team == killer_team then
+						thief_team_multiplier = thief_team_multiplier * 1.25
+					end
+				end
+			end
+
+			killscore = math.floor(killscore * thief_team_multiplier)
+
 			local rewards = { kills = 1, score = killscore }
 			local bounty = ctf_modebase.bounties.claim(player, killer)
 
@@ -1059,7 +1076,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			end
 
 			recent_rankings.add(killer, rewards)
-			if ctf_teams.get(killer) then
+			if killer_team then
 				ctf_kill_list.add(killer, player, weapon_image, comment)
 				--- @type PlayerRef?
 				local player_ref = core.get_player_by_name(player)
