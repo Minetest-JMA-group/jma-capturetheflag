@@ -536,6 +536,18 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- so the sum will be maximum of the two values, possibly plus a little more.
 		local combined_val = passive_val
 			+ math.log(1 + math.exp(active_val - passive_val), math.exp(1))
+		if not math.isfinite(combined_val) then
+			core.log(
+				"warning",
+				string.format(
+					"Player value of %s is inf! Recent: %f P val: %f A val: %f",
+					player,
+					recent or 0.0,
+					passive_val,
+					active_val
+				)
+			)
+		end
 		core.log("info", string.format("Value of %s is %.3f", player, combined_val))
 		return combined_val
 	end
