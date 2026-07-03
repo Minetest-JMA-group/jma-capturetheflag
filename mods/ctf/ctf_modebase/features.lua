@@ -473,8 +473,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		}
 	end
 
-	--- @alias ScoreFun fun(player: PlayerName, recent: number?): number
-
 	--- @type ScoreFun
 	local function get_pvp_score(player, recent)
 		local ranking = get_ranking(player, recent)
