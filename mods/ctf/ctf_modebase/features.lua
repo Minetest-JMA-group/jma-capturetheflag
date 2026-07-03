@@ -534,8 +534,29 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- This is sum done in logarithm semi-ring. That is log-sum of x + y
 		--- is log(b^x + b^y) where b is the base. I've chosen a base of e,
 		--- so the sum will be maximum of the two values, possibly plus a little more.
-		local combined_val = passive_val
-			+ math.log(1 + math.exp(active_val - passive_val), math.exp(1))
+
+		--- The below computations all have the same result. But we don't want
+		--- to hit limit of the floating point numbers in Lua as they become inf
+		--- @type number
+		local combined_val = 0
+		--- @type number
+		local base = math.exp(1)
+		--- @type number
+		local divider = 250
+		if math.abs(active_val - passive_val) <= divider then
+			combined_val = active_val
+				+ math.log(1 + math.exp(passive_val - active_val), base)
+		elseif active_val > passive_val then
+			local sub_active_val = math.min(active_val / divider, divider)
+			local first_part = math.exp(passive_val - divider)
+			local second_part = math.exp(sub_active_val)
+			combined_val = divider + math.log(first_part + second_part, base)
+		else
+			local sub_passive_val = math.min(passive_val / divider, divider)
+			local first_part = math.exp(active_val - divider)
+			local second_part = math.exp(sub_passive_val)
+			combined_val = divider + math.log(first_part + second_part, base)
+		end
 		if not math.isfinite(combined_val) then
 			core.log(
 				"warning",
