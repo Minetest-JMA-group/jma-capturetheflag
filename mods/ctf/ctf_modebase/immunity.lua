@@ -199,6 +199,7 @@ core.register_on_punchplayer(function (player, hitter, time_from_last_punch, too
 	end
 end)
 
+--- @type number
 local last_check = 0
 core.register_globalstep(function (dtime)
 	last_check = last_check + dtime
