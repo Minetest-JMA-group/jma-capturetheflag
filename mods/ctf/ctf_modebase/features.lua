@@ -536,7 +536,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- so the sum will be maximum of the two values, possibly plus a little more.
 
 		--- The below computations all have the same result. But we don't want
-		--- to hit limit of the floating point numbers in Lua as they become inf
+		--- to hit limit of the floating point numbers in Lua as they become inf.
+		--- If you are geeky enough for math, you can take a pen and paper and prove
+		--- these logarithmic identities for yourself ;) --Farooq
 		--- @type number
 		local combined_val = 0
 		--- @type number
