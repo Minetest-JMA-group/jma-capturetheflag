@@ -809,11 +809,13 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
 -- Hide scope if currently wielded item is not the same item
 -- player wielded when scoping
 
+local SCOPE_CHECK_INTERVAL = 0.3
+
 --- @type number
 local time = 0
 core.register_globalstep(function(dtime)
 	time = time + dtime
-	if time < 1 then
+	if time < SCOPE_CHECK_INTERVAL then
 		return
 	end
 
