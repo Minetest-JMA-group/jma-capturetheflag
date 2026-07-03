@@ -1985,32 +1985,28 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			return "You need at least 10 score to access this chest", deny_pro
 		end,
 		can_punchplayer = can_punchplayer,
-		--- @param player ObjectRef
+		--- @param player PlayerRef
 		--- @param hitter ObjectRef
 		--- @param damage number
 		--- @param _ any
 		--- @param tool_capabilities table
-		--- @return boolean, string?
+		--- @return number?, string?
 		on_punchplayer = function(player, hitter, damage, _, tool_capabilities)
 			if not hitter:is_player() or player:get_hp() <= 0 then
-				return false
+				return
 			end
 
 			local allowed, message = can_punchplayer(player, hitter)
 
 			if not allowed then
-				return false, message
+				return nil, message
 			end
 
 			local weapon_image = get_weapon_image(hitter, tool_capabilities)
 
+			local pname = player:get_player_name()
 			if player:get_hp() <= damage then
-				end_combat_mode(
-					player:get_player_name(),
-					"punch",
-					hitter:get_player_name(),
-					weapon_image
-				)
+				end_combat_mode(pname, "punch", hitter:get_player_name(), weapon_image)
 
 				-- Rotate player camera to killer
 				if
@@ -2024,7 +2020,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 						player:set_look_vertical(-math.asin(dir.y))
 					end
 				end
-			elseif player:get_player_name() ~= hitter:get_player_name() then
+			elseif pname ~= hitter:get_player_name() then
 				ctf_combat_mode.add_hitter(player, hitter, weapon_image, 15)
 			end
 
