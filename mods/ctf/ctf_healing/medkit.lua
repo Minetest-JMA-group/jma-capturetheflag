@@ -223,3 +223,12 @@ core.register_tool("ctf_healing:medkit", {
 		end
 	end,
 })
+
+local function dig_place_callback(_, _, player)
+	if player and healing_players[player:get_player_name()] then
+		stop_medkit_heal(player:get_player_name(), S("You punched or placed a node"))
+	end
+end
+
+core.register_on_placenode(dig_place_callback)
+core.register_on_punchnode(dig_place_callback)
