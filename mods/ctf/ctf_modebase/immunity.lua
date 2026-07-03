@@ -222,26 +222,18 @@ core.register_globalstep(function (dtime)
 	end
 end)
 
-core.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack, pointed_thing)
-	if not placer then
+
+local function dig_place_callback(_, _, player)
+	if not player then
 		return
 	end
 
-	if not ctf_modebase.is_immune(placer) then
+	if not ctf_modebase.is_immune(player) then
 		return
 	end
 
-	ctf_modebase.remove_respawn_immunity(placer)
-end)
+	ctf_modebase.remove_respawn_immunity(player)
+end
 
-core.register_on_dignode(function(pos, oldnode, digger)
-	if not digger then
-		return
-	end
-
-	if not ctf_modebase.is_immune(digger) then
-		return
-	end
-
-	ctf_modebase.remove_respawn_immunity(digger)
-end)
+core.register_on_placenode(dig_place_callback)
+core.register_on_dignode(dig_place_callback)
