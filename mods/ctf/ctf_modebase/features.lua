@@ -466,8 +466,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				+ (recent_rankings2.kill_assists or 1) * recent,
 			hp_healed = (ranking.hp_healed or 1) * complement
 				+ (recent_rankings2.hp_healed or 1) * recent,
-			capture_points = (ranking.capture_points or 1) * complement
-				+ (recent_rankings2.capture_points or 1) * recent,
+			capture_coins = (ranking.capture_coins or 1) * complement
+				+ (recent_rankings2.capture_coins or 1) * recent,
 			build_points = (ranking.build_points or 1) * complement
 				+ (recent_rankings2.build_points or 1) * recent,
 		}
