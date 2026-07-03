@@ -158,7 +158,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 	for name, def in pairs(spikes) do
 		register_spike(string.format("%s_%s", name, team), def, {
 			overlay = string.format("^[colorize:%s:150", spikecolor),
-			drop = name,
+			drop = "ctf_map:" .. name,
 		})
 	end
 end
