@@ -1130,7 +1130,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			-- will get a score as long as their reward is >= 1.0
 			--
 			-- -- Farooq fkz at riseup dot net
-			local max_depth = 3
+			local max_depth = 5
 			local healers, all_parts = ctf_combat_mode.get_all_healers(killer, max_depth)
 			for healer, part in pairs(healers) do
 				local healer_reward = math.ceil(share_score * part / all_parts)
