@@ -548,15 +548,22 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		if math.abs(active_val - passive_val) <= divider then
 			combined_val = active_val
 				+ math.log(1 + math.exp(passive_val - active_val), base)
-		elseif active_val > passive_val then
-			local sub_active_val = math.min(active_val / divider, divider)
-			local first_part = math.exp(passive_val - divider)
-			local second_part = math.exp(sub_active_val)
-			combined_val = divider + math.log(first_part + second_part, base)
 		else
-			local sub_passive_val = math.min(passive_val / divider, divider)
-			local first_part = math.exp(active_val - divider)
-			local second_part = math.exp(sub_passive_val)
+			--- @type number
+			local first_part = 0
+			--- @type number
+			local second_part = 0
+			if active_val > passive_val then
+				--- @type number
+				local sub_active_val = math.min(active_val / divider, divider)
+				first_part = math.exp(passive_val - divider)
+				second_part = math.exp(sub_active_val)
+			else
+				--- @type number
+				local sub_passive_val = math.min(passive_val / divider, divider)
+				first_part = math.exp(active_val - divider)
+				second_part = math.exp(sub_passive_val)
+			end
 			combined_val = divider + math.log(first_part + second_part, base)
 		end
 		if not math.isfinite(combined_val) then
