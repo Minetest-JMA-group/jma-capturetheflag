@@ -1095,23 +1095,18 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				end
 			end
 
-			-- share the killscore + 1/2 bounty score with the helpers
-			--- @type number
-			local share_score = killscore + (bounty and bounty.score or 0) / 2
+			-- share kill score with other hitters
 			local hitters = ctf_combat_mode.get_other_hitters(player, killer)
 			for _, pname in ipairs(hitters) do
-				local healers = ctf_combat_mode.get_healers(pname)
-
-				--- @type integer
-				local helpers_num = #healers * #hitters
 				recent_rankings.add(
 					pname,
-					{ kill_assists = 1, score = math.ceil(share_score / helpers_num) }
+					{ kill_assists = 1, score = math.ceil(killscore / #hitters) }
 				)
+				local healers = ctf_combat_mode.get_healers(pname)
 				for _, healer in ipairs(healers) do
 					recent_rankings.add(
 						healer,
-						{ score = math.ceil(share_score / helpers_num / 2) }
+						{ score = math.ceil(killscore / #hitters / #healers / 2) }
 					)
 				end
 			end
@@ -1133,7 +1128,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local max_depth = 5
 			local healers, all_parts = ctf_combat_mode.get_all_healers(killer, max_depth)
 			for healer, part in pairs(healers) do
-				local healer_reward = math.ceil(share_score * part / all_parts)
+				local healer_reward = math.ceil(killscore * part / all_parts)
 				recent_rankings.add(healer, { score = healer_reward }, false)
 			end
 
