@@ -5,7 +5,7 @@ arsdragonfly@gmail.com
 --]]
 
 local MAP_SUBMISSION_URL = "https://discord.gg/KuUXcBuG5M"
-local DISCORD_SERVER = "https://ctf.jma-sig.de"
+local DISCORD_SERVER = "tinyurl.com/jma-discord"
 
 local S = core.get_translator(core.get_current_modname())
 
