@@ -661,7 +661,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local thief_val = get_player_active_value(flag_thief, 0.5)
 
 		--- @type integer
-		local cap_coins = math.ceil(10 * ratios * loser_team_members / thief_val)
+		local cap_coins = math.ceil(50 * ratios * loser_team_members / thief_val)
 
 		return cap_coins
 	end
