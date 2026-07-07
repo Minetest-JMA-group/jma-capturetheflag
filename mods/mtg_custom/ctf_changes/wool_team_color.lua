@@ -52,9 +52,10 @@ core.override_item("wool:white", {
 		local newnode = core.get_node(pos)
 
 		-- Replace the wool:white node with the team color
-		local new_wool_node = {name = team_wool_color, param1 = newnode.param1, param2 = newnode.param2}
+		local new_wool_node =
+			{ name = team_wool_color, param1 = newnode.param1, param2 = newnode.param2 }
 		core.set_node(pos, new_wool_node)
-	end
+	end,
 })
 
 -- Override dig for all wool colors to return white wool instead
@@ -78,6 +79,6 @@ for wool_color, white_wool in pairs(WOOL_COLOR_TO_WHITE) do
 			inv:add_item("main", white_wool)
 
 			return true
-		end
+		end,
 	})
 end

@@ -1,6 +1,6 @@
 local COOLDOWN = ctf_core.init_cooldowns()
 
-local DISALLOW_MOD_ABMS = {"fire", "flowers", "tnt"}
+local DISALLOW_MOD_ABMS = { "fire", "flowers", "tnt" }
 
 local node_fall_damage_factors = {
 	["default:snowblock"] = -14, -- From a height of 13 blocks you take 5 damage
@@ -8,9 +8,9 @@ local node_fall_damage_factors = {
 }
 
 local disabled_ores = {
-	["default:stone_with_copper"] = "default:stone"          ,
-	["default:stone_with_gold"  ] = "default:stone"          ,
-	["default:stone_with_tin"   ] = "default:stone_with_iron",
+	["default:stone_with_copper"] = "default:stone",
+	["default:stone_with_gold"] = "default:stone",
+	["default:stone_with_tin"] = "default:stone_with_iron",
 }
 
 for from, to in pairs(disabled_ores) do
@@ -18,11 +18,10 @@ for from, to in pairs(disabled_ores) do
 end
 
 core.override_chatcommand("clearinv", {
-	privs = {server = true},
+	privs = { server = true },
 })
 
 core.register_on_mods_loaded(function()
-
 	-- Remove Unneeded ABMs
 
 	local remove_list = {}
@@ -46,22 +45,26 @@ core.register_on_mods_loaded(function()
 	-- Unset falling group for all nodes
 
 	for name, def in pairs(core.registered_nodes) do
-        local mod_name, node_name = string.match(name, "(.*):(.*)")
-        if mod_name ~= "default" then
-            if node_name ~= "sand" and node_name ~= "silver_sand" and node_name ~= "gravel" and node_name ~= "desert_sand" then
-		        if def.groups then
-			        def.groups.falling_node = nil
-                    core.override_item(name, {groups = def.groups})
-                end
-            end
-        end
-
+		local mod_name, node_name = string.match(name, "(.*):(.*)")
+		if mod_name ~= "default" then
+			if
+				node_name ~= "sand"
+				and node_name ~= "silver_sand"
+				and node_name ~= "gravel"
+				and node_name ~= "desert_sand"
+			then
+				if def.groups then
+					def.groups.falling_node = nil
+					core.override_item(name, { groups = def.groups })
+				end
+			end
+		end
 	end
 
 	-- Set item type and tiers for give_initial_stuff
-	local tiers = {"wood", "stone", "steel", "mese", "diamond"}
-	local tool_categories = {"pickaxe", "shovel", "axe"}
-	local other_categories = {sword = "melee"}
+	local tiers = { "wood", "stone", "steel", "mese", "diamond" }
+	local tool_categories = { "pickaxe", "shovel", "axe" }
+	local other_categories = { sword = "melee" }
 	for name, def in pairs(core.registered_tools) do
 		local new_category = nil
 
@@ -87,7 +90,8 @@ core.register_on_mods_loaded(function()
 
 					if tier <= 2 then
 						def.tool_capabilities.full_punch_interval = 1
-						def.tool_capabilities.damage_groups.fleshy = def.tool_capabilities.damage_groups.fleshy + 1
+						def.tool_capabilities.damage_groups.fleshy = def.tool_capabilities.damage_groups.fleshy
+							+ 1
 					end
 
 					break
@@ -103,13 +107,17 @@ core.register_on_mods_loaded(function()
 	end
 
 	local drop_self = {
-		"default:leaves", "default:jungleleaves", "default:acacia_leaves",
-		"default:aspen_leaves", "default:bush_leaves", "default:blueberry_bush_leaves",
-		"default:acacia_bush_leaves"
+		"default:leaves",
+		"default:jungleleaves",
+		"default:acacia_leaves",
+		"default:aspen_leaves",
+		"default:bush_leaves",
+		"default:blueberry_bush_leaves",
+		"default:acacia_bush_leaves",
 	}
 
 	for _, name in pairs(drop_self) do
-		core.override_item(name, {drop = name})
+		core.override_item(name, { drop = name })
 	end
 end)
 
@@ -131,11 +139,15 @@ core.override_item("default:apple", {
 		local under = pointed_thing.under
 		local node = core.get_node(under)
 		local udef = core.registered_nodes[node.name]
-		if udef and udef.on_rightclick and not (placer and placer:is_player() and placer:get_player_control().sneak) then
-				udef.on_rightclick(under, node, placer, itemstack, pointed_thing)
+		if
+			udef
+			and udef.on_rightclick
+			and not (placer and placer:is_player() and placer:get_player_control().sneak)
+		then
+			udef.on_rightclick(under, node, placer, itemstack, pointed_thing)
 		end
 		return nil
-	end
+	end,
 })
 
 core.override_item("default:blueberries", {
@@ -144,14 +156,16 @@ core.override_item("default:blueberries", {
 		if user:get_hp() == user:get_properties().hp_max then
 			return
 		end
-		
+
 		return core.item_eat(3)(itemstack, user, ...)
 	end,
 })
 
 local function furnace_on_destruct(pos)
 	local inv = core.get_inventory({ type = "node", pos = pos })
-	if not inv then return end
+	if not inv then
+		return
+	end
 	for _, list in pairs(inv:get_lists()) do
 		for _, item in ipairs(list) do
 			core.add_item(pos, item)
@@ -163,10 +177,10 @@ for _, name in pairs({
 	"doors:door_steel",
 	"xpanes:door_steel_bar",
 }) do
-	for _, variant in pairs({"_a", "_b", "_c", "_d"}) do
-		local old_on_construct = core.registered_nodes[name..variant].on_construct
+	for _, variant in pairs({ "_a", "_b", "_c", "_d" }) do
+		local old_on_construct = core.registered_nodes[name .. variant].on_construct
 
-		core.override_item(name..variant, {
+		core.override_item(name .. variant, {
 			on_construct = function(pos)
 				core.after(0, function()
 					local meta = core.get_meta(pos)
@@ -176,7 +190,7 @@ for _, name in pairs({
 				end)
 
 				return old_on_construct and old_on_construct(pos)
-			end
+			end,
 		})
 	end
 end
@@ -197,26 +211,34 @@ for _, name in pairs({
 			meta:set_string("infotext", "")
 
 			return ret or core.is_creative_enabled(placer:get_player_name())
-		end
+		end,
 	})
 end
 
 core.override_item("default:furnace", {
-	can_dig = function() return true end,
+	can_dig = function()
+		return true
+	end,
 	on_destruct = furnace_on_destruct,
 })
 
 core.override_item("default:furnace_active", {
-	can_dig = function() return true end,
+	can_dig = function()
+		return true
+	end,
 	on_destruct = furnace_on_destruct,
 })
 
 core.override_item("default:chest", {
-	on_rightclick = function() return end,
+	on_rightclick = function()
+		return
+	end,
 })
 
 core.override_item("default:chest_locked", {
-	on_rightclick = function() return end,
+	on_rightclick = function()
+		return
+	end,
 	protected = false,
 })
 
