@@ -1,4 +1,4 @@
-local DEFAULT_DESPAWN_TIME = 60
+local DEFAULT_DESPAWN_TIME = 180
 local DESPAWN_CHECK_DELAY = 2
 
 --- @class ObjectRef
@@ -29,7 +29,7 @@ local item_despawn_times = {
 	["ctf_ranged:pistol_loaded"] = { base_despawn_time = 3 * 60 },
 	["default:axe_mese"] = true,
 	["default:axe_diamond"] = true,
-	["default:shovel_mese"] = { base_despawn_time = 2 * 60 },
+	["default:shovel_mese"] = { base_despawn_time = 3 * 60 },
 	["default:shovel_diamond"] = true,
 	["default:pick_mese"] = true,
 	["default:pick_diamond"] = true,
@@ -42,7 +42,7 @@ local item_despawn_times = {
 
 	-- ITEMS
 	["ctf_mode_chaos:power_charge"] = {
-		base_despawn_time = 2 * 60,
+		base_despawn_time = 3 * 60,
 		extra_time_per_item = 5,
 	},
 	["ctf_ranged:ammo"] = { extra_time_per_item = 3 },
@@ -50,20 +50,30 @@ local item_despawn_times = {
 	["default:apple"] = { base_despawn_time = 3 * 60, extra_time_per_item = 3 }, -- technically a node
 	["default:diamond"] = true,
 	["default:mese_crystal"] = true,
-	["default:steel_ingot"] = { base_despawn_time = 2 * 60, extra_time_per_item = 7 },
-	["wind_charges:wind_charge"] = { base_despawn_time = 2 * 60, extra_time_per_item = 4 },
+	["default:steel_ingot"] = { base_despawn_time = 3 * 60, extra_time_per_item = 7 },
+	["wind_charges:wind_charge"] = { base_despawn_time = 3 * 60, extra_time_per_item = 4 },
 
 	-- NODES
-	["ctf_landmine:landmine"] = { base_despawn_time = 2 * 60, extra_time_per_item = 5 },
-	["ctf_map:spike"] = { base_despawn_time = 2 * 60, extra_time_per_item = 5 },
-	["ctf_teams:door_steel"] = { base_despawn_time = 2 * 60, extra_time_per_item = 5 },
+	["ctf_landmine:landmine"] = { base_despawn_time = 3 * 60, extra_time_per_item = 5 },
+	["ctf_map:spike"] = { base_despawn_time = 3 * 60, extra_time_per_item = 5 },
+	["ctf_map:spike_diamond"] = { base_despawn_time = 3 * 60, extra_time_per_item = 5 },
+	["ctf_map:spike_mese"] = { base_despawn_time = 3 * 60, extra_time_per_item = 5 },
+	["ctf_map:spike_double_diamond"] = {
+		base_despawn_time = 3 * 60,
+		extra_time_per_item = 5,
+	},
+	["ctf_map:spike_double_mese"] = {
+		base_despawn_time = 3 * 60,
+		extra_time_per_item = 5,
+	},
+	["ctf_teams:door_steel"] = { base_despawn_time = 3 * 60, extra_time_per_item = 5 },
 	["heal_block:heal"] = true,
 	["default:mese"] = true,
 
 	-- QUICK DESPAWNING ITEMS
 	["ctf_combat:sword_stone"] = { base_despawn_time = 15 },
 	["default:pick_stone"] = { base_despawn_time = 15 },
-	["default:torch"] = { base_despawn_time = 12, extra_time_per_item = 0.5 },
+	["default:torch"] = { base_despawn_time = 25, extra_time_per_item = 1 },
 }
 
 --- COPIED OVER FROM minetest_game/default/item_entity.lua
