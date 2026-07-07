@@ -56,7 +56,9 @@ local messages = {
 	"Help your team claim victory by storing extra weapons in the team chest, and never taking more than you need.",
 	"Use /r to check your rank and other statistics.",
 	"Use /r <playername> to check the rankings of another player.",
-	S("Use /player_info <playername> (or /pi) to check another player's rank, league, and skin."),
+	S(
+		"Use /player_info <playername> (or /pi) to check another player's rank, league, and skin."
+	),
 	"Use bandages on teammates to heal them by 3-4 HP if their health is below 15 HP.",
 	"Use /m to add a team marker at a pointed location, visible only to teammates.",
 	"Use /summary (or /s) to check scores of the current match and the previous match.",
@@ -125,6 +127,12 @@ local messages = {
 		DISCORD_SERVER
 	),
 	"If you need urgent help (for example, suicidal thoughts or self-harm), use /emergency. Abusing this command is subject to punishment.",
+	S(
+		"You can enable individual experiment logs in Settings and possibly do /feedback about your opinion"
+	),
+	S(
+		"Not any spawnkilling is prohibited. For instance killing a few of them before or after stealing the flag is okay in general"
+	),
 }
 
 local MESSAGE_INTERVAL = tonumber(core.settings:get("random_messages_interval")) or 120
