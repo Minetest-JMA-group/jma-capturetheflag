@@ -4,6 +4,9 @@
 local BREAK_REWARD_PER_HP = 0.3
 local HEAL_DIG_REWARD_BASE = 20
 
+--- @type { [Team]: { pos: Vec3, healed_points: number }}
+local healed_points_tracker = {}
+
 local S = core.get_translator(core.get_current_modname())
 
 core.register_node("ctf_healing:heal_block", {
@@ -54,7 +57,14 @@ core.register_node("ctf_healing:heal_block", {
 				return
 			end
 		end
-		core.item_place(itemstack, placer, pointed_thing)
+		local _, pos = core.item_place(itemstack, placer, pointed_thing)
+		if pteam and pos then
+			healed_points_tracker[pteam] = {
+				pos = pos,
+				healed_points = 0,
+			}
+		end
+
 		return itemstack
 	end,
 
@@ -71,7 +81,7 @@ core.register_node("ctf_healing:heal_block", {
 
 	on_timer = function(pos)
 		local meta = core.get_meta(pos)
-		local healed_points = meta:get_int("healed_points")
+		local healed_points = 0
 		for _, player in ipairs(core.get_objects_inside_radius(pos, 3)) do
 			if player:is_player() then
 				---@cast player PlayerRef
@@ -85,7 +95,15 @@ core.register_node("ctf_healing:heal_block", {
 				end
 			end
 		end
-		meta:set_int("healed_points", healed_points)
+		local block_team = meta:get_string("team")
+		if
+			block_team
+			and healed_points_tracker[block_team]
+			and healed_points_tracker[block_team].pos == pos
+		then
+			healed_points_tracker[block_team].healed_points = healed_points_tracker[block_team].healed_points
+				+ healed_points
+		end
 		return true
 	end,
 
@@ -108,12 +126,10 @@ core.register_node("ctf_healing:heal_block", {
 			if not cur_mode then
 				return
 			end
-			local meta = core.get_meta(pos)
-			local healed_points = meta:get_int("healed_points")
-			local break_reward = math.max(
-				HEAL_DIG_REWARD_BASE,
-				math.ceil(healed_points * BREAK_REWARD_PER_HP)
-			)
+			local healed_points = healed_points_tracker[block_team].healed_points
+			healed_points_tracker[block_team] = nil
+			local break_reward = HEAL_DIG_REWARD_BASE
+				+ healed_points * BREAK_REWARD_PER_HP
 			core.log(
 				"action",
 				string.format(
