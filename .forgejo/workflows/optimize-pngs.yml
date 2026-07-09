@@ -10,12 +10,13 @@ jobs:
         runs-on: finn-vps
 
         steps:
-            - uses: https://code.forgejo.org/actions/checkout@v4
+            - uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
             - name: Cache oxipng
-              uses: https://code.forgejo.org/actions/cache@v4
+              id: cache-oxipng
+              uses: actions/cache@v4
               with:
                   path: ~/.cache/oxipng/oxipng
                   key: oxipng-v9.1.2
