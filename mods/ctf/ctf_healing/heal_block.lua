@@ -128,8 +128,8 @@ core.register_node("ctf_healing:heal_block", {
 			end
 			local healed_points = healed_points_tracker[block_team].healed_points
 			healed_points_tracker[block_team] = nil
-			local break_reward = HEAL_DIG_REWARD_BASE
-				+ healed_points * BREAK_REWARD_PER_HP
+			local break_reward =
+				math.ceil(HEAL_DIG_REWARD_BASE + healed_points * BREAK_REWARD_PER_HP)
 			core.log(
 				"action",
 				string.format(
