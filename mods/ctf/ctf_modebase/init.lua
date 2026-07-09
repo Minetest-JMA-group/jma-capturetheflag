@@ -69,6 +69,10 @@ ctf_api.register_on_match_start(function()
 	ctf_modebase.match_start_time = os.time()
 end)
 
+ctf_api.register_on_match_end(function()
+	ctf_modebase.match_start_time = nil
+end)
+
 ctf_gui.init()
 
 local S = core.get_translator(core.get_current_modname())
