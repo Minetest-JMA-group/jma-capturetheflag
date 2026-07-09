@@ -93,6 +93,9 @@ core.register_node("ctf_healing:heal_block", {
 		if not digger or not digger:is_player() then
 			return
 		end
+		if ctf_modebase.match_start_time == nil then
+			return
+		end
 		---@cast digger PlayerRef
 		local block_team = oldmetadata.fields.team
 		local player_team = ctf_teams.get(digger)
