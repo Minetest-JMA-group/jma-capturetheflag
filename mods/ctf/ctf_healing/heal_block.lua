@@ -99,6 +99,9 @@ core.register_node("ctf_healing:heal_block", {
 		---@cast digger PlayerRef
 		local block_team = oldmetadata.fields.team
 		local player_team = ctf_teams.get(digger)
+
+		--- @type PlayerName
+		local dname = digger:get_player_name()
 		-- Only award points if player breaks enemy team's heal block
 		if block_team and player_team and block_team ~= player_team then
 			local cur_mode = ctf_modebase:get_current_mode()
@@ -111,11 +114,17 @@ core.register_node("ctf_healing:heal_block", {
 				HEAL_DIG_REWARD_BASE,
 				math.ceil(healed_points * BREAK_REWARD_PER_HP)
 			)
-			cur_mode.recent_rankings.add(
-				digger:get_player_name(),
-				{ score = break_reward },
-				true
+			core.log(
+				"action",
+				string.format(
+					"Player %s from Team %s has dug the heal block and got %d pts",
+					dname,
+					player_team,
+					break_reward
+				)
 			)
+			core.log("action", string.format("HPs is %d", healed_points))
+			cur_mode.recent_rankings.add(dname, { score = break_reward }, true)
 
 			hud_events.new(digger, {
 				quick = true,
