@@ -383,6 +383,7 @@ local function is_pro(player, rank)
 			return true
 		end
 	end
+	return false
 end
 
 --- @alias FlagNotifMessage { text: string, color: string? }
