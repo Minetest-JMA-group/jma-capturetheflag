@@ -1779,7 +1779,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			if hp == 0 then
 				hp_tracker[pname] = hp
 				update_player_prefix(player)
-				update_playertags(0)
 			end
 
 			return damage
