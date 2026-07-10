@@ -93,14 +93,8 @@ ctf_modebase.register_mode("chaos", {
 	get_item_value = function(itemname, teamchest_pos)
 		return 0
 	end,
-	get_player_value = features.get_player_value,
-	get_player_active_value = features.get_player_active_value,
-	get_player_passive_value = features.get_player_passive_value,
-	get_pvp_score = features.get_pvp_score,
-	get_heal_score = features.get_heal_score,
-	get_capture_score = features.get_capture_score,
-	get_build_score = features.get_build_score,
-	get_team_value = features.get_team_value,
+	get_ranking = features.get_ranking,
+	get_recent_ranking = features.get_recent_ranking,
 	on_new_match = features.on_new_match,
 	on_match_end = features.on_match_end,
 	team_allocator = features.team_allocator,

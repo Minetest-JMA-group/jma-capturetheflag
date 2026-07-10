@@ -98,7 +98,7 @@ function ctf_modebase.start_match_after_map_vote()
 			end
 		end
 
-		local get_player_value = ctf_modebase:get_current_mode().get_player_value
+		local get_player_value = ctf_modebase.values.get_player_value
 		-- Now assign players equally per teams
 		local t = 1
 		for pname, _ in pairs(players_to_assign) do

@@ -1,7 +1,5 @@
 --- @alias Vec3 { x: number, y: number, z: number }
 --- @alias Vec2 { x: number, y: number }
---- @alias ScoreFun fun(player: PlayerName, recent: number?): number
-
 local S = core.get_translator(core.get_current_modname())
 
 --- @type { [string]: number }
@@ -428,15 +426,6 @@ ctf_settings.register("ctf_modebase:know_your_killscore", {
 	default = "true",
 })
 
---- @param x number
---- @param y number
---- @param base number?
---- @return number
-local function log_sum(x, y, base)
-	local base = base or math.exp(1)
-	return x + math.log(1 + math.pow(base, y - x))
-end
-
 ctf_modebase.features = function(rankings, recent_rankings)
 	local FLAG_MESSAGE_COLOR = "#d9b72a"
 	local FLAG_CAPTURE_TIMER = 60 * 3
@@ -447,225 +436,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	--- @type number?
 	local teams_left
 
-	local DIVIDER = 200
-
-	--- @param player PlayerName
-	--- @param recent number?
-	--- @return table
-	local function get_ranking(player, recent)
-		recent = nil or 0.0
-		local complement = 1.0 - recent
-		local ranking = rankings:get(player) or {}
-		local recent_rankings2 = recent_rankings.get(player) or {}
-		return {
-			kills = (ranking.kills or 1) * complement
-				+ (recent_rankings2.kills or 1) * recent,
-			deaths = (ranking.deaths or 1) * complement
-				+ (recent_rankings2.deaths or 1) * recent,
-			kill_assists = (ranking.kill_assists or 1) * complement
-				+ (recent_rankings2.kill_assists or 1) * recent,
-			hp_healed = (ranking.hp_healed or 1) * complement
-				+ (recent_rankings2.hp_healed or 1) * recent,
-			capture_coins = (ranking.capture_coins or 1) * complement
-				+ (recent_rankings2.capture_coins or 1) * recent,
-			build_points = (ranking.build_points or 1) * complement
-				+ (recent_rankings2.build_points or 1) * recent,
-		}
-	end
-
-	--- @type ScoreFun
-	local function get_pvp_score(player, recent)
-		local ranking = get_ranking(player, recent)
-		local kills = ranking.kills or 1
-		local deaths = rankings.deaths or 1
-		local assists = rankings.kill_assists or 1
-		return (kills + assists / 5) / deaths
-	end
-
-	--- @type ScoreFun
-	local function get_build_point(player, recent)
-		local ranking = get_ranking(player, recent)
-		return ranking.build_points or 1
-	end
-
-	--- @type ScoreFun
-	local function get_capture_coin(player, recent)
-		--local ranking = get_ranking(player, recent)
-		return 1
-	end
-
-	--- @type ScoreFun
-	local function get_heal_score(player, recent)
-		local ranking = get_ranking(player, recent)
-		local hp_healed = ranking.hp_healed or 1
-		local deaths = ranking.deaths or 1
-		--- 15 is knight_hp / 2
-		return (hp_healed / 15) / deaths
-	end
-
-	--- @type ScoreFun
-	local function get_player_active_value(player, recent)
-		local pvp_score = get_pvp_score(player, recent)
-		local capcoins = get_capture_coin(player, recent)
-		core.debug(
-			string.format("(pvp, ca, %f) = %f %f", recent or 1.0, pvp_score, capcoins)
-		)
-
-		return pvp_score + capcoins + math.min(pvp_score, capcoins)
-	end
-
-	--- @type ScoreFun
-	local function get_player_passive_value(player, recent)
-		local heal_score = get_heal_score(player, recent)
-		local build_score = get_build_point(player, recent)
-		core.debug(
-			string.format("(h, b, %f) = %f %f", recent or 1.0, heal_score, build_score)
-		)
-		return heal_score + build_score + math.min(heal_score, build_score)
-	end
-
-	--- @type ScoreFun
-	local function get_player_value(player, recent)
-		local passive_val = get_player_passive_value(player, recent)
-		local active_val = get_player_active_value(player, recent)
-		core.debug(
-			string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val)
-		)
-		--- This is sum done in logarithm semi-ring. That is log-sum of x + y
-		--- is log(b^x + b^y) where b is the base. I've chosen a base of e,
-		--- so the sum will be maximum of the two values, possibly plus a little more.
-
-		--- The below computations all have the same result. But we don't want
-		--- to hit limit of the floating point numbers in Lua as they become inf.
-		--- If you are geeky enough for math, you can take a pen and paper and prove
-		--- these logarithmic identities for yourself ;) --Farooq
-		--- @type number
-		local combined_val = 0
-		--- @type number
-		local base = math.exp(1)
-		--- @type number
-		local divider = 250
-		if math.abs(active_val - passive_val) <= divider then
-			combined_val = active_val
-				+ math.log(1 + math.exp(passive_val - active_val), base)
-		else
-			--- @type number
-			local first_part = 0
-			--- @type number
-			local second_part = 0
-			if active_val > passive_val then
-				--- @type number
-				local sub_active_val = math.min(active_val / divider, divider)
-				first_part = math.exp(passive_val - divider)
-				second_part = math.exp(sub_active_val)
-			else
-				--- @type number
-				local sub_passive_val = math.min(passive_val / divider, divider)
-				first_part = math.exp(active_val - divider)
-				second_part = math.exp(sub_passive_val)
-			end
-			combined_val = divider + math.log(first_part + second_part, base)
-		end
-		if not math.isfinite(combined_val) then
-			core.log(
-				"warning",
-				string.format(
-					"Player value of %s is inf! Recent: %f P val: %f A val: %f",
-					player,
-					recent or 0.0,
-					passive_val,
-					active_val
-				)
-			)
-		end
-		core.log("info", string.format("Value of %s is %.3f", player, combined_val))
-		return combined_val
-	end
-
-	--- @param team_a Team
-	--- @param team_b Team
-	--- @param recent number?
-	--- @return number
-	local function compare_team_values(team_a, team_b, recent)
-		-- A team value equals product of values of team members.
-		-- Here we compute ratio of team_a:team_b. However, a problem
-		-- is that we cannot compute each product then divide them as it's
-		-- likely that the number will overflow and become inf like in
-		-- get_player_value. --Farooq
-
-		recent = recent or 1.0
-		--- @type PlayerName[]
-		local team_a_members = ctf_teams.get_team_members(team_a)
-		--- @type PlayerName[]
-		local team_b_members = ctf_teams.get_team_members(team_b)
-		--- @type integer
-		local bigger_team_len = #team_a_members
-		if #team_b_members > #team_a_members then
-			bigger_team_len = #team_b_members
-		end
-		--- @type number
-		local teams_ratio = 1
-		for i = 1, bigger_team_len do
-			local player_a = team_a_members[i]
-			local player_b = team_b_members[i]
-			--- @type number
-			local a_val = 1
-			if player_a then
-				a_val = get_player_value(player_a, recent)
-			end
-			--- @type number
-			local b_val = 1
-			if player_b then
-				b_val = get_player_value(player_b, recent)
-			end
-			teams_ratio = (a_val / b_val) * teams_ratio
-		end
-		return teams_ratio
-	end
-
-	--- @param loser_teams Team[]
-	--- @param winner_team Team
-	--- @param other_teams Team[]?
-	--- @param flag_thief PlayerName
-	--- @return number
-	local function calculate_capture_coins(
-		loser_teams,
-		winner_team,
-		other_teams,
-		flag_thief
-	)
-		other_teams = other_teams or {}
-		-- Comparing value of loser teams to thief's team
-		--- @type number
-		local ratios = 0
-		--- @type integer
-		local loser_team_members = 0
-		for _, loser_team in ipairs(loser_teams) do
-			ratios = ratios + compare_team_values(loser_team, winner_team)
-			loser_team_members = loser_team_members
-				+ #ctf_teams.get_team_members(loser_team)
-		end
-
-		-- If there are other teams, they would likely try to kill the flag
-		-- thief even tho it's not their flag. So we also count them but
-		-- we assume their impact is half. --Farooq
-
-		for _, other_team in pairs(other_teams) do
-			ratios = ratios + compare_team_values(other_team, winner_team) / 2
-		end
-
-		-- Now we also need active value of the thief which is
-		-- capture skill and pvp skill combined. And we need to
-		-- compare it to number of players in the loser team(s)
-		--- @type number
-		local thief_val = get_player_active_value(flag_thief, 0.5)
-
-		--- @type integer
-		local cap_coins = math.ceil(50 * ratios * loser_team_members / thief_val)
-
-		return cap_coins
-	end
-
 	local function new_calculate_killscore(player, killer)
 		local pname = PlayerName(player)
 		local killer_name = PlayerName(killer)
@@ -674,9 +444,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			core.debug(pname .. " was not in a team when killed")
 			return 0
 		end
-		local player_val = get_player_value(pname, 1.0)
-		local player_pvp_val = get_pvp_score(pname, 0.5)
-		local killer_pvp_val = get_pvp_score(killer_name, 0.5)
+		local player_val = ctf_modebase.values.get_player_value(pname, 1.0)
+		local player_pvp_val = ctf_modebase.values.get_pvp_score(pname, 0.5)
+		local killer_pvp_val = ctf_modebase.values.get_pvp_score(killer_name, 0.5)
 		local vals_ratio = 1 + math.log(1 + player_pvp_val / killer_pvp_val, 2)
 		local score = math.floor(math.max(player_val * vals_ratio, 1))
 		if experiment_logs then
@@ -1184,112 +954,16 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local streak_bonus_received = {}
 
 	return {
-
-		--- @param player PlayerName
-		--- @param recent number?
+		--- @param pname PlayerName
 		--- @return table
-		get_ranking = function(player, recent)
-			recent = nil or 0.0
-			local complement = 1.0 - recent
-			local ranking = rankings:get(player) or {}
-			local recent_rankings2 = recent_rankings.get(player) or {}
-			return {
-				kills = (ranking.kills or 1) * complement
-					+ (recent_rankings2.kills or 1) * recent,
-				deaths = (ranking.deaths or 1) * complement
-					+ (recent_rankings2.deaths or 1) * recent,
-				kill_assists = (ranking.kill_assists or 1) * complement
-					+ (recent_rankings2.kill_assists or 1) * recent,
-				hp_healed = (ranking.hp_healed or 1) * complement
-					+ (recent_rankings2.hp_healed or 1) * recent,
-				capture_points = (ranking.capture_points or 1) * complement
-					+ (recent_rankings2.capture_points or 1) * recent,
-				build_points = (ranking.build_points or 1) * complement
-					+ (recent_rankings2.build_points or 1) * recent,
-			}
+		get_ranking = function(pname)
+			return rankings:get(pname) or {}
 		end,
-
-		--- @type ScoreFun
-		get_pvp_score = function(player, recent)
-			local ranking = get_ranking(player, recent)
-			local kills = ranking.kills or 1
-			local deaths = rankings.deaths or 1
-			local assists = rankings.kill_assists or 1
-			return (kills + assists / 5) / deaths
+		--- @param pname PlayerName
+		--- @return table
+		get_recent_ranking = function(pname)
+			return recent_rankings:get(pname) or {}
 		end,
-
-		--- @type ScoreFun
-		get_build_point = function(player, recent)
-			local ranking = get_ranking(player, recent)
-			return ranking.build_points or 1
-		end,
-
-		--- @type ScoreFun
-		get_capture_coin = function(player, recent)
-			--local ranking = get_ranking(player, recent)
-			return 1
-		end,
-
-		--- @type ScoreFun
-		get_heal_score = function(player, recent)
-			local ranking = get_ranking(player, recent)
-			local hp_healed = ranking.hp_healed or 1
-			local deaths = ranking.deaths or 1
-			--- 15 is knight_hp / 2
-			return (hp_healed / 15) / deaths
-		end,
-
-		--- @type ScoreFun
-		get_player_active_value = function(player, recent)
-			local pvp_score = get_pvp_score(player, recent)
-			local capcoins = get_capture_coin(player, recent)
-			core.debug(
-				string.format("(pvp, cc, %f) = %f %f", recent or 1.0, pvp_score, capcoins)
-			)
-
-			return math.sqrt(pvp_score * capcoins * 1.05)
-		end,
-
-		--- @type ScoreFun
-		get_player_passive_value = function(player, recent)
-			local heal_score = get_heal_score(player, recent)
-			local build_score = get_build_point(player, recent)
-			core.debug(
-				string.format(
-					"(h, b, %f) = %f %f",
-					recent or 1.0,
-					heal_score,
-					build_score
-				)
-			)
-			return math.sqrt(heal_score * build_score * 1.05)
-		end,
-
-		--- @type ScoreFun
-		get_player_value = function(player, recent)
-			local passive_val = get_player_passive_value(player, recent)
-			local active_val = get_player_active_value(player, recent)
-			core.debug(
-				string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val)
-			)
-			return math.sqrt(passive_val * active_val * 1.5)
-		end,
-
-		--- @param team Team
-		--- @param recent number
-		--- @return number
-		get_team_value = function(team, recent)
-			local members = ctf_teams.get_team_members(team)
-			local total_value = 0
-			for _, member in ipairs(members) do
-				local player_val = get_player_value(member, recent)
-				core.debug("val of " .. member .. " : " .. tostring(player_val))
-				total_value = player_val + total_value
-			end
-			total_value = math.max(total_value, 1)
-			return total_value * total_value
-		end,
-
 		on_new_match = function()
 			team_list = {}
 			for tname in pairs(ctf_map.current_map.teams) do
@@ -1711,8 +1385,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				end
 			end
 
-			local capture_coins =
-				calculate_capture_coins(teamnames, pteam, other_teams, pname)
+			local capture_coins = ctf_modebase.values.calculate_capture_coins(
+				teamnames,
+				pteam,
+				other_teams,
+				pname
+			)
 			core.debug("CapCoins: " .. tostring(capture_coins))
 			if experiment_logs then
 				experiment_logs.log(
