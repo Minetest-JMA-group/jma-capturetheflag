@@ -60,7 +60,7 @@ ctf_modebase = {
 	--- @type boolean
 	first_kill_happened = false,
 
-	--- @type number?
+	--- @type number? it's nil when there is no match
 	match_start_time = nil,
 }
 
@@ -107,7 +107,8 @@ ctf_core.include_files(
 	"bounty_algo.lua",
 	"features.lua",
 	"map_vote.lua",
-	"treasure_regenerate.lua"
+	"treasure_regenerate.lua",
+	"values.lua"
 )
 
 core.register_on_mods_loaded(function()
