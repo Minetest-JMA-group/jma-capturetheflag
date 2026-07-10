@@ -194,6 +194,8 @@ function math.isfinite(x) end
 ---@field set_attach fun(self: ObjectRef, parent: ObjectRef, bone?: string, pos?: simplevector, rot?: simplevector, forced_visible?: boolean)
 ---@field set_detach fun(self: ObjectRef)
 ---@field set_nametag_attributes fun(self: ObjectRef, attr: table)
+---@field get_nametag_attributes fun(self: ObjectRef): table
+---@field get_observers fun(self: ObjectRef): table?
 
 -- PlayerRef (subclass of ObjectRef, inherits all fields)
 ---@class PlayerRef : ObjectRef
