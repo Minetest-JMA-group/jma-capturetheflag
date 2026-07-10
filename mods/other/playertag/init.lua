@@ -222,7 +222,14 @@ end
 function playertag.set_nametag_prefix(player, prefix)
 	local pname = player:get_player_name()
 	players[pname].prefix = prefix
-	update(player, players[pname])
+	local entity = players[pname].nametag_entity
+	--- @type ObjectRef?
+	local object = entity and entity.object
+	if object then
+		object:set_properties({
+			nametag = prefix .. pname,
+		})
+	end
 end
 
 --- @return {[PlayerName]: NametagSettings}
