@@ -118,7 +118,7 @@ function ctf_modebase.values.get_player_value(player, recent)
 		end
 		combined_val = divider + math.log(first_part + second_part, base)
 	end
-	if not math.isfinite(combined_val) then
+	if math.isfinite and not math.isfinite(combined_val) then
 		core.log(
 			"warning",
 			string.format(
