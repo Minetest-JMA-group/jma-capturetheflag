@@ -245,7 +245,13 @@ ctf_modebase.register_mode("classes", {
 		classes.finish()
 	end,
 
-	get_player_label = features.get_player_label,
+	get_player_label = function(pname)
+		--- @type string
+		local base_label = features.get_player_label(pname)
+		base_label = base_label:trim()
+		local class_title = classes.get(core.get_player_by_name(pname)).name
+		return string.format("%s[%s] ", base_label, class_title)
+	end,
 	get_ranking = features.get_ranking,
 	get_recent_ranking = features.get_recent_ranking,
 	on_new_match = features.on_new_match,
