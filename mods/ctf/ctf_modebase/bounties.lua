@@ -12,7 +12,7 @@ local contributed_bounties = {}
 --- @type number
 local PLAYER_BOUNTY_CAP = 100
 --- @type number
-local PLAYER_BOUNTY_MIN = 5
+local PLAYER_BOUNTY_MIN = 12
 
 local S = core.get_translator(core.get_current_modname())
 
