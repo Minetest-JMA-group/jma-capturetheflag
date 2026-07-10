@@ -197,16 +197,19 @@ core.register_globalstep(function(dtime)
 		return
 	end
 	landmine_globalstep_counter = 0.0
-	for _idx, pos in pairs(landmines) do
+	for _, pos in pairs(landmines) do
+		--- @type ObjectRef[]
 		local near_objs = core.get_objects_in_area(
 			vector.new(pos.x - 0.75, pos.y - 0.75, pos.z - 0.75),
 			vector.new(pos.x + 0.75, pos.y - 0.3, pos.z + 0.75)
 		)
 		local must_explode = false
 		for _, obj in pairs(near_objs) do
-			if is_self_landmine(obj, pos) == false then
-				must_explode = true
-				break
+			if obj and obj:get_hp() > 0 then
+				if is_self_landmine(obj, pos) == false then
+					must_explode = true
+					break
+				end
 			end
 		end
 		if must_explode then
