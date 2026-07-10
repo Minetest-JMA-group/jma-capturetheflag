@@ -2,7 +2,7 @@ local TYPE_BUILTIN = 0
 local TYPE_ENTITY = 1
 
 --- @alias NametagType 0 | 1
---- @alias NametagSettings { nametag_prefix: string?, type: NametagType?, color: (string | table)?,
+--- @alias NametagSettings { builtin_prefix: string?, type: NametagType?, color: (string | table)?,
 --- symbol_entity_observers: table?, nametag_entity_observers: table?, entity: table?,
 --- symbol_entity: table?, nametag_entity: table?, timer: table? }
 
@@ -175,10 +175,10 @@ local function update(player, settings)
 			color = settings.color or { a = 255, r = 255, g = 255, b = 255 },
 			bgcolor = { a = 0, r = 0, g = 0, b = 0 },
 		})
-		if settings.nametag_prefix ~= nil then
+		if settings.builtin_prefix ~= nil then
 			local text = player:get_nametag_attributes().text or ""
 			player:set_nametag_attributes({
-				text = settings.nametag_prefix .. text,
+				text = settings.builtin_prefix .. text,
 			})
 		end
 	elseif settings.type == TYPE_ENTITY then
@@ -215,6 +215,19 @@ end
 --- @return NametagSettings
 function playertag.get(player)
 	return players[player:get_player_name()]
+end
+
+--- @param player PlayerRef
+--- @param prefix string
+function playertag.set_builtin_prefix(player, prefix)
+	local pname = player:get_player_name()
+	players[pname].builtin_prefix = prefix
+	player:set_nametag_attributes({
+		text = string.format("%s %s", prefix, pname),
+	})
+	core.debug(
+		string.format("nametag of %s is %s", pname, player:get_nametag_attributes().text)
+	)
 end
 
 --- @return {[PlayerName]: NametagSettings}
