@@ -2,7 +2,7 @@ local TYPE_BUILTIN = 0
 local TYPE_ENTITY = 1
 
 --- @alias NametagType 0 | 1
---- @alias NametagSettings { builtin_prefix: string?, type: NametagType?, color: (string | table)?,
+--- @alias NametagSettings { prefix: string?, type: NametagType?, color: (string | table)?,
 --- symbol_entity_observers: table?, nametag_entity_observers: table?, entity: table?,
 --- symbol_entity: table?, nametag_entity: table?, timer: table? }
 
@@ -31,12 +31,13 @@ local function add_entity_tag(player, old_observers, readded)
 	local ent2
 	local ent3
 
+	local prefix = players[player_name].prefix or ""
 	if ent.set_observers then
 		ent2 = core.add_entity(player:get_pos(), "playertag:tag")
 		if ent2 then
 			ent2:set_observers(old_observers.nametag_entity or {})
 			ent2:set_properties({
-				nametag = player_name,
+				nametag = prefix .. player_name,
 				nametag_color = "#EEFFFFDD",
 				nametag_bgcolor = "#0000002D",
 			})
@@ -175,10 +176,9 @@ local function update(player, settings)
 			color = settings.color or { a = 255, r = 255, g = 255, b = 255 },
 			bgcolor = { a = 0, r = 0, g = 0, b = 0 },
 		})
-		if settings.builtin_prefix ~= nil then
-			local text = player:get_nametag_attributes().text or ""
+		if settings.prefix then
 			player:set_nametag_attributes({
-				text = settings.builtin_prefix .. text,
+				text = settings.prefix .. player:get_player_name(),
 			})
 		end
 	elseif settings.type == TYPE_ENTITY then
@@ -219,15 +219,10 @@ end
 
 --- @param player PlayerRef
 --- @param prefix string
-function playertag.set_builtin_prefix(player, prefix)
+function playertag.set_prefix(player, prefix)
 	local pname = player:get_player_name()
-	players[pname].builtin_prefix = prefix
-	player:set_nametag_attributes({
-		text = string.format("%s %s", prefix, pname),
-	})
-	core.debug(
-		string.format("nametag of %s is %s", pname, player:get_nametag_attributes().text)
-	)
+	players[pname].prefix = prefix
+	update(player, players[pname])
 end
 
 --- @return {[PlayerName]: NametagSettings}

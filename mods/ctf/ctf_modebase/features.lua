@@ -2,6 +2,33 @@
 --- @alias Vec2 { x: number, y: number }
 local S = core.get_translator(core.get_current_modname())
 
+--- @type { [PlayerName]: number }
+local hp_tracker = {}
+
+local function update_player_hps()
+	for _, pname in ipairs(ctf_teams.get_all_team_players()) do
+		--- @type PlayerRef
+		local player = core.get_player_by_name(pname)
+		hp_tracker[pname] = player:get_hp()
+	end
+end
+
+ctf_api.register_on_new_match(function()
+	hp_tracker = {}
+	update_player_hps()
+end)
+
+local HP_TRACKER_INTERVAL = 2
+local hp_tracker_timer = 0
+core.register_globalstep(function(dtime)
+	hp_tracker_timer = hp_tracker_timer + dtime
+	if hp_tracker_timer < HP_TRACKER_INTERVAL then
+		return
+	end
+	hp_tracker_timer = 0
+	update_player_hps()
+end)
+
 --- @type { [string]: number }
 local default_item_value = {
 	["ctf_melee:sword_diamond"] = 12,
@@ -158,6 +185,33 @@ local function supports_observers(x)
 	return false
 end
 
+--- @param player PlayerRef
+local function update_player_prefix(player)
+	local playertag_settings = playertag.get(player)
+	local current_mode = ctf_modebase:get_current_mode()
+	if playertag_settings and current_mode then
+		playertag.set_prefix(
+			player,
+			current_mode.get_player_label(player:get_player_name())
+		)
+	end
+end
+
+--- @type number
+local PLAYER_PREFIX_UPDATE_INTERVAL = 2
+--- @type number
+local player_prefix_timer = 0
+core.register_globalstep(function(dtime)
+	player_prefix_timer = player_prefix_timer + dtime
+	if player_prefix_timer < PLAYER_PREFIX_UPDATE_INTERVAL then
+		return
+	end
+	player_prefix_timer = 0
+	for _, player in ipairs(core.get_connected_players()) do
+		update_player_prefix(player)
+	end
+end)
+
 local function update_playertag(player, t, nametag, team_nametag, symbol_nametag)
 	if
 		not supports_observers(nametag.object)
@@ -173,11 +227,13 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 	nametag_players[player:get_player_name()] = nil
 
 	for n in pairs(table.copy(nametag_players)) do
+		--- @type PlayerRef
 		local player_obj = core.get_player_by_name(n)
 		if not player_obj then
 			nametag_players[n] = nil
 			goto continue
 		end
+		update_player_prefix(player_obj)
 		local setting =
 			ctf_settings.get(player_obj, "ctf_modebase:teammate_nametag_style")
 
@@ -214,12 +270,13 @@ local function update_playertags(time)
 			update_timer = false
 			for _, p in pairs(core.get_connected_players()) do
 				local t = ctf_teams.get(p)
-				local playertag = playertag.get(p)
+				local playertag2 = playertag.get(p)
+				local current_mode = ctf_modebase:get_current_mode()
 
-				if playertag then
-					local team_nametag = playertag.nametag_entity
-					local nametag = playertag.entity
-					local symbol_entity = playertag.symbol_entity
+				if playertag2 then
+					local team_nametag = playertag2.nametag_entity
+					local nametag = playertag2.entity
+					local symbol_entity = playertag2.symbol_entity
 
 					if t and nametag and team_nametag and symbol_entity then
 						update_playertag(p, t, nametag, team_nametag, symbol_entity)
@@ -967,7 +1024,17 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- @param pname PlayerName
 		--- @return string
 		get_player_label = function(pname)
-			return ""
+			--- @type number?
+			local hp = hp_tracker[pname]
+			if hp ~= nil then
+				if hp == 0 then
+					return string.format("[%s] ", S("Dead"))
+				else
+					return string.format("[%d %s] ", hp, S("HP"))
+				end
+			else
+				return ""
+			end
 		end,
 		on_new_match = function()
 			team_list = {}
@@ -1061,6 +1128,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					end
 				end)
 			end
+			update_playertags(0)
 		end,
 		on_match_end = function()
 			recent_rankings.on_match_end()
@@ -1700,6 +1768,14 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				end
 			elseif pname ~= hitter:get_player_name() then
 				ctf_combat_mode.add_hitter(player, hitter, weapon_image, 15)
+			end
+
+			--- @type number
+			local hp = math.max(player:get_hp(), 0)
+			if hp == 0 then
+				hp_tracker[pname] = hp
+				update_player_prefix(player)
+				update_playertags(0)
 			end
 
 			return damage
