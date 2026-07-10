@@ -1603,7 +1603,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			recent_rankings.on_leaveplayer(pname)
 		end,
 		--- @param player ObjectRef
-		--- @param reason "punch" | "combatlog" | string
+		--- @param reason table
 		on_dieplayer = function(player, reason)
 			if not ctf_modebase.match_started then
 				return
