@@ -32,7 +32,8 @@ local function timer_func(time_left)
 			})
 		end
 
-		local pteam = ctf_teams.get(player)
+		local pname = player:get_player_name()
+		local pteam = ctf_teams.get(pname)
 		if
 			pteam
 			and not ctf_core.pos_inside(
@@ -136,4 +137,3 @@ core.register_chatcommand("ctf_start", {
 		return true, "Build time ended"
 	end,
 })
-

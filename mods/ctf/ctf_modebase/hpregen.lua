@@ -15,7 +15,7 @@ core.register_globalstep(function(dtime)
 		timer = 0
 
 		for _, player in pairs(core.get_connected_players()) do
-			if ctf_teams.get(player) then --Temporary solution. Prevent hp regen for elysium players
+			if ctf_teams.get(player:get_player_name()) then --Temporary solution. Prevent hp regen for elysium players
 				local oldhp = player:get_hp()
 				if not ctf_combat_mode.in_combat(player) and oldhp > 0 then
 					local newhp = oldhp + 2

@@ -260,7 +260,7 @@ end)
 
 ---@diagnostic disable-next-line: duplicate-set-field
 ctf_ranged.can_use_gun = function(player, name)
-	if not ctf_teams.get(player) then
+	if not ctf_teams.get(player:get_player_name()) then
 		return true
 	end
 

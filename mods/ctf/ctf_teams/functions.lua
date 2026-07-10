@@ -62,12 +62,9 @@ end
 ctf_teams.set = ctf_teams.set_player_team
 
 --- Which team is the player on if any?
---- @param player PlayerName | ObjectRef
+--- @param player PlayerName
 --- @return Team?
 function ctf_teams.get_player_team(player)
-	--- @type PlayerName
-	player = PlayerName(player)
-
 	return ctf_teams.player_team[player]
 end
 

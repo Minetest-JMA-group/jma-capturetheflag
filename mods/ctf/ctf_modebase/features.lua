@@ -991,7 +991,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end
 
 		local pname, hname = player:get_player_name(), hitter:get_player_name()
-		local pteam, hteam = ctf_teams.get(player), ctf_teams.get(hitter)
+		local pteam, hteam = ctf_teams.get(pname), ctf_teams.get(hname)
 
 		if not ctf_modebase.remove_respawn_immunity(hitter) then
 			return false, S("You can't attack while immune")
@@ -1360,7 +1360,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- @param teamname Team
 		on_flag_take = function(player, teamname)
 			local pname = player:get_player_name()
-			local pteam = ctf_teams.get(player)
+			local pteam = ctf_teams.get(pname)
 			if not pteam then
 				return
 			end
@@ -1721,16 +1721,17 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- @param player ObjectRef
 		--- @param reason table
 		on_dieplayer = function(player, reason)
+			local pname = player:get_player_name()
 			if not ctf_modebase.match_started then
 				return
 			end
 
 			-- punch is handled in on_punchplayer
 			if reason.type ~= "punch" then
-				end_combat_mode(player:get_player_name(), reason)
+				end_combat_mode(pname, reason)
 			end
 
-			if ctf_teams.get(player) then
+			if ctf_teams.get(pname) then
 				ctf_modebase.prepare_respawn_delay(player)
 			end
 		end,

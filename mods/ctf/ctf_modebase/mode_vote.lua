@@ -46,22 +46,35 @@ local function show_modechoose_form(player)
 	local vote_setting = "ask"
 
 	if ctf_settings.settings["ctf_modebase:default_vote_" .. new_mode] then
-		vote_setting = ctf_settings.get(core.get_player_by_name(player),
-			"ctf_modebase:default_vote_" .. new_mode)
+		vote_setting = ctf_settings.get(
+			core.get_player_by_name(player),
+			"ctf_modebase:default_vote_" .. new_mode
+		)
 
-		vote_setting = ctf_settings.settings["ctf_modebase:default_vote_" .. new_mode]
-		._list_map[tonumber(vote_setting)]
+		vote_setting =
+			ctf_settings.settings["ctf_modebase:default_vote_" .. new_mode]._list_map[tonumber(
+				vote_setting
+			)]
 	end
 
 	if vote_setting ~= "ask" then
 		core.after(0, function()
-			if not core.get_player_by_name(player) then return end
+			if not core.get_player_by_name(player) then
+				return
+			end
 
-			core.chat_send_player(player, S("Voting for @1. Automatic vote: @2.",
-					HumanReadable(new_mode), vote_setting) ..
-				"\n" ..
+			core.chat_send_player(
+				player,
 				S(
-				"To change the automatic vote settings, go to the \"Settings\" tab of your inventory."))
+					"Voting for @1. Automatic vote: @2.",
+					HumanReadable(new_mode),
+					vote_setting
+				)
+					.. "\n"
+					.. S(
+						'To change the automatic vote settings, go to the "Settings" tab of your inventory.'
+					)
+			)
 			player_vote(player, vote_setting)
 		end)
 
@@ -81,7 +94,8 @@ local function show_modechoose_form(player)
 				HumanReadable(new_mode),
 				S("Please vote on how many matches you would like to play."),
 				S(
-				"You can change your default vote for this mode via the Settings tab (in your inventory)")
+					"You can change your default vote for this mode via the Settings tab (in your inventory)"
+				),
 			},
 			"button_exit[3.7,2.5;1.4,0.7;vote;0]",
 			"button_exit[3.7,3.5;1.4,0.7;vote;1]",
@@ -97,8 +111,10 @@ local function show_modechoose_form(player)
 		new_mode = new_mode,
 		_on_formspec_input = function(pname, context, fields)
 			if fields.quit_button then
-				core.kick_player(pname,
-					S("You clicked 'Exit Game' in the mode vote formspec"))
+				core.kick_player(
+					pname,
+					S("You clicked 'Exit Game' in the mode vote formspec")
+				)
 				return
 			end
 
@@ -109,7 +125,7 @@ local function show_modechoose_form(player)
 					player_vote(player, vnum)
 				end
 			end
-		end
+		end,
 	})
 end
 
@@ -155,7 +171,7 @@ function ctf_modebase.mode_vote.start_vote()
 		local pname = player:get_player_name()
 		if
 			not ctf_teams.non_team_players[pname]
-			and (ctf_teams.get(player) ~= nil or not ctf_modebase.current_mode)
+			and (ctf_teams.get(pname) ~= nil or not ctf_modebase.current_mode)
 		then
 			show_modechoose_form(pname)
 
