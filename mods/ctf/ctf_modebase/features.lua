@@ -1245,7 +1245,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end,
 		calculate_capture_reward = calculate_capture_reward,
 		calculate_killscore = calculate_killscore,
-		--- @param player ObjectRef
+		--- @param player PlayerRef
 		--- @param teamname Team
 		on_flag_take = function(player, teamname)
 			local pname = player:get_player_name()
