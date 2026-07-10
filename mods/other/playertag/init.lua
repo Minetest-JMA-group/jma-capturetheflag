@@ -219,7 +219,7 @@ end
 
 --- @param player PlayerRef
 --- @param prefix string
-function playertag.set_prefix(player, prefix)
+function playertag.set_nametag_prefix(player, prefix)
 	local pname = player:get_player_name()
 	players[pname].prefix = prefix
 	update(player, players[pname])

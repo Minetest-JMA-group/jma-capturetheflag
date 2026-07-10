@@ -190,7 +190,7 @@ local function update_player_prefix(player)
 	local playertag_settings = playertag.get(player)
 	local current_mode = ctf_modebase:get_current_mode()
 	if playertag_settings and current_mode then
-		playertag.set_prefix(
+		playertag.set_nametag_prefix(
 			player,
 			current_mode.get_player_label(player:get_player_name())
 		)
