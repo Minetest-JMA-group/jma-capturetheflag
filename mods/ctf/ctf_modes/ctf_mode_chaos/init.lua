@@ -93,6 +93,7 @@ ctf_modebase.register_mode("chaos", {
 	get_item_value = function(itemname, teamchest_pos)
 		return 0
 	end,
+	get_player_label = features.get_player_label,
 	get_ranking = features.get_ranking,
 	get_recent_ranking = features.get_recent_ranking,
 	on_new_match = features.on_new_match,

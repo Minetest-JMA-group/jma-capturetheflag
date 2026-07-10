@@ -964,6 +964,11 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		get_recent_ranking = function(pname)
 			return recent_rankings:get(pname) or {}
 		end,
+		--- @param pname PlayerName
+		--- @return string
+		get_player_label = function(pname)
+			return ""
+		end,
 		on_new_match = function()
 			team_list = {}
 			for tname in pairs(ctf_map.current_map.teams) do

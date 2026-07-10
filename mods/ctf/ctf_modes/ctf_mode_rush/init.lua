@@ -445,6 +445,7 @@ ctf_modebase.register_mode("rush", {
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
 	get_ranking = features.get_ranking,
 	get_recent_ranking = features.get_recent_ranking,
+	get_player_label = features.get_player_label,
 	on_mode_start = function()
 		ctf_modebase.bounties.bounty_reward_func =
 			ctf_modebase.bounty_algo.kd.bounty_reward_func
