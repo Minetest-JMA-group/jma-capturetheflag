@@ -239,7 +239,6 @@ local function update_playertag(player, t, nametag, team_nametag, symbol_nametag
 			nametag_players[n] = nil
 			goto continue
 		end
-		update_player_prefix(player_obj)
 		local setting =
 			ctf_settings.get(player_obj, "ctf_modebase:teammate_nametag_style")
 
@@ -277,7 +276,6 @@ local function update_playertags(time)
 			for _, p in pairs(core.get_connected_players()) do
 				local t = ctf_teams.get(p)
 				local playertag2 = playertag.get(p)
-				local current_mode = ctf_modebase:get_current_mode()
 
 				if playertag2 then
 					local team_nametag = playertag2.nametag_entity
@@ -1135,7 +1133,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					end
 				end)
 			end
-			update_playertags(0)
 		end,
 		on_match_end = function()
 			recent_rankings.on_match_end()
