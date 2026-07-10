@@ -212,6 +212,12 @@ core.register_globalstep(function(dtime)
 	end
 end)
 
+--- README! The game uses Luanti's builtin nametag for flag thieves. And entity name
+--- tags for all other players in the game. HOWEVER, there are actually two nametags.
+--- One is the symbol you see above the enemies, and the other is an entity's
+--- nametag which is shown only to teammates. The second entity I think is invisible
+--- and it's there only to use nametag of the object. This took me like 2 hours to
+--- figure it out... --Farooq fkz riseup net
 local function update_playertag(player, t, nametag, team_nametag, symbol_nametag)
 	if
 		not supports_observers(nametag.object)
