@@ -6,7 +6,7 @@ ctf_modebase.values = {}
 --- @param recent number?
 --- @return table
 function ctf_modebase.values.get_ranking(player, recent)
-	recent = nil or 0.0
+	recent = recent or 0.0
 	local complement = 1.0 - recent
 	local current_mode = ctf_modebase:get_current_mode()
 	local ranking = {}
