@@ -510,7 +510,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local player_pvp_val = ctf_modebase.values.get_pvp_score(pname, 0.5)
 		local killer_pvp_val = ctf_modebase.values.get_pvp_score(killer_name, 0.5)
 		local vals_ratio = math.log(1 + player_pvp_val / killer_pvp_val, 2)
-		local score = math.floor(math.max(player_val * (1 + vals_ratio), 1))
+		local score = math.ceil(math.max(player_val * (1 + vals_ratio), 1))
 		if experiment_logs then
 			local score_formatted = string.format("%.0f", score)
 			local player_val_formatted = string.format("%0.2f", player_val)
