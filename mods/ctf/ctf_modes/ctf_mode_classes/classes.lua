@@ -7,7 +7,6 @@ local classes = {}
 
 local S = minetest.get_translator(minetest.get_current_modname())
 
-local class_list = { "knight", "ranged", "support" }
 local class_props = {
 	knight = {
 		name = "Knight",
@@ -74,8 +73,19 @@ local class_props = {
 		},
 	},
 }
+--- @type string[]
+local class_list = {}
 
-minetest.register_on_mods_loaded(function()
+for class_code, _ in pairs(class_props) do
+	table.insert(class_list, class_code)
+end
+
+--- @return string
+local function choose_random_class()
+	return class_list[math.random(#class_list)]
+end
+
+core.register_on_mods_loaded(function()
 	for k, class_prop in pairs(class_props) do
 		local items_markup = ""
 		local disallowed_items_markup = ""
@@ -400,7 +410,7 @@ function classes.get_name(player)
 
 	local cname = meta:get_string("class")
 	if not cname or not class_props[cname] then
-		cname = "knight"
+		cname = choose_random_class()
 		meta:set_string("class", cname)
 	end
 
