@@ -198,19 +198,21 @@ function ctf_modebase.values.calculate_capture_coins(
 	end
 
 	-- If there are other teams, they would likely try to kill the flag
-	-- thief even tho it's not their flag. So we also count them but
-	-- we use logarithmic sum of them. For instance log_sum of
-	-- 5, 2 and 3.5 is ~5.25
+	-- thief even tho it's not their flag. So we also count them use an average
+	-- of all of them, and at the end, divide it by 2.
 
 	--- @type number
-	local other_teams_ratios = 0
+	local other_teams_ratios_sum = 0
+	--- @type number
+	local other_teams_n = 0
 	for _, other_team in pairs(other_teams) do
 		local ratio_other =
 			ctf_modebase.values.compare_team_values(other_team, winner_team)
-		other_teams_ratios = other_teams_ratios + math.exp(math.min(ratio_other, 100))
+		other_teams_ratios_sum = other_teams_ratios_sum + ratio_other
+		other_teams_n = other_teams_n + 1
 	end
-	other_teams_ratios = math.log(other_teams_ratios, math.exp(1))
-	ratios = ratios + other_teams_ratios
+	local average_other = other_teams_ratios_sum / other_teams_n
+	ratios = ratios + average_other / 2
 
 	-- Now we also need active value of the thief which is
 	-- capture skill and pvp skill combined. And we need to
