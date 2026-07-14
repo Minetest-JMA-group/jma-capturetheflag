@@ -65,8 +65,19 @@ ctf_teams.set = ctf_teams.set_player_team
 --- @param player PlayerName
 --- @return Team?
 function ctf_teams.get_player_team(player)
-	return ctf_teams.player_team[player]
+	return ctf_teams.player_team[PlayerName(player)]
 end
+
+-- NOTE: ^ It is inefficient to call PlayerName() every time
+-- to get the player's name, while so many mods already can
+-- give a player name without extra effort. The API should be
+-- changed so it'll accept only a player name. However, changing
+-- all mods is time consuming and also there would be human error.
+-- So I have just changed the LusLS type hint so we'l get warnings/errors
+-- as we develop. This way, we can change the mods slowly.
+-- When there is no mod left which supplies the ObjectRef, we can
+-- change the code to work with only names.
+-- --Farooq fkz riseup net
 
 ctf_teams.get = ctf_teams.get_player_team
 
