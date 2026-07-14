@@ -562,9 +562,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		return score
 	end
 
+	--- @param player PlayerName
+	--- @param killer PlayerName
+	--- @return number
 	local function calculate_killscore(player, killer)
-		local pname = PlayerName(player)
-		local killer_name = PlayerName(killer)
+		local pname = player
+		local killer_name = killer
 		local pteam = ctf_teams.get(pname)
 		if not pteam then
 			return 0
