@@ -228,7 +228,6 @@ function playertag.set_nametag_prefix(player, prefix)
 	players[pname].prefix = prefix
 	--- @type NametagType
 	local nametag_type = players[pname].type
-	core.debug(string.format("Setting prefix %s for player %s", prefix, pname))
 	if nametag_type == TYPE_BUILTIN then
 		player:set_properties({
 			nametag = prefix .. pname,
