@@ -1050,8 +1050,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				else
 					local end_hp = 15
 					local start_hp = 1
-					local start_green = 60
-					local end_green = 183
+					local start_green = 90
+					local end_green = 255
 					local amount_of_green_per_hp =
 						math.ceil((end_green - start_green) / (end_hp - start_hp))
 					if hp <= end_hp then
