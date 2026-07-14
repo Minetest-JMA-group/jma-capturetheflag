@@ -186,10 +186,20 @@ local function supports_observers(x)
 end
 
 --- @param player PlayerRef
-local function update_player_prefix(player)
+local function update_player_nametag_props(player)
 	local playertag_settings = playertag.get(player)
 	local current_mode = ctf_modebase:get_current_mode()
 	if playertag_settings and current_mode then
+		if playertag_settings.type == playertag.TYPE_ENTITY then
+			playertag.set_nametag_color(
+				player,
+				current_mode.get_player_nametag_color(player:get_player_name())
+			)
+			playertag.set_nametag_bgcolor(
+				player,
+				current_mode.get_player_nametag_bgcolor(player:get_player_name())
+			)
+		end
 		playertag.set_nametag_prefix(
 			player,
 			current_mode.get_player_label(player:get_player_name())
@@ -198,17 +208,17 @@ local function update_player_prefix(player)
 end
 
 --- @type number
-local PLAYER_PREFIX_UPDATE_INTERVAL = 2
+local PLAYER_NAMETAG_UPDATE_INTERVAL = 1
 --- @type number
-local player_prefix_timer = 0
+local player_nametag_timer = 0
 core.register_globalstep(function(dtime)
-	player_prefix_timer = player_prefix_timer + dtime
-	if player_prefix_timer < PLAYER_PREFIX_UPDATE_INTERVAL then
+	player_nametag_timer = player_nametag_timer + dtime
+	if player_nametag_timer < PLAYER_NAMETAG_UPDATE_INTERVAL then
 		return
 	end
-	player_prefix_timer = 0
+	player_nametag_timer = 0
 	for _, player in ipairs(core.get_connected_players()) do
-		update_player_prefix(player)
+		update_player_nametag_props(player)
 	end
 end)
 
@@ -1027,20 +1037,49 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			return recent_rankings:get(pname) or {}
 		end,
 		--- @param pname PlayerName
-		--- @return string
-		get_player_label = function(pname)
+		--- @return (table | string)?
+		get_player_nametag_color = function(pname)
 			--- @type number?
 			local hp = hp_tracker[pname]
 			if hp ~= nil then
 				if hp == 0 then
-					return string.format("[%s] ", S("Dead"))
+					return "black"
 				else
-					return string.format("[%d %s] ", hp, S("HP"))
+					local end_hp = 15
+					local start_hp = 1
+					local start_green = 60
+					local end_green = 183
+					local amount_of_green_per_hp =
+						math.ceil((end_green - start_green) / (end_hp - start_hp))
+					if hp <= end_hp then
+						local color = {
+							r = 255,
+							g = math.ceil(amount_of_green_per_hp * hp),
+							b = 0,
+						}
+						return color
+					else
+						return nil
+					end
 				end
 			else
-				return ""
+				return nil
 			end
 		end,
+		--- @param pname PlayerName
+		--- @return string
+		get_player_label = function(pname)
+			for _, thief in pairs(ctf_modebase.flag_taken) do
+				if thief.name == pname then
+					core.debug("Setting HP prefix for the flag thief " .. pname)
+					return string.format("[%d HP] ", hp_tracker[pname])
+				end
+			end
+			return ""
+		end,
+		--- @param pname PlayerName
+		--- @return (table | string)?
+		get_player_nametag_bgcolor = function(pname) end,
 		on_new_match = function()
 			team_list = {}
 			for tname in pairs(ctf_map.current_map.teams) do

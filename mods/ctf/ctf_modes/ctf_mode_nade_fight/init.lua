@@ -217,6 +217,8 @@ ctf_modebase.register_mode("nade_fight", {
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
 	get_player_label = features.get_player_label,
+	get_player_nametag_color = features.get_player_nametag_color,
+	get_player_nametag_bgcolor = features.get_player_nametag_bgcolor,
 	get_ranking = features.get_ranking,
 	get_recent_ranking = features.get_recent_ranking,
 	on_mode_start = function()

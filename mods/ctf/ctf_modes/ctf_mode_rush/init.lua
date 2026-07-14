@@ -446,6 +446,8 @@ ctf_modebase.register_mode("rush", {
 	get_ranking = features.get_ranking,
 	get_recent_ranking = features.get_recent_ranking,
 	get_player_label = features.get_player_label,
+	get_player_nametag_color = features.get_player_nametag_color,
+	get_player_nametag_bgcolor = features.get_player_nametag_bgcolor,
 	on_mode_start = function()
 		ctf_modebase.bounties.bounty_reward_func =
 			ctf_modebase.bounty_algo.kd.bounty_reward_func

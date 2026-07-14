@@ -1,6 +1,9 @@
 local TYPE_BUILTIN = 0
 local TYPE_ENTITY = 1
 
+local DEFAULT_NAMETAG_COLOR = "#EEFFFFDD"
+local DEFAULT_NAMETAG_BGCOLOR = "#0000002D"
+
 --- @alias NametagType 0 | 1
 --- @alias NametagSettings { prefix: string?, type: NametagType?, color: (string | table)?,
 --- symbol_entity_observers: table?, nametag_entity_observers: table?, entity: table?,
@@ -38,8 +41,8 @@ local function add_entity_tag(player, old_observers, readded)
 			ent2:set_observers(old_observers.nametag_entity or {})
 			ent2:set_properties({
 				nametag = prefix .. player_name,
-				nametag_color = "#EEFFFFDD",
-				nametag_bgcolor = "#0000002D",
+				nametag_color = DEFAULT_NAMETAG_BGCOLOR,
+				nametag_bgcolor = DEFAULT_NAMETAG_BGCOLOR,
 			})
 		end
 
@@ -218,20 +221,78 @@ function playertag.get(player)
 end
 
 --- @param player PlayerRef
---- @param prefix string
+--- @param prefix string?
 function playertag.set_nametag_prefix(player, prefix)
 	local pname = player:get_player_name()
+	prefix = prefix or ""
 	players[pname].prefix = prefix
-	local entity = players[pname].nametag_entity
-	--- @type ObjectRef?
-	local object = entity and entity.object
-	if object then
-		object:set_properties({
+	--- @type NametagType
+	local nametag_type = players[pname].type
+	core.debug(string.format("Setting prefix %s for player %s", prefix, pname))
+	if nametag_type == TYPE_BUILTIN then
+		player:set_properties({
 			nametag = prefix .. pname,
 		})
+	else
+		--- @type ObjectRef?
+		local obj = players[pname].nametag_entity and players[pname].nametag_entity.object
+		if obj then
+			obj:set_properties({
+				nametag = prefix .. pname,
+			})
+		end
 	end
 end
 
+--- Effective only for entity nametag(not symbol!)
+--- @param player PlayerRef
+--- @param color (string | table)?
+function playertag.set_nametag_color(player, color)
+	color = color or DEFAULT_NAMETAG_COLOR
+	local pname = player:get_player_name()
+	if players[pname].type == TYPE_ENTITY then
+		players[pname].color = color
+		--- @type ObjectRef?
+		local obj = players[pname].nametag_entity and players[pname].nametag_entity.object
+		if obj then
+			obj:set_properties({
+				nametag_color = color,
+			})
+		end
+	else
+		core.log(
+			"warning",
+			string.format(
+				"Setting nametag color for player %s while their nametag is not entity",
+				pname
+			)
+		)
+	end
+end
+--- Effective only for entity nametag(not symbol!)
+--- @param player PlayerRef
+--- @param color (string | table)?
+function playertag.set_nametag_bgcolor(player, color)
+	color = color or DEFAULT_NAMETAG_BGCOLOR
+	local pname = player:get_player_name()
+	if players[pname].type == TYPE_ENTITY then
+		--- @type ObjectRef?
+		local obj = players[pname].nametag_entity and players[pname].nametag_entity.object
+		if obj then
+			obj:set_properties({
+				nametag_bgcolor = color,
+			})
+		end
+	else
+		core.log(
+			"warning",
+			string.format(
+				"Setting nametag bgcolor for player %s while their nametag is not entity",
+				pname
+			)
+		)
+	end
+end
 --- @return {[PlayerName]: NametagSettings}
 function playertag.get_all()
 	return players
