@@ -155,6 +155,9 @@ function ctf_modebase.values.compare_team_values(team_a, team_b, recent)
 	if #team_b_members > #team_a_members then
 		bigger_team_len = #team_b_members
 	end
+	if #team_a_members == 0 or #team_b_members == 0 then
+		return 1
+	end
 	--- @type number
 	local teams_ratio = 1
 	for i = 1, bigger_team_len do
