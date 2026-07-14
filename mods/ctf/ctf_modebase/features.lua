@@ -1042,12 +1042,15 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- @param pname PlayerName
 		--- @return (table | string)?
 		get_player_nametag_color = function(pname)
+			return nil
+			--[[
 			--- @type number?
 			local hp = hp_tracker[pname]
 			if hp ~= nil then
 				if hp == 0 then
 					return "black"
 				else
+					return nil
 					local end_hp = 15
 					local start_hp = 1
 					local start_green = 90
@@ -1068,6 +1071,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			else
 				return nil
 			end
+		--]]
 		end,
 		--- @param pname PlayerName
 		--- @return string
