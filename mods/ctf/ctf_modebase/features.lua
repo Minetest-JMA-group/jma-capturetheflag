@@ -18,7 +18,7 @@ ctf_api.register_on_new_match(function()
 	update_player_hps()
 end)
 
-local HP_TRACKER_INTERVAL = 2
+local HP_TRACKER_INTERVAL = 1
 local hp_tracker_timer = 0
 core.register_globalstep(function(dtime)
 	hp_tracker_timer = hp_tracker_timer + dtime
