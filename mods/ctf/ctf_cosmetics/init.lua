@@ -16,11 +16,11 @@ function ctf_cosmetics.get_colored_skin(player, color)
 			local texture = ctf_cosmetics.get_clothing_texture(player, clothing)
 
 			if texture then
-				table.insert(extras, append and (#extras + 1) or 1, string.format(
-					"^(%s^[multiply:%s)",
-					texture,
-					clothcolor
-				))
+				table.insert(
+					extras,
+					append and (#extras + 1) or 1,
+					string.format("^(%s^[multiply:%s)", texture, clothcolor)
+				)
 			end
 		end
 	end
@@ -28,15 +28,17 @@ function ctf_cosmetics.get_colored_skin(player, color)
 	return string.format(
 		"%s^(%s^[multiply:%s)^(%s^[multiply:%s)%s",
 		skins.get_skin(player:get_player_name()),
-		ctf_cosmetics.get_clothing_texture(player, "shirt"), color,
-		ctf_cosmetics.get_clothing_texture(player, "pants"), color,
+		ctf_cosmetics.get_clothing_texture(player, "shirt"),
+		color,
+		ctf_cosmetics.get_clothing_texture(player, "pants"),
+		color,
 		table.concat(extras)
 	)
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
 function ctf_cosmetics.get_skin(player)
-	local pteam = ctf_teams.get(player)
+	local pteam = ctf_teams.get(player:get_player_name())
 
 	if player and player.set_properties then
 		player:set_properties({
@@ -49,14 +51,13 @@ end
 
 ---@diagnostic disable-next-line: duplicate-set-field
 function ctf_cosmetics.get_clothing_texture(player, clothing)
-	local texture = PlayerObj(player):get_meta():get_string("ctf_cosmetics_"..clothing)
+	local texture = PlayerObj(player):get_meta():get_string("ctf_cosmetics_" .. clothing)
 
 	if not texture or texture == "" then
-		return "ctf_cosmetics_"..clothing..".png"
+		return "ctf_cosmetics_" .. clothing .. ".png"
 	else
 		return texture
 	end
-
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
@@ -77,7 +78,9 @@ function ctf_cosmetics.set_extra_clothing(player, extra_clothing)
 		current[clothing] = clothingcolor
 	end
 
-	return PlayerObj(player):get_meta():set_string("ctf_cosmetics:extra_clothing", core.serialize(current))
+	return PlayerObj(player)
+		:get_meta()
+		:set_string("ctf_cosmetics:extra_clothing", core.serialize(current))
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
@@ -85,8 +88,8 @@ function ctf_cosmetics.get_extra_clothing(player)
 	local meta = PlayerObj(player):get_meta():get_string("ctf_cosmetics:extra_clothing")
 
 	if meta == "" then
-		return {_unset = true}
+		return { _unset = true }
 	else
-		return core.deserialize(meta) or {_unset = true}
+		return core.deserialize(meta) or { _unset = true }
 	end
 end

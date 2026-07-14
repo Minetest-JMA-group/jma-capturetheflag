@@ -97,7 +97,7 @@ core.register_on_mods_loaded(function()
 
 			ctf_teams.allocate_player(player, true)
 
-			local pteam = ctf_teams.get(player)
+			local pteam = ctf_teams.get(name)
 
 			if not pteam then
 				---@diagnostic disable-next-line: redundant-parameter
@@ -113,10 +113,11 @@ core.register_on_mods_loaded(function()
 	end)
 
 	core.register_on_leaveplayer(function(player, timed_out)
-		local pteam = ctf_teams.get(player)
+		local pname = player:get_player_name(0)
+		local pteam = ctf_teams.get(pname)
 
 		if not pteam then
-			old_leave_func(player:get_player_name(), timed_out)
+			old_leave_func(pname, timed_out)
 		else
 			ctf_teams.remove_online_player(player)
 

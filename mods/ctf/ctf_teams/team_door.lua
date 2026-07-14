@@ -1,5 +1,4 @@
 local S = core.get_translator(core.get_current_modname())
-
 doors.register("ctf_teams:door_steel", {
 	tiles = { { name = "doors_door_steel.png", backface_culling = true } },
 	description = S("Team Door"),
@@ -15,7 +14,8 @@ doors.register("ctf_teams:door_steel", {
 local old_on_place = core.registered_craftitems["ctf_teams:door_steel"].on_place
 core.override_item("ctf_teams:door_steel", {
 	on_place = function(itemstack, placer, pointed_thing)
-		local pteam = ctf_teams.get(placer)
+		local pname = placer:get_player_name()
+		local pteam = ctf_teams.get(pname)
 
 		if pteam then
 			if
@@ -25,7 +25,7 @@ core.override_item("ctf_teams:door_steel", {
 				)
 			then
 				core.chat_send_player(
-					placer:get_player_name(),
+					pname,
 					S("You can only place team doors in your own territory!")
 				)
 				return itemstack
@@ -89,7 +89,7 @@ end
 local old_func = default.can_interact_with_node
 ---@diagnostic disable-next-line: duplicate-set-field
 default.can_interact_with_node = function(player, pos)
-	local pteam = ctf_teams.get(player)
+	local pteam = ctf_teams.get(player:get_player_name())
 	local name = core.get_node(pos).name
 
 	if name:find("ctf_teams:") and pteam then

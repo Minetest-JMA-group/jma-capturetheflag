@@ -31,7 +31,7 @@ local function is_self_landmine(object_ref, pos)
 	if pname == placer then
 		return true -- it's self landmine
 	end
-	if ctf_teams.get(object_ref) == team then
+	if ctf_teams.get(object_ref:get_player_name()) == team then
 		return true -- it's self landmine
 	end
 
@@ -163,7 +163,7 @@ core.register_node("ctf_landmine:landmine", {
 		---@cast placer PlayerRef
 		local meta = core.get_meta(pos)
 		local name = placer:get_player_name()
-		local pteam = ctf_teams.get(placer)
+		local pteam = ctf_teams.get(name)
 		core.after(ARM_TIME, function(landmines, pos, meta, name, pteam)
 			table.insert(landmines, pos)
 			meta:set_string("placer", name)

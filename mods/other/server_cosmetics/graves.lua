@@ -1,11 +1,15 @@
 function server_cosmetics.enable_graves()
 	core.register_on_dieplayer(function(player, reason)
 		if reason.type == "punch" and not server_cosmetics.disable_graves then
-			local team = ctf_teams.get(player)
+			local team = ctf_teams.get(player:get_player_name())
 			local letters = "server_cosmetics_grave_rip.png"
 
 			if team then
-				letters = string.format("(%s^[multiply:%s)", letters, ctf_teams.team[team].color)
+				letters = string.format(
+					"(%s^[multiply:%s)",
+					letters,
+					ctf_teams.team[team].color
+				)
 			end
 
 			core.add_particle({

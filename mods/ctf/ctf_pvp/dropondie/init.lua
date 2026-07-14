@@ -37,7 +37,7 @@ local function drop_list(pos, player, list)
 end
 
 function dropondie.drop_all(player)
-	if not ctf_teams.get(player) then
+	if not ctf_teams.get(player:get_player_name()) then
 		return
 	end
 

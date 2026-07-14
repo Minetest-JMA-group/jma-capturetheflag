@@ -140,9 +140,6 @@ core.register_on_leaveplayer(function(player)
 end)
 
 function ctf_kill_list.add(killer, victim, weapon_image, comment)
-	killer = PlayerName(killer)
-	victim = PlayerName(victim)
-
 	local k_teamcolor = ctf_teams.get(killer)
 	local v_teamcolor = ctf_teams.get(victim)
 

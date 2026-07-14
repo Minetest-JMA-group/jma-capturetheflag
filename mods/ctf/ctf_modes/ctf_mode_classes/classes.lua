@@ -119,7 +119,7 @@ core.register_on_mods_loaded(function()
 end)
 
 local function dist_from_flag(player)
-	local tname = ctf_teams.get(player)
+	local tname = ctf_teams.get(player:get_player_name())
 	if not tname then
 		return 0
 	end
@@ -526,8 +526,8 @@ function classes.show_class_formspec(player)
 		})
 		return
 	end
-
-	local pteam = ctf_teams.get(player)
+	local pname = player:get_player_name()
+	local pteam = ctf_teams.get(pname)
 
 	ctf_gui.show_formspec(player, "ctf_mode_classes:class_form", function(context)
 		local form_x, form_y = 14, 10
@@ -701,7 +701,8 @@ end
 
 function classes.is_restricted_item(player, name)
 	-- Don't check restricted items for players not in a team
-	if not ctf_teams.get(player) then
+	local pname = player:get_player_name()
+	if not ctf_teams.get(pname) then
 		return
 	end
 

@@ -21,16 +21,17 @@ core.override_chatcommand("msg", {
 			return false, "Watch your language!"
 		end
 
-
 		-- Message color
 		local msg_color = core.settings:get("ctf_chat.message_color") or "#E043FF"
 		local sender_msg_color = "#FFFFFF"
 
-		local sender_team   = ctf_teams.get(name)
+		local sender_team = ctf_teams.get(name)
 		local recipient_team = ctf_teams.get(sendto)
 
-		local sender_tcolor   = sender_team   and ctf_teams.team[sender_team].color or "#FFFFFF"
-		local recipient_tcolor = recipient_team and ctf_teams.team[recipient_team].color or "#FFFFFF"
+		local sender_tcolor = sender_team and ctf_teams.team[sender_team].color
+			or "#FFFFFF"
+		local recipient_tcolor = recipient_team and ctf_teams.team[recipient_team].color
+			or "#FFFFFF"
 
 		-- Colorize the recipient‑side message and send it to the recipient
 		local recipient_str = colorize(msg_color, "PM from ")
@@ -42,7 +43,6 @@ core.override_chatcommand("msg", {
 		local sender_str = colorize(sender_msg_color, "Message sent to ")
 		sender_str = sender_str .. colorize(recipient_tcolor, sendto)
 		sender_str = sender_str .. colorize(sender_msg_color, ": " .. message)
-
 
 		core.log(
 			"action",
@@ -159,53 +159,52 @@ local function rush_spectator_format_chat_message(name, message)
 end
 
 core.register_on_chat_message(function(name, message)
-    local rush_api = rawget(_G, "ctf_mode_rush")
+	local rush_api = rawget(_G, "ctf_mode_rush")
 
-    if rush_api and rush_api.is_spectator and rush_api.is_spectator(name) then
+	if rush_api and rush_api.is_spectator and rush_api.is_spectator(name) then
+		if filter_caps then
+			message = filter_caps.parse(name, message)
+		end
 
-        if filter_caps then
-            message = filter_caps.parse(name, message)
-        end
+		if filter and not filter.check_message(message) then
+			filter.on_violation(name, message)
+			core.chat_send_player(name, "Watch your language!")
+			return true
+		end
 
-        if filter and not filter.check_message(message) then
-            filter.on_violation(name, message)
-            core.chat_send_player(name, "Watch your language!")
-            return true
-        end
+		core.log("action", string.format("[CHAT/Spectator] <%s>: %s", name, message))
 
-        core.log("action", string.format("[CHAT/Spectator] <%s>: %s", name, message))
+		local formatted_msg = rush_spectator_format_chat_message(name, message)
+		core.chat_send_all(formatted_msg)
 
-        local formatted_msg = rush_spectator_format_chat_message(name, message)
-        core.chat_send_all(formatted_msg)
+		return true
+	end
 
-        return true
-    end
+	local el_players = ctf_jma_elysium.players
+	if el_players and el_players[name] then
+		if filter and not filter.check_message(message) then
+			filter.on_violation(name, message)
+			core.chat_send_player(name, "Watch your language!")
+			return true
+		end
 
-    local el_players = ctf_jma_elysium.players
-    if el_players and el_players[name] then
-        if filter and not filter.check_message(message) then
-            filter.on_violation(name, message)
-            core.chat_send_player(name, "Watch your language!")
-            return true
-        end
+		core.log("action", string.format("[Elysium Chat]: <%s>: %s", name, message))
+		local formatted_msg = elysium_format_chat_message(name, message)
 
-        core.log("action", string.format("[Elysium Chat]: <%s>: %s", name, message))
-        local formatted_msg = elysium_format_chat_message(name, message)
-
-        for target, _ in pairs(el_players) do
-            core.chat_send_player(target, formatted_msg)
-        end
-        return true
-    end
+		for target, _ in pairs(el_players) do
+			core.chat_send_player(target, formatted_msg)
+		end
+		return true
+	end
 end)
 
 local function rush_spectator_format_chat_message(name, message)
-    local prefixes = format_prefixes(name, "white")
+	local prefixes = format_prefixes(name, "white")
 
-    return core.colorize(SPECTATOR_CHAT_COLOR, "[Spectators] ")
-        .. prefixes
-        .. core.colorize(SPECTATOR_CHAT_COLOR, "<" .. name .. "> ")
-        .. message
+	return core.colorize(SPECTATOR_CHAT_COLOR, "[Spectators] ")
+		.. prefixes
+		.. core.colorize(SPECTATOR_CHAT_COLOR, "<" .. name .. "> ")
+		.. message
 end
 
 core.register_chatcommand("g", {

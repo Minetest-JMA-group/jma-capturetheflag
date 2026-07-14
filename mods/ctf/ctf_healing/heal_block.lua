@@ -41,7 +41,7 @@ core.register_node("ctf_healing:heal_block", {
 		if not placer then
 			return
 		end
-		local pteam = ctf_teams.get(placer)
+		local pteam = ctf_teams.get(placer:get_player_name())
 		if pteam then
 			if
 				not ctf_core.pos_inside(
@@ -73,7 +73,7 @@ core.register_node("ctf_healing:heal_block", {
 		if not placer then
 			return
 		end
-		local pteam = ctf_teams.get(placer)
+		local pteam = ctf_teams.get(placer:get_player_name())
 		if pteam then
 			core.get_meta(pos):set_string("team", pteam)
 		end
@@ -114,12 +114,12 @@ core.register_node("ctf_healing:heal_block", {
 		if ctf_modebase.match_start_time == nil then
 			return
 		end
-		---@cast digger PlayerRef
-		local block_team = oldmetadata.fields.team
-		local player_team = ctf_teams.get(digger)
-
 		--- @type PlayerName
 		local dname = digger:get_player_name()
+		---@cast digger PlayerRef
+		local block_team = oldmetadata.fields.team
+		local player_team = ctf_teams.get(dname)
+
 		-- Only award points if player breaks enemy team's heal block
 		if block_team and player_team and block_team ~= player_team then
 			local cur_mode = ctf_modebase:get_current_mode()

@@ -230,7 +230,7 @@ ctf_modebase.register_mode("classes", {
 
 		---@diagnostic disable-next-line: duplicate-set-field
 		ctf_cosmetics.get_skin = function(player)
-			if not ctf_teams.get(player) then
+			if not ctf_teams.get(player:get_player_name()) then
 				return old_get_skin(player)
 			end
 
