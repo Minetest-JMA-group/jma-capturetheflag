@@ -214,8 +214,10 @@ function ctf_modebase.values.calculate_capture_coins(
 		other_teams_ratios_sum = other_teams_ratios_sum + ratio_other
 		other_teams_n = other_teams_n + 1
 	end
-	local average_other = other_teams_ratios_sum / other_teams_n
-	ratios = ratios + average_other / 2
+	if other_teams_n > 0 then
+		local average_other = other_teams_ratios_sum / other_teams_n
+		ratios = ratios + average_other / 2
+	end
 
 	-- Now we also need active value of the thief which is
 	-- capture skill and pvp skill combined. And we need to
