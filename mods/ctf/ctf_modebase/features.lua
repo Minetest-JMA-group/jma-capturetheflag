@@ -1071,7 +1071,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		get_player_label = function(pname)
 			for _, thief in pairs(ctf_modebase.flag_taken) do
 				if thief.name == pname then
-					core.debug("Setting HP prefix for the flag thief " .. pname)
 					return string.format("[%d HP] ", hp_tracker[pname])
 				end
 			end
