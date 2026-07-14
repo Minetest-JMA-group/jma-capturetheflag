@@ -11,9 +11,15 @@ local function drop_list(pos, player, list)
 		if item_name == "" or not item_def or item_def.groups.non_dropable then
 			goto continue
 		end
-		if core.registered_items[item:get_name()].stack_max == 1 then
+		--- @type ItemStackMetaRef
+		local meta = item:get_meta()
+		--- @type string
+		local current_dropped_by = meta:get_string("dropped_by") or ""
+		if
+			core.registered_items[item:get_name()].stack_max == 1
+			and current_dropped_by ~= ""
+		then
 			if is_player then
-				local meta = item:get_meta()
 				meta:set_string("dropped_by", pname)
 			end
 		end
