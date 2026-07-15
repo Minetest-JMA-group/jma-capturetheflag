@@ -1043,35 +1043,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- @return (table | string)?
 		get_player_nametag_color = function(pname)
 			return nil
-			--[[
-			--- @type number?
-			local hp = hp_tracker[pname]
-			if hp ~= nil then
-				if hp == 0 then
-					return "black"
-				else
-					return nil
-					local end_hp = 15
-					local start_hp = 1
-					local start_green = 90
-					local end_green = 255
-					local amount_of_green_per_hp =
-						math.ceil((end_green - start_green) / (end_hp - start_hp))
-					if hp <= end_hp then
-						local color = {
-							r = 255,
-							g = math.ceil(amount_of_green_per_hp * hp),
-							b = 0,
-						}
-						return color
-					else
-						return nil
-					end
-				end
-			else
-				return nil
-			end
-		--]]
 		end,
 		--- @param pname PlayerName
 		--- @return string
@@ -1080,6 +1051,25 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				if thief.name == pname then
 					return string.format("[%d HP] ", hp_tracker[pname])
 				end
+			end
+			local hp = hp_tracker[pname]
+			if hp then
+				local ch = nil
+				if hp == 0 then
+					ch = "Dead"
+				elseif hp <= 15 then
+					if hp <= 5 then
+						ch = "!!!"
+					elseif hp <= 10 then
+						ch = "!!"
+					else
+						ch = "!"
+					end
+				end
+				if ch then
+					return string.format("[%s] ", ch)
+				end
+			else
 			end
 			return ""
 		end,
