@@ -91,10 +91,13 @@ function ctf_modebase.start_match_after_map_vote()
 
 		--- @type { [PlayerName]: boolean }
 		local players_to_assign = {}
+		--- @type integer
+		local players_num = 0
 		for _, player in ipairs(core.get_connected_players()) do
 			local pname = player:get_player_name()
 			if pname ~= "" and not ctf_teams.non_team_players[pname] then
 				players_to_assign[pname] = true
+				players_num = players_num + 1
 			end
 		end
 
@@ -234,6 +237,8 @@ function ctf_modebase.start_match_after_map_vote()
 		)
 
 		if experiment_logs then
+			--- @type integer
+			local assigned_players = 0
 			-- Now we announce it to the chat. Let's receive comments
 			-- and feedback from the player
 			--- @type string[]
@@ -244,15 +249,26 @@ function ctf_modebase.start_match_after_map_vote()
 				end
 				for _, p_val in ipairs(team) do
 					teams_str[index] = teams_str[index] .. " " .. p_val.pname
+					assigned_players = assigned_players + 1
 				end
 			end
 			local final_str = ""
 			for _, str in ipairs(teams_str) do
 				final_str = final_str .. str .. "\n"
 			end
+			local prefix = ""
+			if assigned_players ~= players_to_assign then
+				prefix =
+					string.format("[a%d,to-a%d] ", assigned_players, players_to_assign)
+				core.log(
+					"error",
+					"[NEW TEAM ALLOC] assigned players and players to assign are not equal: "
+						.. prefix
+				)
+			end
 			experiment_logs.log(
 				"new_team_alloc",
-				"New allocation would've been:\n" .. final_str,
+				prefix .. "New allocation would've been:\n" .. final_str,
 				"|team_players|"
 			)
 		end
