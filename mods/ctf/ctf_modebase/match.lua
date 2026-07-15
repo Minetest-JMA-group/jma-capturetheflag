@@ -257,9 +257,8 @@ function ctf_modebase.start_match_after_map_vote()
 				final_str = final_str .. str .. "\n"
 			end
 			local prefix = ""
-			if assigned_players ~= players_to_assign then
-				prefix =
-					string.format("[a%d,to-a%d] ", assigned_players, players_to_assign)
+			if assigned_players ~= players_num then
+				prefix = string.format("[a%d,to-a%d] ", assigned_players, players_num)
 				core.log(
 					"error",
 					"[NEW TEAM ALLOC] assigned players and players to assign are not equal: "
