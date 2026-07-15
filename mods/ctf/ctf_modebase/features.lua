@@ -7,9 +7,9 @@ local hp_tracker = {}
 
 local function update_player_hps()
 	for _, pname in ipairs(ctf_teams.get_all_team_players()) do
-		--- @type PlayerRef
+		--- @type PlayerRef?
 		local player = core.get_player_by_name(pname)
-		hp_tracker[pname] = player:get_hp()
+		hp_tracker[pname] = player and player:get_hp()
 	end
 end
 
