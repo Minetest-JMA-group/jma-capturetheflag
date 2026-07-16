@@ -4,8 +4,8 @@ arsdragonfly@gmail.com
 6/19/2013
 --]]
 
-local MAP_SUBMISSION_URL = "https://discord.gg/KuUXcBuG5M"
-local DISCORD_SERVER = "tinyurl.com/jma-discord"
+local MAP_SUBMISSION_URL = "https://discord.gg/JxQuyTHEjQ"
+local DISCORD_SERVER = "https://discord.gg/JxQuyTHEjQ"
 
 local S = core.get_translator(core.get_current_modname())
 
