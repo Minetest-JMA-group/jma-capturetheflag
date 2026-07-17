@@ -17,7 +17,7 @@ local function drop_list(pos, player, list)
 		local current_dropped_by = meta:get_string("dropped_by") or ""
 		if
 			core.registered_items[item:get_name()].stack_max == 1
-			and current_dropped_by ~= ""
+			and current_dropped_by == ""
 		then
 			if is_player then
 				meta:set_string("dropped_by", pname)
