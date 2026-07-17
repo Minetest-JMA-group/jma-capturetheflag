@@ -129,6 +129,37 @@ local function dist_from_self_flag(player)
 	return vector.distance(ctf_map.current_map.teams[tname].flag_pos, player:get_pos())
 end
 
+--- @param player PlayerRef
+--- @return number?
+local function closest_dist_from_enemy_flag(player)
+	--- @type number?
+	local closest_dist = nil
+	--- @type PlayerName
+	local pname = player:get_player_name()
+	--- @type Team?
+	local pteam = ctf_teams.get(pname)
+	if not pteam then
+		return
+	end
+	local current_map = ctf_map.current_map
+	if not current_map then
+		return
+	end
+	--- @type Vec3
+	local p_pos = player:get_pos()
+	for team, team_prop in pairs(current_map.teams) do
+		if team ~= pteam then
+			local distance = vector.distance(team_prop.flag_pos, p_pos)
+			if closest_dist == nil then
+				closest_dist = distance
+			elseif closest_dist > distance then
+				closest_dist = distance
+			end
+		end
+	end
+	return closest_dist
+end
+
 --
 --- Knight Sword
 --
@@ -353,38 +384,43 @@ function ctf_mode_classes.bandage_rightclick(itemstack, user, pointed)
 	end
 
 	local pname = user:get_player_name()
-
-	if itemstack:get_wear() == 0 then
-		if ctf_modebase.taken_flags[pname] then
-			hud_events.new(user, {
-				quick = true,
-				text = "You can't become immune while holding the flag",
-				color = "warning",
-			})
-			return
-		end
-
-		ctf_modebase.give_immunity(user)
-
-		local step = math.floor(65534 / IMMUNITY_TIME)
-		ctf_modebase.update_wear.start_update(
-			pname,
-			itemstack,
-			step,
-			false,
-			function(item_id)
-				ctf_modebase.remove_immunity(user)
-				local dstep = math.floor(65534 / IMMUNITY_COOLDOWN)
-				ctf_modebase.update_wear.start_update(pname, itemstack, dstep, true)
-			end,
-			function()
-				ctf_modebase.remove_immunity(user)
-			end
-		)
-
-		itemstack:set_wear(1)
+	if itemstack:get_wear() > 0 then
 		return itemstack
 	end
+
+	if ctf_modebase.taken_flags[pname] then
+		hud_events.new(user, {
+			quick = true,
+			text = "You can't become immune while holding the flag",
+			color = "warning",
+		})
+		return
+	end
+
+	--- @type number?
+	local dist_from_enemy_flag = closest_dist_from_enemy_flag(user)
+	if dist_from_enemy_flag and dist_from_enemy_flag <= 12 then
+		hud_events.new(user, {
+			quick = true,
+			text = S("You can't enable immunity too close to an enemy flag"),
+			color = "warning",
+		})
+		return
+	end
+
+	ctf_modebase.give_immunity(user)
+
+	local step = math.floor(65534 / IMMUNITY_TIME)
+	ctf_modebase.update_wear.start_update(pname, itemstack, step, false, function(_)
+		ctf_modebase.remove_immunity(user)
+		local dstep = math.floor(65534 / IMMUNITY_COOLDOWN)
+		ctf_modebase.update_wear.start_update(pname, itemstack, dstep, true)
+	end, function()
+		ctf_modebase.remove_immunity(user)
+	end)
+
+	itemstack:set_wear(1)
+	return itemstack
 end
 
 ctf_healing.register_bandage("ctf_mode_classes:support_bandage", {
