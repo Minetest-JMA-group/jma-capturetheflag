@@ -289,7 +289,7 @@ ctf_ranged.simple_register_gun("ctf_mode_classes:ranged_rifle", {
 	on_use = ctf_ranged.on_hit_damage(5),
 	fire_interval = 0.6,
 	liquid_travel_dist = 4,
-	rightclick_func = function(itemstack, user, pointed)
+	rightclick_func = function(itemstack, user, _)
 		local ctl = user:get_player_control()
 
 		if not ctl.sneak and not ctl.aux1 then
@@ -375,7 +375,7 @@ local IMMUNITY_TIME = 6
 local IMMUNITY_COOLDOWN = 28
 local HEAL_PERCENT = 0.8
 
-function ctf_mode_classes.bandage_rightclick(itemstack, user, pointed)
+function ctf_mode_classes.bandage_rightclick(itemstack, user, _)
 	if ctf_settings.get(user, "ctf_mode_classes:simple_support_activate") ~= "true" then
 		local ctl = user:get_player_control()
 		if not ctl.sneak and not ctl.aux1 then
@@ -492,7 +492,7 @@ function classes.update(player)
 end
 
 classes.registered_on_class_change = {}
----@param func(player, class, oldclass)
+---@param func(player: PlayerRef, class: string, oldclass: string)
 function classes.register_on_class_change(func)
 	table.insert(classes.registered_on_class_change, func)
 end
@@ -600,7 +600,7 @@ function classes.show_class_formspec(player)
 				ctf_cosmetics.get_colored_skin(
 					context.player,
 					context.pteam and ctf_teams.team[context.pteam].color
-				) .. context.classes.get_skin_overlay(class, true) or "",
+				) .. (context.classes.get_skin_overlay(class, true) or ""),
 			},
 			{
 				[[hypertext[%f,1.2;%f,%f;info;<global margin=20 font=mono background=#00000044>
