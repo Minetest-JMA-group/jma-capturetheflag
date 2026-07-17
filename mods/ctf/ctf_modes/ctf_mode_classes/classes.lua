@@ -118,7 +118,9 @@ core.register_on_mods_loaded(function()
 	end
 end)
 
-local function dist_from_flag(player)
+--- @param player PlayerRef
+--- @return number
+local function dist_from_self_flag(player)
 	local tname = ctf_teams.get(player:get_player_name())
 	if not tname then
 		return 0
@@ -492,7 +494,7 @@ local function select_class(player, classname)
 		return
 	end
 
-	if ctf_modebase.current_mode == "classes" and dist_from_flag(player) <= 5 then
+	if ctf_modebase.current_mode == "classes" and dist_from_self_flag(player) <= 5 then
 		cooldowns:set(player, CLASS_SWITCH_COOLDOWN)
 		classes.set(player, classname)
 	end
@@ -518,7 +520,7 @@ function classes.show_class_formspec(player)
 		return
 	end
 
-	if dist_from_flag(player) > 5 then
+	if dist_from_self_flag(player) > 5 then
 		hud_events.new(player, {
 			quick = true,
 			text = S("You can only change class at your flag!"),
@@ -682,7 +684,7 @@ function classes.show_class_formspec(player)
 				end
 
 				if fields["select_" .. class] then
-					if dist_from_flag(player) > 5 then
+					if dist_from_self_flag(player) > 5 then
 						hud_events.new(player, {
 							quick = true,
 							text = "You can only change class at your flag!",
