@@ -13,6 +13,49 @@ local shoot_cooldown = ctf_core.init_cooldowns()
 --- hud: boolean,
 --- physics_override: string}
 
+--- @alias ItemString string
+
+--- @alias Bullet {
+--- texture: string,
+--- glow: number,
+--- spread: number?,
+--- particle_speed: number? }
+
+--- @alias OnHitCallbacks { on_teammate_hit: OnHitCallback, on_enemy_hit: OnHitCallback }
+
+--- @alias OnHitCallback fun(
+--- hitpoint: HitPoint,
+--- prev_hitpoint: HitPoint?,
+--- shooter: ObjectRef,
+--- look_dir: Vector,
+--- def: GunDef,
+--- callbacks: OnHitCallbacks?): boolean
+
+--- @alias OnUseCallback fun(bulletcast: any, shooter: ObjectRef, look_dir: Vector, def: GunDef)
+--- @alias CanUseCallback fun(itemstack: string, shooter: ObjectRef): boolean
+
+--- @alias GunDef {
+--- ammo: ItemString,
+--- texture: string,
+--- description: string,
+--- bullethole_lifetime: number?,
+--- type: string,
+--- tier: number,
+--- rounds: number,
+--- texture_overlay: string,
+--- wield_texture: string?,
+--- on_use: fun(player: ObjectRef),
+--- on_secondary_use: fun(player: ObjectRef),
+---	fire_interval: number,
+---	fire_sound: string,
+---	range: number,
+---	bullet: Bullet,
+---	automatic: boolean?,
+---	rightclick_func: ItemSecondaryUse,
+---	liquid_travel_dist: number?,
+---	can_use: CanUseCallback?,
+--- on_use:  OnUseCallback}
+
 ctf_ranged = {
 	--- @type { [PlayerName]: ScopedThing }
 	scoped = {},
@@ -287,45 +330,6 @@ end
 function ctf_ranged.can_use_gun(player, name)
 	return true
 end
-
---- @alias ItemString string
---- @alias Bullet {
---- texture: string,
---- glow: number,
---- spread: number?,
---- particle_speed: number? }
---- @alias OnHitCallbacks { on_teammate_hit: OnHitCallback, on_enemy_hit: OnHitCallback }
---- @alias OnHitCallback fun(
---- hitpoint: HitPoint,
---- prev_hitpoint: HitPoint?,
---- shooter: ObjectRef,
---- look_dir: Vector,
---- def: GunDef,
---- callbacks: OnHitCallbacks?): boolean
---- @alias OnUseCallback fun(bulletcast: any, shooter: ObjectRef, look_dir: Vector, def: GunDef)
---- @alias CanUseCallback fun(itemstack: string, shooter: ObjectRef): boolean
---- @alias GunDef {
---- ammo: ItemString,
---- texture: string,
---- description: string,
---- bullethole_lifetime: number?,
---- type: string,
---- tier: number,
---- rounds: number,
---- texture_overlay: string,
---- wield_texture: string?,
---- on_use: fun(player: ObjectRef),
---- on_secondary_use: fun(player: ObjectRef),
----	fire_interval: number,
----	fire_sound: string,
----	range: number,
----	bullet: Bullet,
----	automatic: boolean?,
----	rightclick_func: fun(itemstack: ItemStack, user: ObjectRef, Pointed: any, ...),
----	liquid_travel_dist: number?,
----	can_use: CanUseCallback?,
---- on_use:  OnUseCallback}
-
 --- @param name string
 --- @param def GunDef
 function ctf_ranged.simple_register_gun(name, def)
@@ -418,7 +422,7 @@ function ctf_ranged.simple_register_gun(name, def)
 		end
 
 		if def.rightclick_func then
-			loaded_def.on_place = function(itemstack, user, pointed, ...)
+			loaded_def.on_place = function(itemstack, user, pointed)
 				local pointed_def
 				local node
 
@@ -430,7 +434,7 @@ function ctf_ranged.simple_register_gun(name, def)
 				if pointed_def and pointed_def.on_rightclick then
 					return core.item_place(itemstack, user, pointed)
 				else
-					return def.rightclick_func(itemstack, user, pointed, ...)
+					return def.rightclick_func(itemstack, user, pointed)
 				end
 			end
 
@@ -584,13 +588,13 @@ end
 --- @param amount number
 --- @return OnUseCallback
 function ctf_ranged.on_hit_damage(amount)
-	local function on_enemy_hit(hitpoint, prev_hitpoint, shooter, look_dir, def)
+	local function on_enemy_hit(hitpoint, _, shooter, look_dir, def)
 		change_hp(hitpoint, shooter, def, look_dir, -amount)
 		core.sound_play({
 			name = "ctf_ranged_hit",
 		}, { pos = hitpoint.ref:get_pos(), max_hear_distance = 4 }, true)
 	end
-	local function on_teammate_hit(hitpoint, prev_hitpoint, shooter, look_dir, def) end
+	local function on_teammate_hit() end
 	return ctf_ranged.on_hp_change_gun_use(on_teammate_hit, on_enemy_hit)
 end
 
@@ -604,7 +608,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
 	automatic = true,
 	fire_interval = 0.6,
 	liquid_travel_dist = 2,
-	rightclick_func = function(itemstack, user, pointed, ...)
+	rightclick_func = function(itemstack, user, _)
 		if scoped[user:get_player_name()] then
 			ctf_ranged.hide_scope(user:get_player_name())
 		else
@@ -670,7 +674,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:assault_rifle", {
 	on_use = ctf_ranged.on_hit_damage(2),
 	fire_interval = 0.1,
 	liquid_travel_dist = 3,
-	rightclick_func = function(itemstack, user, pointed, ...)
+	rightclick_func = function(itemstack, user, _)
 		if scoped[user:get_player_name()] then
 			ctf_ranged.hide_scope(user:get_player_name())
 		else
@@ -723,7 +727,7 @@ ctf_api.register_on_match_end(function()
 	end
 end)
 
-core.register_on_leaveplayer(function(player, timed_out)
+core.register_on_leaveplayer(function(player, _)
 	if minigun_is_in_shooting(player) then
 		minigun_exit_shooting_mode(player)
 	end
@@ -741,7 +745,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:minigun", {
 	rounds = 100,
 	range = 80,
 	ammo = "ctf_ranged:ammo 4",
-	can_use = function(itemstack, shooter)
+	can_use = function(_, shooter)
 		return minigun_is_in_shooting(shooter)
 	end,
 	on_use = function(rays, shooter, look_dir, def)
@@ -751,7 +755,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:minigun", {
 	end,
 	fire_interval = 0.07,
 	liquid_travel_dist = 20,
-	rightclick_func = function(itemstack, user, pointed, ...)
+	rightclick_func = function(_, user, _)
 		core.after(MINIGUN_MODE_CHANGE_DELAY, function(user2)
 			if minigun_is_in_shooting(user2) then
 				minigun_exit_shooting_mode(user2)
@@ -772,7 +776,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper", {
 	on_use = ctf_ranged.on_hit_damage(12),
 	fire_interval = 2,
 	liquid_travel_dist = 10,
-	rightclick_func = function(itemstack, user, pointed, ...)
+	rightclick_func = function(itemstack, user, _)
 		if scoped[user:get_player_name()] then
 			ctf_ranged.hide_scope(user:get_player_name())
 		else
@@ -792,7 +796,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
 	on_use = ctf_ranged.on_hit_damage(16),
 	fire_interval = 2,
 	liquid_travel_dist = 15,
-	rightclick_func = function(itemstack, user, pointed, ...)
+	rightclick_func = function(itemstack, user, _)
 		if scoped[user:get_player_name()] then
 			ctf_ranged.hide_scope(user:get_player_name())
 		else
