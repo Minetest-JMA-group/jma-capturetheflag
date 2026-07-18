@@ -184,7 +184,7 @@ ctf_modebase.register_mode("classes", {
 		"default:wood 80",
 		"ctf_map:damage_cobble 35",
 		"ctf_map:damage_glass 35",
-		"ctf_map:reinforced_cobble 35",
+		"ctf_map:reinforced_cobble 60",
 		"default:torch 30",
 		"ctf_teams:door_steel 2",
 		"ctf_healing:heal_block",
