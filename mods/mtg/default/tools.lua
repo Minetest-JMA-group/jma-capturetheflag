@@ -27,7 +27,7 @@ core.override_item("", {
 --
 
 core.register_tool("default:pick_wood", {
-	description = S("Wooden Pickaxe"),
+	description = S("Wooden Pickaxe") .. "\n" .. S("Dmg: 2 FR: 1.2s"),
 	inventory_image = "default_tool_woodpick.png",
 	tool_capabilities = {
 		full_punch_interval = 1.2,
@@ -42,7 +42,7 @@ core.register_tool("default:pick_wood", {
 })
 
 core.register_tool("default:pick_stone", {
-	description = S("Stone Pickaxe"),
+	description = S("Stone Pickaxe") .. "\n" .. S("Dmg: 3 FR: 1.3s"),
 	inventory_image = "default_tool_stonepick.png",
 	tool_capabilities = {
 		full_punch_interval = 1.3,
@@ -57,7 +57,7 @@ core.register_tool("default:pick_stone", {
 })
 
 core.register_tool("default:pick_bronze", {
-	description = S("Bronze Pickaxe"),
+	description = S("Bronze Pickaxe") .. "\n" .. S("Dmg: 4 FR: 1.0s"),
 	inventory_image = "default_tool_bronzepick.png",
 	tool_capabilities = {
 		full_punch_interval = 1.0,
@@ -76,7 +76,7 @@ core.register_tool("default:pick_bronze", {
 })
 
 core.register_tool("default:pick_steel", {
-	description = S("Steel Pickaxe"),
+	description = S("Steel Pickaxe") .. "\n" .. S("Dmg: 4 FR: 1.0s"),
 	inventory_image = "default_tool_steelpick.png",
 	tool_capabilities = {
 		full_punch_interval = 1.0,
@@ -95,7 +95,7 @@ core.register_tool("default:pick_steel", {
 })
 
 core.register_tool("default:pick_mese", {
-	description = S("Mese Pickaxe"),
+	description = S("Mese Pickaxe") .. "\n" .. S("Dmg: 5 FR: 0.9s"),
 	inventory_image = "default_tool_mesepick.png",
 	tool_capabilities = {
 		full_punch_interval = 0.9,
@@ -114,7 +114,7 @@ core.register_tool("default:pick_mese", {
 })
 
 core.register_tool("default:pick_diamond", {
-	description = S("Diamond Pickaxe"),
+	description = S("Diamond Pickaxe") .. "\n" .. S("Dmg: 5 FR: 0.9s"),
 	inventory_image = "default_tool_diamondpick.png",
 	tool_capabilities = {
 		full_punch_interval = 0.9,
@@ -137,7 +137,7 @@ core.register_tool("default:pick_diamond", {
 --
 
 core.register_tool("default:shovel_wood", {
-	description = S("Wooden Shovel"),
+	description = S("Wooden Shovel") .. "\n" .. S("Dmg: 2 FR: 1.2s"),
 	inventory_image = "default_tool_woodshovel.png",
 	wield_image = "default_tool_woodshovel.png^[transformR90",
 	tool_capabilities = {
@@ -157,7 +157,7 @@ core.register_tool("default:shovel_wood", {
 })
 
 core.register_tool("default:shovel_stone", {
-	description = S("Stone Shovel"),
+	description = S("Stone Shovel") .. "\n" .. S("Dmg: 2 FR: 1.4s"),
 	inventory_image = "default_tool_stoneshovel.png",
 	wield_image = "default_tool_stoneshovel.png^[transformR90",
 	tool_capabilities = {
@@ -177,7 +177,7 @@ core.register_tool("default:shovel_stone", {
 })
 
 core.register_tool("default:shovel_bronze", {
-	description = S("Bronze Shovel"),
+	description = S("Bronze Shovel") .. "\n" .. S("Dmg: 3 FR: 1.1s"),
 	inventory_image = "default_tool_bronzeshovel.png",
 	wield_image = "default_tool_bronzeshovel.png^[transformR90",
 	tool_capabilities = {
@@ -197,7 +197,7 @@ core.register_tool("default:shovel_bronze", {
 })
 
 core.register_tool("default:shovel_steel", {
-	description = S("Steel Shovel"),
+	description = S("Steel Shovel") .. "\n" .. S("Dmg: 3 FR: 1.1s"),
 	inventory_image = "default_tool_steelshovel.png",
 	wield_image = "default_tool_steelshovel.png^[transformR90",
 	tool_capabilities = {
@@ -217,7 +217,7 @@ core.register_tool("default:shovel_steel", {
 })
 
 core.register_tool("default:shovel_mese", {
-	description = S("Mese Shovel"),
+	description = S("Mese Shovel") .. "\n" .. S("Dmg: 4 FR: 1.0s"),
 	inventory_image = "default_tool_meseshovel.png",
 	wield_image = "default_tool_meseshovel.png^[transformR90",
 	tool_capabilities = {
@@ -237,7 +237,7 @@ core.register_tool("default:shovel_mese", {
 })
 
 core.register_tool("default:shovel_diamond", {
-	description = S("Diamond Shovel"),
+	description = S("Diamond Shovel") .. "\n" .. S("Dmg: 4 FR: 1.0s"),
 	inventory_image = "default_tool_diamondshovel.png",
 	wield_image = "default_tool_diamondshovel.png^[transformR90",
 	tool_capabilities = {
