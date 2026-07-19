@@ -179,6 +179,21 @@ return {
 		author = "DrEpicGTM",
 		texture = "character_nfl_player.png",
 	},
+	[47] = {
+		name = "Flagalorian",
+		author = "DrEpicGTM",
+		texture = "character_flagalorian.png",
+	},
+	[48] = {
+		name = "Test Dummy",
+		author = "DrEpicGTM",
+		texture = "character_test_dummy.png",
+	},
+	[49] = {
+		name = "Lava Warden",
+		author = "DrEpicGTM",
+		texture = "character_lava_warden.png",
+	},
 
 	-- Add new skins here with higher IDs (max 199) --
 }
