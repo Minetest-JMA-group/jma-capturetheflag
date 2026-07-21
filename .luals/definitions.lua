@@ -202,3 +202,6 @@ function math.isfinite(x) end
 
 ---@class ItemStackMetaRef : MetaData
 ---@alias player PlayerRef
+
+---@alias ItemSecondaryUse fun(itemstack: ItemStack, user: ObjectRef, pointed: any):
+---ItemStack?
