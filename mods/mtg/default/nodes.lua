@@ -2608,7 +2608,11 @@ local function register_sign(material, desc, def)
 				core.chat_send_player(player_name, S("Text too long"))
 				return
 			end
-			text = text:gsub("[%z-\8\11-\31\127]", "") -- strip naughty control characters (keeps \t and \n)
+            text = text:gsub("[%z-\8\11-\31\127]", "") -- strip naughty control characters (keeps \t and \n)
+			if core.global_exists("filter") and not filter.check_message(text) then
+				filter.on_violation(player_name, text)
+				return
+			end
 			default.log_player_action(sender, ("wrote %q to the sign at"):format(text), pos)
 			local meta = core.get_meta(pos)
 			meta:set_string("text", text)
