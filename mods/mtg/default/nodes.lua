@@ -2600,6 +2600,11 @@ local function register_sign(material, desc, def)
 				core.record_protection_violation(pos, player_name)
 				return
 			end
+			if core.global_exists("simplemod") and simplemod.is_muted(player_name) then
+				core.chat_send_player(player_name,
+				S("You are muted and cannot write on signs."))
+				return
+			end
 			local text = fields.text
 			if not text then
 				return
