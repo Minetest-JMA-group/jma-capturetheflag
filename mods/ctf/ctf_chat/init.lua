@@ -180,7 +180,7 @@ core.register_on_chat_message(function(name, message)
 		return true
 	end
 
-	local el_players = ctf_jma_elysium.players
+	local el_players = ctf_jma_elysium and ctf_jma_elysium.players
 	if el_players and el_players[name] then
 		if filter and not filter.check_message(message) then
 			filter.on_violation(name, message)
@@ -217,7 +217,7 @@ core.register_chatcommand("g", {
 
 		core.log("action", string.format("[Global Chat]: <%s>: %s", name, message))
 
-		if ctf_jma_elysium.players[name] then
+		if ctf_jma_elysium and ctf_jma_elysium.players[name] then
 			core.chat_send_all(elysium_format_chat_message(name, message))
 			return true, "Message sent to the global chat."
 		end
