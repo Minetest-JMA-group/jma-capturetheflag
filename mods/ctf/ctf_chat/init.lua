@@ -198,15 +198,6 @@ core.register_on_chat_message(function(name, message)
 	end
 end)
 
-local function rush_spectator_format_chat_message(name, message)
-	local prefixes = format_prefixes(name, "white")
-
-	return core.colorize(SPECTATOR_CHAT_COLOR, "[Spectators] ")
-		.. prefixes
-		.. core.colorize(SPECTATOR_CHAT_COLOR, "<" .. name .. "> ")
-		.. message
-end
-
 core.register_chatcommand("g", {
 	params = "msg",
 	description = "Send a message to the global chat",
