@@ -1012,7 +1012,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local pname, hname = player:get_player_name(), hitter:get_player_name()
 		local pteam, hteam = ctf_teams.get(pname), ctf_teams.get(hname)
 
-		if not ctf_modebase.remove_respawn_immunity(hitter) then
+		--Do not return if it's respawn immunity, this is handled by features.on_punchplayer
+		if ctf_modebase.is_immune(hitter) and not ctf_modebase.is_respawn_immunity(hitter) then
 			return false, S("You can't attack while immune")
 		end
 
@@ -1815,6 +1816,14 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		on_punchplayer = function(player, hitter, damage, _, tool_capabilities)
 			if not hitter:is_player() or player:get_hp() <= 0 then
 				return
+			end
+
+			-- Remove respawn immunity when punching another player which isnt a teammate
+			if ctf_modebase.is_respawn_immunity(hitter) then
+				local pteam, hteam = ctf_teams.get(player), ctf_teams.get(hitter)
+				if pteam ~= hteam then
+					ctf_modebase.remove_respawn_immunity(hitter)
+				end
 			end
 
 			local allowed, message = can_punchplayer(player, hitter)

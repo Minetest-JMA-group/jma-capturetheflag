@@ -10,6 +10,16 @@ function ctf_modebase.is_immune(player)
 	return immune_players[PlayerName(player)] ~= nil
 end
 
+--- return true if it's respawn immunity, otherwise false
+--- @param player ObjectRef
+--- @return boolean
+function ctf_modebase.is_respawn_immunity(player)
+	if immune_players[PlayerName(player)] and not immune_players[PlayerName(player)].timer == false then
+		return true
+	end
+	return false
+end
+
 local old_get_skin = ctf_cosmetics.get_skin
 ---@diagnostic disable-next-line: duplicate-set-field
 ctf_cosmetics.get_skin = function(player, color)
@@ -182,21 +192,6 @@ end)
 
 core.register_on_leaveplayer(function(player)
 	ctf_modebase.remove_immunity(player)
-end)
-
-core.register_on_punchplayer(function (player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
-	if not player or not hitter then
-		return
-	end
-
-	if not ctf_modebase.is_immune(hitter) then
-		return
-	end
-
-	local pteam, hteam = ctf_teams.get(player), ctf_teams.get(hitter)
-	if not pteam == hteam then
-		ctf_modebase.remove_respawn_immunity(hitter)
-	end
 end)
 
 --- @type number
