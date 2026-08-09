@@ -4,10 +4,66 @@
 local BREAK_REWARD_PER_HP = 0.3
 local HEAL_DIG_REWARD_BASE = 20
 
---- @type { [Team]: { pos: Vec3, healed_points: number }}
+--- @alias HealBlockT { pos: Vec3, healed_points: number }
+--- @alias SerializedPos string
+
+--- @type { [Team]: { [SerializedPos]: HealBlockT } }
 local healed_points_tracker = {}
 
 local S = core.get_translator(core.get_current_modname())
+
+--- @param team Team
+--- @param pos Vec3
+--- @param hp number
+local function add_healed_points(team, pos, hp)
+	--- @type SerializedPos
+	local serialized_pos = core.serialize(pos)
+	if healed_points_tracker[team] == nil then
+		healed_points_tracker[team] = {
+			[serialized_pos] = {
+				pos = pos,
+				healed_points = 0,
+			},
+		}
+	end
+	if healed_points_tracker[team][serialized_pos] == nil then
+		healed_points_tracker[team][serialized_pos] = {
+			pos = pos,
+			healed_points = 0,
+		}
+	end
+	healed_points_tracker[team][serialized_pos].healed_points = healed_points_tracker[team][serialized_pos].healed_points
+		+ hp
+end
+
+--- @param team Team
+--- @param pos Vec3
+--- @return number
+local function get_healed_points(team, pos)
+	--- @type SerializedPos
+	local serialized_pos = core.serialize(pos)
+	if healed_points_tracker[team] == nil then
+		return 0
+	end
+	if healed_points_tracker[team][serialized_pos] == nil then
+		return 0
+	end
+	return healed_points_tracker[team][serialized_pos].healed_points or 0
+end
+
+--- @param team Team
+--- @param pos Vec3
+local function delete_healed_points(team, pos)
+	--- @type SerializedPos
+	local serialized_pos = core.serialize(pos)
+	if healed_points_tracker[team] == nil then
+		return
+	end
+	if healed_points_tracker[team][serialized_pos] == nil then
+		return
+	end
+	healed_points_tracker[team][serialized_pos] = nil
+end
 
 core.register_node("ctf_healing:heal_block", {
 	description = S("Healing Block") .. "\n" .. S(
@@ -59,10 +115,7 @@ core.register_node("ctf_healing:heal_block", {
 		end
 		local _, pos = core.item_place(itemstack, placer, pointed_thing)
 		if pteam and pos then
-			healed_points_tracker[pteam] = {
-				pos = pos,
-				healed_points = 0,
-			}
+			add_healed_points(pteam, pos, 0)
 		end
 
 		return itemstack
@@ -96,13 +149,8 @@ core.register_node("ctf_healing:heal_block", {
 			end
 		end
 		local block_team = meta:get_string("team")
-		if
-			block_team
-			and healed_points_tracker[block_team]
-			and healed_points_tracker[block_team].pos == pos
-		then
-			healed_points_tracker[block_team].healed_points = healed_points_tracker[block_team].healed_points
-				+ healed_points
+		if block_team then
+			add_healed_points(block_team, pos, healed_points)
 		end
 		return true
 	end,
@@ -126,8 +174,9 @@ core.register_node("ctf_healing:heal_block", {
 			if not cur_mode then
 				return
 			end
-			local healed_points = healed_points_tracker[block_team].healed_points
-			healed_points_tracker[block_team] = nil
+			--- @type number
+			local healed_points = get_healed_points(block_team, pos)
+			delete_healed_points(block_team, pos)
 			local break_reward =
 				math.ceil(HEAL_DIG_REWARD_BASE + healed_points * BREAK_REWARD_PER_HP)
 			core.log(
