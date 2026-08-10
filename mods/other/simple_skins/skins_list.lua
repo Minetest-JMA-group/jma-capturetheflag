@@ -197,7 +197,7 @@ return {
 	[50] = {
 		name = "Dark Night Vento",
 		author = "Vento",
-		texture = "character_dark_knight_vento",
+		texture = "character_dark_knight_vento.png",
 	},
 	-- Add new skins here with higher IDs (max 199) --
 }
