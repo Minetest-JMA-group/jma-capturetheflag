@@ -145,6 +145,11 @@ function ctf_modebase.start_match_after_map_vote()
 			return difference
 		end
 
+		--- @type integer
+		local assigned_players_before = 0
+		for _, alloc in ipairs(allocation) do
+			assigned_players_before = assigned_players_before + #alloc
+		end
 		-- Now, we've got an optimization problem. We've got
 		-- many "buckets" and we are supposed to minimize
 		-- "team_value" difference between teams.
@@ -184,7 +189,7 @@ function ctf_modebase.start_match_after_map_vote()
 						new_allocation[team_a_index],
 						math.random(team_a_len)
 					)
-					table.insert(allocation[team_b_index], player_val)
+					table.insert(new_allocation[team_b_index], player_val)
 				else
 					--- @type integer
 					local player_val_a_index = math.random(team_a_len)
@@ -229,6 +234,16 @@ function ctf_modebase.start_match_after_map_vote()
 					break
 				end
 			end
+		end
+
+		--- @type integer
+		local assigned_players_after = 0
+		for _, alloc in ipairs(allocation) do
+			assigned_players_after = assigned_players_after + #alloc
+		end
+
+		if assigned_players_after ~= assigned_players_before then
+			core.log("error", "Inconsistentency in assigning players to teams")
 		end
 
 		core.log(
