@@ -199,10 +199,11 @@ function ctf_modebase.start_match_after_map_vote()
 					local player_val_a = new_allocation[team_a_index][player_val_a_index]
 					--- @type PlayerValue
 					local player_val_b = new_allocation[team_b_index][player_val_b_index]
-					--- @type PlayerValue
-					local tmp = table.copy(player_val_a)
-					player_val_a = table.copy(player_val_b)
-					player_val_b = tmp
+					-- Swap the two players between the teams by writing back
+					-- into the allocation (previously only locals were
+					-- reassigned, making this branch a no-op).
+					new_allocation[team_a_index][player_val_a_index] = table.copy(player_val_b)
+					new_allocation[team_b_index][player_val_b_index] = table.copy(player_val_a)
 				end
 				--- @type number
 				local new_difference = get_teams_difference(new_allocation)
