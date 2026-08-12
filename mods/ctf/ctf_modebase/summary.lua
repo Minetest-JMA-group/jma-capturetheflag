@@ -4,9 +4,9 @@ local winner = nil
 
 local player_sort_by = {}
 
-local S = minetest.get_translator(minetest.get_current_modname())
+local S = core.get_translator(core.get_current_modname())
 
-minetest.register_on_leaveplayer(function(player) player_sort_by[player:get_player_name()] = nil end)
+core.register_on_leaveplayer(function(player) player_sort_by[player:get_player_name()] = nil end)
 
 local function team_rankings(total)
 	local ranks = {}
@@ -373,7 +373,7 @@ function ctf_modebase.summary.show_gui_sorted(name, rankings, special_rankings, 
 		end,
 	})
 
-	minetest.log("action", "[ctf_modebase.summary] Showed gui to "..dump(name))
+	core.log("action", "[ctf_modebase.summary] Showed gui to "..dump(name))
 end
 
 ctf_core.register_chatcommand_alias("summary", "s", {
