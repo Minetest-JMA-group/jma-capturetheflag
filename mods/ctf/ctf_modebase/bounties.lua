@@ -609,10 +609,12 @@ ctf_core.register_chatcommand_alias(
 			end
 
 			if amount < PLAYER_BOUNTY_MIN then
-				return false, S("Your bounty needs to be of at least 5 points")
+				return false,
+					S("Your bounty needs to be of at least @1 points", PLAYER_BOUNTY_MIN)
 			end
 			if amount > PLAYER_BOUNTY_CAP then
-				return false, S("Your bounty cannot be of more than 100 points")
+				return false,
+					S("Your bounty cannot be of more than @1 points", PLAYER_BOUNTY_CAP)
 			end
 			local cur_score = current_mode.recent_rankings.get(name).score or 0
 			if amount > cur_score then
