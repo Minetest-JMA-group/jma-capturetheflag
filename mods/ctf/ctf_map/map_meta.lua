@@ -398,7 +398,6 @@ function ctf_map.save_map(mapmeta)
 		core.chat_send_all(core.colorize(ctf_map.CHAT_COLOR, "Map Saving Failed!"))
 	end
 
-	local f = assert(io.open(path .. "barriers.data", "wb"))
-	f:write(core.compress(core.serialize(barriers), "deflate"))
-	f:close()
+	assert(core.safe_file_write(path .. "barriers.data",
+		core.compress(core.serialize(barriers), "deflate")))
 end

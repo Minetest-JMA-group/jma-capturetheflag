@@ -65,15 +65,12 @@ if queue_version <= 1 then
 
 	core.mkdir(dir)
 
-	local f, err = io.open(dir.."transfer_queue_backup_v1.txt", "w")
+	local ok, err = core.safe_file_write(dir.."transfer_queue_backup_v1.txt",
+		core.serialize(transfer_queue))
 
-	if f then
-		f:write(core.serialize(transfer_queue))
-	else
+	if not ok then
 		core.log("error", err)
 	end
-
-	f:close()
 
 	for pname, list in pairs(transfer_queue) do
 		local new = {}

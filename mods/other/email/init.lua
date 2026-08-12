@@ -33,12 +33,14 @@ function email.load()
 	if file then
 		local from_file = core.deserialize(file:read("*all"))
 		file:close()
-		if type(from_file) == "table" then
-			if from_file.mod == "email" and tonumber(from_file.ver_min) <= 1 then
-				email.inboxes = from_file.inboxes
-			else
-				error("[Email] Attempt to read incompatible email.txt file.")
-			end
+		if type(from_file) == "table"
+				and from_file.mod == "email"
+				and tonumber(from_file.ver_min) <= 1
+				and type(from_file.inboxes) == "table" then
+			email.inboxes = from_file.inboxes
+		else
+			core.log("error",
+				"[Email] Bad or incompatible email.txt file; using empty inbox")
 		end
 	end
 
@@ -59,13 +61,9 @@ function email.load()
 end
 
 function email.save()
-	local file = io.open(core.get_worldpath() .. "/email.txt", "w")
-	if file then
-		file:write(core.serialize({
-			mod = "email", version = 1, ver_min = 1,
-			inboxes = email.inboxes }))
-		file:close()
-	end
+	core.safe_file_write(core.get_worldpath() .. "/email.txt", core.serialize({
+		mod = "email", version = 1, ver_min = 1,
+		inboxes = email.inboxes }))
 end
 core.register_on_shutdown(email.save)
 
