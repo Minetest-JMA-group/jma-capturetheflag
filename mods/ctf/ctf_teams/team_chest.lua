@@ -303,7 +303,22 @@ for _, team in ipairs(ctf_teams.teamlist) do
 
 		function def.on_metadata_inventory_put(pos, listname, index, stack, player)
 			local meta = stack:get_meta()
+			--- @type PlayerName | ""
 			local dropped_by = meta:get_string("dropped_by")
+			--- @type Team?
+			local dropteam = ctf_teams.get(dropped_by)
+			--- @type boolean
+			local dropped_in_enemy = false
+			if meta:contains("dropped_at") then
+				--- @type Vec3
+				local dropped_at = core.deserialize(meta:get_string("dropped_at"))
+				local dropteam_prop = ctf_map.current_map.teams[dropteam]
+				dropped_in_enemy = not ctf_core.pos_inside(
+					dropped_at,
+					dropteam_prop.pos1,
+					dropteam_prop.pos2
+				)
+			end
 			local pname = player:get_player_name()
 			core.log(
 				"action",
@@ -315,10 +330,13 @@ for _, team in ipairs(ctf_teams.teamlist) do
 					dropped_by or "<EMPTY_STRING>"
 				)
 			)
-			local dropteam = ctf_teams.get(dropped_by)
-			if dropped_by ~= pname and dropped_by ~= "" and dropteam then
+			if dropped_by ~= "" and dropteam then
 				local cur_mode = ctf_modebase:get_current_mode()
-				if pname and cur_mode then
+				local give_score = pname ~= dropped_by
+				if pname == dropped_by then
+					give_score = dropped_in_enemy
+				end
+				if pname and give_score and cur_mode then
 					local item_name = stack:get_name()
 					local score = cur_mode.get_item_value(item_name, pos)
 					core.debug(
@@ -342,6 +360,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				end
 			end
 			meta:set_string("dropped_by", "")
+			meta:set_string("dropped_at", "")
 			local inv = core.get_inventory({ type = "node", pos = pos })
 			local stack_ = inv:get_stack(listname, index)
 			stack_:get_meta():set_string("dropped_by", "")
