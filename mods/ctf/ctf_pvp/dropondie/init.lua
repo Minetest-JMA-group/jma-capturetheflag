@@ -24,9 +24,9 @@ local function drop_list(pos, player, list)
 			local obj = core.add_item(pos, item)
 			if obj then
 				local random_velocity = {
-					x = math.random(-1, 1),
+					x = math.random(-1000, 1000) / 1000,
 					y = 5,
-					z = math.random(-1, 1),
+					z = math.random(-1000, 1000) / 1000,
 				}
 
 				local final_velocity = vector.add(vector.divide(vel, 2), random_velocity)
