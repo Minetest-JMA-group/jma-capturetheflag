@@ -309,15 +309,17 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			local dropteam = ctf_teams.get(dropped_by)
 			--- @type boolean
 			local dropped_in_enemy = false
-			if meta:contains("dropped_at") then
+			if meta:contains("dropped_at") and dropteam then
 				--- @type Vec3
 				local dropped_at = core.deserialize(meta:get_string("dropped_at"))
 				local dropteam_prop = ctf_map.current_map.teams[dropteam]
-				dropped_in_enemy = not ctf_core.pos_inside(
-					dropped_at,
-					dropteam_prop.pos1,
-					dropteam_prop.pos2
-				)
+				if dropped_at and dropteam_prop then
+					dropped_in_enemy = not ctf_core.pos_inside(
+						dropped_at,
+						dropteam_prop.pos1,
+						dropteam_prop.pos2
+					)
+				end
 			end
 			local pname = player:get_player_name()
 			core.log(
