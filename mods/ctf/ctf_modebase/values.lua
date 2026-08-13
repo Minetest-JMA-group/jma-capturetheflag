@@ -226,7 +226,7 @@ function ctf_modebase.values.calculate_capture_coins(
 	local thief_val = ctf_modebase.values.get_player_active_value(flag_thief, 0.5)
 
 	--- @type integer
-	local cap_coins = math.ceil(50 * ratios * loser_team_members / thief_val)
+	local cap_coins = math.ceil(128 * ratios * loser_team_members / thief_val)
 
-	return cap_coins
+	return math.max(cap_coins, 10)
 end
