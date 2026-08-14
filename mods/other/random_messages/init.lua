@@ -20,6 +20,18 @@ end
 
 local messages = {
 	S("If in a map vote none of the 3 maps are good, you can do 'Reshuffle'."),
+	S(
+		"Medics and scouts fit well together, while the medic uses the healing pistol and stays out of sight"
+	),
+	S(
+		"The healing pistol comes in very handy in Nade Fight to help teammates without dangering yourself."
+	),
+	S(
+		"Digging an enemy heal block gives more score, the more the block is used for healing."
+	),
+	S(
+		"Medics receive score from teammates for their captures, kills and heals(if another medic)."
+	),
 	S("You think a class is unfair? Do /feedback and leave us a note."),
 	S(
 		"Note that the staff are busy with 'life' so we might not read your notes via /feedback in a timely manner"
@@ -76,6 +88,14 @@ local messages = {
 	"You can press sneak while jumping to jump up two blocks.",
 	S("Use /donate <playername> <score> to reward a teammate for their work."),
 	"A medic and knight working together can wreak havoc on the enemy team(s).",
+	S(
+		"You receive score for returning dropped items in the battlefield back to team chest."
+	),
+	S("Defend against scouts and shooters with damage blocks"),
+	S(
+		"If your teammate is low, you will see exclamation mark(s) '!' next to their nametag."
+	),
+	S("In classes mode, you can check class of a teammate by their nametag."),
 	S("Join us on Discord: @1", DISCORD_SERVER),
 	"Use /news to see the server news",
 	"Stuck? Use /killme to return to base",
