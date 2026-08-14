@@ -309,7 +309,7 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			local dropteam = ctf_teams.get(dropped_by)
 			--- @type boolean
 			local dropped_in_enemy = false
-			if meta:contains("dropped_at") then
+			if meta:contains("dropped_at") and dropteam then
 				--- @type Vec3
 				local dropped_at = core.deserialize(meta:get_string("dropped_at"))
 				local dropteam_prop = ctf_map.current_map.teams[dropteam]
@@ -332,8 +332,13 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			)
 			if dropped_by ~= "" and dropteam then
 				local cur_mode = ctf_modebase:get_current_mode()
+				--- @type boolean Should we give score to this item return?
 				local give_score = pname ~= dropped_by
+				-- ^ Do not give score to player's own dropped item. Otherwise
+				-- people will kill themselves and cheat to get score.
 				if pname == dropped_by then
+					-- Give score to player's own dropped item if
+					-- they dropped it in the enemy territory.
 					give_score = dropped_in_enemy
 				end
 				if pname and give_score and cur_mode then
