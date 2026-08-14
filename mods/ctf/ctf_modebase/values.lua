@@ -84,40 +84,8 @@ function ctf_modebase.values.get_player_value(player, recent)
 	local passive_val = ctf_modebase.values.get_player_passive_value(player, recent)
 	local active_val = ctf_modebase.values.get_player_active_value(player, recent)
 	core.debug(string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val))
-	--- This is sum done in logarithm semi-ring. That is log-sum of x + y
-	--- is log(b^x + b^y) where b is the base. I've chosen a base of e,
-	--- so the sum will be maximum of the two values, possibly plus a little more.
-
-	--- The below computations all have the same result. But we don't want
-	--- to hit limit of the floating point numbers in Lua as they become inf.
-	--- If you are geeky enough for math, you can take a pen and paper and prove
-	--- these logarithmic identities for yourself ;) --Farooq
 	--- @type number
-	local combined_val = 0
-	--- @type number
-	local base = math.exp(1)
-	--- @type number
-	local divider = 250
-	if math.abs(active_val - passive_val) <= divider then
-		combined_val = active_val + math.log(1 + math.exp(passive_val - active_val), base)
-	else
-		--- @type number
-		local first_part = 0
-		--- @type number
-		local second_part = 0
-		if active_val > passive_val then
-			--- @type number
-			local sub_active_val = math.min(active_val / divider, divider)
-			first_part = math.exp(passive_val - divider)
-			second_part = math.exp(sub_active_val)
-		else
-			--- @type number
-			local sub_passive_val = math.min(passive_val / divider, divider)
-			first_part = math.exp(active_val - divider)
-			second_part = math.exp(sub_passive_val)
-		end
-		combined_val = divider + math.log(first_part + second_part, base)
-	end
+	local combined_val = math.pow(active_val * passive_val, 1.5)
 	if math.isfinite and not math.isfinite(combined_val) then
 		core.log(
 			"warning",
@@ -129,6 +97,7 @@ function ctf_modebase.values.get_player_value(player, recent)
 				active_val
 			)
 		)
+		return 1
 	end
 	core.log("info", string.format("Value of %s is %.3f", player, combined_val))
 	return combined_val
@@ -227,6 +196,17 @@ function ctf_modebase.values.calculate_capture_coins(
 
 	--- @type integer
 	local cap_coins = math.ceil(128 * ratios * loser_team_members / thief_val)
+
+	core.debug("CapCoin Calculate")
+	core.debug(string.format("AValue of %s is %f", flag_thief, thief_val))
+	core.debug(
+		string.format(
+			"Ratio is %f and number of enemy tmembers is %d",
+			ratios,
+			loser_team_members
+		)
+	)
+	core.debug(string.format("Capper %s got %d CapCoins", flag_thief, cap_coins))
 
 	return math.max(cap_coins, 10)
 end
