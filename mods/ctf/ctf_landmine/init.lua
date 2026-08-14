@@ -17,10 +17,45 @@ ctf_api.register_on_match_end(function()
 	should_landmine_explode = false
 end)
 
+-- Neutralize landmines of these teams
+ctf_api.register_on_flag_capture(function(_, teams)
+	--- @type { [Team]: boolean }
+	local teams_d = {}
+	for _, team in ipairs(teams) do
+		teams_d[team] = true
+	end
+	--- @type Vector
+	local new_landmines = {}
+	for _, mine_pos in ipairs(landmines) do
+		local meta = core.get_meta(mine_pos)
+		if meta:contains("pteam") then
+			--- @type Team?
+			local team = meta:get_string("pteam")
+			if teams_d[team] then
+				meta:set_string("neutral", "true")
+			else
+				table.insert(new_landmines, mine_pos)
+			end
+		end
+	end
+	landmines = new_landmines
+end)
+
+--- @param object_ref ObjectRef
+--- @param pos Vec3
+--- @return boolean? nil if the landmine must not explode for the objectref
 local function is_self_landmine(object_ref, pos)
 	local meta = core.get_meta(pos)
+	--- @type boolean
+	local neutral = meta:contains("neutral") and meta:get_string("neutral") == "true"
+	if neutral then
+		return nil -- the landmine is neutral
+	end
+	--- @type Team?
 	local team = meta:get_string("pteam")
+	--- @type PlayerName?
 	local placer = meta:get_string("placer")
+	--- @type PlayerName?
 	local pname = object_ref:get_player_name()
 	if not placer or placer == "" then
 		return nil -- the landmine isn't armed yet
