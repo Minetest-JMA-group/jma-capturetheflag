@@ -1037,7 +1037,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- @param pname PlayerName
 		--- @return table
 		get_recent_ranking = function(pname)
-			return recent_rankings:get(pname) or {}
+			return recent_rankings.get(pname) or {}
 		end,
 		--- @param pname PlayerName
 		--- @return (table | string)?
