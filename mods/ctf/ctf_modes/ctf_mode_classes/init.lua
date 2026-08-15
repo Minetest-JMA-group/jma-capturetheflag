@@ -250,7 +250,7 @@ ctf_modebase.register_mode("classes", {
 		local base_label = features.get_player_label(pname)
 		base_label = base_label:trim()
 		local class_title = classes.get(core.get_player_by_name(pname)).name
-		local class_short = class_title:sub(1, 1)
+		local class_short = class_title:sub(1, 2)
 		return string.format("%s[%s] ", base_label, class_short)
 	end,
 	get_player_nametag_color = features.get_player_nametag_color,
