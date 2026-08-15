@@ -1,4 +1,5 @@
 ctf_modebase.recent_rankings = function(rankings)
+	--- @type { [PlayerName]: table }
 	local rankings_players = {}
 	local rankings_teams = {}
 
