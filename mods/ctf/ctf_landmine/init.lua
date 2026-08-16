@@ -45,6 +45,10 @@ end)
 --- @param pos Vec3
 --- @return boolean? nil if the landmine must not explode for the objectref
 local function is_self_landmine(object_ref, pos)
+	if ctf_modebase and not ctf_modebase.match_started then
+		-- Do not explode the landmine if the match hasn't started
+		return nil
+	end
 	local meta = core.get_meta(pos)
 	--- @type boolean
 	local neutral = meta:contains("neutral") and meta:get_string("neutral") == "true"
