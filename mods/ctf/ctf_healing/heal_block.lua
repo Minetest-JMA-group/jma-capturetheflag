@@ -148,12 +148,8 @@ core.register_node("ctf_healing:heal_block", {
 				end
 			end
 		end
-		local block_team = meta:get_string("team")
-		-- Blocks placed by teamless players have no team metadata; an empty
-		-- string must not be treated as a team or points leak under the ""
-		-- key and are never cleaned up when the block is dug.
-		if block_team ~= "" then
-			add_healed_points(block_team, pos, healed_points)
+		if meta:contains("team") then
+			add_healed_points(meta:get_string("team"), pos, healed_points)
 		end
 		return true
 	end,
@@ -172,7 +168,12 @@ core.register_node("ctf_healing:heal_block", {
 		local player_team = ctf_teams.get(dname)
 
 		-- Only award points if player breaks enemy team's heal block
-		if block_team and block_team ~= "" and player_team and block_team ~= player_team then
+		if
+			block_team
+			and block_team ~= ""
+			and player_team
+			and block_team ~= player_team
+		then
 			local cur_mode = ctf_modebase:get_current_mode()
 			if not cur_mode then
 				return
