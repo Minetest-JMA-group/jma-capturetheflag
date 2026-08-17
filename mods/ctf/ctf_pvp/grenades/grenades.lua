@@ -257,19 +257,19 @@ local register_smoke_grenade = function(name, description, image, damage)
 
 			for i = 0, 5, 1 do
 				core.add_particlespawner({
-					amount = 40,
+					amount = 1200,
 					time = (SMOKE_GRENADE_TIME * duration_multiplier)
 						+ (damage and 1 or 3),
-					minpos = vector.subtract(pos, 2),
-					maxpos = vector.add(pos, 2),
+					minpos = vector.subtract(pos, 3),
+					maxpos = vector.add(pos, 3),
 					minvel = { x = 0, y = 2, z = 0 },
 					maxvel = { x = 0, y = 3, z = 0 },
 					minacc = { x = 1, y = 0.2, z = 1 },
 					maxacc = { x = 1, y = 0.2, z = 1 },
 					minexptime = 1,
-					maxexptime = 1,
-					minsize = 125,
-					maxsize = 140,
+					maxexptime = 2,
+					minsize = 1,
+					maxsize = 20,
 					collisiondetection = false,
 					collision_removal = false,
 					vertical = false,
