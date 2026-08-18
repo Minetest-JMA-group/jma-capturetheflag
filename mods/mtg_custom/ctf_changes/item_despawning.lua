@@ -1,5 +1,5 @@
 local DEFAULT_DESPAWN_TIME = 600
-local DESPAWN_CHECK_DELAY = 2
+local DESPAWN_CHECK_DELAY = 20
 
 --- @class ObjectRef
 --- @field check_for_despawn fun(self: ObjectRef)
@@ -28,7 +28,7 @@ local item_despawn_times = {
 	["ctf_ranged:sniper_loaded"] = true,
 	["ctf_ranged:sniper_magnum"] = true,
 	["ctf_ranged:sniper_magnum_loaded"] = true,
-	["ctf_ranged:pistol_loaded"] = { base_despawn_time = 3 * 60 },
+	["ctf_ranged:pistol_loaded"] = true,
 	["default:axe_mese"] = true,
 	["default:axe_diamond"] = true,
 	["default:shovel_mese"] = { base_despawn_time = 3 * 60 },
@@ -47,8 +47,8 @@ local item_despawn_times = {
 		base_despawn_time = 3 * 60,
 		extra_time_per_item = 5,
 	},
-	["ctf_ranged:ammo"] = { extra_time_per_item = 30 },
-	["ctf_healing:ammo"] = { extra_time_per_item = 30 },
+	["ctf_ranged:ammo"] = true,
+	["ctf_healing:ammo"] = true,
 
 	["default:blueberries"] = { base_despawn_time = 3 * 60, extra_time_per_item = 3 },
 	["default:apple"] = { base_despawn_time = 3 * 60, extra_time_per_item = 3 }, -- technically a node
