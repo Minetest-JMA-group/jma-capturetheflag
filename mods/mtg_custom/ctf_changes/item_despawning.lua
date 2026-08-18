@@ -1,4 +1,4 @@
-local DEFAULT_DESPAWN_TIME = 180
+local DEFAULT_DESPAWN_TIME = 600
 local DESPAWN_CHECK_DELAY = 2
 
 --- @class ObjectRef
@@ -10,8 +10,10 @@ local DESPAWN_CHECK_DELAY = 2
 --- @type {[string]: any}
 local item_despawn_times = {
 	-- COMBAT ITEMS
+	["ctf_healing:super_bandage"] = true,
 	["ctf_healing:bandage"] = true,
-	["ctf_healing:medkit"] = true,
+	["ctf_healing:heal_block"] = true,
+	["ctf_healing:healing_pistol"] = true,
 	["default:sword_wood"] = true,
 	["ctf_melee:sword_steel"] = true,
 	["ctf_melee:sword_mese"] = true,
@@ -45,7 +47,9 @@ local item_despawn_times = {
 		base_despawn_time = 3 * 60,
 		extra_time_per_item = 5,
 	},
-	["ctf_ranged:ammo"] = { extra_time_per_item = 3 },
+	["ctf_ranged:ammo"] = { extra_time_per_item = 30 },
+	["ctf_healing:ammo"] = { extra_time_per_item = 30 },
+
 	["default:blueberries"] = { base_despawn_time = 3 * 60, extra_time_per_item = 3 },
 	["default:apple"] = { base_despawn_time = 3 * 60, extra_time_per_item = 3 }, -- technically a node
 	["default:diamond"] = true,
@@ -54,18 +58,12 @@ local item_despawn_times = {
 	["wind_charges:wind_charge"] = { base_despawn_time = 3 * 60, extra_time_per_item = 4 },
 
 	-- NODES
-	["ctf_landmine:landmine"] = { base_despawn_time = 3 * 60, extra_time_per_item = 5 },
-	["ctf_map:spike"] = { base_despawn_time = 3 * 60, extra_time_per_item = 5 },
-	["ctf_map:spike_diamond"] = { base_despawn_time = 3 * 60, extra_time_per_item = 5 },
-	["ctf_map:spike_mese"] = { base_despawn_time = 3 * 60, extra_time_per_item = 5 },
-	["ctf_map:spike_double_diamond"] = {
-		base_despawn_time = 3 * 60,
-		extra_time_per_item = 5,
-	},
-	["ctf_map:spike_double_mese"] = {
-		base_despawn_time = 3 * 60,
-		extra_time_per_item = 5,
-	},
+	["ctf_landmine:landmine"] = true,
+	["ctf_map:spike"] = true,
+	["ctf_map:spike_diamond"] = true,
+	["ctf_map:spike_mese"] = true,
+	["ctf_map:spike_double_diamond"] = true,
+	["ctf_map:spike_double_mese"] = true,
 	["ctf_teams:door_steel"] = { base_despawn_time = 3 * 60, extra_time_per_item = 5 },
 	["heal_block:heal"] = true,
 	["default:mese"] = true,
@@ -117,7 +115,7 @@ local item = {
 				self.timer = false
 			else
 				self.timer = (modifiers.base_despawn_time or DEFAULT_DESPAWN_TIME)
-					+ (modifiers.extra_time_per_item or 0) * stack:get_count()
+					+ (modifiers.extra_time_per_item or 1) * stack:get_count()
 			end
 		else
 			self.timer = DEFAULT_DESPAWN_TIME
@@ -148,7 +146,7 @@ core.register_globalstep(function(dtime)
 				active_items[guid] = nil
 			end
 		end
-		t = t - DESPAWN_CHECK_DELAY
+		t = 0
 	end
 end)
 
