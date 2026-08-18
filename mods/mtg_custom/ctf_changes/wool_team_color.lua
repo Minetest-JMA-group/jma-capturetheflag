@@ -61,24 +61,6 @@ core.override_item("wool:white", {
 -- Override dig for all wool colors to return white wool instead
 for wool_color, white_wool in pairs(WOOL_COLOR_TO_WHITE) do
 	core.override_item(wool_color, {
-		on_dig = function(pos, node, digger)
-			-- Check that the digger is a player
-			if not digger then
-				return false
-			end
-
-			local inv = digger:get_inventory()
-			if not inv then
-				return false
-			end
-
-			-- Remove the node
-			core.remove_node(pos)
-
-			-- Give the player white wool
-			inv:add_item("main", white_wool)
-
-			return true
-		end,
+		drop = "wool:white"
 	})
 end
