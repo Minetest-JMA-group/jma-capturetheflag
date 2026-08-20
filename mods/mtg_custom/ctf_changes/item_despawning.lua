@@ -110,6 +110,13 @@ local item = {
 		local stack = ItemStack(itemstring)
 
 		local modifiers = item_despawn_times[stack:get_name()]
+		core.debug(
+			string.format(
+				"Modifiers for item %s is %s",
+				stack:get_name(),
+				tostring(modifiers)
+			)
+		)
 		if modifiers then
 			if modifiers == true then
 				self.timer = false
