@@ -13,6 +13,7 @@ local function drop_list(pos, player, list)
 			and itemdef
 			and not itemdef.groups.non_dropable
 			and itemdef.stack_max == 1
+			and is_player
 		then
 			--- @type ItemStackMetaRef
 			local meta = item:get_meta()
@@ -20,19 +21,19 @@ local function drop_list(pos, player, list)
 				meta:set_string("dropped_by", pname)
 				meta:set_string("dropped_at", core.serialize(player:get_pos()))
 			end
+		end
 
-			local obj = core.add_item(pos, item)
-			if obj then
-				local random_velocity = {
-					x = math.random(-1000, 1000) / 1000,
-					y = 5,
-					z = math.random(-1000, 1000) / 1000,
-				}
+		local obj = core.add_item(pos, item)
+		if obj then
+			local random_velocity = {
+				x = math.random(-1000, 1000) / 1000,
+				y = 5,
+				z = math.random(-1000, 1000) / 1000,
+			}
 
-				local final_velocity = vector.add(vector.divide(vel, 2), random_velocity)
+			local final_velocity = vector.add(vector.divide(vel, 2), random_velocity)
 
-				obj:set_velocity(final_velocity)
-			end
+			obj:set_velocity(final_velocity)
 		end
 	end
 
