@@ -24,23 +24,17 @@ ctf_modebase.register_mode("chaos", {
 	vote_label = core.colorize("orange", "Weekend mode"),
 	hp_regen = 4,
 	crafts = {
-		"ctf_map:damage_cobble",
-		"ctf_map:damage_glass",
-		"ctf_map:spike",
-		"ctf_map:reinforced_cobble 2",
+		-- "ctf_map:damage_cobble",
+		-- "ctf_map:damage_glass",
+		-- "ctf_map:spike",
+		-- "ctf_map:reinforced_cobble 2",
 	},
 	physics = { sneak_glitch = true, new_move = true },
 
 	team_chest_items = {
 		"default:cobble 80",
-		"default:wood 80",
-		"ctf_map:damage_cobble 32",
-		"ctf_map:damage_glass 32",
-		"ctf_map:reinforced_cobble 32",
-		"default:torch 30",
 		"ctf_teams:door_steel 2",
 		"default:obsidian 35",
-		"bucket:bucket_water 1",
 		"rocket_launcher:launcher",
 		"rocket_launcher:rocket 5",
 		"ctf_healing:heal_block",
@@ -133,7 +127,7 @@ ctf_modebase.register_mode("chaos", {
 		damage
 	)
 		if features.can_punchplayer(player, hitter) then
-			return 4 * (tool_capabilities.damage_groups.knockback or 1)
+			return 2 * (tool_capabilities.damage_groups.knockback or 1)
 		else
 			return 0
 		end
