@@ -54,8 +54,10 @@ function ctf_modebase.update_wear.start_update(
 	step,
 	down,
 	finish_callback,
-	cancel_callback
+	cancel_callback,
+	interval
 )
+	interval = interval or 1
 	assert(type(stack) == "userdata", "stack must be a userdata")
 	if not wear_timers[pname] then
 		wear_timers[pname] = {}
@@ -80,7 +82,7 @@ function ctf_modebase.update_wear.start_update(
 
 	wear_timers[pname][item_id] = {
 		c = cancel_callback,
-		t = core.after(1, function()
+		t = core.after(interval, function()
 			wear_timers[pname][item_id] = nil
 			local player = core.get_player_by_name(pname)
 
@@ -107,7 +109,8 @@ function ctf_modebase.update_wear.start_update(
 							step,
 							down,
 							finish_callback,
-							cancel_callback
+							cancel_callback,
+							interval
 						)
 					elseif finish_callback then
 						finish_callback(item_id)
@@ -132,6 +135,35 @@ function ctf_modebase.update_wear.cancel_item_update(pname, item_id)
 		wear_timers[pname][item_id] = nil
 	end
 end
+
+-- Returns true while an update is running for the given item id.
+function ctf_modebase.update_wear.is_item_updating(pname, item_id)
+	pname = PlayerName(pname)
+	return wear_timers[pname] and wear_timers[pname][item_id] ~= nil
+end
+
+function ctf_modebase.update_wear.is_taking_locked_item(player, stack)
+	if not player or not stack then
+		return false
+	end
+
+	local item_id = stack:get_meta():get_string("update_wear_id")
+	if item_id == "" then
+		return false
+	end
+
+	return ctf_modebase.update_wear.is_item_updating(player:get_player_name(), item_id)
+end
+
+core.register_allow_player_inventory_action(function(player, action, inventory, info)
+	if action ~= "take" or not info or not info.stack then
+		return
+	end
+
+	if ctf_modebase.update_wear.is_taking_locked_item(player, info.stack) then
+		return 0
+	end
+end)
 
 ctf_api.register_on_match_end(function()
 	for _, timers in pairs(wear_timers) do
