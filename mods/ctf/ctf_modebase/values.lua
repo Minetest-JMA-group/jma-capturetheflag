@@ -185,7 +185,7 @@ function ctf_modebase.values.calculate_capture_coins(
 	end
 	if other_teams_n > 0 then
 		local average_other = other_teams_ratios_sum / other_teams_n
-		ratios = ratios + average_other / 2
+		ratios = ratios + average_other / other_teams_n
 	end
 
 	-- Now we also need active value of the thief which is
