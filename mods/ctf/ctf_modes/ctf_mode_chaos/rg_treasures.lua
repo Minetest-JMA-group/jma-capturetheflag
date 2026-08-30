@@ -6,120 +6,100 @@ local function add_score(player, score)
 		if type(old_receiver_ranks) == "table" then
 			local old_receiver_score = old_receiver_ranks.score or 0
 			mode.rankings:set(receiver_name, { score = old_receiver_score + score })
-			core.chat_send_player(receiver_name, "+" .. score .. " score!")
+			hud_events.new(receiver_name, {
+				text = "Score +" .. score,
+				quick = true,
+			})
 		end
 	end
 end
 
-return {
-	{ itemname = "ctf_mode_chaos:power_charge", chance = 48, amount = 10 },
-	{ itemname = "easter_egg:egg", chance = 2, amount = 2 },
-	{ itemname = "default:stone", chance = 40, amount = 99 },
-	{ itemname = "default:cobble", chance = 40, amount = 99 },
+local items = {
+	{ itemname = "ctf_mode_chaos:power_charge",             chance = 48, amount = 32 },
+	{ itemname = "default:cobble",                          chance = 40, amount = 99 },
+	{ itemname = "default:dirt",                            chance = 41, amount = 99 },
+	{ itemname = "default:apple",                           chance = 45, amount = 10 },
+	{ itemname = "default:obsidian",                        chance = 10, amount = 15 },
+	{ itemname = "ctf_mode_chaos:concrete",                 chance = 25, amount = 30 },
 
-	{ itemname = "default:dirt", chance = 41, amount = 99 },
-	{ itemname = "default:apple", chance = 45, amount = 5 },
-	{ itemname = "default:torch", chance = 42, amount = 50 },
-	{ itemname = "ctf_map:damage_cobble", chance = 25, amount = 30 },
-	{ itemname = "ctf_map:damage_glass", chance = 25, amount = 30 },
-	{ itemname = "default:obsidian", chance = 10, amount = 25 },
-
-	--ranged
-	-- {itemname = "ctf_ranged:sniper_magnum_loaded", chance = 4, amount = 1},
-
-	{ itemname = "rocket_launcher:launcher", chance = 30, amount = 1 },
-	{ itemname = "rocket_launcher:rocket", chance = 43, amount = 3 },
+	{ itemname = "ctf_mode_chaos:rocket",                   chance = 39, amount = 16 },
 
 	--diamond tools
-	{ itemname = "default:shovel_diamond", chance = 10, amount = 1 },
-	{ itemname = "default:pick_diamond", chance = 10, amount = 1 },
-
-	--mese
-	{ itemname = "ctf_melee:sword_mese", chance = 13, amount = 1 },
-	{ itemname = "default:axe_mese", chance = 13, amount = 1 },
-	{ itemname = "default:shovel_mese", chance = 13, amount = 1 },
-	{ itemname = "default:pick_mese", chance = 13, amount = 1 },
-
-	--steel
-	{ itemname = "ctf_melee:sword_steel", chance = 15, amount = 1 },
+	{ itemname = "default:shovel_diamond",                  chance = 25, amount = 1 },
+	{ itemname = "default:pick_diamond",                    chance = 25, amount = 1 },
+	{ itemname = "default:sword_diamond",                   chance = 4,  amount = 1 },
 
 	-- buckets
-	{ itemname = "bucket:bucket_water", chance = 10, amount = 1 },
+	{ itemname = "bucket:bucket_water",                     chance = 10, amount = 1 },
 
-	--other
-	{ itemname = "ctf_healing:medkit", chance = 27, amount = 1 },
-	{
-		itemname = "ctf_mode_nade_fight:grenade_tool_3",
-		chance = 2,
-		amount = 1,
-		oneshot = true,
-	},
-	{ itemname = "fire:flint_and_steel", chance = 17, amount = 1, oneshot = true },
+	-- { itemname = "fire:flint_and_steel", chance = 17, amount = 1, oneshot = true },
+	{ itemname = "ctf_ranged:assault_rifle_loaded",         chance = 5,  amount = 1 },
+	{ itemname = "ctf_map:damage_cobble",                   chance = 20, amount = 30 },
+	{ itemname = "ctf_map:damage_glass",                    chance = 20, amount = 30 },
 
-	{ itemname = "ctf_ranged:pistol_loaded", chance = 20, amount = 1 },
-	{ itemname = "ctf_ranged:assault_rifle_loaded", chance = 5, amount = 1 },
+	{ itemname = "ctf_ranged:ammo",                         chance = 40, amount = 16 },
 
-	{ itemname = "ctf_map:unwalkable_dirt", chance = 20, amount = 5 },
-	{ itemname = "ctf_map:unwalkable_stone", chance = 20, amount = 5 },
-	{ itemname = "ctf_map:unwalkable_cobble", chance = 20, amount = 5 },
-	{ itemname = "ctf_map:spike", chance = 20, amount = 15 },
-	{ itemname = "ctf_map:damage_cobble", chance = 20, amount = 30 },
-	{ itemname = "ctf_map:damage_glass", chance = 20, amount = 30 },
-	{ itemname = "ctf_map:reinforced_cobble", chance = 20, amount = 5 },
+	-- shared launcher modifiers (apply to the grenade launcher and the rocket
+	-- launcher; using one opens a formspec to pick the weapon)
+	{ itemname = "ctf_mode_chaos:charger",                 chance = 7,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:fast_reload",              chance = 8,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:propellant",               chance = 8,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:big_bang",                 chance = 7,  amount = 1 },
+	-- { itemname = "ctf_mode_chaos:stabilizer",               chance = 7,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:mod_bouncy",               chance = 5,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:mod_cluster",              chance = 4,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:mod_sticky",               chance = 4,  amount = 1 },
 
-	{ itemname = "ctf_ranged:ammo", chance = 43, amount = 5 },
-	{ itemname = "ctf_ranged:ammo", chance = 5, amount = 20 },
+	-- standalone weapon modifiers
+	{ itemname = "ctf_mode_chaos:mod_rocket_launcher_rain", chance = 3,  amount = 1 },
 
-	{ itemname = "ctf_healing:medkit", chance = 10, amount = 1 },
+	-- standalone weapons
+	{ itemname = "ctf_ranged:minigun_loaded",                      chance = 10, amount = 1 },
+	-- { itemname = "ctf_mode_chaos:shotgun", chance = 3, amount = 1 },
+	{ itemname = "ctf_mode_chaos:rocket_launcher_rocket",   chance = 10, amount = 1 },
+	{ itemname = "ctf_ranged:assault_rifle_loaded",         chance = 10, amount = 1 },
 
-	{ itemname = "grenades:smoke", chance = 20, amount = 1 },
-	{ itemname = "grenades:poison", chance = 10, amount = 1 },
-	--functions
-	--things
-	-- {chance = 3, image = "random_gifts_santa_hat2023.png",
-	-- func = function(player)
-	-- 	player:get_meta():set_int("server_cosmetics:entity:santa_hat:2023", 1)
-	-- 	core.chat_send_player(player:get_player_name(), "You got Santa hat! Congratulations!")
-	-- end},
+	-- bunny sword modifiers
+	{ itemname = "ctf_mode_chaos:mod_bunny_sharpness",      chance = 3,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:mod_bunny_bunny_legs",     chance = 4,  amount = 1 },
+
+	-- passive items
+	{ itemname = "ctf_mode_chaos:stamina_booster",          chance = 7,  amount = 1 },
 
 	--score
 	{
-		chance = 30,
+		chance = 25,
 		image = "random_gifts_10xp.png",
-		oneshot = true,
 		func = function(player)
 			add_score(player, 10)
 		end,
 	},
 	{
-		chance = 10,
+		chance = 15,
 		image = "random_gifts_50xp.png",
-		oneshot = true,
 		func = function(player)
 			add_score(player, 50)
 		end,
 	},
 	{
-		chance = 1,
+		chance = 10,
 		image = "random_gifts_100xp.png",
-		oneshot = true,
 		func = function(player)
 			add_score(player, 100)
 		end,
 	},
-	-- {chance = 2, image = "random_gifts_200xp.png", oneshot = true,
-	-- func = function(player)
-	-- 	add_score(player, 200)
-	-- end},
 
 	{
 		chance = 30,
 		image = "random_gifts_push.png",
-		oneshot = true,
 		func = function(player)
 			player:add_velocity(
-				vector.new(math.random(0, 80), math.random(0, 30), math.random(0, 80))
+				vector.new(math.random(-30, 30), math.random(0, 30), math.random(-30, 30))
 			) --launch to the sky!
+			core.close_formspec(player:get_player_name(), "")
 		end,
 	},
 }
+
+random_gifts.set_items(items)
+random_gifts.set_gift_count_range(4, 16)

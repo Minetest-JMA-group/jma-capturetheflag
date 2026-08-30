@@ -1,49 +1,46 @@
+ctf_mode_chaos = {}
 local rankings = ctf_rankings.init()
 local recent_rankings = ctf_modebase.recent_rankings(rankings)
 local features = ctf_modebase.features(rankings, recent_rankings)
+local storage = core.get_mod_storage()
 
 local old_bounty_reward_func = ctf_modebase.bounties.bounty_reward_func
 local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 
-ctf_core.include_files("weapons.lua")
-ctf_core.include_files("kb_grenade.lua")
+ctf_core.include_files("modifiers.lua")
+ctf_mode_chaos.weapons_api = ctf_core.include_files("weapons_api.lua")
+ctf_core.include_files("grenade_launcher.lua", "shotgun.lua",
+	 "rocket_launcher.lua", "shield.lua", "concrete.lua", "bunny_sword.lua",
+	"stamina_booster.lua")
+ctf_core.include_files("rg_treasures.lua")
 
-local rg_treasures = ctf_core.include_files("rg_treasures.lua")
-
-local allow_once = false
+local STORAGE_KEY = "chaos_weekend_mode"
 
 ctf_modebase.register_mode("chaos", {
 	on_prevote = function()
-		-- local today = tonumber(os.date("%w"))
-		-- if today == 0 or today == 6 or allow_once then
-		-- 	allow_once = false
-		-- 	return true
-		-- end
+		local today = tonumber(os.date("%w"))
+		if storage:get_int(STORAGE_KEY) == 1 or today == 0 or today == 6 then
+			return true
+		end
 		return false
 	end,
-	vote_label = core.colorize("orange", "Weekend mode"),
+	vote_label = core.colorize("orange", "(Test Phase)"),
 	hp_regen = 4,
 	crafts = {
-		"ctf_map:damage_cobble",
-		"ctf_map:damage_glass",
-		"ctf_map:spike",
-		"ctf_map:reinforced_cobble 2",
+		"ctf_mode_chaos:concrete",
+		"ctf_mode_chaos:power_charge 16",
 	},
 	physics = { sneak_glitch = true, new_move = true },
 
 	team_chest_items = {
-		"default:cobble 80",
-		"default:wood 80",
-		"ctf_map:damage_cobble 32",
-		"ctf_map:damage_glass 32",
-		"ctf_map:reinforced_cobble 32",
-		"default:torch 30",
+		"default:cobble 99",
 		"ctf_teams:door_steel 2",
-		"default:obsidian 35",
-		"bucket:bucket_water 1",
-		"rocket_launcher:launcher",
-		"rocket_launcher:rocket 5",
+		"ctf_mode_chaos:rocket 12",
 		"ctf_healing:heal_block",
+		"ctf_mode_chaos:power_charge 60",
+		"ctf_mode_chaos:shield",
+		"ctf_mode_chaos:concrete 30",
+		"ctf_landmine:landmine 16"
 	},
 	rankings = rankings,
 	recent_rankings = recent_rankings,
@@ -57,20 +54,22 @@ ctf_modebase.register_mode("chaos", {
 		"bounty_kills",
 		"deaths",
 	},
-	build_timer = 25,
+	build_timer = 20,
 
 	is_bound_item = function(_, name)
-		if name:match("ctf_mode_chaos:") and name ~= "ctf_mode_chaos:power_charge" then
+		if
+			name:match("ctf_mode_chaos:grenade_launcher_") or
+			name == "ctf_mode_chaos:bunny_sword"
+		then
 			return true
 		end
 	end,
 	stuff_provider = function(player)
+		local current = ctf_mode_chaos.get_current_mode(player)
 		return {
-			"ctf_mode_chaos:grenade_launcher",
-			"ctf_mode_chaos:knockback_grenade_tool",
-			"default:pick_steel",
-			"default:axe_steel",
-			"default:wood 60",
+			"ctf_mode_chaos:grenade_launcher_" .. current,
+			"ctf_mode_chaos:bunny_sword",
+			"ctf_mode_chaos:power_charge 30",
 		}
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
@@ -80,17 +79,23 @@ ctf_modebase.register_mode("chaos", {
 		ctf_modebase.bounties.get_next_bounty =
 			ctf_modebase.bounty_algo.kd.get_next_bounty
 
-		random_gifts.set_items(rg_treasures)
-		random_gifts.run_spawn_timer()
+		-- Fresh upgrades every time the mode is (re)started
+		for _, player in ipairs(core.get_connected_players()) do
+			ctf_mode_chaos.clear_player_state(player)
+			ctf_mode_chaos.update_hud(player)
+		end
 	end,
 	on_mode_end = function()
 		ctf_modebase.bounties.bounty_reward_func = old_bounty_reward_func
 		ctf_modebase.bounties.get_next_bounty = old_get_next_bounty
 
+		for _, player in ipairs(core.get_connected_players()) do
+			ctf_mode_chaos.remove_hud(player)
+		end
+
 		random_gifts.stop_spawn_timer()
-		random_gifts.set_items({})
 	end,
-	get_item_value = function(itemname, teamchest_pos)
+	get_item_value = function()
 		return 0
 	end,
 	get_player_label = features.get_player_label,
@@ -98,13 +103,55 @@ ctf_modebase.register_mode("chaos", {
 	get_player_nametag_bgcolor = features.get_player_nametag_bgcolor,
 	get_ranking = features.get_ranking,
 	get_recent_ranking = features.get_recent_ranking,
-	on_new_match = features.on_new_match,
-	on_match_end = features.on_match_end,
+	on_new_match = function()
+		-- Upgrades are match-scoped: fresh weapon for every match
+		for _, player in ipairs(core.get_connected_players()) do
+			ctf_mode_chaos.clear_player_state(player)
+			ctf_mode_chaos.update_hud(player)
+		end
+		random_gifts.run_spawn_timer()
+		core.chat_send_all(core.colorize("orange",
+			"Chaos Mode is currently under development - bugs are to be expected.")
+		)
+
+		return features.on_new_match()
+	end,
+	on_match_end = function ()
+		random_gifts.stop_spawn_timer()
+		return features.on_match_end()
+	end,
 	team_allocator = features.team_allocator,
-	on_allocplayer = features.on_allocplayer,
+	on_allocplayer = function(player, new_team)
+		local result = features.on_allocplayer(player, new_team)
+		ctf_mode_chaos.update_hud(player)
+		player:set_properties({ hp_max = 30 })
+		player:set_hp(30)
+		return result
+	end,
 	on_leaveplayer = features.on_leaveplayer,
-	on_dieplayer = features.on_dieplayer,
-	on_respawnplayer = features.on_respawnplayer,
+	on_dieplayer = function(player, reason)
+		local thing = ctf_mode_chaos.remove_random_upgrade(player)
+		if thing then
+			local pos = player:get_pos()
+
+			if thing.item_name then
+				core.add_item(pos, thing.item_name)
+			end
+
+			hud_events.new(player,
+			"You’ve lost your " ..
+				ctf_mode_chaos.get_display_name(thing.weapon, thing.key)
+			)
+		end
+		ctf_mode_chaos.update_hud(player)
+		ctf_mode_chaos.clear_all_global_effects(player)
+		return features.on_dieplayer(player, reason)
+	end,
+	on_respawnplayer = function(player)
+		local result = features.on_respawnplayer(player)
+		ctf_mode_chaos.on_respawn(player)
+		return result
+	end,
 	can_take_flag = features.can_take_flag,
 	on_flag_take = features.on_flag_take,
 	on_flag_drop = features.on_flag_drop,
@@ -114,10 +161,11 @@ ctf_modebase.register_mode("chaos", {
 	player_is_pro = features.player_is_pro,
 	can_punchplayer = features.can_punchplayer,
 	on_punchplayer = function(player, hitter, damage, unneeded, tool_capabilities, ...)
+		local blocked = ctf_mode_chaos.block_shield_damage(player, damage)
 		return features.on_punchplayer(
 			player,
 			hitter,
-			damage,
+			damage - blocked,
 			unneeded,
 			tool_capabilities
 		)
@@ -133,18 +181,34 @@ ctf_modebase.register_mode("chaos", {
 		damage
 	)
 		if features.can_punchplayer(player, hitter) then
-			return 4 * (tool_capabilities.damage_groups.knockback or 1)
+			return 2 * (tool_capabilities.damage_groups.knockback or 1)
 		else
 			return 0
 		end
 	end,
 })
 
+ctf_jma_elysium.register_on_join(function(player)
+	ctf_mode_chaos.clear_player_state(player)
+end)
+
 core.register_chatcommand("wannachaos", {
-	description = "Allow chaos mode once",
 	privs = { dev = true },
-	func = function()
-		allow_once = true
-		return true, "Chaos mode enabled for one-time"
+	func = function(name, param)
+		local args = param:split(" ")
+		local mode = args[1] or ""
+
+		if mode == "on" then
+			storage:set_int(STORAGE_KEY, 1)
+			return true, "Every day mode"
+		end
+		if mode == "off" then
+			storage:set_int(STORAGE_KEY, 0)
+			return true, "Weekend mode"
+		end
+
+		return true, "Chaos mode is currently: "
+			.. (storage:get_int(STORAGE_KEY) == 1 and "Every day" or "Weekend only") ..
+			".\n" .. "Usage: /wannachaos [on|off]"
 	end,
 })

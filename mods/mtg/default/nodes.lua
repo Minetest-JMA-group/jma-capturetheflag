@@ -414,7 +414,8 @@ core.register_node("default:obsidian", {
 	description = S("Obsidian"),
 	tiles = {"default_obsidian.png"},
 	sounds = default.node_sound_stone_defaults(),
-	groups = {cracky = 1, level = 2},
+	groups = { cracky = 1, level = 2, blast_protection = 1 },
+	on_blast = function() end,
 })
 
 core.register_node("default:obsidianbrick", {
@@ -424,7 +425,8 @@ core.register_node("default:obsidianbrick", {
 	tiles = {"default_obsidian_brick.png"},
 	is_ground_content = false,
 	sounds = default.node_sound_stone_defaults(),
-	groups = {cracky = 1, level = 2},
+	groups = {cracky = 1, level = 2, blast_protection = 1},
+	on_blast = function() end,
 })
 
 core.register_node("default:obsidian_block", {
@@ -432,7 +434,8 @@ core.register_node("default:obsidian_block", {
 	tiles = {"default_obsidian_block.png"},
 	is_ground_content = false,
 	sounds = default.node_sound_stone_defaults(),
-	groups = {cracky = 1, level = 2},
+	groups = { cracky = 1, level = 2, blast_protection = 1 },
+	on_blast = function() end,
 })
 
 --
@@ -2827,7 +2830,8 @@ core.register_node("default:obsidian_glass", {
 	is_ground_content = false,
 	sunlight_propagates = true,
 	sounds = default.node_sound_glass_defaults(),
-	groups = {cracky = 3},
+	groups = { cracky = 3, blast_protection = 1 },
+	on_blast = function() end,
 })
 
 

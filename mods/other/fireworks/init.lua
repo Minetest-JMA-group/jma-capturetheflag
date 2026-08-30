@@ -30,8 +30,8 @@ local random_items = {
 
 	{itemname = "default:obsidian", chance = 22, amount = 10},
 
-	{itemname = "rocket_launcher:launcher", chance = 12, amount = 1},
-	{itemname = "rocket_launcher:rocket", chance = 13, amount = 5},
+	{itemname = "ctf_mode_chaos:rocket_launcher_rocket", chance = 12, amount = 1},
+	{itemname = "ctf_mode_chaos:rocket", chance = 13, amount = 5},
 
 	{itemname = "fireworks:red", chance = 2, amount = 2},
 	{itemname = "ctf_landmine:landmine", chance = 12, amount = 5}
