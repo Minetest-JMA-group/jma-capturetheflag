@@ -58,8 +58,8 @@ core.override_item("wool:white", {
 })
 
 -- Override drop for all wool colors to return white wool instead
-for _, wool_color in pairs(WOOL_COLORS) do
+for _, wool_color in ipairs(WOOL_COLORS) do
 	core.override_item(wool_color, {
-		drop = "wool:white"
+		drop = "wool:white",
 	})
 end
