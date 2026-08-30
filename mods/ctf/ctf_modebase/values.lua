@@ -16,33 +16,33 @@ function ctf_modebase.values.get_ranking(player, recent)
 		recent_rankings = current_mode.get_recent_ranking(player)
 	end
 	return {
-		kills = (ranking.kills or 1) * complement + (recent_rankings.kills or 1) * recent,
+		kills = (ranking.kills or 0) * complement + (recent_rankings.kills or 0) * recent,
 		deaths = (ranking.deaths or 1) * complement
 			+ (recent_rankings.deaths or 1) * recent,
-		kill_assists = (ranking.kill_assists or 1) * complement
-			+ (recent_rankings.kill_assists or 1) * recent,
-		hp_healed = (ranking.hp_healed or 1) * complement
-			+ (recent_rankings.hp_healed or 1) * recent,
-		capture_coins = (ranking.capture_coins or 1) * complement
-			+ (recent_rankings.capture_coins or 1) * recent,
-		build_points = (ranking.build_points or 1) * complement
-			+ (recent_rankings.build_points or 1) * recent,
+		kill_assists = (ranking.kill_assists or 0) * complement
+			+ (recent_rankings.kill_assists or 0) * recent,
+		hp_healed = (ranking.hp_healed or 0) * complement
+			+ (recent_rankings.hp_healed or 0) * recent,
+		capture_coins = (ranking.capture_coins or 0) * complement
+			+ (recent_rankings.capture_coins or 0) * recent,
+		build_points = (ranking.build_points or 0) * complement
+			+ (recent_rankings.build_points or 0) * recent,
 	}
 end
 
 --- @type ScoreFun
 function ctf_modebase.values.get_pvp_score(player, recent)
 	local rankings = ctf_modebase.values.get_ranking(player, recent)
-	local kills = rankings.kills or 1
+	local kills = rankings.kills or 0
 	local deaths = rankings.deaths or 1
-	local assists = rankings.kill_assists or 1
+	local assists = rankings.kill_assists or 0
 	return (kills + assists / 5) / deaths
 end
 
 --- @type ScoreFun
 function ctf_modebase.values.get_build_point(player, recent)
 	local ranking = ctf_modebase.values.get_ranking(player, recent)
-	return ranking.build_points or 1
+	return ranking.build_points or 0
 end
 
 --- @type ScoreFun
