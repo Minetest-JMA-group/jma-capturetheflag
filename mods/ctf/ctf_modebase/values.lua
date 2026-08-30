@@ -85,7 +85,7 @@ function ctf_modebase.values.get_player_value(player, recent)
 	local active_val = ctf_modebase.values.get_player_active_value(player, recent)
 	core.debug(string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val))
 	--- @type number
-	local combined_val = math.pow(active_val * passive_val, 1.5)
+	local combined_val = math.pow(active_val * passive_val, 1.2)
 	if math.isfinite and not math.isfinite(combined_val) then
 		core.log(
 			"warning",
