@@ -292,6 +292,10 @@ local chest_def = {
 		local inv = meta:get_inventory()
 		inv:set_size("main", 8 * 4)
 	end,
+	on_timer = function(pos, elapsed)
+		core.remove_node(pos)
+		return false
+	end,
 	allow_metadata_inventory_put = function(pos, listname, index, stack, player)
 		if player then
 			local name = player:get_player_name()

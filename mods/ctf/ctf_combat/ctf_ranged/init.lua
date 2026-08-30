@@ -739,7 +739,7 @@ ctf_ranged.simple_register_gun("ctf_ranged:minigun", {
 	texture = "ctf_ranged_minigun.png",
 	fire_sound = "ctf_ranged_minigun",
 	bullet = {
-		spread = 7,
+		spread = 6,
 	},
 	automatic = true,
 	rounds = 100,

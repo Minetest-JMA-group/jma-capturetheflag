@@ -1,95 +1,138 @@
-if not core.settings:get_bool("enable_ctf_shop") then
-    core.log("action", "[ctf_shop] Mod is disabled. To enable it, set 'enable_ctf_shop' to true in the settings.")
-    return
-end
-
 ctf_shop = {}
 
 ctf_settings.register("ctf_shop:automatic_shop_display", {
     type = "bool",
     label = "Automatic Shop Display",
-    description = "Enables the automatic display of the shop as soon as a new match begins.",
+    description =
+    "Enables the automatic display of the shop as soon as a new match begins.",
     default = "true",
 })
 --Note: The most expensive item is currently set to 150 coins, please adjust the price if changes at max_coins are being made
 local max_coins = 150
 local start_coin_amount = 40
-local coins_per_minute = 3
+local coins_per_minute = 5
 
 local players_coins = {}
 
-local modes_all = ctf_modebase.modelist
-local modes_without_nade_fight = {"chaos", "classes", "classic", "rush"}
+local all_modes = ctf_modebase.modelist
+local modes_without_nade_fight = { "chaos", "classes", "classic", "rush" }
+local no_chaos_nade_modes = { "classes", "classic", "rush" }
 
-local give_timer = 0
-core.register_globalstep(function(dtime)
-    give_timer = give_timer + dtime
-    if give_timer >= 60 then
-        give_timer = 0
+local coin_tick_scheduled = false
+
+local function schedule_coin_tick()
+    if coin_tick_scheduled then
+        return
+    end
+
+    coin_tick_scheduled = true
+    core.after(60, function()
+        coin_tick_scheduled = false
+
+        if ctf_modebase.current_mode ~= "chaos" then
+            return
+        end
+
         for player_name, coin_amount in pairs(players_coins) do
             players_coins[player_name] = math.min(coin_amount + coins_per_minute, max_coins)
         end
-    end
-end)
+
+        schedule_coin_tick()
+    end)
+end
 
 local shop_items = {
     --nodes
-    --{item_string = "default:steelblock 32", price = 40, modes = modes_all},
-    --{item_string = "default:mese 64", price = 40, modes = modes_all},
-    --{item_string = "default:obsidian 32", price = 20, modes = modes_all},
-    {item_string = "ctf_map:reinforced_cobble 20", price = 20, modes = modes_all},
-    {item_string = "ctf_map:damage_cobble 20", price = 15, modes = modes_all},
-    {item_string = "default:stonebrick 64", price = 10, modes = modes_all},
-    {item_string = "default:obsidian_glass 32", price = 5, modes = modes_all},
-    {item_string = "xpanes:obsidian_pane_flat 32", price = 5, modes = modes_all},
+    --{item_string = "default:steelblock 32", price = 40, modes = no_chaos_nade_modes},
+    --{item_string = "default:mese 64", price = 40, modes = no_chaos_nade_modes},
+    { item_string = "default:obsidian 16",                     price = 20,  modes = all_modes },
+    { item_string = "ctf_map:reinforced_cobble 20",            price = 20,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_map:damage_cobble 20",                price = 15,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_map:damage_glass 20",                 price = 15,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_map:spike 20",                        price = 20,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_map:reinforced_glass 20",             price = 20,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_map:reinforced_obsidian_glass 20",    price = 20,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_map:reinforced_stonebrick 20",        price = 20,  modes = no_chaos_nade_modes },
+    { item_string = "default:stonebrick 64",                   price = 10,  modes = no_chaos_nade_modes },
+    { item_string = "default:obsidian_glass 32",               price = 5,   modes = no_chaos_nade_modes },
+    { item_string = "xpanes:obsidian_pane_flat 32",            price = 5,   modes = no_chaos_nade_modes },
 
-    {item_string = "default:acacia_tree 10", price = 5, modes = modes_all},
-    {item_string = "default:acacia_wood 32", price = 5, modes = modes_all},
-    {item_string = "default:aspen_tree 10", price = 5, modes = modes_all},
-    {item_string = "default:aspen_wood 32", price = 5, modes = modes_all},
-    {item_string = "default:pine_tree 10", price = 5, modes = modes_all},
-    {item_string = "default:pine_wood 32", price = 5, modes = modes_all},
-    {item_string = "default:tree 10", price = 5, modes = modes_all},
-    {item_string = "default:wood 32", price = 5, modes = modes_all},
+    { item_string = "default:acacia_tree 10",                  price = 5,   modes = no_chaos_nade_modes },
+    { item_string = "default:acacia_wood 32",                  price = 5,   modes = no_chaos_nade_modes },
+    { item_string = "default:aspen_tree 10",                   price = 5,   modes = no_chaos_nade_modes },
+    { item_string = "default:aspen_wood 32",                   price = 5,   modes = no_chaos_nade_modes },
+    { item_string = "default:pine_tree 10",                    price = 5,   modes = no_chaos_nade_modes },
+    { item_string = "default:pine_wood 32",                    price = 5,   modes = no_chaos_nade_modes },
+    { item_string = "default:tree 10",                         price = 5,   modes = no_chaos_nade_modes },
+    { item_string = "default:wood 32",                         price = 5,   modes = no_chaos_nade_modes },
 
-    {item_string = "ctf_healing:heal_block", price = 120, modes = modes_all},
-    {item_string = "ctf_landmine:landmine 10", price = 40, modes = modes_all},
-    {item_string = "ctf_teams:door_steel 4", price = 20, modes = modes_all},
-    {item_string = "ctf_map:spike 20", price = 20, modes = modes_all},
-    {item_string = "xpanes:bar_flat 32", price = 10, modes = modes_all},
+    { item_string = "ctf_healing:heal_block",                  price = 120, modes = no_chaos_nade_modes },
+    { item_string = "ctf_landmine:landmine 10",                price = 40,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_teams:door_steel 4",                  price = 20,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_map:spike 20",                        price = 20,  modes = no_chaos_nade_modes },
+    { item_string = "xpanes:bar_flat 32",                      price = 10,  modes = no_chaos_nade_modes },
 
     --healing
-    {item_string = "ctf_healing:medkit", price = 25, modes = modes_all},
-    {item_string = "ctf_healing:bandage", price = 25, modes = modes_all},
-    {item_string = "default:apple 15", price = 40, modes = modes_without_nade_fight},
-    {item_string = "farming:bread 12", price = 60, modes = modes_all},
+    { item_string = "ctf_healing:medkit",                      price = 25,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_healing:bandage",                     price = 25,  modes = no_chaos_nade_modes },
+    { item_string = "default:apple 15",                        price = 40,  modes = modes_without_nade_fight },
+    { item_string = "farming:bread 12",                        price = 60,  modes = no_chaos_nade_modes },
     --diamond
-    --{item_string = "ctf_melee:sword_diamond", price = 40, modes = modes_all},
-    {item_string = "default:pick_diamond", price = 50, modes = modes_all},
-    {item_string = "default:axe_diamond", price = 60, modes = modes_all},
-    {item_string = "default:shovel_diamond", price = 25, modes = modes_all},
+    --{item_string = "ctf_melee:sword_diamond", price = 40, modes = no_chaos_nade_modes},
+    { item_string = "default:pick_diamond",                    price = 50,  modes = no_chaos_nade_modes },
+    { item_string = "default:axe_diamond",                     price = 60,  modes = no_chaos_nade_modes },
+    { item_string = "default:shovel_diamond",                  price = 25,  modes = no_chaos_nade_modes },
     --mese
-    --{item_string = "ctf_melee:sword_mese", price = 40, modes = modes_all},
-    {item_string = "default:pick_mese", price = 30, modes = modes_all},
-    {item_string = "default:axe_mese", price = 35, modes = modes_all},
-    {item_string = "default:shovel_mese", price = 20, modes = modes_all},
+    --{item_string = "ctf_melee:sword_mese", price = 40, modes = no_chaos_nade_modes},
+    { item_string = "default:pick_mese",                       price = 30,  modes = no_chaos_nade_modes },
+    { item_string = "default:axe_mese",                        price = 35,  modes = no_chaos_nade_modes },
+    { item_string = "default:shovel_mese",                     price = 20,  modes = no_chaos_nade_modes },
     --steel
-    --{item_string = "ctf_melee:sword_steel", price = 40, modes = modes_all},
-    {item_string = "default:pick_steel", price = 15, modes = modes_all},
-    {item_string = "default:axe_steel", price = 10, modes = modes_all},
-    {item_string = "default:shovel_steel", price = 5, modes = modes_all},
+    --{item_string = "ctf_melee:sword_steel", price = 40, modes = no_chaos_nade_modes},
+    { item_string = "default:pick_steel",                      price = 15,  modes = no_chaos_nade_modes },
+    { item_string = "default:axe_steel",                       price = 10,  modes = no_chaos_nade_modes },
+    { item_string = "default:shovel_steel",                    price = 5,   modes = no_chaos_nade_modes },
     --weapons
-    --{item_string = "ctf_ranged:sniper_magnum_loaded", price = 120, modes = modes_all},
-    {item_string = "ctf_ranged:shotgun_loaded", price = 150, modes = modes_all},
-    {item_string = "ctf_ranged:assault_rifle_loaded", price = 60, modes = modes_all},
-    {item_string = "ctf_ranged:rifle_loaded", price = 50, modes = modes_all},
-    {item_string = "ctf_ranged:pistol_loaded", price = 15, modes = modes_all},
+    --{item_string = "ctf_ranged:sniper_magnum_loaded", price = 120, modes = no_chaos_nade_modes},
+    { item_string = "ctf_ranged:shotgun_loaded",               price = 150, modes = no_chaos_nade_modes },
+    { item_string = "ctf_ranged:assault_rifle_loaded",         price = 60,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_ranged:rifle_loaded",                 price = 50,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_ranged:pistol_loaded",                price = 15,  modes = no_chaos_nade_modes },
+    { item_string = "ctf_ranged:sniper_loaded",                price = 150,  modes = { "chaos" } },
+
     --nice to have
-    {item_string = "ctf_ranged:ammo 5", price = 15, modes = modes_all},
-    {item_string = "grenades:frag", price = 25, modes = modes_all},
-    {item_string = "wind_charges:wind_charge 15", price = 30, modes = modes_all},
-    {item_string = "grenades:poison", price = 25, modes = modes_all},
-    {item_string = "grenades:smoke", price = 15, modes = modes_all},
+    { item_string = "ctf_ranged:ammo 10",                      price = 25,  modes = all_modes },
+    { item_string = "grenades:frag",                           price = 25,  modes = no_chaos_nade_modes },
+    { item_string = "wind_charges:wind_charge 15",             price = 30,  modes = all_modes },
+    { item_string = "grenades:poison",                         price = 25,  modes = no_chaos_nade_modes },
+    { item_string = "grenades:smoke",                          price = 15,  modes = no_chaos_nade_modes },
+
+    --chaos mode weapons and ammo
+    { item_string = "ctf_mode_chaos:shield",                   price = 40,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:stamina_booster",          price = 40,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:shotgun_loaded",                  price = 100, modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:rocket_launcher_rocket",   price = 50,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:power_charge 10",          price = 25,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:rocket 10",                price = 40,  modes = { "chaos" } },
+
+    --chaos shared launcher mods (use to pick a weapon)
+    { item_string = "ctf_mode_chaos:charger",                  price = 50,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:fast_reload",              price = 45,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:propellant",               price = 45,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:big_bang",                 price = 45,  modes = { "chaos" } },
+    -- { item_string = "ctf_mode_chaos:stabilizer",               price = 40,  modes = { "chaos" } },
+
+    --chaos weapon modifiers
+    { item_string = "ctf_mode_chaos:mod_bouncy",               price = 80,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:mod_cluster",              price = 80,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:mod_sticky",               price = 80,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:mod_rocket_launcher_rain", price = 70,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:mod_bunny_sharpness",      price = 60,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:mod_bunny_bunny_legs",     price = 60,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:mod_shield_hardened",      price = 50,  modes = { "chaos" } },
+    -- { item_string = "ctf_mode_chaos:mod_shield_tough",         price = 35,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:mod_shield_vitality",      price = 50,  modes = { "chaos" } },
+    { item_string = "ctf_mode_chaos:concrete 30",              price = 5,  modes = { "chaos" } },
 }
 
 local max_items_per_page = 11
@@ -111,7 +154,7 @@ local function get_items_of_page(page, ctf_mode)
     local allowed = {}
     for idx, def in ipairs(shop_items) do
         if table.keyof(def.modes, ctf_mode) then
-            table.insert(allowed, {index = idx, item = def})
+            table.insert(allowed, { index = idx, item = def })
         end
     end
     local page_shop_items = {}
@@ -132,6 +175,11 @@ local function show_shop_formspec(player_name, page)
         return
     end
 
+    -- The shop only opens during Chaos mode
+    if current_mode ~= "chaos" then
+        return
+    end
+
     if type(page) ~= "number" then
         page = 1
     end
@@ -144,7 +192,7 @@ local function show_shop_formspec(player_name, page)
         players_coins[player_name] = start_coin_amount
     end
 
-    if not core.check_player_privs(player_name, {dev = true}) then
+    if not core.check_player_privs(player_name, { dev = true }) then
         players_is_dev_mode[player_name] = nil
     end
 
@@ -155,17 +203,15 @@ local function show_shop_formspec(player_name, page)
         "size[11,12]",
         "bgcolor[#1e1e1e;true]",
         "box[0,0;11,1.2;#2d2d2d]",
-
         "hypertext[0.4,0.15;10,1;title;<center><style size=25 color=#FFD700><b>CTF Shop</b></style></center>]",
         "hypertext[0.4,0.85;10,1;info;<style size=14 color=#CCCCCC>Browse items and buy them with coins.</style>]",
-
         "hypertext[7.95,0.6;2.2,1;coins;<right><style size=18 color=#FFD700><b>"
-            .. core.formspec_escape(tostring(coins))
-            .. "</b></style></right>]",
+        .. core.formspec_escape(tostring(coins))
+        .. "</b></style></right>]",
         "image[10.1,0.45;0.7,0.7;ctf_shop_coin.png]"
     }
 
-    if core.check_player_privs(player_name, {dev = true}) then
+    if core.check_player_privs(player_name, { dev = true }) then
         table.insert(formspec,
             "checkbox[0.4,0.85;dev_mode_check;Developer Test Mode;" ..
             tostring(players_is_dev_mode[player_name] == true) .. "]"
@@ -175,19 +221,40 @@ local function show_shop_formspec(player_name, page)
     local current_y = 1.5
     local y_size = 0.68
 
+    local player = core.get_player_by_name(player_name)
+
     for shop_item_id, shop_item in pairs(get_items_of_page(page, current_mode)) do
+        -- Grey out weapon mods the player cannot install right now (weapon not
+        -- owned, already unlocked, or at max level).
+        local unavailable = false
+        local item_name = shop_item.item_string:match("^%S+")
+        if ctf_mode_chaos and ctf_mode_chaos.get_mod_install_status and player then
+            local ok = ctf_mode_chaos.get_mod_install_status(player, item_name)
+            unavailable = not ok
+        end
+
+        local item_image = shop_item.item_string
+        if unavailable then
+            item_image = item_image .. "^[colorize:#808080:200"
+        end
+
         table.insert(formspec,
-            "item_image[0.3," .. current_y .. ";" .. y_size .. "," .. y_size .. ";" .. shop_item.item_string .. "]"
+            "item_image[0.3," ..
+            current_y .. ";" .. y_size .. "," .. y_size .. ";" .. item_image .. "]"
         )
         table.insert(formspec,
-            "button[10.0," .. current_y .. ";" .. y_size .. "," .. y_size .. ";buy_item_button_" .. shop_item_id .. ";+]"
+            "button[10.0," ..
+            current_y ..
+            ";" .. y_size .. "," .. y_size .. ";buy_item_button_" .. shop_item_id
+            .. ";" .. (unavailable and "✗" or "+") .. "]"
         )
         table.insert(formspec,
-            "hypertext[3.5," .. current_y+0.2 .. ";4,1;price;<style color=#CCCCCC>Price: " ..
+            "hypertext[3.5," .. current_y + 0.2 .. ";4,1;price;<style color="
+            .. (unavailable and "#666666" or "#CCCCCC") .. ">Price: " ..
             core.formspec_escape(tostring(shop_item.price)) .. "</style>]"
         )
         table.insert(formspec,
-            "image[5.5," .. (current_y+0.075) .. ";0.55,0.55;ctf_shop_coin.png]"
+            "image[5.5," .. (current_y + 0.075) .. ";0.55,0.55;ctf_shop_coin.png]"
         )
         current_y = current_y + y_size + 0.15
     end
@@ -223,58 +290,81 @@ core.register_on_player_receive_fields(function(player, formname, fields)
     end
 
     if fields.dev_mode_check then
-        players_is_dev_mode[player_name] = (fields.dev_mode_check == "true" and core.check_player_privs(player_name, {dev = true}))
+        players_is_dev_mode[player_name] = (fields.dev_mode_check == "true" and core.check_player_privs(player_name, { dev = true }))
         if players_is_dev_mode[player_name] then
-            core.chat_send_player(player_name, "NOTE: Don't use the Developer Test Mode in regular matches. It is only there for debugging purposes.")
+            core.chat_send_player(player_name,
+                "NOTE: Don't use the Developer Test Mode in regular matches. It is only there for debugging purposes.")
         end
     end
 
-    if core.check_player_privs(player_name, {dev = true}) ~= true then
+    if core.check_player_privs(player_name, { dev = true }) ~= true then
         players_is_dev_mode[player_name] = nil
     end
 
     for field, field_value in pairs(fields) do
         local shop_item_id = field:match("^buy_item_button_(%d+)$")
-		if shop_item_id then
-			shop_item_id = tonumber(shop_item_id)
+        if shop_item_id then
+            shop_item_id = tonumber(shop_item_id)
             if type(shop_items[shop_item_id]) == "table" then
+                -- Refuse weapon mods the player cannot install right now
+                if ctf_mode_chaos and ctf_mode_chaos.get_mod_install_status then
+                    local item_name = shop_items[shop_item_id].item_string:match("^%S+")
+                    local ok, reason = ctf_mode_chaos.get_mod_install_status(player,
+                        item_name)
+                    if not ok then
+                        core.chat_send_player(player_name,
+                            reason or "You can't buy this item yet.")
+                        return
+                    end
+                end
                 if (players_coins[player_name] >= shop_items[shop_item_id].price) or players_is_dev_mode[player_name] then
                     local player_inventory = player:get_inventory()
                     player_inventory:add_item("main", shop_items[shop_item_id].item_string)
                     if players_is_dev_mode[player_name] ~= true then
-                        players_coins[player_name] = players_coins[player_name] - shop_items[shop_item_id].price
+                        players_coins[player_name] = players_coins[player_name] -
+                            shop_items[shop_item_id].price
                     end
                     show_shop_formspec(player_name, (players_last_page[player_name] or 1))
                 else
                     core.chat_send_player(player_name, "You don't have enough shop coins.")
                 end
             end
-		end
+        end
     end
 end)
 
-ctf_api.register_on_new_match(function()
+-- Reset players' coins only when Chaos mode starts, not every match
+ctf_api.register_on_mode_start(function(mode)
     players_coins = {}
-    core.after(3, function ()
-        local team_player_names = ctf_teams.get_all_team_players()
-        for _, player_name in ipairs(team_player_names) do
-            local player = core.get_player_by_name(player_name)
-            if player and ctf_settings.get(player, "ctf_shop:automatic_shop_display") == "true" then
-                show_shop_formspec(player_name, 1)
-            end
+    for _, name in ipairs(ctf_teams.get_all_team_players()) do
+        players_coins[name] = start_coin_amount
+    end
+    schedule_coin_tick()
+    core.chat_send_all(
+        core.colorize("orange", "Type the /shop command in chat to open the item shop")
+    )
+end)
+
+ctf_api.register_on_match_end(function()
+    for _, name in ipairs(ctf_teams.get_all_team_players()) do
+        local coins = players_coins[name]
+        if coins and coins < start_coin_amount then
+            players_coins[name] = start_coin_amount
         end
-        core.chat_send_all(core.colorize("#f49200", "You can disable automatic shop display in the settings."))
-    end)
+    end
 end)
 
 core.register_chatcommand("shop", {
-	description = "Open the CTF Shop",
-	privs = {interact = true},
-	func = function(player_name)
+    description = "Open the CTF Shop",
+    privs = { interact = true },
+    func = function(player_name)
+        if ctf_modebase.current_mode ~= "chaos" then
+            return false, "The shop is only available in Chaos mode."
+        end
 
-		show_shop_formspec(player_name, 1)
-		return true, "Opened the shop."
-	end,
+        show_shop_formspec(player_name, 1)
+        return true, "Opened the shop."
+    end,
 })
 
 ctf_shop.shop_items = shop_items

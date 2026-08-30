@@ -17,6 +17,16 @@ end
 local entity_exists = random_gifts.entity_exists
 
 local list = {}
+local gift_count = { min = 4, max = 16 }
+
+local function get_random_gift_count()
+	local min_count = tonumber(gift_count.min) or 1
+	local max_count = tonumber(gift_count.max) or min_count
+	if max_count < min_count then
+		max_count = min_count
+	end
+	return math.random(min_count, max_count)
+end
 
 local function choose_item_with_chance(itemlist)
     local total_chance = 0
@@ -38,12 +48,24 @@ local function choose_item_with_chance(itemlist)
     return nil
 end
 
+local function get_random_item_amount(item)
+	if item.amount ~= nil then
+		return item.amount
+	end
+
+	local min = tonumber(item.min) or 1
+	local max = tonumber(item.max) or min
+	if max < min then
+		max = min
+	end
+	return math.random(min, max)
+end
+
 local function show_formspec(player)
 	local player_name = player:get_player_name()
 	local formspec =
 		"formspec_version[7]" ..
-		"size[10,5]" ..
-		"no_prepend[]" ..
+		"size[10,7]" ..
 		-- "background[0,0;10,5;random_gifts_background.png]"..
 		"button_exit[9.3,0;0.7,0.7;;X]" ..
 		"style_type[image_button;bgcolor=black]" ..
@@ -51,32 +73,38 @@ local function show_formspec(player)
 
 	local box = open_boxes[player_name]
 
-	local total_width = 8 --amount of elements
-	local element_width = 1 --width of each element
-	local spacing = 0.2 --space between elements
-	local total_elements_width = total_width * element_width + (total_width - 1) * spacing
+	local total_columns = 4
+	local total_rows = 4
+	local element_width = 1
+	local element_height = 1
+	local spacing = 0.2
+	local total_elements_width = total_columns * element_width + (total_columns - 1) * spacing
 
-	local start_offset = (10 - total_elements_width) / 2 --X centering
+	local start_offset_x = (10 - total_elements_width) / 2
+	local start_offset_y = 1.2
 
-	for i = 1, total_width do
-		local offset = start_offset + (i - 1) * (element_width + spacing)
-		local gift_index = box.gifts[i]
-		if gift_index and list[gift_index] then
-			local gift = list[gift_index]
-			local amount = gift.amount or 1
-			local field_name = "item_" .. gift_index
+	for i = 1, total_columns * total_rows do
+		local column = ((i - 1) % total_columns) + 1
+		local row = math.floor((i - 1) / total_columns) + 1
+		local offset_x = start_offset_x + (column - 1) * (element_width + spacing)
+		local offset_y = start_offset_y + (row - 1) * (element_height + spacing)
+		local selected_gift = box.gifts[i]
+		if selected_gift and list[selected_gift.item_index] then
+			local gift = list[selected_gift.item_index]
+			local amount = selected_gift.amount or gift.amount or 1
+			local field_name = "item_" .. selected_gift.id
 			if gift.oneshot then
 				formspec = formspec .. "style[" .. field_name .. ";bgcolor=yellow]"
 			end
 			if gift.itemname then
-				formspec = formspec .. string.format("item_image_button[%f,1.7;1,1;%s;%s;%s]",
-				offset, gift.itemname, field_name, amount)
+				formspec = formspec .. string.format("item_image_button[%f,%f;1,1;%s;%s;%s]",
+					offset_x, offset_y, gift.itemname, field_name, amount)
 			elseif gift.image then
-				formspec = formspec .. string.format("image_button[%f,1.7;1,1;%s;%s;%s]",
-			 	offset, gift.image, field_name, amount)
+				formspec = formspec .. string.format("image_button[%f,%f;1,1;%s;%s;%s]",
+					offset_x, offset_y, gift.image, field_name, amount)
 			end
 		else
-			formspec = formspec .. "box[" .. offset .. ",1.7;1,1;gray]"
+			formspec = formspec .. "box[" .. offset_x .. "," .. offset_y .. ";1,1;gray]"
 		end
 	end
 
@@ -123,9 +151,9 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 		return true
 	end
 
-	for i, gift_index in ipairs(box.gifts) do
-		if fields["item_" .. gift_index] then
-			local gift = list[gift_index]
+	for i, selected_gift in ipairs(box.gifts) do
+		if fields["item_" .. selected_gift.id] then
+			local gift = list[selected_gift.item_index]
 			if not gift then
 				box.entity:remove()
 				open_boxes[player_name] = nil
@@ -138,7 +166,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 			if gift.itemname then
 				stack = ItemStack({
 					name = gift.itemname,
-					count = gift.amount or 1
+					count = selected_gift.amount or gift.amount or 1
 				})
 			elseif type(gift.func) == "function" then
 				stack, remove_giftbox = gift.func(player, box.entity)
@@ -224,8 +252,31 @@ core.register_entity("random_gifts:gift", {
 			if entity_exists(self.parachute) then
 				self.parachute:remove()
 				self.parachute = nil
-				return
 			end
+
+			local pos = self.object:get_pos()
+			if pos then
+				core.set_node(pos, { name = "ctf_map:chest" })
+				local meta = core.get_meta(pos)
+				local inv = meta:get_inventory()
+				for _, selected_gift in ipairs(self.selected_gifts or {}) do
+					local gift = list[selected_gift.item_index]
+					if gift and gift.itemname then
+						local stack = ItemStack({
+							name = gift.itemname,
+							count = selected_gift.amount or gift.amount or 1,
+						})
+						local leftover = inv:add_item("main", stack)
+						if not leftover:is_empty() then
+							core.add_item(pos, leftover)
+						end
+					end
+				end
+				meta:set_string("infotext", "Treasure Chest")
+				core.get_node_timer(pos):set(300, 0)
+			end
+			self.object:remove()
+			return
 		end
 
 		local vel = self.object:get_velocity()
@@ -252,10 +303,15 @@ core.register_entity("random_gifts:gift", {
 		self.parachute = par
 
 		self.selected_gifts = {}
-		for _ = 1, math.random(4, 8) do
+		for _ = 1, get_random_gift_count() do
 			local selected = choose_item_with_chance(list)
 			if selected then
-				table.insert(self.selected_gifts, selected)
+				local gift = list[selected]
+				table.insert(self.selected_gifts, {
+					id = tostring(selected) .. ":" .. tostring(math.random(1, 99999999)),
+					item_index = selected,
+					amount = get_random_item_amount(gift),
+				})
 			end
 		end
 	end,
@@ -295,8 +351,23 @@ core.register_entity("random_gifts:gift", {
     -- end,
 })
 
-function random_gifts.set_items(itemlist)
+function random_gifts.set_gift_count_range(min_count, max_count)
+	gift_count.min = tonumber(min_count) or 1
+	gift_count.max = tonumber(max_count) or gift_count.min
+	if gift_count.max < gift_count.min then
+		gift_count.max = gift_count.min
+	end
+end
+
+function random_gifts.set_items(itemlist, options)
 	list = itemlist
+	if options then
+		gift_count.min = tonumber(options.min) or gift_count.min
+		gift_count.max = tonumber(options.max) or gift_count.max
+		if gift_count.max < gift_count.min then
+			gift_count.max = gift_count.min
+		end
+	end
 end
 
 core.register_entity("random_gifts:parachute", {

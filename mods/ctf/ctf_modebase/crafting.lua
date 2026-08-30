@@ -214,3 +214,15 @@ crafting.register_recipe({
 	items = { "default:steel_ingot", "grenades:frag" },
 	always_known = false,
 })
+
+crafting.register_recipe({
+	output = "ctf_mode_chaos:power_charge 16",
+	items = { "default:steel_ingot 4"},
+	always_known = false,
+})
+
+crafting.register_recipe({
+	output = "ctf_mode_chaos:concrete 3",
+	items = { "default:cobble 16" },
+	always_known = false,
+})

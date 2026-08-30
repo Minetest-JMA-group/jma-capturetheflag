@@ -22,6 +22,7 @@ local tnt_radius = tonumber(core.settings:get("tnt_radius") or 3)
 
 -- Fill a list with data for content IDs, after all nodes are registered
 local cid_data = {}
+local collisionbox = {}
 core.register_on_mods_loaded(function()
 	for name, def in pairs(core.registered_nodes) do
 		cid_data[core.get_content_id(name)] = {
@@ -31,6 +32,7 @@ core.register_on_mods_loaded(function()
 			on_blast = def.on_blast,
 		}
 	end
+	collisionbox = player_api.registered_models["character.b3d"].collisionbox
 end)
 
 local function rand_pos(center, pos, radius)
@@ -150,7 +152,53 @@ local function calc_velocity(pos1, pos2, old_vel, power)
 	return vel
 end
 
-local function entity_physics(pos, radius, drops, puncher_name, damage_mod)
+-- Damage multiplier applied when a regular walkable node blocks the line of
+-- sight between the explosion and a player.
+local OBSTRUCTED_DAMAGE_FACTOR = 0.5
+
+-- Returns the damage multiplier for a ray from the explosion center to a
+-- target point:
+--   1.0 - clear line of sight
+--   OBSTRUCTED_DAMAGE_FACTOR - a regular walkable node is in the way
+--   0.0 - a blast-protection node (group "blast_protection") is in the way
+local function obstruction_factor(pos, target, dmg_factor)
+	local ray = core.raycast(pos, target, false, false)
+	local total = vector.distance(pos, target)
+	local hit = ray:next()
+	while hit do
+		if hit.type == "node" then
+			local node_pos = hit.under
+			local name = core.get_node(node_pos).name
+			local def = core.registered_nodes[name]
+			if def and def.walkable then
+				-- Skip the nodes right next to the explosion and the target
+				local d = vector.distance(pos, hit.intersection_point)
+				if d > 0.5 and total - d > 0.5 then
+					if core.get_item_group(name, "blast_protection") > 0 then
+						return 0
+					end
+					return dmg_factor or OBSTRUCTED_DAMAGE_FACTOR
+				end
+			end
+		end
+		hit = ray:next()
+	end
+	return 1
+end
+
+-- Average damage factor across the player's body. Two points are sampled to
+-- account for the ~2 node tall collision box (legs + torso/head).
+local function player_damage_factor(pos, player, dmg_factor)
+	local ppos = player:get_pos()
+	local y1 = ppos.y + collisionbox[2]
+	local y2 = ppos.y + collisionbox[5]
+	return (
+		obstruction_factor(pos, vector.new(ppos.x, y1 + (y2 - y1) * 0.25, ppos.z), dmg_factor)
+		+ obstruction_factor(pos, vector.new(ppos.x, y1 + (y2 - y1) * 0.75, ppos.z), dmg_factor)
+	) / 2
+end
+
+local function entity_physics(pos, radius, drops, puncher_name, damage_mod, dmg_factor, damage_mult, knockback_mult)
 	damage_mod = damage_mod or 0
 	local objs = core.get_objects_inside_radius(pos, radius)
 	for _, obj in ipairs(objs) do
@@ -158,33 +206,40 @@ local function entity_physics(pos, radius, drops, puncher_name, damage_mod)
 			---@cast obj PlayerRef
 			local obj_pos = obj:get_pos()
 			local dist = math.max(1, vector.distance(pos, obj_pos))
-			local damage = (4 / dist) * (radius + damage_mod)
+
+			-- Obstacles between the explosion and the player weaken the blast;
+			-- blast-protection nodes (group "blast_protection") fully block it.
+			local factor = player_damage_factor(pos, obj, dmg_factor)
+
+			local damage = (4 / dist) * (radius + damage_mod) * factor * (damage_mult or 1)
 
 			local knockback = true
-			if puncher_name then
-				local puncher = core.get_player_by_name(puncher_name)
-				if puncher then
-					local puncher_team = ctf_teams.get(puncher)
-					local obj_team = ctf_teams.get(obj)
-					if puncher ~= obj and puncher_team and obj_team and puncher_team == obj_team then
-						knockback = false
-					else
-						obj:punch(puncher, 1, {
-							full_punch_interval = 1,
-							damage_groups = {
-								fleshy = damage,
-								explosion = 1,
-							}
-						}, nil)
+			if damage > 0 then
+				if puncher_name then
+					local puncher = core.get_player_by_name(puncher_name)
+					if puncher then
+						local puncher_team = ctf_teams.get(puncher)
+						local obj_team = ctf_teams.get(obj)
+						if puncher ~= obj and puncher_team and obj_team and puncher_team == obj_team then
+							knockback = false
+						else
+							obj:punch(puncher, 1, {
+								full_punch_interval = 1,
+								damage_groups = {
+									fleshy = damage,
+									explosion = 1,
+								}
+							}, nil)
+						end
 					end
+				else
+					obj:set_hp(obj:get_hp() - damage)
 				end
-			else
-				obj:set_hp(obj:get_hp() - damage)
 			end
 
 			if knockback then
 				local dir = vector.normalize(vector.subtract(obj_pos, pos))
-				local moveoff = vector.multiply(dir, dist * radius)
+				local moveoff = vector.multiply(dir, dist * radius * factor * (knockback_mult or 1))
 				obj:add_velocity(moveoff)
 			end
 		end
@@ -202,22 +257,6 @@ local function add_effects(pos, radius, drops)
 		vertical = false,
 		texture = "tnt_boom.png",
 		glow = 15,
-	})
-	core.add_particlespawner({
-		amount = 16,
-		time = 0.05,
-		minpos = vector.subtract(pos, radius / 2),
-		maxpos = vector.add(pos, radius / 2),
-		minvel = {x = -10, y = -10, z = -10},
-		maxvel = {x = 10, y = 10, z = 10},
-		minacc = vector.zero(),
-		maxacc = vector.zero(),
-		minexptime = 0.1,
-		maxexptime = 1,
-		minsize = radius * 3,
-		maxsize = radius * 5,
-		texture = "tnt_smoke.png",
-		collisiondetection = true,
 	})
 
 	-- we just dropped some items. Look at the items entities and pick
@@ -241,8 +280,8 @@ local function add_effects(pos, radius, drops)
 	end
 
 	core.add_particlespawner({
-		amount = 32,
-		time = 0.2,
+		amount = 16,
+		time = 0.3,
 		minpos = vector.subtract(pos, radius / 2),
 		maxpos = vector.add(pos, radius / 2),
 		minvel = {x = -3, y = 0, z = -3},
@@ -256,7 +295,7 @@ local function add_effects(pos, radius, drops)
 		texture = texture,
 		-- ^ only as fallback for clients without support for `node` parameter
 		node = node,
-		collisiondetection = true,
+		collisiondetection = false,
 	})
 end
 
@@ -385,7 +424,8 @@ function tnt.boom(pos, def)
 			def.ignore_on_blast, def.ignore_indestructible, owner, def.explode_center)
 	-- append entity drops
 	local damage_radius = (radius / math.max(1, def.radius)) * def.damage_radius
-	entity_physics(pos, damage_radius, drops, def.puncher_name, def.damage_modifier)
+	entity_physics(pos, damage_radius, drops, def.puncher_name, def.damage_modifier, def.damage_factor,
+		def.damage_multiplier, def.knockback_multiplier)
 	if not def.disable_drops then
 		eject_drops(drops, pos, radius)
 	end
