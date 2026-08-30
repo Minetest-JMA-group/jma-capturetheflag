@@ -56,8 +56,8 @@ function ctf_modebase.values.get_heal_score(player, recent)
 	local ranking = ctf_modebase.values.get_ranking(player, recent)
 	local hp_healed = ranking.hp_healed or 1
 	local deaths = ranking.deaths or 1
-	--- 15 is knight_hp / 2
-	return (hp_healed / 15) / deaths
+	--- 30 is knight_hp / 2
+	return math.sqrt(hp_healed / 30) / (deaths + 1)
 end
 
 --- @type ScoreFun
