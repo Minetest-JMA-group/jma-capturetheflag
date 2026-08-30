@@ -8,22 +8,21 @@ local TEAM_WOOL_COLORS = {
 	purple = "wool:violet",
 }
 
--- Mapping between wool colors and white wool for digging
-local WOOL_COLOR_TO_WHITE = {
-	["wool:red"] = "wool:white",
-	["wool:green"] = "wool:white",
-	["wool:blue"] = "wool:white",
-	["wool:orange"] = "wool:white",
-	["wool:yellow"] = "wool:white",
-	["wool:violet"] = "wool:white",
-	["wool:pink"] = "wool:white",
-	["wool:cyan"] = "wool:white",
-	["wool:dark_grey"] = "wool:white",
-	["wool:grey"] = "wool:white",
-	["wool:black"] = "wool:white",
-	["wool:dark_green"] = "wool:white",
-	["wool:brown"] = "wool:white",
-	["wool:magenta"] = "wool:white",
+local WOOL_COLORS = {
+	"wool:red",
+	"wool:green",
+	"wool:blue",
+	"wool:orange",
+	"wool:yellow",
+	"wool:violet",
+	"wool:pink",
+	"wool:cyan",
+	"wool:dark_grey",
+	"wool:grey",
+	"wool:black",
+	"wool:dark_green",
+	"wool:brown",
+	"wool:magenta",
 }
 
 -- Override placement for wool:white to replace it with the team color
@@ -58,27 +57,9 @@ core.override_item("wool:white", {
 	end,
 })
 
--- Override dig for all wool colors to return white wool instead
-for wool_color, white_wool in pairs(WOOL_COLOR_TO_WHITE) do
+-- Override drop for all wool colors to return white wool instead
+for _, wool_color in pairs(WOOL_COLORS) do
 	core.override_item(wool_color, {
-		on_dig = function(pos, node, digger)
-			-- Check that the digger is a player
-			if not digger then
-				return false
-			end
-
-			local inv = digger:get_inventory()
-			if not inv then
-				return false
-			end
-
-			-- Remove the node
-			core.remove_node(pos)
-
-			-- Give the player white wool
-			inv:add_item("main", white_wool)
-
-			return true
-		end,
+		drop = "wool:white"
 	})
 end
