@@ -9,7 +9,7 @@ local quick_help = "Welcome to JMA Elysium! @1: @2\n"
 	.. "Want to invite someone? Use /einvite <player>.\n"
 	.. "To talk in global chat, use /g <message>.\n"
 	.. "Use /espawn to return to Elysium's spawn point.\n"
-	.. "Note: JMA Elysium is currently under development and bugs may occur."
+	.. "New updates for eleysium are on their way!"
 
 local REJOIN_COOLDOWN = ctf_core.init_cooldowns()
 local MAX_ELYSIUM_JOINS = 4
