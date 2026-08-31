@@ -10,29 +10,17 @@ ctf_settings.register("ctf_shop:automatic_shop_display", {
 --Note: The most expensive item is currently set to 150 coins, please adjust the price if changes at max_coins are being made
 local max_coins = 150
 local start_coin_amount = 40
-local coins_per_minute = 5
+local coins_per_minute = 3
 
 local players_coins = {}
 
 local all_modes = ctf_modebase.modelist
 local modes_without_nade_fight = { "chaos", "classes", "classic", "rush" }
 local no_chaos_nade_modes = { "classes", "classic", "rush" }
-
-local coin_tick_scheduled = false
+local coin_timer
 
 local function schedule_coin_tick()
-    if coin_tick_scheduled then
-        return
-    end
-
-    coin_tick_scheduled = true
-    core.after(60, function()
-        coin_tick_scheduled = false
-
-        if ctf_modebase.current_mode ~= "chaos" then
-            return
-        end
-
+    coin_timer = core.after(60, function()
         for player_name, coin_amount in pairs(players_coins) do
             players_coins[player_name] = math.min(coin_amount + coins_per_minute, max_coins)
         end
@@ -334,7 +322,16 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 end)
 
 -- Reset players' coins only when Chaos mode starts, not every match
-ctf_api.register_on_mode_start(function(mode)
+ctf_api.register_on_mode_start(function()
+    if ctf_modebase.current_mode ~= "chaos" then
+        if coin_timer then
+            coin_timer:cancel()
+            coin_timer = nil
+        end
+
+        return
+    end
+
     players_coins = {}
     for _, name in ipairs(ctf_teams.get_all_team_players()) do
         players_coins[name] = start_coin_amount
@@ -345,7 +342,12 @@ ctf_api.register_on_mode_start(function(mode)
     )
 end)
 
+
 ctf_api.register_on_match_end(function()
+    if ctf_modebase.current_mode ~= "chaos" then
+        return
+    end
+
     for _, name in ipairs(ctf_teams.get_all_team_players()) do
         local coins = players_coins[name]
         if coins and coins < start_coin_amount then
