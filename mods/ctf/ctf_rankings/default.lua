@@ -18,8 +18,10 @@ return function(prefix, top)
 			rank = core.parse_json(value)
 		end
 
-		if rank ~= nil and rank.score then
-			top:set(key, rank.score)
+		if type(rank) == "table" then
+			if rank ~= nil and rank.score then
+				top:set(key, rank.score)
+			end
 		end
 	end)
 	core.log(
