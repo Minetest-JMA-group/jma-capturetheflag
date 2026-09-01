@@ -242,7 +242,7 @@ for mode, gun in pairs(weapons_api.rocket_guns) do
 		groups = {},
 		on_use = function(itemstack, user, pointed_thing)
 			---@cast user PlayerRef
-			return weapons_api.handle_use(user, itemstack, ROCKET_LAUNCHER, mode)
+			return weapons_api.handle_use(user, itemstack, pointed_thing, ROCKET_LAUNCHER, mode)
 		end,
 		on_secondary_use = function(itemstack, user, pointed_thing)
 			---@cast user PlayerRef

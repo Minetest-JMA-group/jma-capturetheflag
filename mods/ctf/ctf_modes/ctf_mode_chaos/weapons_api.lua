@@ -389,7 +389,17 @@ function api.fire_grenade_mode(user, itemstack, gun, mode, weapon_id)
 end
 
 -- Dispatches a weapon use: checks cooldowns, then fires the current mode.
-function api.handle_use(user, itemstack, weapon_id, mode)
+function api.handle_use(user, itemstack, pointed_thing, weapon_id, mode)
+	if pointed_thing.type == "node" then
+		local node = core.get_node(pointed_thing.under)
+		if node.name:match("ctf_modebase:flag") then
+			local ndef = core.registered_nodes[node.name]
+			if ndef then
+				return ndef.on_punch(pointed_thing.under, node, user, pointed_thing)
+			end
+		end
+	end
+
 	if not ctf_mode_chaos.can_use() then
 		return itemstack
 	end
