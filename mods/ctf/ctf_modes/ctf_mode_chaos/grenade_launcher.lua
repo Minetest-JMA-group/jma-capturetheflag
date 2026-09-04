@@ -242,25 +242,6 @@ core.register_entity("ctf_mode_chaos:grenade", {
 	timer = 0,
 	on_activate = function(self)
 		self.start_pos = self.object:get_pos()
-		core.add_particlespawner({
-			attached = self.object,
-			amount = 5,
-			time = 1,
-			minpos = { x = 0, y = -0.5, z = 0 },
-			maxpos = { x = 0, y = 0.5, z = 0 },
-			minvel = { x = 0, y = 0, z = 0 },
-			maxvel = self.object:get_velocity(),
-			minacc = { x = 0, y = 5, z = 0 },
-			maxacc = { x = 0, y = 7, z = 0 },
-			minexptime = 1.5,
-			maxexptime = 3.0,
-			minsize = 2,
-			maxsize = 3,
-			collisiondetection = false,
-			collision_removal = false,
-			vertical = false,
-			texture = "grenades_smoke.png^[colorize:black:150",
-		})
 		self.ricochets = 0 -- Count of ricochets off solid nodes
 	end,
 	on_step = function(self, dtime, moveresult)
