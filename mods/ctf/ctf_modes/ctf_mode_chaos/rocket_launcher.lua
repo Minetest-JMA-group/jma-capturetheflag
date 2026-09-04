@@ -16,6 +16,7 @@ weapons_api.register_gun(ROCKET_LAUNCHER, "rocket", {
 	charged_speed = 45,
 	radius = 3,
 	charged_radius = 4,
+	destruction_radius = 2,
 	damage_modifier = 1.4,
 })
 
@@ -34,6 +35,7 @@ weapons_api.register_gun(ROCKET_LAUNCHER, "rain", {
 	spread = 0.05,
 	mini_count = 10,
 	mini_damage = 4,
+	disable_destruction = true,
 })
 
 local rocket_mode_order = { "rocket", "rain" }
@@ -72,7 +74,10 @@ local function explode_rocket(self, pos)
 	if weapons_api.can_explode(pos, self.puncher_name, self.radius or 3) then
 		tnt.boom(pos, {
 			puncher_name = self.puncher_name,
+			-- Damage/entity radius is governed by self.radius; terrain
+			-- destruction uses its own, separately tuned radius.
 			radius = self.radius or 3,
+			destruction_radius = self.destruction_radius,
 			damage_modifier = self.damage_modifier or 1.4,
 			damage_multiplier = self.damage_multiplier or 1,
 			knockback_multiplier = (self.knockback or 1) * ROCKET_KNOCKBACK,
@@ -165,6 +170,8 @@ local function explode_mini_rocket(self, pos)
 		tnt.boom(pos, {
 			puncher_name = self.puncher_name,
 			radius = 1,
+			-- Rain mini rockets never dig the terrain (see the rain gun def).
+			disable_destruction = self.disable_destruction,
 			damage_modifier = self.damage_modifier or 1,
 			damage_multiplier = self.damage_multiplier or 1,
 			knockback_multiplier = (self.knockback or 1) * ROCKET_KNOCKBACK,

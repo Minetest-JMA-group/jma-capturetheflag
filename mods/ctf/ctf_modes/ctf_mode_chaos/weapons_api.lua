@@ -290,6 +290,7 @@ function api.fire_grenade_mode(user, itemstack, gun, mode, weapon_id)
 				if mobj then
 					local ment = mobj:get_luaentity()
 					ment.puncher_name = pname
+					ment.disable_destruction = gun.disable_destruction
 					mobj:set_velocity(vector.multiply(mdir, mspeed))
 				end
 			end
@@ -334,6 +335,16 @@ function api.fire_grenade_mode(user, itemstack, gun, mode, weapon_id)
 					ent.damage_multiplier = (base_damage / blast_damage) * CHARGED_BONUS
 					ent.knockback = (base_radius / blast_radius) * CHARGED_BONUS
 				end
+
+				-- Optional per-gun terrain settings (rocket launcher): the crater
+				-- radius is decoupled from the damage radius and destruction can
+				-- be disabled entirely. Falls back to the damage radius / on.
+				local destruction_radius = gun.destruction_radius
+				if charged and gun.charged_destruction_radius then
+					destruction_radius = gun.charged_destruction_radius
+				end
+				ent.destruction_radius = destruction_radius
+				ent.disable_destruction = gun.disable_destruction
 
 				if is_rocket then
 					local pitch = user:get_look_vertical()

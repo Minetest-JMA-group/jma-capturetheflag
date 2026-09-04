@@ -428,16 +428,25 @@ function tnt.boom(pos, def)
 	local sound = def.sound or "tnt_explode"
 	core.sound_play(sound, {pos = pos, gain = 2.5, pitch = math.random(10, 20) / 10,
 			max_hear_distance = math.min(def.radius * 20, 128)}, true)
-	local drops, radius = tnt_explode(pos, def.radius, def.ignore_protection,
-			def.ignore_on_blast, def.ignore_indestructible, owner, def.explode_center)
+	local destruction_radius = def.destruction_radius or def.radius
+	local drops = {}
+	local used_radius
+	if def.disable_destruction then
+		used_radius = destruction_radius
+	else
+		drops, used_radius = tnt_explode(pos, destruction_radius,
+			def.ignore_protection, def.ignore_on_blast,
+			def.ignore_indestructible, owner, def.explode_center)
+	end
+
 	-- append entity drops
-	local damage_radius = (radius / math.max(1, def.radius)) * def.damage_radius
+	local damage_radius = (used_radius / math.max(1, destruction_radius)) * def.damage_radius
 	entity_physics(pos, damage_radius, drops, def.puncher_name, def.damage_modifier, def.damage_factor,
 		def.damage_multiplier, def.knockback_multiplier, def.self_knockback_multiplier)
 	if not def.disable_drops then
-		eject_drops(drops, pos, radius)
+		eject_drops(drops, pos, used_radius)
 	end
-	add_effects(pos, radius, drops)
+	add_effects(pos, used_radius, drops)
 end
 
 core.register_node("tnt:boom", {
