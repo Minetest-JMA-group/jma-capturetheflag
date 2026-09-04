@@ -15,11 +15,12 @@ weapons_api.register_gun(LAUNCHER, "frag", {
 	charged_recoil = 10,
 	speed = 15,
 	charged_speed = 30,
-	radius = 1,
+	radius = 2,
 	charged_radius = 4,
 	max_lifetime = 3,
 	on_use_sound = "ctf_mode_chaos_grenade_launcher_plop",
 	damage_modifier = 0.7,
+	destruction_radius = 1,
 })
 
 weapons_api.register_gun(LAUNCHER, "bouncy", {
@@ -36,11 +37,12 @@ weapons_api.register_gun(LAUNCHER, "bouncy", {
 	charged_recoil = 7,
 	speed = 19,
 	charged_speed = 28,
-	radius = 2,
+	radius = 4,
     charged_radius = 3,
-	max_lifetime = 5,
+	max_lifetime = 3,
 	on_use_sound = "ctf_mode_chaos_grenade_launcher_plop",
 	damage_modifier = 0.7,
+	destruction_radius = 1,
 })
 
 weapons_api.register_gun(LAUNCHER, "cluster", {
@@ -52,18 +54,19 @@ weapons_api.register_gun(LAUNCHER, "cluster", {
 	ammo_label = "power charges",
 	cost = 1,
 	charged_cost = 2,
-	cooldown = 0.5,
+	cooldown = 1,
 	recoil = 3,
 	charged_recoil = 9,
 	speed = 16,
 	charged_speed = 26,
 	radius = 2,
-	charged_radius = 2,
+	charged_radius = 3,
 	mini_count = 5,
 	charged_mini_count = 8,
 	max_lifetime = 3.5,
 	on_use_sound = "ctf_mode_chaos_grenade_launcher_plop",
 	damage_modifier = 1,
+	disable_destruction = true,
 })
 
 weapons_api.register_gun(LAUNCHER, "sticky", {
@@ -80,14 +83,15 @@ weapons_api.register_gun(LAUNCHER, "sticky", {
 	charged_recoil = 7,
 	speed = 18,
 	charged_speed = 28,
-	radius = 2,
-	charged_radius = 3,
+	radius = 3,
+	charged_radius = 4,
 	arm_time = 0.6,
 	trigger_radius = 2.5,
 	charged_trigger_radius = 3.5,
 	max_lifetime = 20,
 	on_use_sound = "ctf_mode_chaos_grenade_launcher_plop",
 	damage_modifier = 1.2,
+	disable_destruction = true,
 })
 
 ctf_mode_chaos.register_weapon_template({
@@ -143,6 +147,8 @@ local function explode(self, pos)
 		tnt.boom(pos, {
 			puncher_name = pname,
 			radius = 1,
+			disable_destruction = self.disable_destruction,
+			destruction_radius = self.destruction_radius,
 			damage_modifier = self.damage_modifier or 1.2,
 			damage_multiplier = self.damage_multiplier or 1,
 			knockback_multiplier = self.knockback or 1,
@@ -160,6 +166,8 @@ local function explode(self, pos)
 				local ment = mobj:get_luaentity()
 				ment.puncher_name = pname
 				ment.radius = 1
+				ment.destruction_radius = self.destruction_radius
+				ment.disable_destruction = self.disable_destruction
 				ment.damage_multiplier = self.damage_multiplier or 1
 				ment.knockback = self.knockback or 1
 				local dir = vector.new(
@@ -174,6 +182,8 @@ local function explode(self, pos)
 		tnt.boom(pos, {
 			puncher_name = pname,
 			radius = radius,
+			destruction_radius = self.destruction_radius,
+			disable_destruction = self.disable_destruction,
 			damage_modifier = self.damage_modifier or 1.5,
 			damage_multiplier = self.damage_multiplier or 1,
 			knockback_multiplier = self.knockback or 1,
@@ -340,6 +350,8 @@ core.register_entity("ctf_mode_chaos:mini_grenade", {
 				tnt.boom(pos, {
 					puncher_name = self.puncher_name,
 					radius = self.radius or 1,
+					disable_destruction = self.disable_destruction,
+					destruction_radius = self.destruction_radius,
 					damage_modifier = self.damage_modifier or 1.2,
 					damage_multiplier = self.damage_multiplier or 1,
 					knockback_multiplier = self.knockback or 1,
