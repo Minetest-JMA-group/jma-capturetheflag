@@ -15,56 +15,55 @@ local function add_score(player, score)
 end
 
 local items = {
-	{ itemname = "ctf_mode_chaos:power_charge",             chance = 48, amount = 32 },
-	{ itemname = "default:cobble",                          chance = 40, amount = 99 },
-	{ itemname = "default:dirt",                            chance = 41, amount = 99 },
-	{ itemname = "default:apple",                           chance = 45, amount = 10 },
-	{ itemname = "default:obsidian",                        chance = 10, amount = 15 },
-	{ itemname = "ctf_mode_chaos:concrete",                 chance = 25, amount = 30 },
+	{ itemname = "ctf_mode_chaos:power_charge",                    chance = 48, amount = 32 },
+	{ itemname = "default:cobble",                                 chance = 40, amount = 99 },
+	{ itemname = "default:dirt",                                   chance = 41, amount = 99 },
+	{ itemname = "default:apple",                                  chance = 45, amount = 10 },
+	{ itemname = "default:obsidian",                               chance = 10, amount = 15 },
+	{ itemname = "ctf_mode_chaos:concrete",                        chance = 25, amount = 30 },
 
-	{ itemname = "ctf_mode_chaos:rocket",                   chance = 39, amount = 16 },
+	{ itemname = "ctf_mode_chaos:rocket",                          chance = 39, amount = 16 },
 
 	--diamond tools
-	{ itemname = "default:shovel_diamond",                  chance = 25, amount = 1 },
-	{ itemname = "default:pick_diamond",                    chance = 25, amount = 1 },
-	{ itemname = "default:sword_diamond",                   chance = 4,  amount = 1 },
+	{ itemname = "default:shovel_diamond",                         chance = 25, amount = 1 },
+	{ itemname = "default:pick_diamond",                           chance = 25, amount = 1 },
+	{ itemname = "default:sword_diamond",                          chance = 4,  amount = 1 },
 
 	-- buckets
-	{ itemname = "bucket:bucket_water",                     chance = 10, amount = 1 },
+	{ itemname = "bucket:bucket_water",                            chance = 10, amount = 1 },
 
 	-- { itemname = "fire:flint_and_steel", chance = 17, amount = 1, oneshot = true },
-	{ itemname = "ctf_ranged:assault_rifle_loaded",         chance = 5,  amount = 1 },
-	{ itemname = "ctf_map:damage_cobble",                   chance = 20, amount = 30 },
-	{ itemname = "ctf_map:damage_glass",                    chance = 20, amount = 30 },
+	{ itemname = "ctf_ranged:assault_rifle_loaded",                chance = 5,  amount = 1 },
+	{ itemname = "ctf_map:damage_cobble",                          chance = 20, amount = 30 },
+	{ itemname = "ctf_map:damage_glass",                           chance = 20, amount = 30 },
 
-	{ itemname = "ctf_ranged:ammo",                         chance = 40, amount = 16 },
+	{ itemname = "ctf_ranged:ammo",                                chance = 40, amount = 16 },
 
 	-- shared launcher modifiers (apply to the grenade launcher and the rocket
 	-- launcher; using one opens a formspec to pick the weapon)
-	{ itemname = "ctf_mode_chaos:charger",                 chance = 7,  amount = 1 },
-	{ itemname = "ctf_mode_chaos:fast_reload",              chance = 8,  amount = 1 },
-	{ itemname = "ctf_mode_chaos:propellant",               chance = 8,  amount = 1 },
-	{ itemname = "ctf_mode_chaos:big_bang",                 chance = 7,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:charger",                         chance = 7,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:fast_reload",                     chance = 8,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:propellant",                      chance = 8,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:big_bang",                        chance = 7,  amount = 1 },
 	-- { itemname = "ctf_mode_chaos:stabilizer",               chance = 7,  amount = 1 },
-	{ itemname = "ctf_mode_chaos:mod_bouncy",               chance = 5,  amount = 1 },
-	{ itemname = "ctf_mode_chaos:mod_cluster",              chance = 4,  amount = 1 },
-	{ itemname = "ctf_mode_chaos:mod_sticky",               chance = 4,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:mod_bouncy",                      chance = 5,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:mod_cluster",                     chance = 4,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:mod_sticky",                      chance = 4,  amount = 1 },
 
 	-- standalone weapon modifiers
-	{ itemname = "ctf_mode_chaos:mod_rocket_launcher_rain", chance = 3,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:mod_rocket_launcher_rain",        chance = 3,  amount = 1 },
 
 	-- standalone weapons
 	{ itemname = "ctf_ranged:minigun_loaded",                      chance = 10, amount = 1 },
 	-- { itemname = "ctf_mode_chaos:shotgun", chance = 3, amount = 1 },
-	{ itemname = "ctf_mode_chaos:rocket_launcher_rocket",   chance = 10, amount = 1 },
-	{ itemname = "ctf_ranged:assault_rifle_loaded",         chance = 10, amount = 1 },
+	{ itemname = "ctf_mode_chaos:rocket_launcher_rocket",          chance = 10, amount = 1 },
+	{ itemname = "ctf_ranged:assault_rifle_loaded",                chance = 10, amount = 1 },
 
-	-- bunny sword modifiers
-	{ itemname = "ctf_mode_chaos:mod_bunny_sharpness",      chance = 3,  amount = 1 },
-	{ itemname = "ctf_mode_chaos:mod_bunny_bunny_legs",     chance = 4,  amount = 1 },
+	-- Kb grenade modifiers
+	{ itemname = "ctf_mode_chaos:mod_knockback_grenade_knockback", chance = 2,  amount = 1 },
 
 	-- passive items
-	{ itemname = "ctf_mode_chaos:stamina_booster",          chance = 7,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:stamina_booster",                 chance = 7,  amount = 1 },
 
 	--score
 	{

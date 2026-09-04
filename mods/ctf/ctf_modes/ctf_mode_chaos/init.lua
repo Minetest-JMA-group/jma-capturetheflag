@@ -10,9 +10,8 @@ local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 ctf_core.include_files("modifiers.lua")
 ctf_mode_chaos.weapons_api = ctf_core.include_files("weapons_api.lua")
 ctf_core.include_files("grenade_launcher.lua", "shotgun.lua",
-	 "rocket_launcher.lua", "shield.lua", "concrete.lua", "bunny_sword.lua",
-	"stamina_booster.lua")
-ctf_core.include_files("rg_treasures.lua")
+	"rocket_launcher.lua", "shield.lua", "concrete.lua", "bunny_sword.lua",
+	"stamina_booster.lua", "rg_treasures.lua", "kb_grenade.lua")
 
 local STORAGE_KEY = "chaos_weekend_mode"
 
@@ -59,7 +58,7 @@ ctf_modebase.register_mode("chaos", {
 	is_bound_item = function(_, name)
 		if
 			name:match("ctf_mode_chaos:grenade_launcher_") or
-			name == "ctf_mode_chaos:bunny_sword"
+			name == "ctf_mode_chaos:knockback_grenade_tool"
 		then
 			return true
 		end
@@ -68,8 +67,8 @@ ctf_modebase.register_mode("chaos", {
 		local current = ctf_mode_chaos.get_current_mode(player)
 		return {
 			"ctf_mode_chaos:grenade_launcher_" .. current,
-			"ctf_mode_chaos:bunny_sword",
-			"ctf_mode_chaos:power_charge 30",
+			"ctf_mode_chaos:knockback_grenade_tool",
+			"ctf_mode_chaos:power_charge 40",
 		}
 	end,
 	initial_stuff_item_levels = features.initial_stuff_item_levels,
