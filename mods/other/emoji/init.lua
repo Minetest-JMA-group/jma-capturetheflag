@@ -22,7 +22,6 @@ local emojis = {
 	["rabbit"] = "rabbit_emoji",
 	["sus"] = "sus_emoji",
 	["troll"] = "troll_emoji",
-	["rick"] = "rick_emoji",
 }
 
 local hidden_emojis = {
@@ -75,7 +74,7 @@ core.register_chatcommand("e", {
 	end,
 })
 
-local function spawn_emoji_particles(pos, texture, anim)
+local function spawn_emoji_particles(pos, texture)
 	local def = {
 		amount = 1,
 		time = 0.01,
@@ -93,14 +92,6 @@ local function spawn_emoji_particles(pos, texture, anim)
 		texture = texture,
 		glow = 14,
 	}
-	if anim then
-		def.animation  = {
-			type = "vertical_frames",
-			aspect_w = 347,
-			aspect_h = 350,
-			length = 2.0,
-		}
-	end
 	core.add_particlespawner(def)
 end
 
@@ -146,6 +137,6 @@ core.register_on_chat_message(function(name, message)
 		local pos = player:get_pos()
 
 		play_sound(pos)
-		spawn_emoji_particles(pos, texture .. ".png", true)
+		spawn_emoji_particles(pos, texture .. ".png")
 	end
 end)
