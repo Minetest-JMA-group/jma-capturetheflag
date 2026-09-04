@@ -10,7 +10,7 @@ ctf_settings.register("ctf_shop:automatic_shop_display", {
 --Note: The most expensive item is currently set to 150 coins, please adjust the price if changes at max_coins are being made
 local max_coins = 150
 local start_coin_amount = 40
-local coins_per_minute = 3
+local coins_per_minute = 5
 
 local players_coins = {}
 
@@ -263,7 +263,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
     end
 
     local player_name = player:get_player_name()
-    if type(players_coins[player_name]) ~= "number" then
+    if not players_coins[player_name] then
         players_coins[player_name] = start_coin_amount
     end
 
@@ -329,6 +329,7 @@ ctf_api.register_on_mode_start(function()
             coin_timer = nil
         end
 
+        players_coins = {}
         return
     end
 
@@ -353,6 +354,17 @@ ctf_api.register_on_match_end(function()
         if coins and coins < start_coin_amount then
             players_coins[name] = start_coin_amount
         end
+    end
+end)
+
+core.register_on_joinplayer(function(player)
+    if ctf_modebase.current_mode ~= "chaos" then
+        return
+    end
+
+    local player_name = player:get_player_name()
+    if not players_coins[player_name] then
+        players_coins[player_name] = start_coin_amount
     end
 end)
 
