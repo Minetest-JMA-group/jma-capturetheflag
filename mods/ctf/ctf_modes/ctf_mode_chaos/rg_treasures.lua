@@ -54,7 +54,6 @@ local items = {
 	{ itemname = "ctf_mode_chaos:mod_rocket_launcher_rain",        chance = 3,  amount = 1 },
 
 	-- standalone weapons
-	{ itemname = "ctf_ranged:minigun_loaded",                      chance = 10, amount = 1 },
 	-- { itemname = "ctf_mode_chaos:shotgun", chance = 3, amount = 1 },
 	{ itemname = "ctf_mode_chaos:rocket_launcher_rocket",          chance = 10, amount = 1 },
 	{ itemname = "ctf_ranged:assault_rifle_loaded",                chance = 10, amount = 1 },
@@ -64,6 +63,10 @@ local items = {
 
 	-- passive items
 	{ itemname = "ctf_mode_chaos:stamina_booster",                 chance = 7,  amount = 1 },
+
+	-- others
+	{ itemname = "ctf_mode_chaos:shield",                          chance = 25,  amount = 1 },
+	{ itemname = "ctf_mode_chaos:mod_shield_hardened",             chance = 15,  amount = 1 },
 
 	--score
 	{
