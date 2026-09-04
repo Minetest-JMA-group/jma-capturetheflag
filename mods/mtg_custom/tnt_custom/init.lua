@@ -198,7 +198,7 @@ local function player_damage_factor(pos, player, dmg_factor)
 	) / 2
 end
 
-local function entity_physics(pos, radius, drops, puncher_name, damage_mod, dmg_factor, damage_mult, knockback_mult)
+local function entity_physics(pos, radius, drops, puncher_name, damage_mod, dmg_factor, damage_mult, knockback_mult, self_knockback_mult)
 	damage_mod = damage_mod or 0
 	local objs = core.get_objects_inside_radius(pos, radius)
 	for _, obj in ipairs(objs) do
@@ -239,7 +239,15 @@ local function entity_physics(pos, radius, drops, puncher_name, damage_mod, dmg_
 
 			if knockback then
 				local dir = vector.normalize(vector.subtract(obj_pos, pos))
-				local moveoff = vector.multiply(dir, dist * radius * factor * (knockback_mult or 1))
+				-- The one who caused the explosion can be pushed much harder than
+				-- everyone else (rocket jumping); self_knockback_mult only applies
+				-- to the shooter, everyone else keeps knockback_mult.
+				local mult = knockback_mult or 1
+				if self_knockback_mult and puncher_name
+						and obj:get_player_name() == puncher_name then
+					mult = self_knockback_mult
+				end
+				local moveoff = vector.multiply(dir, dist * radius * factor * mult)
 				obj:add_velocity(moveoff)
 			end
 		end
@@ -425,7 +433,7 @@ function tnt.boom(pos, def)
 	-- append entity drops
 	local damage_radius = (radius / math.max(1, def.radius)) * def.damage_radius
 	entity_physics(pos, damage_radius, drops, def.puncher_name, def.damage_modifier, def.damage_factor,
-		def.damage_multiplier, def.knockback_multiplier)
+		def.damage_multiplier, def.knockback_multiplier, def.self_knockback_multiplier)
 	if not def.disable_drops then
 		eject_drops(drops, pos, radius)
 	end

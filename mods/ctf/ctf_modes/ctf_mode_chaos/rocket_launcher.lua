@@ -16,7 +16,7 @@ weapons_api.register_gun(ROCKET_LAUNCHER, "rocket", {
 	charged_speed = 45,
 	radius = 3,
 	charged_radius = 4,
-	damage_modifier = 1.8,
+	damage_modifier = 1.4,
 })
 
 -- "Rain" fires a tight volley of small rockets that explode on impact.
@@ -65,14 +65,18 @@ core.register_craftitem("ctf_mode_chaos:rocket", {
 	inventory_image = "ctf_mode_chaos_rocket.png",
 })
 
+local ROCKET_KNOCKBACK = 0.1 -- everyone else
+local ROCKET_SELF_KNOCKBACK = 0.5 -- the shooter
+
 local function explode_rocket(self, pos)
 	if weapons_api.can_explode(pos, self.puncher_name, self.radius or 3) then
 		tnt.boom(pos, {
 			puncher_name = self.puncher_name,
 			radius = self.radius or 3,
-			damage_modifier = self.damage_modifier or 1.8,
+			damage_modifier = self.damage_modifier or 1.4,
 			damage_multiplier = self.damage_multiplier or 1,
-			knockback_multiplier = self.knockback or 1,
+			knockback_multiplier = (self.knockback or 1) * ROCKET_KNOCKBACK,
+			self_knockback_multiplier = (self.knockback or 1) * ROCKET_SELF_KNOCKBACK,
 		})
 	end
 end
@@ -163,7 +167,8 @@ local function explode_mini_rocket(self, pos)
 			radius = 1,
 			damage_modifier = self.damage_modifier or 1,
 			damage_multiplier = self.damage_multiplier or 1,
-			knockback_multiplier = self.knockback or 1,
+			knockback_multiplier = (self.knockback or 1) * ROCKET_KNOCKBACK,
+			self_knockback_multiplier = (self.knockback or 1) * ROCKET_SELF_KNOCKBACK,
 		})
 	end
 end
