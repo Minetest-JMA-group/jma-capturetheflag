@@ -104,6 +104,10 @@ local function show_modechoose_form(player)
 			"button_exit[3.7,6.5;1.4,0.7;vote;4]",
 			"button_exit[3.7,7.5;1.4,0.7;vote;5]",
 			"button_exit[2.9,9.5;3.0,0.7;quit_button;Exit Game]",
+			-- 'nothing' button is a workaround to prevent the formspec from auto-focusing on the last button,
+			-- which can cause accidental activation when pressing space.
+			"set_focus[nothing]",
+			"button[0,0;0,0;nothing;]",
 		}
 
 		return ctf_gui.list_to_formspec_str(out)

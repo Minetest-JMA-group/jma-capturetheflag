@@ -126,7 +126,10 @@ local function show_mapchoose_form(player)
 		end
 
 		table.insert(out, {
-			"button_exit[%f,8.5;%f,0.6;abstain_button;%s]",
+			"button_exit[%f,8.5;%f,0.6;abstain_button;%s]" ..
+			-- 'nothing' button is a workaround to prevent the formspec from auto-focusing on the last button,
+			-- which can cause accidental activation when pressing space.
+			"set_focus[nothing]button[0,0;0,0;nothing;]",
 			start_pos,
 			buttons_size_x,
 			core.formspec_escape(S("Abstain")),
