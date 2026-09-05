@@ -24,24 +24,17 @@ local emojis = {
 	["troll"] = "troll_emoji",
 }
 
-local hidden_emojis = {
-	["rick"] = true,
-}
-
+local bg = "bg_emoji.png"
+local cols = 5
+local btn_size = 2
+local spacing = 0.1
+local start_y = 0
+local form = "formspec_version[7] size[10.4,10.4] bgcolor[#333444cc; false]"
 local function get_emoji_formspec()
-	local bg = "bg_emoji.png"
-	local cols = 5
-	local btn_size = 2
-	local spacing = 0.1
-	local start_y = 0
-	local form = "formspec_version[7] size[10.4,10.4] bgcolor[#333444cc; false]"
 	local i = 0
 
 	-- Pass emoji as texture name to avoid escaping issues with special characters in the formspec
-	for n, texture in pairs(emojis) do
-		if hidden_emojis[n] then
-			goto continue
-		end
+	for _, texture in pairs(emojis) do
 
 		local x = (i % cols) * (btn_size + spacing)
 		local y = start_y + math.floor(i / cols) * (btn_size + spacing)
@@ -56,8 +49,6 @@ local function get_emoji_formspec()
 			texture
 		)
 		i = i + 1
-
-		::continue::
 	end
 
 	return form
