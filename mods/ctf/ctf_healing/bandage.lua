@@ -66,7 +66,7 @@ function ctf_healing.register_bandage(name, def)
 				if hp >= limit then
 					hud_events.new(uname, {
 						quick = true,
-						text = S("@1 already has @2 HP!", pname, limit),
+						text = S("@1 already has @2 HP!", pname, math.floor(limit)),
 						color = "warning",
 					})
 					return
