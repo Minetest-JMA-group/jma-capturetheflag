@@ -202,7 +202,13 @@ function ctf_combat_mode.end_combat(player)
 		end
 
 		hitters[player].timer:cancel()
-		hitters[player] = nil
+		local p = player
+        local entry = hitters[p]
+        core.after(0, function()
+            if hitters[p] == entry then
+                hitters[p] = nil
+            end
+        end)
 	end
 
 	if healers[player] then
