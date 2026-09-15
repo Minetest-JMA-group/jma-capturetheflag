@@ -42,7 +42,7 @@ end
 --- @type ScoreFun
 function ctf_modebase.values.get_build_point(player, recent)
 	local ranking = ctf_modebase.values.get_ranking(player, recent)
-	return ranking.build_points or 0
+	return ranking.build_points or 1
 end
 
 --- @type ScoreFun
@@ -56,8 +56,8 @@ function ctf_modebase.values.get_heal_score(player, recent)
 	local ranking = ctf_modebase.values.get_ranking(player, recent)
 	local hp_healed = ranking.hp_healed or 1
 	local deaths = ranking.deaths or 1
-	--- 30 is knight_hp / 2
-	return math.sqrt(hp_healed / 30) / (deaths + 1)
+	--- 30 is knight_hp
+	return math.log10(hp_healed / 30) / (deaths + 1)
 end
 
 --- @type ScoreFun
