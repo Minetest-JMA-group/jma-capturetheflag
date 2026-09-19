@@ -2,6 +2,7 @@ local VOTING_TIME = 20
 local NUM_MAPS_VOTE = 3
 
 local RESHUFFLE = "%RESHUFFLE%"
+local MAP_VOTE_SETTING = "ctf_modebase:default_map_vote"
 
 local map_sample = nil
 local timer = nil
@@ -20,6 +21,26 @@ end)
 local S = core.get_translator(core.get_current_modname())
 ctf_modebase.map_vote = {}
 
+ctf_settings.register(MAP_VOTE_SETTING, {
+	type = "list",
+	description = S("How to vote for the next map"),
+	list = {
+		S("Map vote - Ask"),
+		S("Skip map vote - Abstain"),
+	},
+	_list_map = { "ask", "abstain" },
+	default = "1", -- "Ask"
+})
+
+--- @param player PlayerRef
+--- @return "ask" | "abstain"
+local function get_vote_setting(player)
+	local setting = ctf_settings.settings[MAP_VOTE_SETTING]
+	local value = ctf_settings.get(player, MAP_VOTE_SETTING)
+
+	return (setting and setting._list_map[tonumber(value)]) or "ask"
+end
+
 local function player_vote(name, mapID)
 	if not voted then
 		return
@@ -37,8 +58,33 @@ local function player_vote(name, mapID)
 	end
 end
 
-local function show_mapchoose_form(player)
+local function show_mapchoose_form(pname)
 	if not map_sample then
+		return
+	end
+
+	local player = core.get_player_by_name(pname)
+	if not player then
+		return
+	end
+
+	if get_vote_setting(player) == "abstain" then
+		core.after(0, function()
+			if not player:is_player() then
+				return
+			end
+
+			core.chat_send_player(
+				pname,
+				S("Voting for the next map. Automatic vote: @1.", S("Abstain"))
+					.. "\n"
+					.. S(
+						'To change the automatic vote settings, go to the "Settings" tab of your inventory.'
+					)
+			)
+			player_vote(pname, nil)
+		end)
+
 		return
 	end
 
