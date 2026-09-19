@@ -148,6 +148,19 @@ server_cosmetics = {
 				},
 				["normal"] = {"server_cosmetics_straw_hat.png"},
 			},
+			penguin_hat = {
+				_prefix = "Wear ",
+				_description = "Penguin Hat",
+				_model = "server_cosmetics_hat.b3d",
+				_preview_rot = { 350, 15 },
+				_preview_rot_offset = { y = 180 },
+				_preview_shift = { x = 0, y = -1.6 },
+				_preview_scale = 0.61,
+				_anims = {
+					idle = { x = 1, y = 1 },
+				},
+				["normal"] = { "server_cosmetics_penguin_hat.png" },
+			},
 		}
 	}
 }
