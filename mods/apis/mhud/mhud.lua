@@ -28,7 +28,7 @@ local function convert_def(def, type)
 		def.number = def.number or      def.color
 		def.color = nil
 
-		def.size   = def.size   or (def.text_scale and {x = def.text_scale})
+		def.size   = def.size   or (def.text_scale and {x = def.text_scale, y = def.text_scale})
 		def.text_scale = nil
 	elseif type == "image" then
 		def.text  = def.text  or  def.texture
@@ -130,7 +130,7 @@ function hud.add(self, player, name, def)
 
 	def = convert_def(def, def.type)
 
-	local id = pobj:hud_add(def)
+    local id = pobj:hud_add(def)
 
 	if name then
 		assert(not self.huds[pname][name], "Attempt to overwrite an existing hud!")
