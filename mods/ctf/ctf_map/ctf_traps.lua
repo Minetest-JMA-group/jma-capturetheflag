@@ -256,6 +256,7 @@ core.register_node("ctf_map:damage_cobble", {
 	is_ground_content = false,
 	walkable = true,
 	groups = { cracky = 3, stone = 2 },
+	sounds = default.node_sound_stone_defaults(),
 	on_ranged_shoot = function(pos, node, shooter, type)
 		if type == "pistol" then
 			return
