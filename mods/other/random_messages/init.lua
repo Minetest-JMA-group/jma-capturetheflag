@@ -124,8 +124,6 @@ local messages = {
 		"Want to send a nice welcoming message with the 8 score gift? Use /wb <mode:technical modename> <playername>"
 	),
 	S("The chaos mode is active on weekends only."),
-	"Use /change_vote <questionID> to change your vote on the poll. Check question ID with /list_questions",
-	"Keep the team door closed to stop enemies from getting in",
 	"You can claim the crown as a reward for joining our Discord server",
 	"Use /e to send emojis into the air",
 	"Having problems exiting the game? Use /kickme to get disconnected from the server",
