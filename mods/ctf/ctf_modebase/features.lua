@@ -1430,7 +1430,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			if killer_name then
 				local kteam = ctf_teams.get(killer_name)
 				local kcolor = (kteam and ctf_teams.team[kteam]) and ctf_teams.team[kteam].color or "#FFF"
-				chat_killer_suffix = core.colorize(FLAG_MESSAGE_COLOR, ". The killer: ") .. 
+				chat_killer_suffix = core.colorize(FLAG_MESSAGE_COLOR, ". The killer: ") ..
 									core.colorize(kcolor, killer_name)
 			end
 
@@ -1765,7 +1765,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				current_kd = current_kd / 10
 				deny_pro = deny_pro
 					.. S(
-						" You still need @1 captures, @2 score and your KD is @3.",
+						"\nYou still need @1 captures, @2 score and your KD is @3.",
 						captures_needed,
 						score_needed,
 						current_kd

@@ -155,10 +155,9 @@ for _, team in ipairs(ctf_teams.teamlist) do
 			else
 				local msg = tostring(pro_access)
 					or S("You aren't allowed to access the pro section")
-				formspec = formspec
-					.. "label[6.5,2;"
-					.. core.formspec_escape(core.wrap_text(msg, 20))
-					.. "]"
+                formspec = formspec ..
+					("hypertext[6.2,0;4.15,7.7;pro_chest_info;<global color=#ffffff><style size=17>%s</style>]")
+					:format(core.formspec_escape(msg))
 			end
 
 			formspec = formspec
