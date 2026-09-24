@@ -153,11 +153,15 @@ core.override_item("default:apple", {
 core.override_item("default:blueberries", {
 	on_use = function(itemstack, user, ...)
 		-- Prevent wasting food (listen, it's annoying)
-		if user:get_hp() == user:get_properties().hp_max then
-			return
-		end
+        if user:get_hp() == user:get_properties().hp_max then
+            return
+        end
 
-		return core.item_eat(3)(itemstack, user, ...)
+		if not COOLDOWN:get(user) then
+            COOLDOWN:set(user, 0.17)
+
+			return core.item_eat(3)(itemstack, user, ...)
+		end
 	end,
 })
 
