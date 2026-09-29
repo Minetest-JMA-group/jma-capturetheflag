@@ -1902,7 +1902,10 @@ local BOX_HELP = {
 	{ "help", S("Show this help.") },
 	{
 		"create [map]",
-		S("Create a regular PvP Box. With several maps, choose one via /box maps."),
+		S(
+			"Create a regular PvP Box. If all members leave, it is deleted after @1 minutes. With several maps, choose one via /box maps.",
+			algorithms.time_to_string(BOX_EMPTY_DESTROY_TIME)
+		),
 	},
 	{
 		"create_persistent [map]",
