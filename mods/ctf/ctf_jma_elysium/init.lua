@@ -1,5 +1,6 @@
 ctf_jma_elysium = {
 	modpath = core.get_modpath("ctf_jma_elysium"),
+	INVITE_TIMEOUT_SECONDS = 60,
 	players = {},
 	callbacks = {
 		on_prejoin = {},
@@ -10,18 +11,75 @@ ctf_jma_elysium = {
 	loaded_maps = {},
 	on_joining = {},
 	elysium_locked = false,
+
+	-- Kill list feed of the Elysium hub (see ctf_kill_list)
+	kill_list = {},
+
+	-- PvP Boxes
+	boxes = {},
+	box_invites = {},
+	box_invite_timers = {},
+	box_templates = {},
+	box_reserved_ids = {},
+	box_creating = {},
+	box_requests = {},
+	box_warnings = {},
 }
 local S = core.get_translator(core.get_current_modname())
 local storage = core.get_mod_storage()
 local SPAWNTP_COOLDOWN = ctf_core.init_cooldowns()
 local FORMNAME_WAIT = "ctf_jma_elysium:wait"
 
+-- Reads the X/Y/Z size stored in a Minetest schematic (.mts) header.
+-- Layout: u32 magic "MTSM", u16 version, u16 size_x, u16 size_y, u16 size_z
+-- (all integers are stored big-endian).
+function ctf_jma_elysium.read_mts_size(path)
+	local file = io.open(path, "rb")
+	if not file then
+		return nil
+	end
+
+	local header = file:read(12)
+	file:close()
+
+	if not header or #header < 12 then
+		return nil
+	end
+
+	local function u16be(offset)
+		return header:byte(offset) * 256 + header:byte(offset + 1)
+	end
+
+	return {
+		x = u16be(7),
+		y = u16be(9),
+		z = u16be(11),
+	}
+end
+
 function ctf_jma_elysium.register_map(name, def)
+	local bounds = def.bounds
+	if not bounds then
+		-- Auto-detect the bounds from the schematic size
+		local size = def.size or ctf_jma_elysium.read_mts_size(def.file)
+		if not size then
+			core.log(
+				"error",
+				"[ctf_jma_elysium] Failed to detect size of map: " .. name
+			)
+			return
+		end
+		bounds = {
+			pos1 = { x = 0, y = 0, z = 0 },
+			pos2 = { x = size.x - 1, y = size.y - 1, z = size.z - 1 },
+		}
+	end
+
 	ctf_jma_elysium.maps[name] = {
 		file = def.file,
 
-		pos1 = vector.add(def.pos, def.bounds.pos1),
-		pos2 = vector.add(def.pos, def.bounds.pos2),
+		pos1 = vector.add(def.pos, bounds.pos1),
+		pos2 = vector.add(def.pos, bounds.pos2),
 
 		map_offset = def.map_offset or vector.new(0, 0, 0),
 
@@ -55,6 +113,14 @@ function ctf_jma_elysium.get_player_list()
 	return list
 end
 
+---Sends a message to every player that is currently in Elysium
+---@param msg string
+function ctf_jma_elysium.broadcast(msg)
+	for _, name in ipairs(ctf_jma_elysium.get_player_list()) do
+		core.chat_send_player(name, msg)
+	end
+end
+
 function ctf_jma_elysium.register_on_join(callback)
 	table.insert(ctf_jma_elysium.callbacks.on_join, callback)
 end
@@ -72,10 +138,114 @@ core.register_on_leaveplayer(function(player)
 	ctf_jma_elysium.players[name] = nil
 end)
 
-core.register_on_dieplayer(function(player)
+-- Elysium and every PvP Box have their own kill list feed, so a player always
+-- sees the kills of the place he is currently in
+ctf_kill_list.feed_provider = function(name)
+	local ctx = ctf_jma_elysium.players[name]
+	if not ctx then
+		return nil
+	end
+
+	if ctx.box then
+		local box = ctf_jma_elysium.boxes[ctx.box]
+		if box then
+			box.kill_list = box.kill_list or {}
+			return box.kill_list
+		end
+	end
+
+	return ctf_jma_elysium.kill_list
+end
+
+-- Image shown in the kill list when nobody is to blame
+local function death_image(reason)
+	if type(reason) == "table" then
+		if reason.type == "fall" then
+			return "ctf_kill_list_falling_man.png"
+		end
+
+		if reason.type == "drown" then
+			return "bubble.png"
+		end
+
+		if reason.type == "node_damage" and reason.node then
+			if reason.node:find("lava") then
+				return "default_lava.png"
+			end
+
+			local def = core.registered_nodes[reason.node]
+			if def and def.inventory_image and def.inventory_image ~= "" then
+				return def.inventory_image
+			end
+		end
+	end
+
+	return "ctf_modebase_skull.png"
+end
+
+-- Last player that hit someone inside Elysium. The regular match tracks this
+-- in ctf_combat_mode, but that ignores players without a team.
+local last_hitter = {}
+local HITTER_TIMEOUT = 10
+
+core.register_on_punchplayer(function(player, hitter, _, tool_capabilities)
+	if not hitter or not hitter:is_player() then
+		return
+	end
+
+	if not ctf_jma_elysium.can_hit_player(player, hitter) then
+		return
+	end
+
+	local def = hitter:get_wielded_item():get_definition()
+	local image = def and def.inventory_image or ""
+
+	last_hitter[player:get_player_name()] = {
+		name = hitter:get_player_name(),
+		time = core.get_us_time(),
+		image = image ~= "" and image or "ctf_kill_list_punch.png",
+		ranged = tool_capabilities
+			and tool_capabilities.damage_groups
+			and tool_capabilities.damage_groups.ranged,
+	}
+end)
+
+-- Reports a death that happened inside Elysium to the kill list of the area
+---@param player ObjectRef
+---@param reason table
+local function report_kill(player, reason)
+	local name = player:get_player_name()
+	local hit = last_hitter[name]
+	last_hitter[name] = nil
+
+	local killer, image
+	if hit and core.get_us_time() - hit.time <= HITTER_TIMEOUT * 1000000 then
+		killer = hit.name
+		image = hit.image
+
+		if hit.ranged then
+			image = image .. "^[transformFX"
+		end
+	end
+
+	if killer == name then
+		-- Killed by his own weapon
+		killer, image = "", nil
+	end
+
+	ctf_kill_list.add(killer or "", name, image or death_image(reason))
+end
+
+core.register_on_dieplayer(function(player, reason)
 	local pctx = ctf_jma_elysium.get_player(player)
 	if pctx then
+		report_kill(player, reason)
+		local death_pos = player:get_pos()
+
 		ctf_modebase.prepare_respawn_delay(player, 3, function()
+			-- Return the player to a marker, or the captured death position.
+			ctf_jma_elysium.respawn_player(player, death_pos)
+
 			ctf_modebase.give_immunity(player, 3, nil, function()
 				player_api.set_texture(player, 1, ctf_cosmetics.get_skin(player))
 				player:set_properties({ pointable = pctx.pvp })
@@ -86,26 +256,28 @@ core.register_on_dieplayer(function(player)
 end)
 
 function ctf_jma_elysium.can_hit_player(target, hitter)
+	if not hitter or not target then
+		return false
+	end
+
 	local hitter_ctx = ctf_jma_elysium.players[hitter:get_player_name()]
 	local target_ctx = ctf_jma_elysium.players[target:get_player_name()]
 
-	if
-		(hitter_ctx and hitter_ctx.pvp == true)
-		and (target_ctx and target_ctx.pvp == true)
-	then
-		-- if ctf_core.pos_inside(target:get_pos(), map.no_pvp_zone.pos1, map.no_pvp_zone.pos2) then
-		-- 	hud_events.new(hitter, {
-		-- 		quick = true,
-		-- 		text = "You cannot fight inside the safe area!",
-		-- 		color = "warning",
-		-- 	})
-		-- 	return false
-		-- end
-
-		return true
+	if not (hitter_ctx and hitter_ctx.pvp == true) then
+		return false
 	end
 
-	return false
+	if not (target_ctx and target_ctx.pvp == true) then
+		return false
+	end
+
+	-- Players inside a PvP Box can only fight members of the same box.
+	-- Players outside of any box keep the regular mutual PvP.
+	if hitter_ctx.box ~= target_ctx.box then
+		return false
+	end
+
+	return true
 end
 
 function ctf_modebase.player.is_playing(player)
@@ -194,6 +366,10 @@ function ctf_jma_elysium.show_wait_formspec(player_name)
 	core.show_formspec(player_name, FORMNAME_WAIT, fs)
 end
 
+function ctf_jma_elysium.close_wait_formspec(player_name)
+	core.close_formspec(player_name, FORMNAME_WAIT)
+end
+
 function ctf_jma_elysium.join(player, joined_callback)
 	local name = player:get_player_name()
 	local map = ctf_jma_elysium.maps.main
@@ -214,6 +390,9 @@ function ctf_jma_elysium.join(player, joined_callback)
 			pvp = false,
 			location = "main",
 		}
+		-- The kill list switches to the feed of Elysium
+		ctf_kill_list.update_player(player)
+
 		core.chat_send_all(S("@1 has joined Elysium.", player_name))
 		core.close_formspec(player_name, FORMNAME_WAIT)
 
@@ -260,6 +439,9 @@ function ctf_jma_elysium.join(player, joined_callback)
 		if not inv:contains_item("main", "default:pick_steel") then
 			inv:add_item("main", "default:pick_steel")
 		end
+		if not inv:contains_item("main", "default:sword_steel") then
+			inv:add_item("main", "default:sword_steel")
+		end
 
 
 		-- Daytime always
@@ -296,14 +478,14 @@ function ctf_jma_elysium.join(player, joined_callback)
 			core.place_schematic(vector.add(map.pos1, map.map_offset), map.file, "0")
 			ctf_jma_elysium.loaded_maps.main = true
 			ctf_jma_elysium.restore_nodemeta("main")
-			core.after(3, handle_player, player)
+			core.after(1, handle_player, player)
 		end)
 
 		return true
 	end
 
 	ctf_jma_elysium.show_wait_formspec(name)
-	core.after(3, handle_player, player)
+	core.after(1, handle_player, player)
 
 	return true
 end
@@ -326,6 +508,9 @@ function ctf_jma_elysium.leave(player)
 		return false
 	end
 
+	-- Leave any PvP Box before leaving Elysium
+	ctf_jma_elysium.remove_from_box(name)
+
 	core.chat_send_all(S("@1 has left Elysium", name))
 
 	local inv = player:get_inventory()
@@ -344,6 +529,9 @@ function ctf_jma_elysium.leave(player)
 
 	ctf_jma_elysium.players[name] = nil
 
+	-- The kill list switches back to the feed of the match
+	ctf_kill_list.update_player(player)
+
 	ctf_modebase.player.update(player)
 	ctf_jma_leagues.update_icon(player)
 	ctf_teams.allocate_player(player, true)
@@ -354,10 +542,7 @@ end
 
 ctf_jma_elysium.register_map("main", {
 	file = ctf_jma_elysium.modpath .. "/maps/jma_elysium_hub.mts",
-	bounds = {
-		pos1 = { x = 0, y = 0, z = 0 },
-		pos2 = { x = 226, y = 124, z = 222 },
-    },
+	-- Bounds are auto-detected from the .mts header (226 x 124 x 222)
 	map_offset = { x = 0, y = -1, z = 0 },
 	pos = { x = 0, y = 500, z = 0 },
 	spawn = { x = 115, y = 21, z = 111 },
@@ -375,8 +560,22 @@ core.register_chatcommand("elist", {
 			return false, S("No players in Elysium.")
 		end
 
+		table.sort(players)
+
+		local list = {}
+		for _, pname in ipairs(players) do
+			local ctx = ctf_jma_elysium.players[pname]
+			local box_id = ctx and ctx.box
+			if box_id then
+				-- Players inside a PvP Box are marked with its id
+				table.insert(list, S("@1 (#@2)", pname, box_id))
+			else
+				table.insert(list, pname)
+			end
+		end
+
 		local msg =
-			S("Players in Elysium (@1): @2", #players, table.concat(players, ", "))
+			S("Players in Elysium (@1): @2", #players, table.concat(list, ", "))
 		return true, msg
 	end,
 })
@@ -408,9 +607,10 @@ core.register_chatcommand("espawn", {
 		end
 
 		local map = ctf_jma_elysium.maps.main
+		local target_pos = ctf_jma_elysium.get_box_spawn(player) or map.spawn_abs
 
 		SPAWNTP_COOLDOWN:set(player, 3)
-		player:set_pos(map.spawn_abs)
+		player:set_pos(target_pos)
 		return true, S("Teleported.")
 	end,
 })
@@ -439,4 +639,4 @@ core.register_chatcommand("el_reset", {
 	end,
 })
 
-ctf_core.include_files("things.lua", "map_utils.lua", "elysium_access.lua")
+ctf_core.include_files("things.lua", "map_utils.lua", "elysium_access.lua", "boxes.lua")

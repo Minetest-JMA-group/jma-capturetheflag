@@ -23,19 +23,35 @@ local function deserialize_inventory(t)
 	return result
 end
 
-function ctf_jma_elysium.restore_nodemeta(mapname)
-	local t = core.deserialize(storage:get_string("meta_" .. mapname))
+---@param key string Storage key (map name or box template meta key)
+---@param base_pos vector|nil Absolute origin the saved offsets are relative to.
+---                           Defaults to ctf_jma_elysium.maps[key].pos1
+function ctf_jma_elysium.restore_nodemeta(key, base_pos)
+	local t = core.deserialize(storage:get_string("meta_" .. key))
 	if not t then
 		core.log(
 			"warning",
-			"Failed to restore metadata for " .. mapname .. ": no metadata saved"
+			"Failed to restore metadata for " .. key .. ": no metadata saved"
 		)
 		return false
 	end
 
-	local mapdef = ctf_jma_elysium.maps[mapname]
-	for saved_pos, saved in pairs(t) do
-		saved_pos = vector.add(saved_pos, mapdef.pos1)
+	if not base_pos then
+		local mapdef = ctf_jma_elysium.maps[key]
+		if not mapdef then
+			core.log(
+				"warning",
+				"Failed to restore metadata for "
+					.. key
+					.. ": unknown map and no base position given"
+			)
+			return false
+		end
+		base_pos = mapdef.pos1
+	end
+
+	for saved_offset, saved in pairs(t) do
+		local saved_pos = vector.add(saved_offset, base_pos)
 
 		local current_node = core.get_node(saved_pos)
 		-- if current_node.name == saved.node_name or place then
@@ -75,11 +91,21 @@ function ctf_jma_elysium.restore_nodemeta(mapname)
 	return true
 end
 
-function ctf_jma_elysium.save_meta(mapname)
-	local mapdef = ctf_jma_elysium.maps[mapname]
+---@param key string Storage key (map name or box template meta key)
+---@param pos1 vector|nil Region min corner. Defaults to ctf_jma_elysium.maps[key].pos1
+---@param pos2 vector|nil Region max corner. Defaults to ctf_jma_elysium.maps[key].pos2
+---@param origin vector|nil Absolute origin the offsets are made relative to. Defaults to pos1
+function ctf_jma_elysium.save_meta(key, pos1, pos2, origin)
+	if not pos1 or not pos2 then
+		local mapdef = ctf_jma_elysium.maps[key]
+		if not mapdef then
+			return false, 0
+		end
+		pos1 = pos1 or mapdef.pos1
+		pos2 = pos2 or mapdef.pos2
+	end
 
-	local pos1 = mapdef.pos1
-	local pos2 = mapdef.pos2
+	origin = origin or pos1
 
 	local minp = vector.new(
 		math.min(pos1.x, pos2.x),
@@ -129,13 +155,13 @@ function ctf_jma_elysium.save_meta(mapname)
 				t.param1 = node.param1
 				t.param2 = node.param2
 
-				to_save[vector.subtract(cpos, mapdef.pos1)] = t
+				to_save[vector.subtract(cpos, origin)] = t
 				count = count + 1
 			end
 		end
 	end
 
-	storage:set_string("meta_" .. mapname, core.serialize(to_save))
+	storage:set_string("meta_" .. key, core.serialize(to_save))
 	vm:close()
 	return true, count
 end
@@ -318,6 +344,74 @@ core.register_chatcommand("el_get_area", {
 	end,
 })
 
+core.register_chatcommand("el_box_get_area", {
+	params = "<box_id>",
+	description = S("Show local coordinates of your WorldEdit selection for a PvP Box"),
+	privs = { server = true },
+	func = function(name, box_id_param)
+		local box_id = tonumber(box_id_param)
+		if not box_id or box_id < 1 or box_id % 1 ~= 0 then
+			return false, S("Invalid PvP Box ID")
+		end
+
+		local box = ctf_jma_elysium.boxes[box_id]
+		if not box then
+			return false, S("PvP Box not found: @1", box_id)
+		end
+
+		if not worldedit.pos1[name] or not worldedit.pos2[name] then
+			return false, S("You must select a region with WorldEdit first.")
+		end
+
+		local pos1 = worldedit.pos1[name]
+		local pos2 = worldedit.pos2[name]
+		local minp = vector.new(
+			math.min(pos1.x, pos2.x),
+			math.min(pos1.y, pos2.y),
+			math.min(pos1.z, pos2.z)
+		)
+		local maxp = vector.new(
+			math.max(pos1.x, pos2.x),
+			math.max(pos1.y, pos2.y),
+			math.max(pos1.z, pos2.z)
+		)
+		local box_min = vector.new(
+			math.min(box.pos1.x, box.pos2.x),
+			math.min(box.pos1.y, box.pos2.y),
+			math.min(box.pos1.z, box.pos2.z)
+		)
+		local box_max = vector.new(
+			math.max(box.pos1.x, box.pos2.x),
+			math.max(box.pos1.y, box.pos2.y),
+			math.max(box.pos1.z, box.pos2.z)
+		)
+
+		if
+			minp.x < box_min.x
+			or minp.y < box_min.y
+			or minp.z < box_min.z
+			or maxp.x > box_max.x
+			or maxp.y > box_max.y
+			or maxp.z > box_max.z
+		then
+			return false, S("WorldEdit selection is outside PvP Box @1", box_id)
+		end
+
+		local local_min = vector.subtract(minp, box.pos1)
+		local local_max = vector.subtract(maxp, box.pos1)
+		return true,
+			S(
+				"Local region: min (@1, @2, @3), max (@4, @5, @6)",
+				local_min.x,
+				local_min.y,
+				local_min.z,
+				local_max.x,
+				local_max.y,
+				local_max.z
+			)
+	end,
+})
+
 core.register_chatcommand("el_replace_nodes", {
 	description = S("Replace all nodes in the current map region with ctf_map variants"),
 	privs = { server = true },
@@ -334,5 +428,51 @@ core.register_chatcommand("el_replace_nodes", {
 				replaced_count,
 				skipped_count
 			)
+	end,
+})
+
+core.register_chatcommand("el_box_save_meta", {
+	params = "<template>",
+	description = S(
+		"Save metadata of a placed PvP Box into the box map template"
+	),
+	privs = { server = true },
+	func = function(name, template)
+		if not template or template == "" then
+			return false, S("Usage: /el_box_save_meta <template>")
+		end
+
+		local tmpl = ctf_jma_elysium.box_templates[template]
+		if not tmpl then
+			return false, S("Unknown PvP Box map: @1", template)
+		end
+
+		local box
+		for _, b in pairs(ctf_jma_elysium.boxes) do
+			if b.name == template then
+				box = b
+				break
+			end
+		end
+
+		if not box then
+			return false,
+				S(
+					"Create a box of this map first (/box create @1), edit it and run this command again.",
+					template
+				)
+		end
+
+		local result, count =
+			ctf_jma_elysium.save_meta(tmpl.meta_key, box.pos1, box.pos2, box.pos1)
+		if result then
+			return true,
+				S(
+					"PvP Box map @1 metadata saved. Nodes count: @2",
+					template,
+					count
+				)
+		end
+		return false, S("Failed to save")
 	end,
 })

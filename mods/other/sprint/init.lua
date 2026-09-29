@@ -17,7 +17,7 @@ local disabled_ones = {}
 -- Per-player max stamina multipliers, e.g. from a stamina boosting item.
 local max_multipliers = {}
 
-local function get_max_stamina(name)
+function sprint.get_max_stamina(name)
 	return STAMINA_MAX * (max_multipliers[name] or 1)
 end
 
@@ -57,7 +57,7 @@ local function setSprinting(player, sprinting)
 end
 
 local function updateHud(player, info)
-	local max_stamina = get_max_stamina(player:get_player_name())
+	local max_stamina = sprint.get_max_stamina(player:get_player_name())
 	if info.hudbars == true then
 		if info.stamina > max_stamina then
 			hb.change_hudbar(player, "sprint", max_stamina, max_stamina)
@@ -95,7 +95,7 @@ function sprint.set_stamina_multiplier(name, mult)
 	if info then
 		local player = core.get_player_by_name(name)
 		info.stamina = math.max(0, math.min(
-			get_max_stamina(name),
+			sprint.get_max_stamina(name),
 			info.stamina * (mult / old_mult)
 		))
 		if player then
@@ -148,7 +148,7 @@ core.register_globalstep(function(dtime)
 					updateHud(player, info)
 				end
 			else
-				local max_stamina = get_max_stamina(name)
+				local max_stamina = sprint.get_max_stamina(name)
 				if info.stamina < max_stamina then
 					info.stamina = math.min(max_stamina, info.stamina + dtime * HEAL_RATE)
 					updateHud(player, info)
@@ -186,7 +186,7 @@ end)
 
 ctf_api.register_on_respawnplayer(function(player)
 	local info = players[player:get_player_name()]
-	local max_stamina = get_max_stamina(player:get_player_name())
+	local max_stamina = sprint.get_max_stamina(player:get_player_name())
 	if info.stamina < max_stamina then
 		info.stamina = max_stamina
 		updateHud(player, info)
@@ -195,7 +195,7 @@ end)
 
 ctf_api.register_on_new_match(function()
 	for name, info in pairs(players) do
-		local max_stamina = get_max_stamina(name)
+		local max_stamina = sprint.get_max_stamina(name)
 		if info.stamina < max_stamina then
 			info.stamina = max_stamina
 			updateHud(core.get_player_by_name(name), info)
@@ -207,7 +207,7 @@ end)
 ctf_api.register_on_flag_take(function(taker, flag_team)
 	local tname = taker:get_player_name()
 
-	players[tname].stamina = get_max_stamina(tname)
+	players[tname].stamina = sprint.get_max_stamina(tname)
 	updateHud(taker, players[tname])
 end)
 

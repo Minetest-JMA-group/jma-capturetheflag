@@ -34,6 +34,29 @@ local HUD_DEFINITIONS = {
 local kill_list = {}
 local player_settings = {}
 
+---Optional provider of the kill list of the area a player is in. It must
+---return a table of entries or nil for the regular match feed and is set by a
+---mod that has areas with their own kill list
+---@type fun(name: string): table[]|nil
+ctf_kill_list.feed_provider = nil
+
+---Aging timer of every feed (weak keys: the feeds are owned by other mods)
+local feed_timers = setmetatable({}, { __mode = "k" })
+
+---Entries the player is currently looking at
+---@param name string
+---@return table[]
+local function feed_entries(name)
+	if ctf_kill_list.feed_provider then
+		local entries = ctf_kill_list.feed_provider(name)
+		if entries then
+			return entries
+		end
+	end
+
+	return kill_list
+end
+
 local image_scale_map = ctf_settings.settings["ctf_kill_list:tp_size"].image_scale_map
 local function update_kill_list_hud(player)
 	local player_name = PlayerName(player)
@@ -41,8 +64,10 @@ local function update_kill_list_hud(player)
 	if not ps then
 		return
 	end
+	local entries = feed_entries(player_name)
+
 	for idx = 1, ps.history_size, 1 do
-		local new = kill_list[idx]
+		local new = entries[idx]
 		idx = ps.history_size - (idx - 1)
 
 		local img_scale = ps.image_scale
@@ -97,31 +122,44 @@ function ctf_kill_list.apply_settings(player, update_hud)
 	end
 end
 
-local globalstep_timer = 0
-local function add_kill(x, y, z)
-	table.insert(kill_list, 1, { x, y, z })
+---Refreshes the players that are currently looking at the given feed
+---@param list table[]
+local function refresh_feed(list)
+	for _, player in ipairs(core.get_connected_players()) do
+		if feed_entries(PlayerName(player)) == list then
+			update_kill_list_hud(player)
+		end
+	end
+end
 
-	if #kill_list > HUD_LINES then
-		table.remove(kill_list)
+---@param list table[]
+---@param entry table
+local function add_kill(list, entry)
+	table.insert(list, 1, entry)
+
+	if #list > HUD_LINES then
+		table.remove(list)
 	end
 
-	for _, p in pairs(core.get_connected_players()) do
-		update_kill_list_hud(p)
-	end
-
-	globalstep_timer = 0
+	feed_timers[list] = 0
+	refresh_feed(list)
 end
 
 core.register_globalstep(function(dtime)
-	globalstep_timer = globalstep_timer + dtime
+	-- Copy the feeds first: refreshing them reads the same table
+	local lists = {}
+	for list in pairs(feed_timers) do
+		table.insert(lists, list)
+	end
 
-	if globalstep_timer >= KILLSTAT_REMOVAL_TIME then
-		globalstep_timer = 0
+	for _, list in ipairs(lists) do
+		feed_timers[list] = feed_timers[list] + dtime
 
-		table.remove(kill_list)
+		if feed_timers[list] >= KILLSTAT_REMOVAL_TIME then
+			feed_timers[list] = 0
 
-		for _, p in pairs(core.get_connected_players()) do
-			update_kill_list_hud(p)
+			table.remove(list)
+			refresh_feed(list)
 		end
 	end
 end)
@@ -129,7 +167,21 @@ end)
 ctf_api.register_on_match_end(function()
 	kill_list = {}
 	hud:clear_all()
+
+	-- Players outside of the match (Elysium, PvP Boxes) keep their own feed
+	for _, player in ipairs(core.get_connected_players()) do
+		update_kill_list_hud(player)
+	end
 end)
+
+---Rebuilds the kill list HUD of a player, e.g. after he changed his location
+---@param player string|ObjectRef
+function ctf_kill_list.update_player(player)
+	local p = core.get_player_by_name(PlayerName(player))
+	if p then
+		update_kill_list_hud(p)
+	end
+end
 
 core.register_on_joinplayer(function(player)
 	ctf_kill_list.apply_settings(player)
@@ -152,9 +204,18 @@ function ctf_kill_list.add(killer, victim, weapon_image, comment)
 		v_teamcolor = ctf_teams.team[v_teamcolor].color_hex
 	end
 
-	add_kill(
+	-- The kill belongs to the feed of the area the players are in
+	local list
+	if killer and killer ~= "" then
+		list = feed_entries(killer)
+	end
+	if (not list or list == kill_list) and victim and victim ~= "" then
+		list = feed_entries(victim)
+	end
+
+	add_kill(list or kill_list, {
 		{ text = killer, color = k_teamcolor or 0xFFFFFF },
 		{ image = weapon_image or "ctf_kill_list_punch.png" },
-		{ text = victim .. (comment or ""), color = v_teamcolor or 0xFFFFFF }
-	)
+		{ text = victim .. (comment or ""), color = v_teamcolor or 0xFFFFFF },
+	})
 end

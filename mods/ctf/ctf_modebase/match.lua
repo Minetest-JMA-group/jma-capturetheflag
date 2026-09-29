@@ -4,6 +4,47 @@ ctf_modebase.restart_on_next_match = false -- used by server_restart mod to rest
 ctf_modebase.map_on_next_match = nil
 ctf_modebase.mode_on_next_match = nil
 
+--- Team that won the match that just ended
+--- @type Team|nil
+ctf_modebase.match_winner_team = nil
+
+---@param team Team|nil
+function ctf_modebase.set_match_winner_team(team)
+	ctf_modebase.match_winner_team = team
+end
+
+---@return Team|nil
+function ctf_modebase.get_match_winner_team()
+	return ctf_modebase.match_winner_team
+end
+
+--- Player #1 (highest score) of the winning team in the match that just ended.
+---@return PlayerName|nil
+function ctf_modebase.get_match_winner_player()
+	local team = ctf_modebase.get_match_winner_team()
+	local mode = ctf_modebase:get_current_mode()
+	local rankings = mode and mode.recent_rankings
+	if not (team and rankings) then
+		return nil
+	end
+
+	local top, top_score
+	for pname, ranks in pairs(rankings.players()) do
+		if ranks._team == team then
+			local score = ranks.score or 0
+			if not top_score or score > top_score then
+				top, top_score = pname, score
+			end
+		end
+	end
+
+	return top
+end
+
+ctf_api.register_on_new_match(function()
+	ctf_modebase.match_winner_team = nil
+end)
+
 local S = core.get_translator(core.get_current_modname())
 
 -- Overridable

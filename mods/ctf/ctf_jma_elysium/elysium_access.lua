@@ -4,12 +4,13 @@ local ACCESS_DURATION = 1 * 24 * 60 * 60
 local INACTIVITY_DURATION = 3 * 24 * 60 * 60
 local cache = {}
 local invites = {}
+local invite_timers = {}
 local quick_help = "Welcome to JMA Elysium! @1: @2\n"
 	.. "To leave, type /leave or simply disconnect from the server.\n"
 	.. "Want to invite someone? Use /einvite <player>.\n"
 	.. "To talk in global chat, use /g <message>.\n"
 	.. "Use /espawn to return to Elysium's spawn point.\n"
-	.. "New updates for eleysium are on their way!"
+	.. "To create a PvP Box, use /box create <name>.\n"
 
 local REJOIN_COOLDOWN = ctf_core.init_cooldowns()
 local MAX_ELYSIUM_JOINS = 4
@@ -24,8 +25,8 @@ local TASKS = {
 	},
 	{
 		key = "hp_healed",
-		label = S("Heal 100 HP"),
-		goal = 100,
+		label = S("Heal 50 HP"),
+		goal = 50,
 	},
 }
 
@@ -74,6 +75,38 @@ local function has_access(name)
 		return true, t
 	end
 	return false
+end
+
+local function clear_invite(name)
+	invites[name] = nil
+	local timer = invite_timers[name]
+	if timer then
+		timer:cancel()
+		invite_timers[name] = nil
+	end
+end
+
+local function schedule_invite_expiry(name, inviter)
+	local timer
+	timer = core.after(ctf_jma_elysium.INVITE_TIMEOUT_SECONDS, function()
+		if invite_timers[name] ~= timer or invites[name] ~= inviter then
+			return
+		end
+		invite_timers[name] = nil
+		clear_invite(name)
+
+		core.chat_send_player(
+			name,
+			S("[Elysium] Your invite from @1 expired. Ask for a new one.", inviter)
+		)
+		if core.get_player_by_name(inviter) then
+			core.chat_send_player(
+				inviter,
+				S("[Elysium] Your invite to @1 expired.", name)
+			)
+		end
+	end)
+	invite_timers[name] = timer
 end
 
 local function get_quest_progress(name)
@@ -149,7 +182,7 @@ end)
 core.register_on_leaveplayer(function(player)
 	local name = player:get_player_name()
 	cache[name] = nil
-	invites[name] = nil
+	clear_invite(name)
 end)
 
 ctf_api.register_on_match_end(function()
@@ -168,6 +201,24 @@ ctf_api.register_on_match_end(function()
 					"[Elysium] Quest completed! You have earned a "
 						.. "ticket to Elysium for "
 						.. playtime.seconds_to_clock(ACCESS_DURATION)
+				)
+			)
+		end
+	end
+
+	-- Reward the #1 player of the winning team with Elysium access
+	local winner = ctf_modebase.get_match_winner_player()
+	if winner and not has_access(winner) then
+		storage:set_float(ACCESS_KEY .. winner, os.time() + ACCESS_DURATION)
+		local winner_player = core.get_player_by_name(winner)
+		if winner_player then
+			core.chat_send_player(
+				winner,
+				core.colorize(
+					"#00ff00",
+					"[Elysium] You've earned a ticket to Elysium for 1st place on your "
+					.. "team! Your ticket lasts for "
+					.. playtime.seconds_to_clock(ACCESS_DURATION)
 				)
 			)
 		end
@@ -266,7 +317,7 @@ core.register_chatcommand("elysium", {
 						"Ends after leaving Elysium or disconnecting"
 					)
 				)
-				invites[name] = nil
+				clear_invite(name)
 			end)
 
 			return true
@@ -388,6 +439,7 @@ core.register_chatcommand("einvite", {
 		end
 
 		invites[target] = name
+		schedule_invite_expiry(target, name)
 		core.chat_send_player(
 			target,
 			core.colorize(
@@ -395,7 +447,8 @@ core.register_chatcommand("einvite", {
 				S("You have received a one-time Elysium invite from @1!", name)
 					.. "\n"
 					.. S(
-						"Use /elysium to enter. This ticket is valid for a single entry only."
+						"Use /elysium to enter within @1 seconds. This ticket is valid for a single entry only.",
+						ctf_jma_elysium.INVITE_TIMEOUT_SECONDS
 					)
 			)
 		)

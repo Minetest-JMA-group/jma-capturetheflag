@@ -1645,6 +1645,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 					string.format(capture_text, core.colorize(tcolor, pname))
 				)
 
+				ctf_modebase.set_match_winner_team(pteam)
+
 				local win_text = S("@1 Team Wins!", HumanReadable(pteam))
 
 				core.chat_send_all(core.colorize(pteam, win_text))

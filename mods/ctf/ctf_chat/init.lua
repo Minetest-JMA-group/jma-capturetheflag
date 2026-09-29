@@ -138,8 +138,15 @@ end
 local function elysium_format_chat_message(name, message)
 	-- 1 index is staff ranks
 	local prefix = prefix_callbacks[1].func(name, "white") or ""
+
+	local tag = "Elysium"
+	local ctx = ctf_jma_elysium.players[name]
+	if ctx and ctx.box then
+		tag = "Elysium-box" .. ctx.box
+	end
+
 	return joinStrings(
-		core.colorize("#5a6d93", "[Elysium]:"),
+		core.colorize("#5a6d93", "[" .. tag .. "]:"),
 		prefix,
 		"<" .. name .. ">:",
 		" ",
