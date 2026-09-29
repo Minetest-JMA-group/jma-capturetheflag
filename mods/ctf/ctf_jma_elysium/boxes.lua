@@ -1291,6 +1291,18 @@ local function join_box(player, name, box)
 	BOX_JOIN_COOLDOWN:set(player, BOX_JOIN_COOLDOWN_TIME)
 
 	core.chat_send_player(name, S("You joined the PvP Box."))
+	if box.persistent then
+		core.chat_send_player(
+			name,
+			core.colorize(
+				"#00ff00",
+				S(
+					"Persistent Box mode: This box will be saved automatically and can survive server restarts. Owner: @1",
+					box.owner
+				)
+			)
+		)
+	end
 	ctf_jma_elysium.box_broadcast(
 		box,
 		S("@1 joined the PvP Box.", name),
