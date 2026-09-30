@@ -312,7 +312,7 @@ function ctf_jma_elysium.select_box_spawn(box, name, target_pos)
 		if not r then
 			return nil
 		end
-		respawns = { [1] = vector.add(box.pos1, r) }
+		return vector.add(box.pos1, r)
 	end
 
 	local player = PlayerObj(name)
