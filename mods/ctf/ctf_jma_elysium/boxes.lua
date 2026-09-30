@@ -23,7 +23,7 @@ local PERSISTENT_IDLE_PACK_TIME = 30 * 60
 -- Empty non-persistent boxes are removed after this many seconds
 local BOX_EMPTY_DESTROY_TIME = 10 * 60
 -- Cooldown between PvP Box joins
-local BOX_JOIN_COOLDOWN_TIME = 30
+local BOX_JOIN_COOLDOWN_TIME = 10
 local BOX_JOIN_COOLDOWN = ctf_core.init_cooldowns()
 
 core.mkdir(PERSISTENT_DIR)
@@ -232,7 +232,7 @@ function ctf_jma_elysium.add_box_respawn_node(box, pos)
 	end
 
 	box.respawn_nodes = box.respawn_nodes or {}
-	box.respawn_nodes[core.pos_to_string(pos)] = vector.new(pos.x, pos.y, pos.z)
+	box.respawn_nodes[core.pos_to_string(pos)] = pos
 end
 
 ---Forgets a respawn marker position in the box context
@@ -258,8 +258,7 @@ function ctf_jma_elysium.scan_box_respawn_nodes(box)
 	local positions =
 		core.find_nodes_in_area(box.pos1, box.pos2, { RESPAWN_NODE_NAME })
 	for _, pos in ipairs(positions) do
-		box.respawn_nodes[core.pos_to_string(pos)] =
-			vector.new(pos.x, pos.y, pos.z)
+		box.respawn_nodes[core.pos_to_string(pos)] = pos
 	end
 end
 
@@ -308,7 +307,12 @@ end
 function ctf_jma_elysium.select_box_spawn(box, name, target_pos)
 	local respawns = ctf_jma_elysium.get_box_respawn_nodes(box)
 	if not respawns or not respawns[1] then
-		return nil
+		local tmpl = ctf_jma_elysium.box_templates[box.name]
+		local r = tmpl.respawns[1]
+		if not r then
+			return nil
+		end
+		respawns = { [1] = vector.add(box.pos1, r) }
 	end
 
 	local player = PlayerObj(name)
