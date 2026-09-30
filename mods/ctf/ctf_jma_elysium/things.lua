@@ -168,3 +168,8 @@ core.register_allow_player_inventory_action(function(player, action, inventory, 
 		end
 	end
 end)
+
+local ind_glass = table.copy(core.registered_nodes["ctf_map:ind_glass"])
+ind_glass.description = S("Indestructible Glass (Pointable сopy of ctf_map:ind_glass)")
+ind_glass.pointable = true
+core.register_node("ctf_jma_elysium:ind_glass", ind_glass)

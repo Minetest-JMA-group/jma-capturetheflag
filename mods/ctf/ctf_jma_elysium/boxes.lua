@@ -1,7 +1,7 @@
 local storage = core.get_mod_storage()
 local S = core.get_translator(core.get_current_modname())
 local BOX_MARGIN = 50 -- gap between the main map and the first box (in nodes)
-local BOX_GAP = 20 -- gap between adjacent boxes (in nodes)
+local BOX_GAP = 100 -- gap between adjacent boxes (in nodes)
 -- Step of the row of boxes. It has to fit the widest template, otherwise
 -- boxes of different sizes placed in the same row would overlap.
 -- Computed in register_box_template.
@@ -42,7 +42,7 @@ local IGNORE_OBJECTS = {
 
 ---Registers a map that can be used for PvP Boxes
 ---@param name string
----@param def table { file, bounds = {pos1, pos2}?, size = vector?, respawns = vector[], map_offset = vector? }
+---@param def table { file, bounds = {pos1, pos2}?, size = vector?, respawns = vector[], map_offset = vector?, barrier = string? }
 function ctf_jma_elysium.register_box_template(name, def)
 	local size = def.size
 	if not size and def.bounds then
@@ -88,6 +88,7 @@ function ctf_jma_elysium.register_box_template(name, def)
 		},
 		respawns = def.respawns,
 		map_offset = def.map_offset or { x = 0, y = 0, z = 0 },
+		barrier = def.barrier,
 		meta_key = "box_" .. name,
 	}
 
@@ -420,6 +421,35 @@ local function has_meta(key)
 	return storage:get_string("meta_" .. key) ~= ""
 end
 
+-- Fills a closed barrier shell (4 walls + floor + ceiling) into a VoxelManip
+-- data array. minp/maxp are the outer corners of the shell; the interior
+-- (one node inside) is left untouched.
+local function paint_barrier_shell(node_data, param2_data, area, minp, maxp, bid)
+	local function put(x, y, z)
+		local vi = area:index(x, y, z)
+		node_data[vi] = bid
+		param2_data[vi] = 0
+	end
+
+	for y = minp.y, maxp.y do
+		for z = minp.z, maxp.z do
+			put(minp.x, y, z)
+			put(maxp.x, y, z)
+		end
+		for x = minp.x, maxp.x do
+			put(x, y, minp.z)
+			put(x, y, maxp.z)
+		end
+	end
+
+	for x = minp.x, maxp.x do
+		for z = minp.z, maxp.z do
+			put(x, minp.y, z)
+			put(x, maxp.y, z)
+		end
+	end
+end
+
 -- Places a .mts schematic using VoxelManip.
 -- core.place_schematic caches schematics by filename in the engine and can
 -- therefore place stale data for files that were rewritten on disk, so the
@@ -428,13 +458,9 @@ end
 --   index = x + size.x * (y + size.y * z)
 ---@param pos vector Absolute position of the schematic's min corner
 ---@param path string Path of the .mts file
+---@param barrier_node string|nil Node placed as a closed shell one node outside the schematic
 ---@return boolean
-local function place_schematic_vm(pos, path)
-	if not core.read_schematic then
-		-- Fallback for engines without core.read_schematic
-		return core.place_schematic(pos, path, "0") and true or false
-	end
-
+local function place_schematic_vm(pos, path, barrier_node)
 	-- The file may be missing, empty or corrupted (never saved, removed
 	-- manually, truncated by a crash, ...)
 	local file = io.open(path, "rb")
@@ -471,14 +497,23 @@ local function place_schematic_vm(pos, path)
 
 	local size = schem.size
 	local data = schem.data
+
+	-- When a barrier is requested the VoxelManip region is grown by one node
+	-- on every side so the shell lies just outside the schematic
+	local pad = barrier_node and 1 or 0
+	local minp = {
+		x = pos.x - pad,
+		y = pos.y - pad,
+		z = pos.z - pad,
+	}
 	local maxp = {
-		x = pos.x + size.x - 1,
-		y = pos.y + size.y - 1,
-		z = pos.z + size.z - 1,
+		x = pos.x + size.x - 1 + pad,
+		y = pos.y + size.y - 1 + pad,
+		z = pos.z + size.z - 1 + pad,
 	}
 
 	local vm = VoxelManip()
-	local emin, emax = vm:read_from_map(pos, maxp)
+	local emin, emax = vm:read_from_map(minp, maxp)
 	local area = VoxelArea:new({ MinEdge = emin, MaxEdge = emax })
 
 	local node_data = vm:get_data()
@@ -512,6 +547,13 @@ local function place_schematic_vm(pos, path)
 					param2_data[vi] = param2 or 0
 				end
 			end
+		end
+	end
+
+	if barrier_node then
+		local bid = core.get_content_id(barrier_node)
+		if bid then
+			paint_barrier_shell(node_data, param2_data, area, minp, maxp, bid)
 		end
 	end
 
@@ -580,6 +622,7 @@ function ctf_jma_elysium.load_persistent_registry()
 				-- Points to the saved file this box is restored from
 				file = PERSISTENT_DIR .. "/" .. id .. ".mts",
 				map_offset = tmpl.map_offset,
+				barrier = tmpl.barrier,
 				meta_key = "box_persistent_" .. id,
 				persistent = true,
 				active = entry.active ~= false,
@@ -745,6 +788,18 @@ function ctf_jma_elysium.save_box_to_disk(box)
 	return true
 end
 
+-- Region to clear when dropping a box from the world. Includes the barrier
+-- shell, which sits one node outside the box bounds.
+---@param box table
+---@return vector, vector
+local function box_delete_region(box)
+	if box.barrier then
+		return vector.offset(box.pos1, -1, -1, -1),
+			vector.offset(box.pos2, 1, 1, 1)
+	end
+	return box.pos1, box.pos2
+end
+
 ---Packs a persistent box: stores its nodes to a .mts file plus metadata,
 ---then clears the area from the world.
 ---@param box table
@@ -771,7 +826,7 @@ function ctf_jma_elysium.pack_box(box)
 			return
 		end
 
-		core.delete_area(box.pos1, box.pos2)
+		core.delete_area(box_delete_region(box))
 
 		box.active = false
 		box.packing = false
@@ -816,7 +871,8 @@ local function place_box_data(box)
 	local ok, placed = pcall(
 		place_schematic_vm,
 		vector.add(box.pos1, box.map_offset),
-		path
+		path,
+		box.barrier
 	)
 	if not ok or not placed then
 		core.log(
@@ -1167,7 +1223,7 @@ function ctf_jma_elysium.destroy_box(box)
 		end
 	end
 
-	core.delete_area(box.pos1, box.pos2)
+	core.delete_area(box_delete_region(box))
 
 	if box.persistent then
 		os.remove(persistent_box_path(box))
@@ -1365,7 +1421,8 @@ local function create_box(player, name, tmpl, persistent)
 
 		local placed = place_schematic_vm(
 			vector.add(pos1, tmpl.map_offset),
-			tmpl.file
+			tmpl.file,
+			tmpl.barrier
 		)
 		if not placed then
 			ctf_jma_elysium.box_reserved_ids[id] = nil
@@ -1409,6 +1466,7 @@ local function create_box(player, name, tmpl, persistent)
 					and (PERSISTENT_DIR .. "/" .. id .. ".mts")
 				or tmpl.file,
 			map_offset = tmpl.map_offset,
+			barrier = tmpl.barrier,
 			meta_key = meta_key,
 			persistent = persistent,
 			active = true,
@@ -1903,7 +1961,7 @@ local BOX_HELP = {
 	{
 		"create [map]",
 		S(
-			"Create a regular PvP Box. If all members leave, it is deleted after @1 minutes. With several maps, choose one via /box maps.",
+			"Create a regular PvP Box. If all members leave, it is deleted after @1. With several maps, choose one via /box maps.",
 			algorithms.time_to_string(BOX_EMPTY_DESTROY_TIME)
 		),
 	},
@@ -2490,6 +2548,11 @@ end)
 
 -- Bounds are auto-detected from the .mts. Respawn coordinates are player
 -- destinations relative to bounds.pos1; marker nodes are placed one node below.
+--
+-- Optional "barrier" field: name of a node used to build a closed barrier
+-- shell (4 walls + floor + ceiling) one node outside the box bounds, e.g.
+--   barrier = "ctf_map:ind_glass_red"
+-- Leave it unset to keep the box open.
 
 -- fappy1
 ctf_jma_elysium.register_box_template("island", {
@@ -2498,6 +2561,7 @@ ctf_jma_elysium.register_box_template("island", {
 		{ x = 22, y = 16, z = 16 },
 		{ x = 22, y = 16, z = 31 },
 	},
+	barrier = "ctf_jma_elysium:ind_glass",
 })
 
 -- Unknown
@@ -2513,6 +2577,7 @@ ctf_jma_elysium.register_box_template("oldely", {
 		{ x = 29, y = 2, z = 29 },
 		{ x = 13, y = 2, z = 13 },
 	},
+	barrier = "ctf_jma_elysium:ind_glass",
 })
 
 -- Loki
@@ -2522,6 +2587,7 @@ ctf_jma_elysium.register_box_template("box", {
 		{ x = 21, y = 1, z = 12 },
 		{ x = 3, y = 1, z = 12 },
 	},
+	barrier = "ctf_jma_elysium:ind_glass",
 })
 
 -- Restore persistent boxes (no schematics are placed here, unpacking is lazy)
