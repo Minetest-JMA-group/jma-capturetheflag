@@ -2594,5 +2594,15 @@ ctf_jma_elysium.register_box_template("box", {
 	barrier = "ctf_jma_elysium:ind_glass",
 })
 
+-- BastiGHGler and julia
+ctf_jma_elysium.register_box_template("farm", {
+	file = ctf_jma_elysium.modpath .. "/maps/jma_elysium_farm.mts",
+	respawns = {
+		{ x = 13, y = 8, z = 35 },
+		{ x = 104,  y = 8, z = 29 },
+	},
+	barrier = "ctf_jma_elysium:ind_glass",
+})
+
 -- Restore persistent boxes (no schematics are placed here, unpacking is lazy)
 ctf_jma_elysium.load_persistent_registry()
