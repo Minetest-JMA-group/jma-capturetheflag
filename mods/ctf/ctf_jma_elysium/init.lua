@@ -589,9 +589,13 @@ core.register_chatcommand("espawn", {
 			return false, S("You must be online to use this command.")
 		end
 
-		local pctx = ctf_jma_elysium.get_player(player)
-		if not pctx then
+		local ctx = ctf_jma_elysium.get_player(player)
+		if not ctx then
 			return false, S("You are not in Elysium.")
+		end
+
+		if ctx.box then
+			return false, S("You cannot use this command while inside a PvP Box.")
 		end
 
 		if SPAWNTP_COOLDOWN:get(player) then
