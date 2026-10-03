@@ -432,35 +432,25 @@ core.register_chatcommand("el_replace_nodes", {
 })
 
 core.register_chatcommand("el_box_save_meta", {
-	params = "<template>",
+	params = "<box_id>",
 	description = S(
-		"Save metadata of a placed PvP Box into the box map template"
+		"Save metadata of a PvP Box into its map template"
 	),
 	privs = { server = true },
-	func = function(name, template)
-		if not template or template == "" then
-			return false, S("Usage: /el_box_save_meta <template>")
+	func = function(name, box_id_param)
+		local box_id = tonumber(box_id_param)
+		if not box_id or box_id < 1 or box_id % 1 ~= 0 then
+			return false, S("Usage: /el_box_save_meta <box_id>")
 		end
 
-		local tmpl = ctf_jma_elysium.box_templates[template]
-		if not tmpl then
-			return false, S("Unknown PvP Box map: @1", template)
-		end
-
-		local box
-		for _, b in pairs(ctf_jma_elysium.boxes) do
-			if b.name == template then
-				box = b
-				break
-			end
-		end
-
+		local box = ctf_jma_elysium.boxes[box_id]
 		if not box then
-			return false,
-				S(
-					"Create a box of this map first (/box create @1), edit it and run this command again.",
-					template
-				)
+			return false, S("PvP Box not found: @1", box_id)
+		end
+
+		local tmpl = ctf_jma_elysium.box_templates[box.name]
+		if not tmpl then
+			return false, S("Unknown PvP Box map: @1", box.name)
 		end
 
 		local result, count =
@@ -468,8 +458,9 @@ core.register_chatcommand("el_box_save_meta", {
 		if result then
 			return true,
 				S(
-					"PvP Box map @1 metadata saved. Nodes count: @2",
-					template,
+					"PvP Box #@1 (@2) metadata saved. Nodes count: @3",
+					box_id,
+					box.name,
 					count
 				)
 		end
