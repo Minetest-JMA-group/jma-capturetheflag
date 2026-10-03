@@ -370,18 +370,30 @@ function ctf_jma_elysium.close_wait_formspec(player_name)
 	core.close_formspec(player_name, FORMNAME_WAIT)
 end
 
-function ctf_jma_elysium.join(player, joined_callback)
+function ctf_jma_elysium.join(player, joined_callback, options)
 	local name = player:get_player_name()
 	local map = ctf_jma_elysium.maps.main
+	options = options or {}
 
-	local function handle_player(player)
-		local player_name = player:get_player_name()
+	local function handle_player(player_name)
+		player = PlayerObj(player_name)
+		if not player then
+			ctf_jma_elysium.on_joining[player_name] = nil
+			if options.on_failure then
+				options.on_failure()
+			end
+			return false
+		end
 
 		local can_join, reason = ctf_jma_elysium.can_player_join_elysium(player_name)
 		if not can_join then
 			---@cast reason -nil
 			core.chat_send_player(player_name, reason)
+			ctf_jma_elysium.close_wait_formspec(player_name)
 			ctf_jma_elysium.on_joining[player_name] = nil
+			if options.on_failure then
+				options.on_failure(reason)
+			end
 			return false
 		end
 
@@ -448,14 +460,18 @@ function ctf_jma_elysium.join(player, joined_callback)
 		skybox.clear(player)
 		player:override_day_night_ratio(1)
 
-		local function tp()
-			if not ctf_core.pos_inside(player:get_pos(), map.pos1, map.pos2) then
-				player:set_pos(map.spawn_abs)
-			end
+		if options.teleport_to_spawn ~= false then
+			player:set_pos(map.spawn_abs)
+			core.after(0.2, function()
+				local current = PlayerObj(player_name)
+				if
+					current
+					and not ctf_core.pos_inside(current:get_pos(), map.pos1, map.pos2)
+				then
+					current:set_pos(map.spawn_abs)
+				end
+			end)
 		end
-
-		player:set_pos(map.spawn_abs)
-		core.after(0.2, tp)
 		ctf_jma_elysium.set_pvp_mode(player, false)
 
 		if joined_callback then
@@ -465,6 +481,10 @@ function ctf_jma_elysium.join(player, joined_callback)
 		-- Call registered callbacks
 		for _, callback in ipairs(ctf_jma_elysium.callbacks.on_join) do
 			callback(player, ctf_jma_elysium.players[name])
+		end
+
+		if options.on_complete then
+			options.on_complete(player, ctf_jma_elysium.players[name])
 		end
 
 		core.log("action", "[ctf_jma_elysium] Player " .. name .. " has joined Elysium.")
@@ -478,14 +498,14 @@ function ctf_jma_elysium.join(player, joined_callback)
 			core.place_schematic(vector.add(map.pos1, map.map_offset), map.file, "0")
 			ctf_jma_elysium.loaded_maps.main = true
 			ctf_jma_elysium.restore_nodemeta("main")
-			core.after(1, handle_player, player)
+			core.after(1, handle_player, name)
 		end)
 
 		return true
 	end
 
 	ctf_jma_elysium.show_wait_formspec(name)
-	core.after(1, handle_player, player)
+	core.after(1, handle_player, name)
 
 	return true
 end

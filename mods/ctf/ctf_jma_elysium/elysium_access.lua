@@ -5,6 +5,9 @@ local INACTIVITY_DURATION = 3 * 24 * 60 * 60
 local cache = {}
 local invites = {}
 local invite_timers = {}
+local invite_history = {}
+local MAX_EINVITES_PER_HOUR = 5
+local EINVITE_WINDOW_SECONDS = 60 * 60
 local quick_help = "Welcome to JMA Elysium! @1: @2\n"
 	.. "To leave, type /leave or simply disconnect from the server.\n"
 	.. "Want to invite someone? Use /einvite <player>.\n"
@@ -76,6 +79,34 @@ local function has_access(name)
 	end
 	return false
 end
+
+local function cleanup_invite_history(name, now)
+	local targets = invite_history[name]
+	if not targets then
+		return {}, 0
+	end
+
+	now = now or os.time()
+	local target_count = 0
+	for target, invited_at in pairs(targets) do
+		if now - invited_at >= EINVITE_WINDOW_SECONDS then
+			targets[target] = nil
+		else
+			target_count = target_count + 1
+		end
+	end
+
+	if target_count == 0 then
+		invite_history[name] = nil
+		return {}, 0
+	end
+
+	return targets, target_count
+end
+
+ctf_jma_elysium.register_on_join(function(player)
+	cleanup_invite_history(player:get_player_name())
+end)
 
 local function clear_invite(name)
 	invites[name] = nil
@@ -257,11 +288,60 @@ ctf_api.register_on_match_end(function()
 end)
 
 local function join(player, name, cb)
-	ctf_jma_elysium.join(player, function()
+	ctf_jma_elysium.join(player, function(joined_player)
 		join_count[name] = (join_count[name] or 0) + 1
-		REJOIN_COOLDOWN:set(player, 60)
+		REJOIN_COOLDOWN:set(joined_player or player, 60)
 		cb()
 	end)
+end
+
+local function can_start_join(name, player)
+	local can_join, reason = ctf_jma_elysium.can_player_join_elysium(name)
+	if not can_join then
+		return false, reason
+	end
+
+	if join_count[name] and join_count[name] >= MAX_ELYSIUM_JOINS then
+		return false,
+			S(
+				"You cannot rejoin Elysium - maximum join attempts reached for the current match."
+			)
+	end
+
+	if REJOIN_COOLDOWN:get(player) then
+		return false,
+			S(
+				"You're rejoining too quickly - please wait 1 minute before trying again."
+			)
+	end
+
+	return true
+end
+
+function ctf_jma_elysium.join_with_access(name, options)
+	local player = core.get_player_by_name(name)
+	local can_join, reason = can_start_join(name, player)
+	if not can_join then
+		return false, reason
+	end
+
+	local has_acc, ticket_time = has_access(name)
+	if not has_acc then
+		return false,
+			S("You need a valid Elysium access ticket to accept a PvP Box invite.")
+	end
+
+	local now = os.time()
+	ctf_jma_elysium.join(player, function(joined_player)
+		join_count[name] = (join_count[name] or 0) + 1
+		REJOIN_COOLDOWN:set(joined_player or player, 60)
+		core.chat_send_player(
+			name,
+			S(quick_help, "Time left", playtime.seconds_to_clock(ticket_time - now))
+		)
+	end, options)
+
+	return true
 end
 
 core.register_chatcommand("elysium", {
@@ -270,23 +350,9 @@ core.register_chatcommand("elysium", {
 	func = function(name)
 		local player = core.get_player_by_name(name)
 
-		local can_join, reason = ctf_jma_elysium.can_player_join_elysium(name)
+		local can_join, reason = can_start_join(name, player)
 		if not can_join then
 			return false, reason
-		end
-
-		if join_count[name] and join_count[name] >= MAX_ELYSIUM_JOINS then
-			return false,
-				S(
-					"You cannot rejoin Elysium - maximum join attempts reached for the current match."
-				)
-		end
-
-		if REJOIN_COOLDOWN:get(player) then
-			return false,
-				S(
-					"You're rejoining too quickly - please wait 1 minute before trying again."
-				)
 		end
 
 		local now = os.time()
@@ -402,7 +468,7 @@ core.register_chatcommand("eprogress", {
 core.register_chatcommand("einvite", {
 	privs = { interact = true },
 	params = S("<player>"),
-	description = S("Invite one player to Elysium (session-only)"),
+	description = S("Invite a player to Elysium (up to 5 different players per hour)"),
 	func = function(name, param)
 		local target = param:trim()
 		if target == "" or target == name then
@@ -438,7 +504,20 @@ core.register_chatcommand("einvite", {
 			end
 		end
 
+		local now = os.time()
+		local targets, target_count = cleanup_invite_history(name, now)
+
+		if target_count >= MAX_EINVITES_PER_HOUR and not targets[target] then
+			return false,
+				S(
+					"You can invite at most @1 players per hour.",
+					MAX_EINVITES_PER_HOUR
+				)
+		end
+
 		invites[target] = name
+		targets[target] = now
+		invite_history[name] = targets
 		schedule_invite_expiry(target, name)
 		core.chat_send_player(
 			target,

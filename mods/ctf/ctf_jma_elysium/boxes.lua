@@ -25,6 +25,7 @@ local BOX_EMPTY_DESTROY_TIME = 10 * 60
 -- Cooldown between PvP Box joins
 local BOX_JOIN_COOLDOWN_TIME = 10
 local BOX_JOIN_COOLDOWN = ctf_core.init_cooldowns()
+local box_accepting = {}
 
 core.mkdir(PERSISTENT_DIR)
 
@@ -1375,14 +1376,27 @@ end
 ---and teleports the player inside. `on_fail` may override the error notice.
 ---@param name string
 ---@param box table
----@param player ObjectRef
 ---@param on_fail function|nil
-local function load_and_join(name, box, player, on_fail)
+local function load_and_join(name, box, on_fail, before_join, on_join_fail, on_joined)
 	ctf_jma_elysium.show_wait_formspec(name)
 
 	activate_box(box, function(ok)
 		if ok then
-			join_box(player, name, box)
+			if before_join and not before_join() then
+				ctf_jma_elysium.close_wait_formspec(name)
+				if ctf_jma_elysium.boxes[box.id] == box then
+					restore_idle_timer(box)
+				end
+				return
+			end
+
+			if join_box(PlayerObj(name), name, box) then
+				if on_joined then
+					on_joined()
+				end
+			elseif on_join_fail then
+				on_join_fail()
+			end
 			return
 		end
 
@@ -1400,7 +1414,9 @@ local function load_and_join(name, box, player, on_fail)
 			)
 		end
 
-		restore_idle_timer(box)
+		if ctf_jma_elysium.boxes[box.id] == box then
+			restore_idle_timer(box)
+		end
 	end)
 end
 
@@ -1688,7 +1704,7 @@ local function handle_invite(name, target)
 		core.chat_send_player(
 			target,
 			S(
-				"[PvP Box] @1 invited you to their PvP Box.\nYou need Elysium access to join: use /elysium, then /box accept within @2 seconds.",
+				"[PvP Box] @1 invited you to their PvP Box.\nYou need Elysium access to join. Use /box accept within @2 seconds; you do not need to join Elysium first.",
 				name,
 				ctf_jma_elysium.INVITE_TIMEOUT_SECONDS
 			)
@@ -1699,25 +1715,149 @@ local function handle_invite(name, target)
 end
 
 local function handle_accept(name)
+	if box_accepting[name] then
+		return false, S("Your PvP Box join is already in progress.")
+	end
+
 	local box_id = ctf_jma_elysium.box_invites[name]
 	local box = box_id and ctf_jma_elysium.boxes[box_id]
 	if not box or not box.invites[name] then
 		return false, S("You have no PvP Box invite.")
 	end
 
+	if BOX_JOIN_COOLDOWN:get(name) then
+		return false,
+			S("Not too fast! Please wait a moment before joining a PvP Box.")
+	end
+
 	local ctx = ctf_jma_elysium.players[name]
 	if not ctx then
-		return false,
-			S("You must be in Elysium first: use /elysium, then /box accept.")
+		if ctf_jma_elysium.on_joining[name] then
+			return false, S("Please wait, you are joining Elysium already.")
+		end
+
+		local player = PlayerObj(name)
+		if not player then
+			return false, S("You must be online to accept a PvP Box invite.")
+		end
+
+		if player:get_hp() <= 0 then
+			return false, S("You cannot join a PvP Box while dead.")
+		end
+
+		if player:get_attach() then
+			return false, S("You cannot join a PvP Box right now.")
+		end
+
+		if box.packing then
+			return false, S("The PvP Box is busy, please try again later.")
+		end
+
+		box_accepting[name] = box.id
+		local function return_to_hub(message)
+			if box_accepting[name] == box.id then
+				box_accepting[name] = nil
+			end
+			local current = PlayerObj(name)
+			if current then
+				ctf_jma_elysium.close_wait_formspec(name)
+				if message then
+					core.chat_send_player(name, message)
+				end
+				if ctf_jma_elysium.players[name] then
+					current:set_pos(ctf_jma_elysium.maps.main.spawn_abs)
+				end
+			end
+		end
+
+		local function invite_is_valid()
+			return ctf_jma_elysium.boxes[box.id] == box
+				and ctf_jma_elysium.box_invites[name] == box.id
+				and box.invites[name] == true
+		end
+
+		local started, reason = ctf_jma_elysium.join_with_access(name, {
+			teleport_to_spawn = false,
+			on_failure = function()
+				if box_accepting[name] == box.id then
+					box_accepting[name] = nil
+				end
+			end,
+			on_complete = function()
+				if box_accepting[name] ~= box.id then
+					return
+				end
+
+				local current = PlayerObj(name)
+				if not current or not ctf_jma_elysium.players[name] then
+					box_accepting[name] = nil
+					return
+				end
+
+				if not invite_is_valid() then
+					return_to_hub(S("Your PvP Box invite has expired."))
+					return
+				end
+
+				if box.packing then
+					return_to_hub(S("The PvP Box is busy, please try again later."))
+					return
+				end
+
+				load_and_join(
+					name,
+					box,
+					function()
+						return_to_hub(
+							S(
+								"[PvP Box] Failed to load PvP Box #@1 (its data is missing or corrupted). The broken box was removed. You were not joined.",
+								box.id
+							)
+						)
+					end,
+					function()
+						if not invite_is_valid() then
+							return_to_hub(S("Your PvP Box invite has expired."))
+							return false
+						end
+
+						local latest = PlayerObj(name)
+						local latest_ctx = ctf_jma_elysium.players[name]
+						if
+							ctf_jma_elysium.boxes[box.id] ~= box
+							or box.packing
+							or not latest
+							or not latest_ctx
+							or latest_ctx.box
+							or latest:get_hp() <= 0
+							or latest:get_attach()
+						then
+							return_to_hub()
+							return false
+						end
+						return true
+					end,
+					function()
+						return_to_hub()
+					end,
+					function()
+						if box_accepting[name] == box.id then
+							box_accepting[name] = nil
+						end
+					end
+				)
+			end,
+		})
+
+		if not started then
+			box_accepting[name] = nil
+			return false, reason
+		end
+		return true
 	end
 
 	if ctx.box then
 		return false, S("You are already in a PvP Box.")
-	end
-
-	if BOX_JOIN_COOLDOWN:get(name) then
-		return false,
-			S("Not too fast! Please wait a moment before joining a PvP Box.")
 	end
 
 	if box.packing then
@@ -1734,7 +1874,7 @@ local function handle_accept(name)
 		return false, S("You cannot join a PvP Box right now.")
 	end
 
-	load_and_join(name, box, player)
+	load_and_join(name, box)
 
 	return true
 end
@@ -2177,7 +2317,7 @@ local function handle_join(name, param)
 	-- The owner, invited players and (for persistent boxes) former members
 	-- enter directly, everybody else has to ask the owner.
 	if may_join_directly(box, name) then
-		load_and_join(name, box, player)
+		load_and_join(name, box)
 		return true
 	end
 
@@ -2275,7 +2415,7 @@ local function handle_approve(name, target)
 			S("@1 must wait a moment before joining a PvP Box.", target)
 	end
 
-	load_and_join(target, box, tplayer, function()
+	load_and_join(target, box, function()
 		local fail = S(
 			"[PvP Box] Failed to load PvP Box #@1 (its data is missing or corrupted). The broken box was removed. Nobody was joined.",
 			box.id
@@ -2421,7 +2561,11 @@ core.register_chatcommand("box", {
 			return handle_help()
 		end
 
-		if not ctf_jma_elysium.players[name] then
+		if box_accepting[name] then
+			return false, S("Your PvP Box join is already in progress.")
+		end
+
+		if not ctf_jma_elysium.players[name] and sub ~= "accept" then
 			return false,
 				S("You must be in Elysium to use PvP Box commands. Use /elysium first.")
 		end
@@ -2472,7 +2616,7 @@ ctf_jma_elysium.register_on_join(function(player)
 	local name = player:get_player_name()
 	local box_id = ctf_jma_elysium.box_invites[name]
 	local box = box_id and ctf_jma_elysium.boxes[box_id]
-	if box then
+	if box and not box_accepting[name] then
 		core.chat_send_player(
 			name,
 			S(
@@ -2507,6 +2651,7 @@ end)
 -- Clean up membership when a player disconnects
 core.register_on_leaveplayer(function(player)
 	local name = player:get_player_name()
+	box_accepting[name] = nil
 	clear_box_invite(name)
 	ctf_jma_elysium.box_creating[name] = nil
 
