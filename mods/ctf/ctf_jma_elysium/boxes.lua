@@ -6,6 +6,12 @@ local BOX_GAP = 100 -- gap between adjacent boxes (in nodes)
 -- boxes of different sizes placed in the same row would overlap.
 -- Computed in register_box_template.
 local BOX_ROW_STEP = 0
+-- Highest occupied or reserved placement slot. Slots are not box IDs: IDs can
+-- be reused while a removed middle slot remains empty.
+local BOX_INDEX = 0
+local box_reserved_slots = {}
+local box_occupied_slots = {}
+local box_slots_by_id = {}
 
 local RESPAWN_NODE_NAME = "ctf_jma_elysium:box_respawn"
 local RESPAWN_NODE_ITEM = RESPAWN_NODE_NAME .. " 2"
@@ -117,8 +123,7 @@ function ctf_jma_elysium.get_box_templates()
 	return names
 end
 
----Finds the lowest box id that is not in use. The id doubles as the place of
----the box in the row, so freed ids are reused instead of growing forever.
+---Finds the lowest box id that is not in use.
 ---@return integer
 function ctf_jma_elysium.allocate_box_id()
 	local id = 0
@@ -129,14 +134,31 @@ function ctf_jma_elysium.allocate_box_id()
 	return id
 end
 
--- Computes the absolute region of the box with the given id.
+local function reserve_box_slot()
+	BOX_INDEX = BOX_INDEX + 1
+	box_reserved_slots[BOX_INDEX] = true
+	return BOX_INDEX
+end
+
+local function release_box_slot(slot)
+	box_reserved_slots[slot] = nil
+	while
+		BOX_INDEX > 0
+		and not box_reserved_slots[BOX_INDEX]
+		and not box_occupied_slots[BOX_INDEX]
+	do
+		BOX_INDEX = BOX_INDEX - 1
+	end
+end
+
+-- Computes the absolute region of the box with the given placement slot.
 -- Boxes are placed in a row next to the main Elysium map along +X, so the
--- region is a pure function of the id and never overlaps another box.
-local function compute_box_region(tmpl, id)
+-- region is a pure function of the slot and never overlaps another box.
+local function compute_box_region(tmpl, slot)
 	local main = ctf_jma_elysium.maps.main
 
 	local origin = {
-		x = main.pos2.x + BOX_MARGIN + (id - 1) * BOX_ROW_STEP,
+		x = main.pos2.x + BOX_MARGIN + (slot - 1) * BOX_ROW_STEP,
 		y = main.pos1.y,
 		z = main.pos1.z,
 	}
@@ -606,10 +628,8 @@ function ctf_jma_elysium.load_persistent_registry()
 		-- Ids are 1-based: entries with id 0 come from the older 0-based
 		-- registry format and are dropped (together with their files)
 		if id and id > 0 and tmpl then
-			local pos1, pos2 = entry.pos1, entry.pos2
-			if not pos1 or not pos2 then
-				pos1, pos2 = compute_box_region(tmpl, id)
-			end
+			local slot = reserve_box_slot()
+			local pos1, pos2 = compute_box_region(tmpl, slot)
 
 			local box = {
 				id = id,
@@ -630,10 +650,14 @@ function ctf_jma_elysium.load_persistent_registry()
 				barrier = tmpl.barrier,
 				meta_key = "box_persistent_" .. id,
 				persistent = true,
-				active = entry.active ~= false,
+				-- Restore the saved schematic lazily when a player joins.
+				active = false,
 			}
 
 			ctf_jma_elysium.boxes[id] = box
+			box_slots_by_id[id] = slot
+			box_reserved_slots[slot] = nil
+			box_occupied_slots[slot] = true
 
 			-- The pack timer is started only when players actually leave the
 			-- box, not on startup
@@ -1237,6 +1261,12 @@ function ctf_jma_elysium.destroy_box(box)
 
 	ctf_jma_elysium.boxes[box.id] = nil
 	ctf_jma_elysium.box_reserved_ids[box.id] = nil
+	local slot = box_slots_by_id[box.id]
+	if slot then
+		box_slots_by_id[box.id] = nil
+		box_occupied_slots[slot] = nil
+		release_box_slot(slot)
+	end
 
 	-- Ids are reused, so every stale reference to the removed box is dropped
 	for pname, bid in pairs(ctf_jma_elysium.box_invites) do
@@ -1424,7 +1454,8 @@ local function create_box(player, name, tmpl, persistent)
 	local id = ctf_jma_elysium.allocate_box_id()
 	-- Reserve the id right away so a second create cannot pick the same one
 	ctf_jma_elysium.box_reserved_ids[id] = true
-	local pos1, pos2 = compute_box_region(tmpl, id)
+	local slot = reserve_box_slot()
+	local pos1, pos2 = compute_box_region(tmpl, slot)
 	local meta_key = persistent and ("box_persistent_" .. id) or tmpl.meta_key
 
 	ctf_jma_elysium.show_wait_formspec(name)
@@ -1433,8 +1464,9 @@ local function create_box(player, name, tmpl, persistent)
 		local current = PlayerObj(name)
 		if not current or not ctf_jma_elysium.players[name] then
 			-- Player left Elysium while the area was emerging: nothing was
-			-- placed yet, just release the reserved id.
+			-- placed yet, so release both reservations.
 			ctf_jma_elysium.box_reserved_ids[id] = nil
+			release_box_slot(slot)
 			ctf_jma_elysium.box_creating[name] = nil
 			return
 		end
@@ -1446,6 +1478,7 @@ local function create_box(player, name, tmpl, persistent)
 		)
 		if not placed then
 			ctf_jma_elysium.box_reserved_ids[id] = nil
+			release_box_slot(slot)
 			ctf_jma_elysium.box_creating[name] = nil
 			ctf_jma_elysium.close_wait_formspec(name)
 			core.chat_send_player(
@@ -1493,6 +1526,8 @@ local function create_box(player, name, tmpl, persistent)
 		}
 
 		ctf_jma_elysium.boxes[id] = box
+		box_slots_by_id[id] = slot
+		box_occupied_slots[slot] = true
 		for _, respawn in ipairs(tmpl.respawns) do
 			local player_pos = vector.add(pos1, respawn)
 			local marker_pos = {
@@ -1506,6 +1541,7 @@ local function create_box(player, name, tmpl, persistent)
 		-- Also collect any additional marker nodes placed in the schematic.
 		ctf_jma_elysium.scan_box_respawn_nodes(box)
 		ctf_jma_elysium.box_reserved_ids[id] = nil
+		box_reserved_slots[slot] = nil
 		ctf_jma_elysium.box_creating[name] = nil
 		ctf_jma_elysium.add_box_member(box, name)
 
