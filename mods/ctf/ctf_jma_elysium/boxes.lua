@@ -545,6 +545,7 @@ local function place_schematic_vm(pos, path, barrier_node)
 
 	local node_data = vm:get_data()
 	local param2_data = vm:get_param2_data()
+	local mt_nodes = core.registered_nodes
 
 	local i = 0
 	for z = 0, size.z - 1 do
@@ -570,7 +571,7 @@ local function place_schematic_vm(pos, path, barrier_node)
 
 				if name and name ~= "ignore" then
 					local vi = area:index(pos.x + x, pos.y + y, pos.z + z)
-					node_data[vi] = core.get_content_id(name)
+					node_data[vi] = core.get_content_id(mt_nodes[name] and name or "air")
 					param2_data[vi] = param2 or 0
 				end
 			end
