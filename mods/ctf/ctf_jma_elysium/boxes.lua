@@ -22,6 +22,7 @@ local RESPAWN_ITEM_COOLDOWN_TIME = 60
 local PERSISTENT_KEY = "persistent_boxes" -- modstorage key for the box registry
 local PERSISTENT_DIR = core.get_worldpath() .. "/elysium_boxes" -- packed .mts files
 local PERSISTENT_PRIV = "pvpbox_persistent"
+local BOX_MAX_COUNT = 8
 
 -- Idle persistent boxes are packed (saved to disk and removed from the map)
 -- after this many seconds without members
@@ -152,6 +153,17 @@ local function release_box_slot(slot)
 	do
 		BOX_INDEX = BOX_INDEX - 1
 	end
+end
+
+local function get_box_count()
+	local count = 0
+	for _ in pairs(ctf_jma_elysium.boxes) do
+		count = count + 1
+	end
+	for _ in pairs(ctf_jma_elysium.box_reserved_ids) do
+		count = count + 1
+	end
+	return count
 end
 
 -- Computes the absolute region of the box with the given placement slot.
@@ -1688,6 +1700,10 @@ local function handle_create(name, mapname, persistent)
 				mapname,
 				table.concat(templates, ", ")
 			)
+	end
+
+	if get_box_count() >= BOX_MAX_COUNT then
+		return false, S("Too many PvP Boxes are already exists. If you think someone is abusing it, please contact the server staff.")
 	end
 
 	if not is_admin and BOX_CREATE_COOLDOWN:get(name) then
