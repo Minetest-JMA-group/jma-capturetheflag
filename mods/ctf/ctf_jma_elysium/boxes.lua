@@ -31,6 +31,9 @@ local BOX_EMPTY_DESTROY_TIME = 10 * 60
 -- Cooldown between PvP Box joins
 local BOX_JOIN_COOLDOWN_TIME = 10
 local BOX_JOIN_COOLDOWN = ctf_core.init_cooldowns()
+-- Cooldown between successful PvP Box creations
+local BOX_CREATE_COOLDOWN_TIME = 60
+local BOX_CREATE_COOLDOWN = ctf_core.init_cooldowns()
 local box_accepting = {}
 
 core.mkdir(PERSISTENT_DIR)
@@ -1451,7 +1454,7 @@ local function load_and_join(name, box, on_fail, before_join, on_join_fail, on_j
 	end)
 end
 
-local function create_box(player, name, tmpl, persistent)
+local function create_box(player, name, tmpl, persistent, is_admin)
 	local id = ctf_jma_elysium.allocate_box_id()
 	-- Reserve the id right away so a second create cannot pick the same one
 	ctf_jma_elysium.box_reserved_ids[id] = true
@@ -1544,6 +1547,9 @@ local function create_box(player, name, tmpl, persistent)
 		ctf_jma_elysium.box_reserved_ids[id] = nil
 		box_reserved_slots[slot] = nil
 		ctf_jma_elysium.box_creating[name] = nil
+		if not is_admin then
+			BOX_CREATE_COOLDOWN:set(name, BOX_CREATE_COOLDOWN_TIME)
+		end
 		ctf_jma_elysium.add_box_member(box, name)
 
 		if persistent then
@@ -1607,6 +1613,7 @@ end
 
 local function handle_create(name, mapname, persistent)
     local player = PlayerObj(name)
+	local is_admin = core.check_player_privs(name, { ctf_admin = true })
 
 	if persistent and not core.check_player_privs(name, { [PERSISTENT_PRIV] = true }) then
 		return false,
@@ -1683,8 +1690,12 @@ local function handle_create(name, mapname, persistent)
 			)
 	end
 
+	if not is_admin and BOX_CREATE_COOLDOWN:get(name) then
+		return false, S("Please wait before creating another PvP Box.")
+	end
+
 	ctf_jma_elysium.box_creating[name] = true
-	create_box(player, name, tmpl, persistent)
+	create_box(player, name, tmpl, persistent, is_admin)
 	return true
 end
 
