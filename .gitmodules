@@ -1,9 +1,17 @@
 [submodule "mods/ctf/ctf_map/maps"]
 	path = mods/ctf/ctf_map/maps
 	url = https://codeberg.org/Luanti-JMA-group/jma-maps
+	ignore = all
 [submodule "mods/shared"]
 	path = mods/shared
 	url = https://codeberg.org/Luanti-JMA-group/jma-shared
+	ignore = all
+[submodule "mods/extras"]
+	path = mods/extras
+	ignore = all
+[submodule "mods/shared_private"]
+	path = mods/shared_private
+	ignore = all
 [submodule ".vscode"]
 	path = .vscode
 	url = https://codeberg.org/Luanti-JMA-group/luanti-luals
