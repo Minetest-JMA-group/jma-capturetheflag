@@ -99,7 +99,7 @@ function ctf_map.place_map(mapmeta, callback)
 		ctf_map.current_map = mapmeta
 
 		callback()
-		if ctf_map.callbacks[dirname].on_place then
+		if ctf_map.callbacks[dirname] and ctf_map.callbacks[dirname].on_place then
 			ctf_map.callbacks[dirname].on_place(mapmeta)
 		end
 	end)
@@ -115,7 +115,7 @@ core.register_globalstep(function(dtime)
 		return
 	end
 	local current_map = current_map_meta.dirname
-	local on_step = ctf_map.callbacks[current_map].on_step
+	local on_step = ctf_map.callbacks[current_map] and ctf_map.callbacks[current_map].on_step
 	if on_step then
 		local data = {
 			dtime = dtime,
