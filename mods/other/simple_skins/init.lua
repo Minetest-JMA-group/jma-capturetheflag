@@ -124,6 +124,10 @@ function skins.get_player_collection(name)
 	return player_collection
 end
 
+function skins.player_has_skin(name, skin_id)
+	return table.indexof(skins.get_player_collection(name), skin_id) ~= -1
+end
+
 function skins.save_player_collection(name)
 	local player_collection = player_collections[name]
 
@@ -281,7 +285,6 @@ core.register_on_joinplayer(function(player)
 		meta:set_string("simple_skins:skin", "")
 	else
 		local skin_id = storage:get_int(player_skin_key:format(name))
-		-- skins.check_and_clean_player_collection(name)
 
 		-- Do we already have a skin in mod storage?
 		if skin_id and skin_id > 0 then
@@ -400,6 +403,14 @@ sfinv.register_page("simple_skins:skins", {
 			end
 			local skin_id = skins_list[event.index]
 			if not skin_id or not skins.catalog[skin_id] then
+				skins.check_and_clean_player_collection(name)
+				core.log(
+					"error",
+					"[simple_skins] Invalid skin selection by player: "
+						.. name
+						.. ". Skin ID: "
+						.. tostring(skin_id)
+				)
 				return true
 			end
 

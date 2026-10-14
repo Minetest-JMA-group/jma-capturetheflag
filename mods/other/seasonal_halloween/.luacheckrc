@@ -2,7 +2,7 @@ unused_args = false
 
 globals = {
 	"minetest", "throwable_snow", "default", "ctf_teams", "hud_events",
-	"spooky_effects", "ctf_api", "ctf_map", "ctf_modebase"
+	"spooky_effects", "ctf_api", "ctf_map", "ctf_modebase", "jma_hallows"
 }
 
 read_globals = {
@@ -10,7 +10,7 @@ read_globals = {
 	table = {fields = {"copy", "getn", "indexof"}},
 
 	"dump", "DIR_DELIM",
-	"sfinv", "creative",
+	"sfinv", "creative", "skins", "server_cosmetics",
 	"VoxelArea", "ItemStack",
 	"Settings",
 	"prometheus", "hb",

@@ -108,6 +108,12 @@ server_cosmetics = {
 				["2023"] = {"server_cosmetics_hallows_hat.png^(server_cosmetics_hallows_hat_overlay.png^[multiply:purple)"},
 				["2024"] = {"server_cosmetics_hallows_hat.png^(server_cosmetics_hallows_hat_overlay.png^[multiply:red)"},
 				["2025"] = {"server_cosmetics_hallows_hat.png^(server_cosmetics_hallows_hat_overlay.png^[multiply:#00d2ff)"},
+				["2026"] = {
+					_model = "server_cosmetics_hallows_hat2026.obj",
+					_static = true,
+					"server_cosmetics_hallows_hat2026.png",
+					"blank.png",
+				},
 			},
 			crown = {
 				_prefix = "Wear ",
@@ -139,6 +145,7 @@ server_cosmetics = {
 				_prefix = "Wear ",
 				_description = "Straw Hat",
 				_model = "server_cosmetics_straw_hat.obj",
+				_static = true,
 				-- _preview_rot = {350, 315},
 				_preview_rot_offset = {y = 180},
 				_preview_shift = {x = -0.35, y = -1.05},
@@ -170,8 +177,24 @@ local function copy_texture_list(src)
 	for i = 1, #src do
 		out[i] = src[i]
 	end
+	for k, v in pairs(src) do
+		if type(k) == "string" and k:sub(1, 1) == "_" then
+			out[k] = v
+		end
+	end
 
 	return out
+end
+
+--- Returns the model + static flag effective for a worn entity cosmetic.
+function server_cosmetics.get_variant_visual(cdef, worn)
+	local model = cdef._model
+	local static = cdef._static
+	if type(worn) == "table" then
+		if worn._model then model = worn._model end
+		if worn._static ~= nil then static = worn._static end
+	end
+	return model, static
 end
 
 do
@@ -261,9 +284,14 @@ function server_cosmetics.update_entity_cosmetics(player, current)
 		local hat = core.add_entity(player:get_pos(), "server_cosmetics:hat")
 
 		local cdef = server_cosmetics.cosmetics.entity_cosmetics[hatname]
+		local model, is_static = server_cosmetics.get_variant_visual(cdef, current[hatname])
 		hat:set_attach(player, "Head", vector.new(0, 2, 0))
-		hat:set_properties({textures = current[hatname].color, mesh = cdef._model})
-		hat:get_luaentity().animr = server_cosmetics.cosmetics.entity_cosmetics[hatname]._anims
+		hat:set_properties({textures = current[hatname].color, mesh = model})
+		if is_static then
+			hat:get_luaentity().animr = nil
+		else
+			hat:get_luaentity().animr = cdef._anims
+		end
 
 		hatted[pname] = hat
 	end

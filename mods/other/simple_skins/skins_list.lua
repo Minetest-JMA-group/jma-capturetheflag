@@ -199,5 +199,17 @@ return {
 		author = "Vento",
 		texture = "character_dark_knight_vento.png",
 	},
+	[51] = {
+		name = "Warlock",
+		author = "Nanowolf4",
+		texture = "character_warlock.png",
+		private = true,
+	},
+	[52] = {
+		name = "Dark Amethyst",
+		author = "Nanowolf4, Fhelron",
+		texture = "character_dark_amethyst.png",
+		private = true,
+	},
 	-- Add new skins here with higher IDs (max 199) --
 }

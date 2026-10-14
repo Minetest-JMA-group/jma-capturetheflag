@@ -112,22 +112,27 @@ sfinv.register_page("server_cosmetics:customize", {
 
 						if selected_entry then
 							local selected_texture = selected_entry.color or {"blank.png"}
-							local preview_scale = cosmetics._preview_scale
-							local preview_shift = cosmetics._preview_shift
-							local preview_rot_offset = cosmetics._preview_rot_offset
+							local variant_model, variant_static =
+								server_cosmetics.get_variant_visual(cosmetics, selected_entry)
+							local preview_scale = selected_entry._preview_scale or cosmetics._preview_scale
+							local preview_shift = selected_entry._preview_shift or cosmetics._preview_shift
+							local preview_rot_offset = selected_entry._preview_rot_offset or cosmetics._preview_rot_offset
+							local preview_rot = selected_entry._preview_rot or cosmetics._preview_rot
+							local anim_range = variant_static and {x = 0, y = 0}
+								or ((cosmetics._anims and cosmetics._anims.idle) or {x = 1, y = 1})
 
 							table.insert(models, {
-								mesh = cosmetics._model,
+								mesh = variant_model,
 								texture = selected_texture,
-								anim_range = (cosmetics._anims and cosmetics._anims.idle) or {x = 1, y = 1},
-								rotation = cosmetics._preview_rot or {0, 0},
+								anim_range = anim_range,
+								rotation = preview_rot or {0, 0},
 							})
 
 							if current[ctype] and ctype == active_entity_hat then
 								table.insert(overlay_models, {
-									mesh = cosmetics._model,
+									mesh = variant_model,
 									texture = selected_texture,
-									anim_range = (cosmetics._anims and cosmetics._anims.idle) or {x = 1, y = 1},
+									anim_range = anim_range,
 									preview_scale = preview_scale,
 									preview_shift = preview_shift,
 									preview_rot_offset = preview_rot_offset,
