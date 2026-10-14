@@ -26,7 +26,17 @@ local GROUP_VERTICAL = 7
 local CENTRE_RADIUS_FRACTION = 0.20
 
 local pumpkin_timer = nil
-local PUMPKIN_DELAY = 5 * 60
+local PUMPKIN_DELAY = 3 * 60
+
+local PUMPKIN_DELAY_RANDOM_FACTOR = 0.10
+
+--- @return integer
+local function get_pumpkin_delay()
+	local min_delay = PUMPKIN_DELAY * (1 - PUMPKIN_DELAY_RANDOM_FACTOR)
+	local max_delay = PUMPKIN_DELAY * (1 + PUMPKIN_DELAY_RANDOM_FACTOR)
+
+	return math.random(math.floor(min_delay), math.ceil(max_delay))
+end
 
 --- Returns the player's current pumpkin coin balance.
 --- @param player ObjectRef
@@ -303,10 +313,15 @@ ctf_api.register_on_match_start(function()
 		pumpkin_timer = nil
 	end
 
-	pumpkin_timer = core.after(PUMPKIN_DELAY, function()
+	local delay = get_pumpkin_delay()
+
+	pumpkin_timer = core.after(delay, function()
 		pumpkin_timer = nil
 		announce_pumpkins()
 	end)
+
+	core.chat_send_all(core.colorize("orange",
+		"[Event] Pumpkins will sprout in " .. algorithms.time_to_string(delay) .. "!"))
 end)
 
 ctf_api.register_on_match_end(function()

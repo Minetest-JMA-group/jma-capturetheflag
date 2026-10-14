@@ -1,4 +1,4 @@
-if (os.date("%m") ~= "10" or tonumber(os.date("%d")) < 15) and os.date("%m") ~= "11" then return end
+-- if (os.date("%m") ~= "10" or tonumber(os.date("%d")) < 15) and os.date("%m") ~= "11" then return end
 
 ctf_map.register_maps_dir(core.get_modpath(core.get_current_modname()).."/maps/")
 
