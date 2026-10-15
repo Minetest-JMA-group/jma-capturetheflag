@@ -194,6 +194,7 @@ core.register_chatcommand("pumpkin_shop", {
 	description = "Open the Pumpkin Shop",
 	privs = {interact = true},
 	func = function(name)
+		local player = core.get_player_by_name(name)
 		sfinv.set_page(player, "jma_hallows:shop")
 		core.show_formspec(name, "", sfinv.get_formspec(player, sfinv.get_or_create_context(player)))
 		return true
