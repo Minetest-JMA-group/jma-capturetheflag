@@ -2,6 +2,10 @@ local hud = mhud.init()
 local hitters = {}
 local healers = {}
 
+--- Who dealt the last (lethal) hit to a player.
+--- @type { [PlayerName]: { killer: PlayerName, weapon_image: string? } }
+local lethal_hits = {}
+
 ctf_combat_mode = {}
 
 local function update(player)
@@ -95,6 +99,41 @@ function ctf_combat_mode.get_last_hitter(player)
 	if hitters[player] then
 		return hitters[player].last_hitter, hitters[player].weapon_image
 	end
+end
+
+--- @param player PlayerName | ObjectRef
+--- @param killer PlayerName | ObjectRef
+--- @param weapon_image string?
+function ctf_combat_mode.set_lethal_hit(player, killer, weapon_image)
+	lethal_hits[PlayerName(player)] = {
+		killer = PlayerName(killer),
+		weapon_image = weapon_image,
+	}
+end
+
+--- @param player PlayerName | ObjectRef
+--- @return PlayerName?, string?
+function ctf_combat_mode.get_lethal_hit(player)
+	local hit = lethal_hits[PlayerName(player)]
+	if hit then
+		return hit.killer, hit.weapon_image
+	end
+end
+
+--- @param player PlayerName | ObjectRef
+--- @return PlayerName?, string?
+function ctf_combat_mode.take_lethal_hit(player)
+	local pname = PlayerName(player)
+	local hit = lethal_hits[pname]
+	if hit then
+		lethal_hits[pname] = nil
+		return hit.killer, hit.weapon_image
+	end
+end
+
+--- @param player PlayerName | ObjectRef
+function ctf_combat_mode.clear_lethal_hit(player)
+	lethal_hits[PlayerName(player)] = nil
 end
 
 function ctf_combat_mode.get_other_hitters(player, last_hitter)
@@ -202,13 +241,7 @@ function ctf_combat_mode.end_combat(player)
 		end
 
 		hitters[player].timer:cancel()
-		local p = player
-        local entry = hitters[p]
-        core.after(0, function()
-            if hitters[p] == entry then
-                hitters[p] = nil
-            end
-        end)
+		hitters[player] = nil
 	end
 
 	if healers[player] then
@@ -226,5 +259,6 @@ ctf_api.register_on_match_end(function()
 		combat.timer:cancel()
 	end
 	healers = {}
+	lethal_hits = {}
 	hud:remove_all()
 end)

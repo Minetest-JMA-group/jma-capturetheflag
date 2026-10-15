@@ -982,6 +982,13 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			end
 		end
 
+		-- The killer info must survive `ctf_combat_mode.end_combat` below,
+		-- because `on_flag_drop` runs later in the death handling and still
+		-- needs it to announce who killed the flag carrier.
+		if killer then
+			ctf_combat_mode.set_lethal_hit(player, killer, weapon_image)
+		end
+
 		ctf_combat_mode.end_combat(player)
 	end
 
@@ -1424,7 +1431,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				score = attempt_reward,
 			}, false)
 
-			local killer_name = ctf_combat_mode.get_last_hitter(player)
+			local killer_name = ctf_combat_mode.take_lethal_hit(player)
+				or ctf_combat_mode.get_last_hitter(player)
 			local chat_killer_suffix = ""
 
 			if killer_name then
@@ -1685,6 +1693,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- @param player ObjectRef
 		--- @param new_team Team
 		on_allocplayer = function(player, new_team)
+			ctf_combat_mode.clear_lethal_hit(player)
 			player:set_hp(player:get_properties().hp_max)
 
 			if not team_switch_after_capture then
@@ -1745,6 +1754,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end,
 		--- @param player ObjectRef
 		on_respawnplayer = function(player)
+			ctf_combat_mode.clear_lethal_hit(player)
 			tp_player_near_flag(player)
 		end,
 		--- @param pname PlayerName
@@ -1803,8 +1813,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			local weapon_image = get_weapon_image(hitter, tool_capabilities)
 
 			local pname = player:get_player_name()
+			local hname = hitter:get_player_name()
+			if pname ~= hname then
+				ctf_combat_mode.add_hitter(player, hitter, weapon_image, 15)
+			end
 			if player:get_hp() <= damage then
-				end_combat_mode(pname, "punch", hitter:get_player_name(), weapon_image)
+				end_combat_mode(pname, "punch", hname, weapon_image)
 
 				-- Rotate player camera to killer
 				if
@@ -1818,8 +1832,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 						player:set_look_vertical(-math.asin(dir.y))
 					end
 				end
-			elseif pname ~= hitter:get_player_name() then
-				ctf_combat_mode.add_hitter(player, hitter, weapon_image, 15)
 			end
 
 			--- @type number
