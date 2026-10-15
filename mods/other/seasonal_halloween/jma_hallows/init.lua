@@ -26,14 +26,21 @@ local GROUP_VERTICAL = 7
 local CENTRE_RADIUS_FRACTION = 0.20
 
 local pumpkin_timer = nil
-local PUMPKIN_DELAY = 3 * 60
+local PUMPKIN_DELAY = 2 * 60
 
-local PUMPKIN_DELAY_RANDOM_FACTOR = 0.10
+local PUMPKIN_DELAY_RANDOM_FACTOR = 0.5
 
+local PUMPKIN_RESPAWN_DELAY = 7 * 60
+local RESPAWN_GROUP_MIN = 1
+local RESPAWN_GROUP_MAX = 4
+local RESPAWN_GROUP_COUNT = 4
+local RESPAWN_CENTRE_RADIUS_FRACTION = 0.35
+
+--- @param base_delay number
 --- @return integer
-local function get_pumpkin_delay()
-	local min_delay = PUMPKIN_DELAY * (1 - PUMPKIN_DELAY_RANDOM_FACTOR)
-	local max_delay = PUMPKIN_DELAY * (1 + PUMPKIN_DELAY_RANDOM_FACTOR)
+local function get_randomized_delay(base_delay)
+	local min_delay = base_delay * (1 - PUMPKIN_DELAY_RANDOM_FACTOR)
+	local max_delay = base_delay * (1 + PUMPKIN_DELAY_RANDOM_FACTOR)
 
 	return math.random(math.floor(min_delay), math.ceil(max_delay))
 end
@@ -124,7 +131,14 @@ core.register_node("jma_hallows:pumpkin", {
 -- nodes, close to the centre of the map. This is the jack 'o lantern spawner
 -- from hallows_hat_event with a single change: candidates are restricted to the
 -- central area and grown into groups.
-local function spawn_pumpkins()
+local function spawn_pumpkins(opts)
+	opts = opts or {}
+
+	local group_min = opts.group_min or GROUP_MIN
+	local group_max = opts.group_max or GROUP_MAX
+	local group_count_max = opts.group_count_max
+	local centre_radius_fraction = opts.centre_radius_fraction
+		or CENTRE_RADIUS_FRACTION
 	local map = ctf_map.current_map
 
 	if not map or not map.pos1 or not map.pos2 then
@@ -167,11 +181,11 @@ local function spawn_pumpkins()
 
 	-- Only spawn close to the centre of the map.
 	local centre = map.flag_center or {x = (pos1.x + pos2.x) / 2, z = (pos1.z + pos2.z) / 2}
-	local radius = math.max(20, math.floor(math.min(Nx, Nz) * CENTRE_RADIUS_FRACTION))
+	local radius = math.max(20, math.floor(math.min(Nx, Nz) * centre_radius_fraction))
 	local radius_sq = radius * radius
 
 	local player_count = math.max(1, #core.get_connected_players())
-	local group_count = math.max(1, math.min(10, player_count))
+	local group_count = math.max(1, math.min(group_count_max or 12, player_count))
 
 	local groups = {}
 	local placed = 0
@@ -226,14 +240,14 @@ local function spawn_pumpkins()
 					end
 				end
 
-				if #members >= GROUP_MIN then
+				if #members >= group_min then
 					for i = #members, 2, -1 do
 						local j = math_random(i)
 
 						members[i], members[j] = members[j], members[i]
 					end
 
-					local take = math_random(GROUP_MIN, math.min(GROUP_MAX, #members))
+					local take = math_random(group_min, math.min(group_max, #members))
 
 					for i = 1, take do
 						local member = members[i]
@@ -297,8 +311,8 @@ local function place_pumpkin_markers(centre)
 	end
 end
 
-local function announce_pumpkins()
-	local placed, _, centre = spawn_pumpkins()
+local function announce_pumpkins(spawn_opts)
+	local placed, _, centre = spawn_pumpkins(spawn_opts)
 
 	if placed > 0 then
 		core.chat_send_all(core.colorize("orange",
@@ -307,17 +321,37 @@ local function announce_pumpkins()
 	end
 end
 
+local function schedule_respawn()
+	local respawn_delay = get_randomized_delay(PUMPKIN_RESPAWN_DELAY)
+
+	core.chat_send_all(core.colorize("orange",
+		"[Event] More pumpkins will sprout in "
+		.. algorithms.time_to_string(respawn_delay) .. "!"))
+
+	pumpkin_timer = core.after(respawn_delay, function()
+		pumpkin_timer = nil
+		announce_pumpkins({
+			group_min = RESPAWN_GROUP_MIN,
+			group_max = RESPAWN_GROUP_MAX,
+			group_count_max = RESPAWN_GROUP_COUNT,
+			centre_radius_fraction = RESPAWN_CENTRE_RADIUS_FRACTION,
+		})
+		schedule_respawn()
+	end)
+end
+
 ctf_api.register_on_match_start(function()
 	if pumpkin_timer then
 		pumpkin_timer:cancel()
 		pumpkin_timer = nil
 	end
 
-	local delay = get_pumpkin_delay()
+	local delay = get_randomized_delay(PUMPKIN_DELAY)
 
 	pumpkin_timer = core.after(delay, function()
 		pumpkin_timer = nil
 		announce_pumpkins()
+		schedule_respawn()
 	end)
 
 	core.chat_send_all(core.colorize("orange",
