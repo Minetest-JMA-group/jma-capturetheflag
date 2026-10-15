@@ -1,4 +1,4 @@
--- if os.date("%m") ~= "10" or tonumber(os.date("%d")) < 15 or not core.get_modpath("server_cosmetics") then return end
+if os.date("%m") ~= "10" or tonumber(os.date("%d")) < 15 or not core.get_modpath("server_cosmetics") then return end
 
 jma_hallows = {}
 
