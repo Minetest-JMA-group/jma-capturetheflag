@@ -272,6 +272,7 @@ local function spawn_pumpkins(opts)
 	vm:set_data(data)
 	vm:set_param2_data(param2_data)
 	vm:write_to_map(false)
+	vm:close()
 
 	core.log("action", string.format(
 		"[jma_hallows] Spawned %d pumpkins in %d group(s)",
