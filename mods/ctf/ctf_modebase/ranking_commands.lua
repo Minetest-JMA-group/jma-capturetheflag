@@ -433,7 +433,7 @@ core.register_chatcommand("make_pro", {
 
 		mode_data.rankings:add(
 			pname,
-			{ score = 8000, kills = 7, deaths = 5, flag_captures = 5 }
+			{ score = 8000, kills = 7, flag_captures = 5 }
 		)
 
 		core.log(

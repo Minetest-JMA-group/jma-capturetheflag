@@ -38,11 +38,22 @@ local function spike_on_place_wrapper(prefix, team)
 			local pteam = ctf_teams.get(placer)
 			if pteam then
 				local pname = placer:get_player_name()
+				local tpos1, tpos2 = ctf_teams.get_team_territory(pteam)
+
+				if
+					not pointed_thing
+					or pointed_thing.type ~= "node"
+					or not pointed_thing.above
+					or not tpos1
+				then
+					return itemstack
+				end
 
 				if
 					not ctf_core.pos_inside(
 						pointed_thing.above,
-						ctf_teams.get_team_territory(pteam)
+						tpos1,
+						tpos2
 					)
 				then
 					core.chat_send_player(
