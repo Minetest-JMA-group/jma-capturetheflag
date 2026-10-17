@@ -172,6 +172,21 @@ function ctf_core.format_number(n, d)
 	end
 end
 
+-- Format a nonzero number so it never displays as "0"/"0.00".
+-- Picks the smallest precision in [min_d, max_d] whose formatted value is
+-- still nonzero, e.g. 0.001 with min_d=2 renders as "0.001", not "0.00".
+function ctf_core.format_nonzero(n, min_d, max_d)
+	max_d = max_d or 5
+	min_d = min_d or 2
+	for d = min_d, max_d do
+		local s = ctf_core.format_number(n, d)
+		if tonumber(s) ~= 0 then
+			return s
+		end
+	end
+	return ctf_core.format_number(n, max_d)
+end
+
 --
 ---Debug helpers
 --

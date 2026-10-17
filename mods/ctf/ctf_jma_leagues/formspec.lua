@@ -83,12 +83,16 @@ sfinv.register_page(page_name, {
 				if result.done then
 					table.insert(tasks_list, string.format("<style color=green>✓ %s</style>", req.description))
 				elseif result.current and result.required then
+					local prec = ctf_jma_leagues.progress_precision(result.current, result.required)
+					local cur_fmt = ctf_core.format_number(result.current, prec)
+					local req_fmt = ctf_core.format_number(result.required, prec)
+					local left_fmt = ctf_core.format_nonzero(math.abs(result.required - result.current), prec)
 					table.insert(tasks_list, string.format(
 						"<style color=orange>* %s (%s / %s, left %s)</style>",
 						req.description,
-						ctf_core.format_number(result.current),
-						ctf_core.format_number(result.required),
-						ctf_core.format_number(math.abs(result.required - result.current))
+						cur_fmt,
+						req_fmt,
+						left_fmt
 					))
 				elseif result.error then
 					table.insert(tasks_list, string.format("<style color=red>X %s Error: task cannot be completed (%s)</style>", req.description, result.error))

@@ -54,7 +54,8 @@ core.register_chatcommand("league", {
 				status = core.colorize("#00ff00", "✓")
 			elseif result.current and result.required then
 				status = core.colorize("#ffff00", "•••")
-				progress = string.format("%s/%s", ctf_core.format_number(result.current), ctf_core.format_number(result.required))
+				local prec = ctf_jma_leagues.progress_precision(result.current, result.required)
+				progress = string.format("%s/%s", ctf_core.format_number(result.current, prec), ctf_core.format_number(result.required, prec))
 			elseif result.error then
 				status = core.colorize("#ff0000", "x")
 				progress = "Cannot be completed, please contact an admin"

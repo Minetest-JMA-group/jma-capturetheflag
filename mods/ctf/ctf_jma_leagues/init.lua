@@ -17,6 +17,20 @@ function ctf_jma_leagues.register_on_promote(callback)
 	table.insert(ctf_jma_leagues.on_promote_callbacks, callback)
 end
 
+-- Adaptive display precision for task progress.
+function ctf_jma_leagues.progress_precision(current, required, max_d)
+	max_d = max_d or 5
+	if current == nil or required == nil or current == required then
+		return 2
+	end
+	for d = 2, max_d do
+		if ctf_core.format_number(current, d) ~= ctf_core.format_number(required, d) then
+			return d
+		end
+	end
+	return max_d
+end
+
 function ctf_jma_leagues.get_league(player_name)
 	if leagues_cache[player_name] then
 		return leagues_cache[player_name]
