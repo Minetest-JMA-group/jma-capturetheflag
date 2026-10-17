@@ -18,3 +18,9 @@ debug.txt
 
 *.pro.user
 .gitmodules
+
+# Private submodules
+# Keep a single file tracked inside and ignore the rest
+# The server will bind-mount the actual module here
+mods/extras/
+mods/shared_private/
