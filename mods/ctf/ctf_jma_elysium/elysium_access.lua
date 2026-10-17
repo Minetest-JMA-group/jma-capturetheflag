@@ -80,6 +80,10 @@ local function has_access(name)
 	return false
 end
 
+function ctf_jma_elysium.has_access(name)
+	return has_access(name)
+end
+
 local function cleanup_invite_history(name, now)
 	local targets = invite_history[name]
 	if not targets then

@@ -1,8 +1,13 @@
 local esc = core.formspec_escape
 
-local function preview_model(y, field, item)
+local function preview(y, field, item)
 	local p = item.preview
-	return string.format("model[0.55,%.2f;2,2;preview_%s;%s;%s;%s;false;true;%s]",
+	if p.type == "image" then
+		return string.format("image[0.25,%.2f;2,2;%s]",
+			y + 0.15, p.image)
+	end
+	-- type == "model" or nil (backwards compatibility)
+	return string.format("model[0.25,%.2f;2,2;preview_%s;%s;%s;%s;false;true;%s]",
 		y + 0.15, field, p.mesh, p.textures, p.rot or "0,180", p.anim or "0,0")
 end
 
@@ -20,13 +25,13 @@ local function coin_row(y, field, item, name, desc, price, owned)
 	)
 
 	local f = {
-		string.format("box[0.3,%.2f;9.87,2.3;#252525]", y),
-		preview_model(y, field, item),
-		string.format("hypertext[2.75,%.2f;4.4,2.05;item_%s;%s]", y + 0.12, field, text),
+		string.format("box[0,%.2f;9.47,2.3;#252525]", y),
+		preview(y, field, item),
+		string.format("hypertext[2.45,%.2f;4.4,2.05;item_%s;%s]", y + 0.12, field, text),
 	}
 
 	if not owned then
-		f[#f + 1] = string.format("button[7.3,%.2f;2.6,0.9;%s;Buy]", y + 0.7, field)
+		f[#f + 1] = string.format("button[7.0,%.2f;2.4,0.9;%s;Buy]", y + 0.7, field)
 	end
 
 	return table.concat(f)
@@ -148,10 +153,43 @@ local SHOP_ITEMS = {
 		end,
 		on_purchase = function(player, item) return try_purchase(player, item) end,
 	},
+	{
+		field = "buy_elysium_ticket",
+		name = "Elysium Ticket",
+		desc = "Grants 1 hour access to JMA Elysium. Use /elysium to enter.",
+		preview = {
+			type = "image",
+			image = "ctf_jma_elysium_ticket.png",
+		},
+		already_owned_msg = "Your Elysium ticket is still valid!",
+		success_msg = "You bought an Elysium Ticket for 1 hour! Use /elysium to enter.",
+		get_price = function() return 5 end,
+		is_owned = function(player)
+			return ctf_jma_elysium.has_access(player:get_player_name())
+		end,
+		grant = function(player)
+			ctf_jma_elysium.grant_access(player:get_player_name(),
+				3600)
+		end,
+		on_purchase = function(player, item) return try_purchase(player, item) end,
+	},
 }
 
-local ROW_Y0 = 2.7
-local ROW_STEP = 2.6
+local LIST_X, LIST_Y = 0.3, 2.7
+local LIST_W, LIST_H = 9.77, 8.05
+local ROW_H, ROW_STEP = 2.3, 2.6
+local SCROLL_NAME = "shop_scroll"
+local SCROLL_FACTOR = 0.1
+
+--- Creates scrollbaroptions for the shop scroll_container (MIT by Rubenwardy).
+-- @param visible_l visible length of the container
+-- @param total_l total length of the scrollable content
+local function make_scrollbaroptions(visible_l, total_l)
+	local max = math.max(0, total_l - visible_l)
+	local thumb_size = (visible_l / total_l) * (total_l - visible_l)
+	return ("scrollbaroptions[min=0;max=%f;thumbsize=%f;arrows=default]"):format(
+		max / SCROLL_FACTOR, thumb_size / SCROLL_FACTOR)
+end
 sfinv.register_page("jma_hallows:shop", {
 	title = core.colorize("orange", "Pumpkin Shop"),
 	get = function(self, player, context)
@@ -171,15 +209,35 @@ sfinv.register_page("jma_hallows:shop", {
 			"Collect pumpkin coins from the pumpkins and spend them on Halloween cosmetics.</style>]",
 		}
 
+		local total_h = #SHOP_ITEMS * ROW_STEP - (ROW_STEP - ROW_H)
+		local scroll_value = context[SCROLL_NAME] or 0
+
+		f[#f + 1] = make_scrollbaroptions(LIST_H, math.max(total_h, LIST_H))
+		f[#f + 1] = string.format(
+			"scrollbar[%.2f,%.2f;0.35,%.2f;vertical;%s;%f]",
+			LIST_X + LIST_W, LIST_Y, LIST_H, SCROLL_NAME, scroll_value)
+		f[#f + 1] = string.format(
+			"scroll_container[%.2f,%.2f;%.2f,%.2f;%s;vertical;%.2f]",
+			LIST_X, LIST_Y, LIST_W, LIST_H, SCROLL_NAME, SCROLL_FACTOR)
+
 		for i, item in ipairs(SHOP_ITEMS) do
-			f[#f + 1] = coin_row(ROW_Y0 + (i - 1) * ROW_STEP,
+			f[#f + 1] = coin_row((i - 1) * ROW_STEP,
 				item.field, item, item.name, item.desc,
 				item.get_price(), item.is_owned(player))
 		end
 
+		f[#f + 1] = "scroll_container_end[]"
+
 		return sfinv.make_formspec_v7(player, context, table.concat(f))
 	end,
 	on_player_receive_fields = function(self, player, context, fields)
+		if fields[SCROLL_NAME] then
+			local event = core.explode_scrollbar_event(fields[SCROLL_NAME])
+			if event.value then
+				context[SCROLL_NAME] = event.value
+			end
+		end
+
 		for _, item in ipairs(SHOP_ITEMS) do
 			if fields[item.field] then
 				return item.on_purchase(player, item)
