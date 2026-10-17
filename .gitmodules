@@ -6,14 +6,6 @@
 	path = mods/shared
 	url = https://codeberg.org/Luanti-JMA-group/jma-shared
 	ignore = all
-[submodule "mods/extras"]
-	path = mods/extras
-	ignore = all
-	update = none
-[submodule "mods/shared_private"]
-	path = mods/shared_private
-	ignore = all
-	update = none
 [submodule ".vscode"]
 	path = .vscode
 	url = https://codeberg.org/Luanti-JMA-group/luanti-luals
