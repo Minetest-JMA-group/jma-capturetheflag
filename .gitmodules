@@ -2,10 +2,13 @@
 	path = mods/ctf/ctf_map/maps
 	url = https://codeberg.org/Luanti-JMA-group/jma-maps
 	ignore = all
+	branch = master
 [submodule "mods/shared"]
 	path = mods/shared
 	url = https://codeberg.org/Luanti-JMA-group/jma-shared
 	ignore = all
+	branch = master
 [submodule ".vscode"]
 	path = .vscode
 	url = https://codeberg.org/Luanti-JMA-group/luanti-luals
+	branch = master
