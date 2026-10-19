@@ -268,10 +268,6 @@ for _, team in ipairs(ctf_teams.teamlist) do
 					.. "list["
 					.. chestinv
 					.. ";pro;6,0.3;4,7;]"
-					.. "listring["
-					.. chestinv
-					.. ";pro]"
-					.. "listring[current_player;main]"
 					.. "label[7,-0.2;"
 					.. core.formspec_escape(S("Pro players only"))
 					.. "]"
@@ -295,6 +291,14 @@ for _, team in ipairs(ctf_teams.teamlist) do
 				.. "listring["
 				.. chestinv
 				.. ";helper]"
+
+			if pro_access == true then
+				formspec = formspec
+					.. "listring["
+					.. chestinv
+					.. ";pro]"
+					.. "listring[current_player;main]"
+			end
 
 			-- Store position for field handler
 			player_chest_positions[name] = { pos = pos, team = team }
