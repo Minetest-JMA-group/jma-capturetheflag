@@ -1446,9 +1446,11 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			if killer_name then
 				local kteam = ctf_teams.get(killer_name)
-				local kcolor = (kteam and ctf_teams.team[kteam]) and ctf_teams.team[kteam].color or "#FFF"
-				chat_killer_suffix = core.colorize(FLAG_MESSAGE_COLOR, ". The killer: ") ..
-									core.colorize(kcolor, killer_name)
+				local kcolor = (kteam and ctf_teams.team[kteam])
+						and ctf_teams.team[kteam].color
+					or "#FFF"
+				chat_killer_suffix = core.colorize(FLAG_MESSAGE_COLOR, ". The killer: ")
+					.. core.colorize(kcolor, killer_name)
 			end
 
 			local text = S(" has dropped the flag but got @1 point(s)", attempt_reward)
@@ -1472,7 +1474,9 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			)
 
 			core.chat_send_all(
-				core.colorize(tcolor, pname) .. core.colorize(FLAG_MESSAGE_COLOR, text) .. chat_killer_suffix
+				core.colorize(tcolor, pname)
+					.. core.colorize(FLAG_MESSAGE_COLOR, text)
+					.. chat_killer_suffix
 			)
 			ctf_modebase.announce(
 				string.format("Player %s (team %s)%s", pname, pteam, text)
