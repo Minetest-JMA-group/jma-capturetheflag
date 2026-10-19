@@ -179,6 +179,7 @@ function ctf_modebase.on_flag_capture(capturer, flagteams)
 	RunCallbacks(ctf_api.registered_on_flag_capture, capturer, flagteams)
 end
 
+--- @return Team?
 ---@diagnostic disable-next-line: duplicate-set-field
 ctf_teams.team_allocator = function(...)
 	if not ctf_modebase.in_game then
