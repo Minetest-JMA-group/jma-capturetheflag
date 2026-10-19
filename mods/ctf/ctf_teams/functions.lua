@@ -5,6 +5,7 @@
 --- @param player PlayerName | ObjectRef
 --- @return nil
 function ctf_teams.remove_online_player(player)
+	local player_obj = PlayerObj(player)
 	player = PlayerName(player)
 
 	--- @type Team?
@@ -15,6 +16,9 @@ function ctf_teams.remove_online_player(player)
 			ctf_teams.online_players[team].count = ctf_teams.online_players[team].count
 				- 1
 		end
+	end
+	for _, callback in ipairs(ctf_teams.registered_on_online_player_remove) do
+		callback(player_obj, team)
 	end
 end
 
