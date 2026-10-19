@@ -83,23 +83,34 @@ end
 
 --- @type ScoreFun
 function ctf_modebase.values.get_player_value(player, recent)
+	local PLAYER_VALUE_CAP = 4096
 	local passive_val = ctf_modebase.values.get_player_passive_value(player, recent)
 	local active_val = ctf_modebase.values.get_player_active_value(player, recent)
-	core.debug(string.format("(p,a) val of %s: %f, %f", player, passive_val, active_val))
+	core.debug(
+		string.format(
+			"(p,a) %f val of %s: %f, %f",
+			recent or 1.0,
+			player,
+			passive_val,
+			active_val
+		)
+	)
 	--- @type number
 	local combined_val = math.pow(active_val * passive_val, 1.2)
-	if math.isfinite and not math.isfinite(combined_val) then
+	--- Handling too big ones including infinite
+	if combined_val > PLAYER_VALUE_CAP then
 		core.log(
 			"warning",
 			string.format(
-				"Player value of %s is inf! Recent: %f P val: %f A val: %f",
+				"Player value of %s is BIG! Recent: %f P val: %f A val: %f Combined: %f",
 				player,
 				recent or 0.0,
 				passive_val,
-				active_val
+				active_val,
+				combined_val
 			)
 		)
-		return 1
+		return PLAYER_VALUE_CAP
 	end
 	core.log("info", string.format("Value of %s is %.3f", player, combined_val))
 	return combined_val
