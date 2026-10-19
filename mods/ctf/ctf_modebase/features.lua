@@ -516,9 +516,18 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			core.debug(pname .. " was not in a team when killed")
 			return 0
 		end
-		local player_val = ctf_modebase.values.get_player_value(pname, 1.0)
+		local match_elapsed = ctf_modebase.get_match_elapsed_time()
+		local player_presence = ctf_modebase.player_match_presence_time[pname] or 0
+		local recent_ratio = player_presence / match_elapsed
+		--- We calculate influence of their "recent" rankings depending
+		--- on how much they had presence in the match. The more presence
+		--- in the match the higher the influence.
+		--- -- Farooq fkz at riseup dot net
+		local player_val = ctf_modebase.values.get_player_value(pname, recent_ratio / 2)
 		local player_pvp_val = ctf_modebase.values.get_pvp_score(pname, 0.5)
+		player_pvp_val = math.max(player_pvp_val, 0.01) -- For new players
 		local killer_pvp_val = ctf_modebase.values.get_pvp_score(killer_name, 0.5)
+		killer_pvp_val = math.max(killer_pvp_val, 0.01) -- For new players
 		local vals_ratio = math.log(1 + player_pvp_val / killer_pvp_val, 2)
 		local score = math.ceil(math.max(150 * player_val * (1 + vals_ratio), 1))
 		if experiment_logs then
