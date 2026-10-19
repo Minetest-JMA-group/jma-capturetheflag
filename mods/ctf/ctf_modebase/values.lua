@@ -57,7 +57,9 @@ function ctf_modebase.values.get_heal_score(player, recent)
 	local hp_healed = ranking.hp_healed or 1
 	local deaths = ranking.deaths or 1
 	--- 30 is knight_hp
-	return math.log10(hp_healed / 30) / (deaths + 1)
+	--- Logarithm is 0 is undefined in mathematics and here
+	--- in lua, it's -inf
+	return math.max(1, math.log10(hp_healed / 30)) / (deaths + 1)
 end
 
 --- @type ScoreFun
