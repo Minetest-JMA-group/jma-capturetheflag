@@ -130,10 +130,18 @@ ctf_teams.team_allocator = ctf_teams.default_team_allocator
 --- @param force boolean? [optional]
 --- @return Team?
 function ctf_teams.allocate_player(player, force)
+	local player_ref = PlayerObj(player)
 	player = PlayerName(player)
+	--- @type Team?
 	local team = ctf_teams.team_allocator(player)
 
 	ctf_teams.set(player, team, force)
+
+	if team then
+		for _, callback in ipairs(ctf_teams.registered_on_allocplayer) do
+			callback(player_ref, team, force or false, nil)
+		end
+	end
 
 	return team
 end
