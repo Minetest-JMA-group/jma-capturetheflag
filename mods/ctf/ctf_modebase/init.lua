@@ -62,11 +62,76 @@ ctf_modebase = {
 
 	--- @type number? it's nil when there is no match
 	match_start_time = nil,
+
+	--- @type { [PlayerName]: number } when did this player join in the current match?
+	player_join_times = {},
+
+	--- @type { [PlayerName]: number } how much time the player has spent in this match
+	player_match_presence_time = {},
 }
 
 ctf_api.register_on_match_start(function()
 	ctf_modebase.first_kill_happened = false
 	ctf_modebase.match_start_time = os.time()
+	ctf_modebase.player_join_times = {}
+	ctf_modebase.player_match_presence_time = {}
+end)
+
+--- @return number In seconds or -1 if there is no match
+ctf_modebase.get_match_elapsed_time = function()
+	if ctf_modebase.match_start_time == nil then
+		return -1
+	end
+	return os.time() - ctf_modebase.match_start_time
+end
+
+--- @param player PlayerRef
+local function on_player_leave_game(player)
+	local pname = player:get_player_name()
+	local joined_time = ctf_modebase.player_join_times[pname]
+	if not joined_time then
+		return
+	end
+	ctf_modebase.player_join_times[pname] = nil
+	local current_presence = ctf_modebase.player_match_presence_time[pname] or 0
+	local added_presence = os.time() - joined_time
+	ctf_modebase.player_match_presence_time[pname] = current_presence + added_presence
+end
+
+ctf_teams.register_on_online_player_remove(on_player_leave_game)
+core.register_on_leaveplayer(on_player_leave_game)
+
+--- @param player PlayerRef
+local function on_player_join_game(player)
+	local pname = player:get_player_name()
+	ctf_modebase.player_join_times[pname] = os.time()
+end
+
+core.register_on_joinplayer(on_player_join_game)
+ctf_teams.register_on_allocplayer(on_player_join_game)
+
+--- @type number
+local PRESENCE_UPDATE_INTERVAL = 5
+
+--- @type number
+local presence_time_timer = 0
+core.register_globalstep(function(dtime)
+	presence_time_timer = presence_time_timer + dtime
+	if presence_time_timer < PRESENCE_UPDATE_INTERVAL then
+		return
+	end
+	presence_time_timer = 0
+	for pname, join_time in pairs(ctf_modebase.player_join_times) do
+		local is_online = core.get_player_by_name(pname)
+		local added_time = os.time() - join_time
+		local current_presence = ctf_modebase.player_match_presence_time[pname] or 0
+		ctf_modebase.player_match_presence_time[pname] = added_time + current_presence
+		if is_online then
+			ctf_modebase.player_join_times[pname] = os.time()
+		else
+			ctf_modebase.player_join_times[pname] = nil
+		end
+	end
 end)
 
 ctf_api.register_on_match_end(function()
