@@ -523,7 +523,8 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- on how much they had presence in the match. The more presence
 		--- in the match the higher the influence.
 		--- -- Farooq fkz at riseup dot net
-		local player_val = ctf_modebase.values.get_player_value(pname, recent_ratio / 2)
+		local player_val =
+			ctf_modebase.values.get_player_value(pname, 1.0 - recent_ratio / 2)
 		local player_pvp_val = ctf_modebase.values.get_pvp_score(pname, 0.5)
 		player_pvp_val = math.max(player_pvp_val, 0.01) -- For new players
 		local killer_pvp_val = ctf_modebase.values.get_pvp_score(killer_name, 0.5)
