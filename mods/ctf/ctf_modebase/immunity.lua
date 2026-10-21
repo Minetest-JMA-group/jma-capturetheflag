@@ -120,7 +120,7 @@ function ctf_modebase.remove_immunity(player)
 	end
 
 	if old.particles then
-		core.delete_particlespawner(old.particles)
+		core.delete_particlespawner(old.particles, pname)
 	end
 
 	local finish_callback = old.finish_callback
