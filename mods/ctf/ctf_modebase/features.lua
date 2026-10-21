@@ -1433,6 +1433,43 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			}, false)
 			ctf_modebase.flag_huds.track_capturer(pname, FLAG_CAPTURE_TIMER)
 		end,
+		--- @param node string
+		--- @param pos Vec3
+		--- @return number
+		get_dig_points = function(node, pos)
+			local scores_exact = {
+				["ctf_landmine:landmine"] = 10,
+				["ctf_map:damage_cobble"] = 5,
+				["ctf_map:damage_glass"] = 4.5,
+			}
+			local scores_start_with = {
+				["ctf_teams:door_steel"] = 2,
+				["ctf_map:spike"] = 8,
+				["ctf_map:spike_mese"] = 10,
+				["ctf_map:spike_diamond"] = 10,
+				["ctf_map:spike_double_mese"] = 10,
+				["ctf_map:spike_double_diamond"] = 10,
+			}
+			if scores_exact[node] then
+				return scores_exact[node]
+			end
+			for node_name, points in pairs(scores_start_with) do
+				if node:match(node_name) then
+					return points
+				end
+			end
+			return 0
+		end,
+		--- @param pname PlayerName
+		--- @param node string
+		--- @param pos Vec3
+		--- @param type "destruct" | "construct"
+		on_player_build = function(pname, node, pos, type)
+			if type == "construct" then
+				return
+			end
+			return ctf_modebase:get_current_mode().get_dig_points(node, pos)
+		end,
 		--- @param player ObjectRef
 		--- @param teamnames Team[]
 		--- @param pteam Team

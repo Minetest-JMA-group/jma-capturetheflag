@@ -212,11 +212,15 @@ core.register_globalstep(function(dtime)
 		if player_obj then
 			local team_color = ctf_teams.get(player_obj)
 			local team = ctf_map.current_map.teams[team_color]
-
-			local distance_from_flag =
-				vector.distance(player_obj:get_pos(), team.flag_pos)
-			if distance_from_flag > MAX_DISTANCE_FROM_FLAG then
-				ctf_modebase.remove_respawn_immunity(player_obj)
+			-- Recently joined players don't get allocated
+			-- instantly so there is a chance team is nil
+			-- -- Farooq fkz at riseup dot net
+			if team then
+				local distance_from_flag =
+					vector.distance(player_obj:get_pos(), team.flag_pos)
+				if distance_from_flag > MAX_DISTANCE_FROM_FLAG then
+					ctf_modebase.remove_respawn_immunity(player_obj)
+				end
 			end
 		end
 	end
