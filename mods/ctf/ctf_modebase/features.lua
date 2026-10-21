@@ -1821,9 +1821,12 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				return
 			end
 
+			local pname = player:get_player_name()
+			local hname = hitter:get_player_name()
+
 			-- Remove respawn immunity when punching another player which isnt a teammate
 			if ctf_modebase.is_respawn_immunity(hitter) then
-				local pteam, hteam = ctf_teams.get(player), ctf_teams.get(hitter)
+				local pteam, hteam = ctf_teams.get(pname), ctf_teams.get(hname)
 				if pteam ~= hteam then
 					ctf_modebase.remove_respawn_immunity(hitter)
 				end
@@ -1837,8 +1840,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			local weapon_image = get_weapon_image(hitter, tool_capabilities)
 
-			local pname = player:get_player_name()
-			local hname = hitter:get_player_name()
 			if pname ~= hname then
 				ctf_combat_mode.add_hitter(player, hitter, weapon_image, 15)
 			end
