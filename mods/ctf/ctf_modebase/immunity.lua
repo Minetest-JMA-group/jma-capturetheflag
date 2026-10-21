@@ -14,7 +14,10 @@ end
 --- @param player ObjectRef
 --- @return boolean
 function ctf_modebase.is_respawn_immunity(player)
-	if immune_players[PlayerName(player)] and not immune_players[PlayerName(player)].timer == false then
+	if
+		immune_players[PlayerName(player)]
+		and not immune_players[PlayerName(player)].timer == false
+	then
 		return true
 	end
 	return false
@@ -72,7 +75,7 @@ function ctf_modebase.give_immunity(
 		pos = vector.new(0, 1.2, 0),
 		attract = {
 			kind = "point",
-			strength = {min = 2, max = 2},
+			strength = { min = 2, max = 2 },
 			origin = vector.new(0, 1.2, 0),
 			origin_attached = player,
 			die_on_contact = true,
@@ -196,7 +199,7 @@ end)
 
 --- @type number
 local last_check = 0
-core.register_globalstep(function (dtime)
+core.register_globalstep(function(dtime)
 	last_check = last_check + dtime
 
 	if last_check <= CHECK_INTERVAL then
@@ -210,14 +213,14 @@ core.register_globalstep(function (dtime)
 			local team_color = ctf_teams.get(player_obj)
 			local team = ctf_map.current_map.teams[team_color]
 
-			local distance_from_flag = vector.distance(player_obj:get_pos(), team.flag_pos)
+			local distance_from_flag =
+				vector.distance(player_obj:get_pos(), team.flag_pos)
 			if distance_from_flag > MAX_DISTANCE_FROM_FLAG then
 				ctf_modebase.remove_respawn_immunity(player_obj)
 			end
 		end
 	end
 end)
-
 
 local function dig_place_callback(_, _, player)
 	if not player then

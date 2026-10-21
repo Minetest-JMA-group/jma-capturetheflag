@@ -1013,7 +1013,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		local pteam, hteam = ctf_teams.get(pname), ctf_teams.get(hname)
 
 		--Do not return if it's respawn immunity, this is handled by features.on_punchplayer
-		if ctf_modebase.is_immune(hitter) and not ctf_modebase.is_respawn_immunity(hitter) then
+		if
+			ctf_modebase.is_immune(hitter)
+			and not ctf_modebase.is_respawn_immunity(hitter)
+		then
 			return false, S("You can't attack while immune")
 		end
 
