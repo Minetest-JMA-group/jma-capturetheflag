@@ -75,12 +75,19 @@ ctf_api.register_on_match_start(function()
 	ctf_modebase.match_start_time = os.time()
 	ctf_modebase.player_join_times = {}
 	ctf_modebase.player_match_presence_time = {}
+	for _, pname in ipairs(ctf_teams.get_all_team_players()) do
+		ctf_modebase.player_join_times[pname] = os.time()
+	end
 end)
 
---- @return number In seconds or -1 if there is no match
+ctf_api.register_on_match_end(function()
+	ctf_modebase.match_start_time = nil
+end)
+
+--- @return number? In seconds or nil if there is no match
 ctf_modebase.get_match_elapsed_time = function()
 	if ctf_modebase.match_start_time == nil then
-		return -1
+		return
 	end
 	return os.time() - ctf_modebase.match_start_time
 end
@@ -96,9 +103,9 @@ local function on_player_leave_game(player)
 	local current_presence = ctf_modebase.player_match_presence_time[pname] or 0
 	local added_presence = os.time() - joined_time
 	ctf_modebase.player_match_presence_time[pname] = current_presence + added_presence
+	core.debug(string.format("Removing player %s from join_times table", pname))
 end
 
-ctf_teams.register_on_online_player_remove(on_player_leave_game)
 core.register_on_leaveplayer(on_player_leave_game)
 
 --- @param player PlayerRef
@@ -111,7 +118,7 @@ core.register_on_joinplayer(on_player_join_game)
 ctf_teams.register_on_allocplayer(on_player_join_game)
 
 --- @type number
-local PRESENCE_UPDATE_INTERVAL = 5
+local PRESENCE_UPDATE_INTERVAL = 10
 
 --- @type number
 local presence_time_timer = 0
@@ -120,22 +127,32 @@ core.register_globalstep(function(dtime)
 	if presence_time_timer < PRESENCE_UPDATE_INTERVAL then
 		return
 	end
+	if ctf_modebase.match_start_time == nil then
+		return
+	end
+
 	presence_time_timer = 0
 	for pname, join_time in pairs(ctf_modebase.player_join_times) do
 		local is_online = core.get_player_by_name(pname)
+		local is_team_player = ctf_teams.get_player_team(pname)
 		local added_time = os.time() - join_time
 		local current_presence = ctf_modebase.player_match_presence_time[pname] or 0
-		ctf_modebase.player_match_presence_time[pname] = added_time + current_presence
-		if is_online then
+		local sum_presence = added_time + current_presence
+		ctf_modebase.player_match_presence_time[pname] = sum_presence
+		if is_online and is_team_player then
 			ctf_modebase.player_join_times[pname] = os.time()
 		else
 			ctf_modebase.player_join_times[pname] = nil
+			core.debug(string.format("Removing player %s from join_times table", pname))
 		end
+		core.debug(
+			string.format(
+				"presence time of Player %s is now %d seconds",
+				pname,
+				sum_presence
+			)
+		)
 	end
-end)
-
-ctf_api.register_on_match_end(function()
-	ctf_modebase.match_start_time = nil
 end)
 
 ctf_gui.init()
