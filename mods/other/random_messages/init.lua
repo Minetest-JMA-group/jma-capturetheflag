@@ -19,6 +19,7 @@ then
 end
 
 local messages = {
+	S("Treasure chests get refilled every 25 minutes."),
 	S("If in a map vote none of the 3 maps are good, you can do 'Reshuffle'."),
 	S(
 		"Medics and scouts fit well together, while the medic uses the healing pistol and stays out of sight"
@@ -128,7 +129,7 @@ local messages = {
 	"Use /e to send emojis into the air",
 	"Having problems exiting the game? Use /kickme to get disconnected from the server",
 	"Want to check match status? Type /match to see current mode, map details, and teams info",
-    "Want to enter Elysium? Heal 100 HP and capture 1 flag to unlock access for 24 hours! Check progress with /eprogress",
+	"Want to enter Elysium? Heal 100 HP and capture 1 flag to unlock access for 24 hours! Check progress with /eprogress",
 	"Is the voting pop-up window annoying? You can disable it in the settings tab of your inventory.",
 
 	--Security & rules related messages
