@@ -178,7 +178,8 @@ function ctf_modebase.values.calculate_capture_coins(
 	--- @type integer
 	local loser_team_members = 0
 	for _, loser_team in ipairs(loser_teams) do
-		ratios = ratios + ctf_modebase.values.compare_team_values(loser_team, winner_team)
+		ratios = ratios
+			+ ctf_modebase.values.compare_team_values(loser_team, winner_team, 0.5)
 		loser_team_members = loser_team_members + #ctf_teams.get_team_members(loser_team)
 	end
 
@@ -192,7 +193,7 @@ function ctf_modebase.values.calculate_capture_coins(
 	local other_teams_n = 0
 	for _, other_team in pairs(other_teams) do
 		local ratio_other =
-			ctf_modebase.values.compare_team_values(other_team, winner_team)
+			ctf_modebase.values.compare_team_values(other_team, winner_team, 0.5)
 		other_teams_ratios_sum = other_teams_ratios_sum + ratio_other
 		other_teams_n = other_teams_n + 1
 	end
