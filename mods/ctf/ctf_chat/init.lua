@@ -15,12 +15,6 @@ core.override_chatcommand("msg", {
 			return false, "The player " .. sendto .. " is not online."
 		end
 
-		-- Run the message through filter if it exists
-		if filter and not filter.check_message(message) then
-			filter.on_violation(name, message)
-			return false, "Watch your language!"
-		end
-
 		-- Message color
 		local msg_color = core.settings:get("ctf_chat.message_color") or "#E043FF"
 		local sender_msg_color = "#FFFFFF"
@@ -173,12 +167,6 @@ core.register_on_chat_message(function(name, message)
 			message = filter_caps.parse(name, message)
 		end
 
-		if filter and not filter.check_message(message) then
-			filter.on_violation(name, message)
-			core.chat_send_player(name, "Watch your language!")
-			return true
-		end
-
 		core.log("action", string.format("[CHAT/Spectator] <%s>: %s", name, message))
 
 		local formatted_msg = rush_spectator_format_chat_message(name, message)
@@ -189,12 +177,6 @@ core.register_on_chat_message(function(name, message)
 
 	local el_players = ctf_jma_elysium and ctf_jma_elysium.players
 	if el_players and el_players[name] then
-		if filter and not filter.check_message(message) then
-			filter.on_violation(name, message)
-			core.chat_send_player(name, "Watch your language!")
-			return true
-		end
-
 		core.log("action", string.format("[Elysium Chat]: <%s>: %s", name, message))
 		local formatted_msg = elysium_format_chat_message(name, message)
 
@@ -216,10 +198,6 @@ core.register_chatcommand("g", {
 
 		if filter_caps then
 			message = filter_caps.parse(name, message)
-		end
-		if filter and not filter.check_message(message) then
-			filter.on_violation(name, message)
-			return false, "Watch your language!"
 		end
 
 		core.log("action", string.format("[Global Chat]: <%s>: %s", name, message))
