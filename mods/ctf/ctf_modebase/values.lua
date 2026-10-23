@@ -96,7 +96,7 @@ function ctf_modebase.values.get_player_value(player, recent)
 		)
 	)
 	--- @type number
-	local combined_val = math.pow(active_val * passive_val, 1.2)
+	local combined_val = active_val + passive_val + math.sqrt(active_val * passive_val)
 	--- Handling too big ones including infinite
 	if combined_val > PLAYER_VALUE_CAP then
 		core.log(
