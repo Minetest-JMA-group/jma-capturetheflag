@@ -23,8 +23,8 @@ function ctf_modebase.values.get_ranking(player, recent)
 			+ (recent_rankings.kill_assists or 0) * recent,
 		hp_healed = (ranking.hp_healed or 0) * complement
 			+ (recent_rankings.hp_healed or 0) * recent,
-		capture_coins = (ranking.capture_coins or 0) * complement
-			+ (recent_rankings.capture_coins or 0) * recent,
+		received_capture_coins = (ranking.received_capture_coins or 0) * complement
+			+ (recent_rankings.received_capture_coins or 0) * recent,
 		build_points = (ranking.build_points or 0) * complement
 			+ (recent_rankings.build_points or 0) * recent,
 	}
@@ -162,7 +162,7 @@ end
 
 --- @param loser_teams Team[]
 --- @param winner_team Team
---- @param other_teams Team[]?
+--- @param other_teams Team[] | nil
 --- @param flag_thief PlayerName
 --- @return number
 function ctf_modebase.values.calculate_capture_coins(
