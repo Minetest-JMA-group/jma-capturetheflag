@@ -389,9 +389,48 @@ function ctf_modebase.player.update(player)
 	end
 end
 
+--- Take a player out of the running match without disconnecting them.
+---@param player PlayerRef
+function ctf_modebase.player.leave_match(player)
+	local name = player:get_player_name()
+
+	ctf_modebase.drop_flags(player)
+	ctf_combat_mode.end_combat(player)
+	ctf_modebase.update_wear.cancel_player_updates(player, true)
+
+	ctf_teams.remove_online_player(player)
+	ctf_teams.player_team[name] = nil
+	ctf_teams.non_team_players[name] = true
+end
+
+--- Put a player back into the running match, allocating them to a team.
+---@param player PlayerRef
+---@param opts { clear_inventory: boolean? }?
+---@return boolean  -- whether a team was assigned
+function ctf_modebase.player.rejoin_match(player, opts)
+	local name = player:get_player_name()
+
+	ctf_teams.non_team_players[name] = nil
+	if opts and opts.clear_inventory then
+		ctf_modebase.player.empty_inv(player)
+	end
+
+	if
+		not ctf_modebase.in_game
+		or not ctf_map.current_map
+		or #ctf_teams.current_team_list <= 0
+	then
+		return false
+	end
+
+	local team = ctf_teams.allocate_player(player, true)
+	ctf_modebase.player.update(player)
+	return team ~= nil
+end
+
 ---@diagnostic disable-next-line: duplicate-set-field
 function ctf_modebase.player.is_playing(player)
-	return true
+	return not ctf_teams.non_team_players[player:get_player_name()]
 end
 
 ctf_api.register_on_new_match(function()
