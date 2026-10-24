@@ -280,13 +280,6 @@ function ctf_jma_elysium.can_hit_player(target, hitter)
 	return true
 end
 
-function ctf_modebase.player.is_playing(player)
-	if ctf_jma_elysium.players[player:get_player_name()] then
-		return false
-	end
-	return true
-end
-
 function ctf_jma_elysium.set_pvp_mode(player, mode)
 	if not player then
 		return
@@ -401,6 +394,7 @@ function ctf_jma_elysium.join(player, joined_callback, options)
 		ctf_jma_elysium.players[player_name] = {
 			pvp = false,
 			location = "main",
+			day_night = player:get_day_night_ratio(),
 		}
 		-- The kill list switches to the feed of Elysium
 		ctf_kill_list.update_player(player)
@@ -413,9 +407,7 @@ function ctf_jma_elysium.join(player, joined_callback, options)
 			callback(player)
 		end
 
-		ctf_teams.remove_online_player(player)
-		ctf_teams.player_team[name] = nil
-		ctf_teams.non_team_players[name] = true
+		ctf_modebase.player.leave_match(player)
 
 		player:hud_set_hotbar_image("gui_hotbar.png^[colorize:gray:128")
 		player:hud_set_hotbar_selected_image("gui_hotbar_selected.png^[multiply:gray")
@@ -440,8 +432,6 @@ function ctf_jma_elysium.join(player, joined_callback, options)
 			sneak_glitch = true,
 			new_move = true,
 		})
-
-		ctf_modebase.update_wear.cancel_player_updates(player)
 
 		local inv = player:get_inventory()
 		inv:set_list("main", {})
@@ -510,22 +500,24 @@ function ctf_jma_elysium.join(player, joined_callback, options)
 	return true
 end
 
-function ctf_jma_elysium.leave(player)
+--- Remove a player from Elysium without rejoining the match.
+---@param player PlayerRef
+---@return boolean, string?
+function ctf_jma_elysium.detach(player)
 	local name = player:get_player_name()
+	local ctx = ctf_jma_elysium.players[name]
 
-	if player:get_attach() then
-		core.chat_send_player(name, S("You cannot leave Elysium while attached"))
-		return false
+	if not ctx then
+		return false, S("You are not in Elysium.")
 	end
 
 	if player:get_hp() == 0 then
-		core.chat_send_player(
-			name,
-			S(
-				"You cannot leave Elysium while you are dead! Please wait until you respawn."
-			)
-		)
-		return false
+		return false,
+			S("You cannot leave Elysium while you are dead! Please wait until you respawn.")
+	end
+
+	if player:get_attach() then
+		return false, S("You cannot leave Elysium while attached")
 	end
 
 	-- Leave any PvP Box before leaving Elysium
@@ -536,15 +528,13 @@ function ctf_jma_elysium.leave(player)
 	local inv = player:get_inventory()
 	inv:set_list("main", {})
 
-	player:override_day_night_ratio(0)
-
+	player:override_day_night_ratio(ctx.day_night)
 	ctf_modebase.remove_immunity(player)
-
-	ctf_teams.non_team_players[name] = nil
+	player:set_properties({ pointable = true })
 
 	-- Call registered callbacks before clearing player data
 	for _, callback in ipairs(ctf_jma_elysium.callbacks.on_leave) do
-		callback(player, ctf_jma_elysium.players[name])
+		callback(player, ctx)
 	end
 
 	ctf_jma_elysium.players[name] = nil
@@ -554,9 +544,18 @@ function ctf_jma_elysium.leave(player)
 
 	ctf_modebase.player.update(player)
 	ctf_jma_leagues.update_icon(player)
-	ctf_teams.allocate_player(player, true)
 
 	core.log("action", "[ctf_jma_elysium] Player " .. name .. " has left Elysium.")
+	return true
+end
+
+function ctf_jma_elysium.leave(player)
+	local detached, reason = ctf_jma_elysium.detach(player)
+	if not detached then
+		return false, reason
+	end
+
+	ctf_modebase.player.rejoin_match(player)
 	return true
 end
 

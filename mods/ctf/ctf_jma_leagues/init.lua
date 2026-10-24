@@ -188,10 +188,12 @@ end
 
 function ctf_jma_leagues.update_icon(player)
 	local name = player:get_player_name()
-	local info = ctf_jma_leagues.leagues[ctf_jma_leagues.get_league(name)]
-	if info and info.icon_texture and not ctf_jma_elysium.players[name] then
-		hpbar.set_icon(player, info.icon_texture)
+	if ctf_jma_elysium.players[name] then
+		return
 	end
+
+	local info = ctf_jma_leagues.leagues[ctf_jma_leagues.get_league(name)]
+	hpbar.set_icon(player, info and info.icon_texture or "")
 end
 
 ctf_api.register_on_match_end(function()

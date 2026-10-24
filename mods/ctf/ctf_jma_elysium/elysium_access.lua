@@ -436,12 +436,13 @@ core.register_chatcommand("leave", {
 				)
 		end
 
-		if ctf_jma_elysium.leave(player) then
+		local left, reason = ctf_jma_elysium.leave(player)
+		if left then
 			return true, S("You have left Elysium.")
 		end
 
 		return false,
-			S("Something went wrong. Please contact Nanowolf4 (n4w@tutanota.com)")
+			reason or S("Something went wrong. Please contact Nanowolf4 (n4w@tutanota.com)")
 	end,
 })
 
@@ -613,7 +614,10 @@ core.register_chatcommand("el_kick", {
 			return false, S("Player is not online but is in Elysium... how?")
 		end
 
-		ctf_jma_elysium.leave(player)
+		local kicked, reason = ctf_jma_elysium.leave(player)
+		if not kicked then
+			return false, reason or S("Cannot kick @1 from Elysium right now.", target)
+		end
 		core.chat_send_player(
 			target,
 			S("[Elysium] You have been kicked by an admin. Bye!")

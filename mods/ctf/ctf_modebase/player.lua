@@ -433,6 +433,12 @@ function ctf_modebase.player.is_playing(player)
 	return not ctf_teams.non_team_players[player:get_player_name()]
 end
 
+-- Out-of-match state does not survive a disconnect: the normal join path
+-- allocates the player again.
+core.register_on_leaveplayer(function(player)
+	ctf_teams.non_team_players[player:get_player_name()] = nil
+end)
+
 ctf_api.register_on_new_match(function()
 	for _, player in pairs(core.get_connected_players()) do
 		if ctf_modebase.player.is_playing(player) then
