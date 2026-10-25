@@ -48,10 +48,10 @@ function ctf_modebase.regenerate_treasures()
 	if next(tr) then
 		local map_treasures = table.copy(tr)
 
-		for k, v in
+		for item_string, tr_spec in
 			pairs(ctf_map.treasure.treasure_from_string(ctf_map.current_map.treasures))
 		do
-			map_treasures[k] = v
+			map_treasures[item_string] = tr_spec
 		end
 		for _, black_listed in ipairs(BLACKLIST_ITEMS) do
 			for item, _ in pairs(map_treasures) do
