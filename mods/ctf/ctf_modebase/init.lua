@@ -117,6 +117,17 @@ end
 core.register_on_joinplayer(on_player_join_game)
 ctf_teams.register_on_allocplayer(on_player_join_game)
 
+--- @param pname PlayerName
+--- @return number
+function ctf_modebase.get_player_presence_ratio(pname)
+	local match_time = ctf_modebase.get_match_elapsed_time()
+	if match_time == nil then
+		return 0
+	else
+		return (ctf_modebase.player_match_presence_time[pname] or 0) / match_time
+	end
+end
+
 --- @type number
 local PRESENCE_UPDATE_INTERVAL = 10
 
