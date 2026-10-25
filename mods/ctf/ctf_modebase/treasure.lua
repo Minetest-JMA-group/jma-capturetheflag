@@ -1,7 +1,14 @@
+--- @alias TreasureSpec { min_count?: integer, max_count?: integer, rarity?: number,
+--- max_stacks?: number }
+--- @alias Treasures {[string]: TreasureSpec}
+
 local TREASURE_VERSION = 1
 
 ctf_map.treasure = {}
 
+--- FIXME use appropriate type for inv
+--- @param inv table inventory of a node
+--- @param map_treasures Treasures
 function ctf_map.treasure.treasurefy_node(inv, map_treasures)
 	for item, def in pairs(map_treasures) do
 		local treasure = ItemStack(item)
@@ -15,12 +22,14 @@ function ctf_map.treasure.treasurefy_node(inv, map_treasures)
 	end
 end
 
--- name ; min_count ; max_count ; max_stacks ; rarity ;;
+--- @param str string Treasure spec in string format
+---	@return Treasures
 function ctf_map.treasure.treasure_from_string(str)
 	if not str then
 		return {}
 	end
 
+	--- @type Treasures
 	local out = {}
 
 	for name, min_count, max_count, max_stacks, rarity in
@@ -38,6 +47,8 @@ function ctf_map.treasure.treasure_from_string(str)
 	return out
 end
 
+--- @param treasures Treasures
+--- @return string
 function ctf_map.treasure.treasure_to_string(treasures)
 	if not treasures then
 		return ""
