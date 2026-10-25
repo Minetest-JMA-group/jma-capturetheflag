@@ -516,20 +516,16 @@ ctf_modebase.features = function(rankings, recent_rankings)
 			core.debug(pname .. " was not in a team when killed")
 			return 0
 		end
-		local match_elapsed = ctf_modebase.get_match_elapsed_time()
-		local recent_ratio = 0.5
-		if match_elapsed ~= nil then
-			local player_presence = ctf_modebase.player_match_presence_time[pname] or 0
-			recent_ratio = player_presence / match_elapsed
-			core.debug(
-				string.format(
-					"Player %s is killed. Their presence ratio is %f and their presence is %f",
-					pname,
-					recent_ratio,
-					player_presence
-				)
+		local recent_ratio = ctf_modebase.get_player_presence_ratio(pname)
+		core.debug(
+			string.format(
+				"Killer %s, target %s, recent_ratio is %f",
+				killer_name,
+				pname,
+				recent_ratio
 			)
-		end
+		)
+
 		--- We calculate influence of their "recent" rankings depending
 		--- on how much they had presence in the match. The more presence
 		--- in the match the higher the influence.
