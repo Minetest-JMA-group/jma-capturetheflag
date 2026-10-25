@@ -213,6 +213,7 @@ function ctf_modebase.values.calculate_capture_coins(
 
 	--- @type number
 	local thief_val = math.max(thief_val_overall, thief_val_recent)
+	thief_val = math.max(thief_val, 0.01)
 
 	ratios = ratios / thief_val
 
