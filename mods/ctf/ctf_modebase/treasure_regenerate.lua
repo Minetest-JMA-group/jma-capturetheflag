@@ -14,6 +14,7 @@ local BLACKLIST_ITEMS = {
 	"ctf_melee:",
 	"ctf_map:",
 	"ctf_healing:bandage",
+	"ctf_healing:super_bandage",
 	"ctf_healing:healing_pistol",
 }
 
