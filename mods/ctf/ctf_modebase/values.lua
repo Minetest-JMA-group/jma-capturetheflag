@@ -118,26 +118,21 @@ end
 
 --- @param team_a Team
 --- @param team_b Team
---- @param recent number?
 --- @return number
-function ctf_modebase.values.compare_team_values(team_a, team_b, recent)
+function ctf_modebase.values.compare_team_values(team_a, team_b)
 	-- A team value equals product of values of team members.
 	-- Here we compute ratio of team_a:team_b. However, a problem
 	-- is that we cannot compute each product then divide them as it's
 	-- likely that the number will overflow and become inf like in
 	-- get_player_value. --Farooq
 
-	recent = recent or 1.0
 	--- @type PlayerName[]
 	local team_a_members = ctf_teams.get_team_members(team_a)
 	--- @type PlayerName[]
 	local team_b_members = ctf_teams.get_team_members(team_b)
 	--- @type integer
-	local bigger_team_len = #team_a_members
-	if #team_b_members > #team_a_members then
-		bigger_team_len = #team_b_members
-	end
-	if #team_a_members == 0 or #team_b_members == 0 then
+	local bigger_team_len = math.max(#team_a_members, #team_b_members)
+	if bigger_team_len == 0 then
 		return 1
 	end
 	--- @type number
@@ -148,12 +143,14 @@ function ctf_modebase.values.compare_team_values(team_a, team_b, recent)
 		--- @type number
 		local a_val = 1
 		if player_a then
-			a_val = ctf_modebase.values.get_player_value(player_a, recent)
+			local recent_ratio = ctf_modebase.get_player_presence_ratio(player_a)
+			a_val = ctf_modebase.values.get_player_value(player_a, recent_ratio / 2)
 		end
 		--- @type number
 		local b_val = 1
 		if player_b then
-			b_val = ctf_modebase.values.get_player_value(player_b, recent)
+			local recent_ratio = ctf_modebase.get_player_presence_ratio(player_b)
+			b_val = ctf_modebase.values.get_player_value(player_b, recent_ratio / 2)
 		end
 		teams_ratio = (a_val / b_val) * teams_ratio
 	end
@@ -178,8 +175,7 @@ function ctf_modebase.values.calculate_capture_coins(
 	--- @type integer
 	local loser_team_members = 0
 	for _, loser_team in ipairs(loser_teams) do
-		ratios = ratios
-			+ ctf_modebase.values.compare_team_values(loser_team, winner_team, 0.5)
+		ratios = ratios + ctf_modebase.values.compare_team_values(loser_team, winner_team)
 		loser_team_members = loser_team_members + #ctf_teams.get_team_members(loser_team)
 	end
 
@@ -193,7 +189,7 @@ function ctf_modebase.values.calculate_capture_coins(
 	local other_teams_n = 0
 	for _, other_team in pairs(other_teams) do
 		local ratio_other =
-			ctf_modebase.values.compare_team_values(other_team, winner_team, 0.5)
+			ctf_modebase.values.compare_team_values(other_team, winner_team)
 		other_teams_ratios_sum = other_teams_ratios_sum + ratio_other
 		other_teams_n = other_teams_n + 1
 	end
