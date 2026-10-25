@@ -200,9 +200,21 @@ function ctf_modebase.values.calculate_capture_coins(
 
 	-- Now we also need active value of the thief which is
 	-- capture skill and pvp skill combined. And we need to
-	-- compare it to number of players in the loser team(s)
+	-- compare it to number/value of players in the loser team(s).
+	-- We use maximum value of the thief's recent value and overall value
+	-- Someone might be pro but has just joined, in that case, the recent ranking
+	-- will decrease player value a lot. Also someone might have good loot
+	-- during the match and has farmed a lot of players. In that case, it
+	-- makes sense to use the recent one.
 	--- @type number
-	local thief_val = ctf_modebase.values.get_player_active_value(flag_thief, 0.5)
+	local thief_val_recent = ctf_modebase.values.get_player_active_value(flag_thief, 1.0)
+	--- @type number
+	local thief_val_overall = ctf_modebase.values.get_player_active_value(flag_thief, 0.0)
+
+	--- @type number
+	local thief_val = math.max(thief_val_overall, thief_val_recent)
+
+	ratios = ratios / thief_val
 
 	--- @type integer
 	local cap_coins = math.ceil(128 * ratios * loser_team_members)
