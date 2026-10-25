@@ -55,7 +55,7 @@ function ctf_modebase.regenerate_treasures()
 		end
 		for _, black_listed in ipairs(BLACKLIST_ITEMS) do
 			for item, _ in pairs(map_treasures) do
-				if string.find(item, black_listed) then
+				if string.find(item, black_listed) ~= nil then
 					map_treasures[item] = nil
 				end
 			end
