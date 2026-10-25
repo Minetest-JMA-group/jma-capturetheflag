@@ -13,6 +13,8 @@ local BLACKLIST_ITEMS = {
 	"ctf_ranged:sniper_magnum",
 	"ctf_melee:",
 	"ctf_map:",
+	"ctf_healing:bandage",
+	"ctf_healing:healing_pistol",
 }
 
 local S = core.get_translator(core.get_current_modname())
