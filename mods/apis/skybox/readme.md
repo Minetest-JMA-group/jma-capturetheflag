@@ -33,10 +33,6 @@ The `skybox` handle can be used to perform various actions:
 `skybox.set(player, number)`
  -- Sets the skybox to the `number` in the list of current skyboxes.
 
-`skybox.restore(player)`
- -- Reverts the player skybox to the last `skybox.set()` value.
- -- Other skybox mods can properly restore the player's custom skybox.
-
 `skybox.add(skyboxdef)`
  -- Add a new skybox with skyboxdef to the list of available skyboxes.
 

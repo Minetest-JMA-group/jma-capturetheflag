@@ -28,23 +28,90 @@ local skies = {
         height = 120, thickness = 8, speed = {x = -2, y = 0},}, "jpg"},
 }
 
+local selected_skies = {}
+
 --
 -- API
 --
 
 skybox = {}
 
+local function clamp(value, min, max)
+	return math.min(math.max(value, min), max)
+end
+
+-- Brighter-night hack: the day/night ratio is clamped so that nights never get
+-- darker than BRIGHTER_NIGHT_MIN_RATIO, while daytime brightness is left
+-- unchanged.
+
+---@type { normal: number, applied: number }?
+local last_day_night_ratios
+
+-- Minimum day/night ratio used at night
+local BRIGHTER_NIGHT_MIN_RATIO = 0.45
+local DAY_NIGHT_RATIO_UPDATE_INTERVAL = 1
+-- How much the normal day/night ratio has to change before the override is updated again.
+local DAY_NIGHT_RATIO_CHANGE_THRESHOLD = 0.05
+-- Apply the ratio unconditionally near full day: the normal ratio can approach
+-- its maximum so slowly that the change stays below the threshold, leaving the
+-- override stuck below full daylight.
+local FULL_DAY_RATIO_EPSILON = 1e-3
+-- Small epsilon to absorb floating-point noise when comparing the ratio change
+-- against the threshold.
+local RATIO_CHANGE_EPSILON = 1e-9
+
+---@return number, boolean  -- the ratio and whether it was updated
+function skybox.get_day_night_ratio()
+	local normal_ratio = core.time_to_day_night_ratio(core.get_timeofday())
+	local is_full_day = normal_ratio >= 1 - FULL_DAY_RATIO_EPSILON
+	local ratio = clamp(normal_ratio, BRIGHTER_NIGHT_MIN_RATIO, 1)
+	if is_full_day then
+		ratio = 1
+	end
+
+	if not last_day_night_ratios then
+		last_day_night_ratios = { normal = normal_ratio, applied = ratio }
+		return ratio, true
+	end
+
+	-- The clamped ratio can stay the same while the normal ratio drifts
+	-- (for example at night, where it is always BRIGHTER_NIGHT_MIN_RATIO).
+	-- There is nothing to update in that case.
+	if last_day_night_ratios.applied == ratio then
+		return ratio, false
+	end
+
+	-- Bypass the threshold only when full day is reached, not on every
+	-- update after that.
+	local reached_full_day = ratio == 1 and last_day_night_ratios.applied < 1
+	local diff = math.abs(normal_ratio - last_day_night_ratios.normal)
+	if
+		not reached_full_day
+		and diff <= DAY_NIGHT_RATIO_CHANGE_THRESHOLD + RATIO_CHANGE_EPSILON
+	then
+		return ratio, false
+	end
+
+	last_day_night_ratios = { normal = normal_ratio, applied = ratio }
+	return ratio, true
+end
+
 skybox.set = function(player, number)
     if number == 0 then
         skybox.clear(player)
     else
         local sky = skies[number]
-        if not sky then
-            core.log("error", "Invalid skybox number: " .. tostring(number))
-            skybox.clear(player)
-            return
-        end
-        player:override_day_night_ratio(sky[3])
+		if not sky then
+			core.log("error", "Invalid skybox number: " .. tostring(number))
+			skybox.clear(player)
+			return
+		end
+		selected_skies[player:get_player_name()] = number
+		local ratio = sky[3]
+		if ratio == nil then
+			ratio = skybox.get_day_night_ratio()
+		end
+		player:override_day_night_ratio(ratio)
         local file_type = sky[5] or "png"
         local textures = {
             sky[1] .. "Up." .. file_type,
@@ -70,12 +137,12 @@ skybox.set = function(player, number)
             player:set_sky(sky[2], "skybox", textures, true)
         end
         player:set_clouds(sky[4])
-        player:get_meta():set_string("skybox:skybox", sky[1])
     end
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
 skybox.clear = function(player)
+	selected_skies[player:get_player_name()] = nil
 	player:override_day_night_ratio(nil)
 	if player.get_sky_color ~= nil then
 		player:set_sky({base_color = "white", type = "regular"})
@@ -94,7 +161,6 @@ skybox.clear = function(player)
 	player:set_moon({visible = true, texture = ""})
 	player:set_stars({visible = true})
 
-	player:get_meta():set_string("skybox:skybox", "off")
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
@@ -110,21 +176,30 @@ end
 -- registrations and load/save code
 --
 
-skybox.restore = function(player)
-	local sky = player:get_meta():get_string("skybox:skybox")
-	if not sky or sky == "" then
-		skybox.clear(player)
-	else
-		for k, v in ipairs(skies) do
-			if sky == v[1] then
-				skybox.set(player, k)
-				return
+local t = 0
+core.register_globalstep(function(dtime)
+	t = t + dtime
+	if t < DAY_NIGHT_RATIO_UPDATE_INTERVAL then
+		return
+	end
+	t = 0
+
+	local ratio, update_required = skybox.get_day_night_ratio()
+	if update_required then
+		for _, player in ipairs(core.get_connected_players()) do
+			local selected_sky_index = selected_skies[player:get_player_name()]
+			local selected_sky = selected_sky_index and skies[selected_sky_index]
+			if selected_sky_index == nil or (selected_sky and selected_sky[3] == nil) then
+				player:override_day_night_ratio(ratio)
 			end
 		end
-		skybox.clear(player)
 	end
-end
-core.register_on_joinplayer(skybox.restore)
+end)
+
+core.register_on_joinplayer(skybox.clear)
+core.register_on_leaveplayer(function(player)
+	selected_skies[player:get_player_name()] = nil
+end)
 
 core.register_privilege("skybox", {
 	description = "Change sky box for yourself",
