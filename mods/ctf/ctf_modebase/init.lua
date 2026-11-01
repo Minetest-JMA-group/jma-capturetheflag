@@ -156,13 +156,6 @@ core.register_globalstep(function(dtime)
 			ctf_modebase.player_join_times[pname] = nil
 			core.debug(string.format("Removing player %s from join_times table", pname))
 		end
-		core.debug(
-			string.format(
-				"presence time of Player %s is now %d seconds",
-				pname,
-				sum_presence
-			)
-		)
 	end
 end)
 
