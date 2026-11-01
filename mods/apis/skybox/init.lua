@@ -143,7 +143,7 @@ end
 ---@diagnostic disable-next-line: duplicate-set-field
 skybox.clear = function(player)
 	selected_skies[player:get_player_name()] = nil
-	player:override_day_night_ratio(nil)
+	player:override_day_night_ratio(skybox.get_day_night_ratio())
 	if player.get_sky_color ~= nil then
 		player:set_sky({base_color = "white", type = "regular"})
 	else
