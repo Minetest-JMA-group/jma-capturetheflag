@@ -129,6 +129,7 @@ end)
 local ID_IGNORE = core.CONTENT_IGNORE
 local ID_AIR = core.CONTENT_AIR
 local ID_WATER = core.get_content_id("default:water_source")
+local ID_BRIGHT_AIR = core.get_content_id("ctf_map:bright_air")
 
 ---@param mapmeta table Map meta table
 ---@param callback function
@@ -247,11 +248,12 @@ local function get_place_positions(a, data, pos1, pos2)
 			data[(z - pos1.z) * Ny * Nx + (y + 1 - pos1.y) * Nx + (x - pos1.x) + 1]
 
 		if
-			(data[vi] == ID_AIR or data[vi] == ID_WATER)
+			(data[vi] == ID_AIR or data[vi] == ID_WATER or data[vi] == ID_BRIGHT_AIR)
 			and id_below ~= ID_AIR
 			and id_below ~= ID_IGNORE
 			and id_below ~= ID_WATER
-			and (id_above == ID_AIR or id_above == ID_WATER)
+			and id_below ~= ID_BRIGHT_AIR
+			and (id_above == ID_AIR or id_above == ID_WATER or id_above == ID_BRIGHT_AIR)
 		then
 			table_insert(ret, { vi = vi, x = x, y = y, z = z })
 			if #ret >= a.amount then
@@ -383,11 +385,11 @@ function ctf_map.set_current_mode(mode)
 end
 
 function ctf_map.regenerate_treasures(treasurefy_node_callback)
-	for _, pos in ipairs(ctf_map.treasure_chests) do
-		local node_name = core.get_node(pos).name
-		if node_name == "ctf_map:chest" or node_name == "ctf_map:chest_opened" then
-			local inv = core.get_meta(pos):get_inventory()
-			treasurefy_node_callback(inv)
-		end
-	end
+    for _, pos in ipairs(ctf_map.treasure_chests) do
+        local node_name = core.get_node(pos).name
+        if node_name == "ctf_map:chest" or node_name == "ctf_map:chest_opened" then
+            local inv = core.get_meta(pos):get_inventory()
+            treasurefy_node_callback(inv)
+        end
+    end
 end
