@@ -52,26 +52,33 @@ jobs:
 
       - name: Run LuaLS diagnostics
         run: |
-          # Ensure .luarc.json exists (should be committed)
+
           if [ ! -f .luarc.json ]; then
             echo "Error: .luarc.json not found. Please generate it from .vscode/settings.json."
             exit 1
           fi
-          # Run diagnostics with JSON output
+
           lua-language-server --check . --checklevel=Warning --check_format=json --check_out_path=/tmp/diagnostics.json || true
-          if [ -f /tmp/diagnostics.json ]; then
-            # Count total diagnostics across all files
-            TOTAL=$(jq '[.[] | length] | add' /tmp/diagnostics.json)
-            if [ "$TOTAL" -gt 0 ]; then
-              echo "Found $TOTAL diagnostic(s) across $(jq 'length' /tmp/diagnostics.json) file(s)"
-              # Print a summary (first 15 diagnostics)
-              echo "Summary (first 15):"
-              jq -r '[to_entries[] | .key as $file | .value[] | "\($file): \(.message)"] | .[:15][]' /tmp/diagnostics.json
-              exit 1
-            else
-              echo "No diagnostics found"
-            fi
-          else
-            echo "No diagnostics file generated"
+
+          if [ ! -f /tmp/diagnostics.json ]; then
+            echo "No diagnostics file generated (likely no issues found)."
+            exit 0
+          fi
+
+
+          if ! jq empty /tmp/diagnostics.json 2>/dev/null; then
+            echo "Error: diagnostics.json is not valid JSON."
             exit 1
+          fi
+
+          TOTAL=$(jq 'if . == null then 0 else [.[] | length] | add end' /tmp/diagnostics.json)
+
+          if [ "$TOTAL" -gt 0 ]; then
+            echo "Found $TOTAL diagnostic(s) across $(jq 'length' /tmp/diagnostics.json) file(s)"
+            echo "Summary (first 15):"
+
+            jq -r 'if . == null then empty else [to_entries[] | .key as $file | .value[] | "\($file): \(.message)"] | .[:15][] end' /tmp/diagnostics.json
+            exit 1
+          else
+            echo "No diagnostics found."
           fi
