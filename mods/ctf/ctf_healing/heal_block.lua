@@ -72,7 +72,7 @@ core.register_node("ctf_healing:heal_block", {
 		"Place it on your team's territory to keep your allies healthy nearby."
 	) .. "\n" .. core.colorize(
 		"yellow",
-		S("Warning: breaking this block will result in its loss, so defend it wisely!")
+		S("Enemies can steal this block, but it only awards points once.")
 	),
 	drawtype = "nodebox",
 	node_box = {
@@ -113,7 +113,15 @@ core.register_node("ctf_healing:heal_block", {
 				return
 			end
 		end
-		local _, pos = core.item_place(itemstack, placer, pointed_thing)
+		local is_stolen = itemstack:get_meta():get_int("stolen")
+		local _, pos = core.item_place_node(itemstack, placer, pointed_thing)
+		if pos then
+			if is_stolen == 1 then
+				local node_meta = core.get_meta(pos)
+				node_meta:set_int("stolen", 1)
+				node_meta:set_string("infotext", S("Was stolen from enemy team"))
+			end
+		end
 		if pteam and pos then
 			add_healed_points(pteam, pos, 0)
 		end
@@ -178,6 +186,19 @@ core.register_node("ctf_healing:heal_block", {
 			if not cur_mode then
 				return
 			end
+
+			-- Prevent score farming by repeatedly digging & placing the heal block
+			if oldmetadata.fields.stolen then
+				return
+			end
+
+			local stack = ItemStack("ctf_healing:heal_block")
+			stack:get_meta():set_int("stolen", 1)
+			local leftover = digger:get_inventory():add_item("main", stack)
+			if not leftover:is_empty() then
+				core.add_item(pos, leftover)
+			end
+
 			--- @type number
 			local healed_points = get_healed_points(block_team, pos)
 			delete_healed_points(block_team, pos)
@@ -198,7 +219,7 @@ core.register_node("ctf_healing:heal_block", {
 			hud_events.new(digger, {
 				quick = true,
 				text = S(
-					"You destroyed enemy's healing block! (+@1 points)",
+					"You stole enemy's healing block! (+@1 points)",
 					break_reward
 				),
 				color = "success",
