@@ -115,12 +115,10 @@ core.register_node("ctf_healing:heal_block", {
 		end
 		local is_stolen = itemstack:get_meta():get_int("stolen")
 		local _, pos = core.item_place_node(itemstack, placer, pointed_thing)
-		if pos then
-			if is_stolen == 1 then
-				local node_meta = core.get_meta(pos)
-				node_meta:set_int("stolen", 1)
-				node_meta:set_string("infotext", S("Was stolen from enemy team"))
-			end
+		if pos and is_stolen == 1 then
+			local node_meta = core.get_meta(pos)
+			node_meta:set_int("stolen", 1)
+			node_meta:set_string("infotext", S("Was stolen from enemy team"))
 		end
 		if pteam and pos then
 			add_healed_points(pteam, pos, 0)
