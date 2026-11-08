@@ -133,7 +133,7 @@ function hud.add(self, player, name, def)
     local id = pobj:hud_add(def)
 
 	if name then
-		assert(not self.huds[pname][name], "Attempt to overwrite an existing hud!")
+		assert(not self.huds[pname][name], "Attempt to overwrite an existing hud: " .. name)
 
 		self.huds[pname][name] = {id = id, def = def}
 	else
@@ -157,7 +157,7 @@ function hud.change(self, player, name, def)
 	assert(pobj, "Attempt to change hud for offline player!")
 
 	local pname = get_playername(player)
-	assert(self.huds[pname] and self.huds[pname][name], "Attempt to change hud that doesn't exist!")
+	assert(self.huds[pname] and self.huds[pname][name], "Attempt to change hud that doesn't exist: " .. (name or "nil"))
 
 	def = convert_def(def, def.type or self.huds[pname][name].def.type)
 
@@ -174,7 +174,7 @@ function hud.remove(self, player, name)
 	local pname = get_playername(player)
 
 	if name then
-		assert(self.huds[pname] and self.huds[pname][name], "Attempt to remove hud that doesn't exist!")
+		assert(self.huds[pname] and self.huds[pname][name], "Attempt to remove hud that doesn't exist: " .. (name or "nil"))
 
 		pobj:hud_remove(self.huds[pname][name].id)
 
