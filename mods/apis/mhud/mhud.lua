@@ -133,7 +133,7 @@ function hud.add(self, player, name, def)
     local id = pobj:hud_add(def)
 
 	if name then
-		assert(not self.huds[pname][name], "Attempt to overwrite an existing hud: " .. name)
+		assert(not self.huds[pname][name], "Attempt to overwrite an existing hud: " .. (name or "nil"))
 
 		self.huds[pname][name] = {id = id, def = def}
 	else
