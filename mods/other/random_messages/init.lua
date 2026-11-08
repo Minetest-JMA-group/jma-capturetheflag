@@ -136,7 +136,7 @@ local messages = {
 	"Use /rules to read the server rules",
 	"You can report players who don't behave to the server staff by using /report <name> <action>.",
 	"Sharing accounts with your friends? Bad idea, both of you will be connected in the ban system. This can result in you also being banned because your are linked to them.",
-	"You can find our Terms Of Service and the privacy policy on our Codeberg page: https://codeberg.org/Minetest-JMA-group/information/",
+	"You can find our Terms Of Service and the privacy policy on our Codeberg page: https://codeberg.org/Luanti-JMA-group/information/",
 	"Please avoid or refrain from introducing any other potentially offensive or inappropriate topics.",
 	"Excessive spawn-killing is a direct violation of the rules - appropriate punishments will be given.",
 	"Using unofficial client builds or modified clients which gives unfair game advantage is strictly forbidden and will result in a ban.",
