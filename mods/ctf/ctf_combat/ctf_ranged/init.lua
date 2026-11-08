@@ -51,6 +51,8 @@ local shoot_cooldown = ctf_core.init_cooldowns()
 ---	range: number,
 ---	bullet: Bullet,
 ---	automatic: boolean?,
+--- recoil: number?,
+--- look_recoil: number?,
 ---	rightclick_func: ItemSecondaryUse,
 ---	liquid_travel_dist: number?,
 ---	can_use: CanUseCallback?,
@@ -414,6 +416,15 @@ function ctf_ranged.simple_register_gun(name, def)
 			core.sound_play(def.fire_sound, { pos = user:get_pos() }, true)
 			if def.on_use then
 				def.on_use(rays, user, look_dir, def)
+			end
+			if def.recoil and def.recoil ~= 0 then
+				user:add_velocity(vector.multiply(look_dir, -def.recoil))
+			end
+			if def.look_recoil and def.look_recoil ~= 0 then
+				user:set_look_vertical(math.max(
+					-math.pi / 2,
+					user:get_look_vertical() - math.rad(def.look_recoil)
+				))
 			end
 
 			if def.rounds > 0 then
