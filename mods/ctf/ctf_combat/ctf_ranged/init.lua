@@ -807,6 +807,8 @@ ctf_ranged.simple_register_gun("ctf_ranged:sniper_magnum", {
 	on_use = ctf_ranged.on_hit_damage(16),
 	fire_interval = 2,
 	liquid_travel_dist = 15,
+    recoil = 3,
+	look_recoil = 1,
 	rightclick_func = function(itemstack, user, _)
 		if scoped[user:get_player_name()] then
 			ctf_ranged.hide_scope(user:get_player_name())
