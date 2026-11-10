@@ -89,6 +89,7 @@ ctf_modebase.register_mode("chaos", {
 		ctf_modebase.bounties.get_next_bounty = old_get_next_bounty
 
 		for _, player in ipairs(core.get_connected_players()) do
+			ctf_mode_chaos.clear_player_state(player)
 			ctf_mode_chaos.remove_hud(player)
 		end
 
