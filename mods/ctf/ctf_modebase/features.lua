@@ -677,20 +677,23 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end
 	end
 
+	-- Order matters: specific groups go first, generic go at the end.
 	local damage_group_textures = {
-		grenade = "grenades_frag.png",
-		knockback_grenade = "ctf_mode_nade_fight_knockback_grenade.png",
-		black_hole_grenade = "ctf_mode_nade_fight_black_hole_grenade.png",
-		damage_cobble = "ctf_map_damage_cobble.png",
-		damage_glass = "default_glass.png^[colorize:#B00000:180^default_glass_detail.png",
-		landmine = "ctf_landmine_landmine.png",
-		spike = "ctf_map_spike.png",
+		{ "firecracker_grenade", "ctf_mode_nade_fight_firecracker_grenade.png" },
+		{ "knockback_grenade", "ctf_mode_nade_fight_knockback_grenade.png" },
+		{ "black_hole_grenade", "ctf_mode_nade_fight_black_hole_grenade.png" },
+		{ "grenade", "grenades_frag.png" },
+
+		{ "damage_cobble", "ctf_map_damage_cobble.png" },
+		{ "damage_glass", "default_glass.png^[colorize:#B00000:180^default_glass_detail.png" },
+		{ "landmine", "ctf_landmine_landmine.png" },
+		{ "spike", "ctf_map_spike.png" },
 	}
 
 	local function get_weapon_image(hitter, tool_capabilities)
 		local image
-
-		for group, texture in pairs(damage_group_textures) do
+		for _, e in ipairs(damage_group_textures) do
+			local group, texture = e[1], e[2]
 			if tool_capabilities.damage_groups[group] then
 				image = texture
 				break

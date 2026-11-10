@@ -170,6 +170,7 @@ function grenades.register_grenade(name, def)
 	local newdef = { grenade = def }
 
 	newdef.description = def.description
+	newdef.damage_group = def.damage_group
 	newdef.stack_max = math.max(1, def.stack_max or 1)
 	newdef.inventory_image = def.image
 	newdef.touch_interaction = "short_dig_long_place" -- throw with short tap

@@ -122,13 +122,18 @@ local fragdef = {
 
 				-- Check the closest distance, but if that fails try targeting the farther one
 				if hit_pos1 or check_hit(pos, target_head and footpos or headpos, v) then
+					local damage_groups = {
+						grenade = 1,
+						fleshy = def.explode_damage
+							- ((radius / 3) * (target_head and headdist or footdist)),
+					}
+                    if def.damage_group then
+						damage_groups[def.damage_group] = 1
+					end
+
 					v:punch(player, 1, {
 						punch_interval = 1,
-						damage_groups = {
-							grenade = 1,
-							fleshy = def.explode_damage
-								- ((radius / 3) * (target_head and headdist or footdist)),
-						},
+						damage_groups = damage_groups,
 					}, nil)
 				end
 			end

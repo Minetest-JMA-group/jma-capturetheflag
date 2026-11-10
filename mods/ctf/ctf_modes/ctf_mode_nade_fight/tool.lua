@@ -31,6 +31,7 @@ end
 local fragdef_small = table.copy(core.registered_craftitems["grenades:frag"].grenade)
 fragdef_small.description = S("Firecracker (Hurts anyone near blast)")
 fragdef_small.image = "ctf_mode_nade_fight_firecracker_grenade.png"
+fragdef_small.damage_group = "firecracker_grenade"
 fragdef_small.explode_radius = 4
 fragdef_small.explode_damage = 16
 fragdef_small.clock = 1.7
