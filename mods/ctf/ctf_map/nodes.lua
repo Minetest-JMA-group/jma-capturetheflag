@@ -348,6 +348,11 @@ local chest_def = {
 		)
 	end,
 	on_metadata_inventory_take = function(pos, listname, index, stack, player)
+		if core.get_node(pos).name == "ctf_map:chest" then
+			core.swap_node(pos, { name = "ctf_map:chest_opened" })
+			core.get_meta(pos):set_string("infotext", chestv)
+		end
+
 		core.log(
 			"action",
 			string.format(
@@ -365,10 +370,6 @@ local chest_def = {
 				core.set_node(pos, { name = "air" })
 			end)
 		end
-	end,
-	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
-		core.swap_node(pos, { name = "ctf_map:chest_opened" })
-		core.get_meta(pos):set_string("infotext", chestv)
 	end,
 }
 
