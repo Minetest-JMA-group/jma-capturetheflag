@@ -5,7 +5,8 @@ local hud = mhud.init()
 local KILLSTAT_REMOVAL_TIME = 30
 
 local MAX_NAME_LENGTH = 19
-local HUD_LINES = 6
+local HUD_LINES = 10
+local HISTORY_SIZE_DEFAULT = 6
 local HUD_LINE_HEIGHT = 36
 local HUDNAME_FORMAT = "kill_list:%d,%d"
 
@@ -107,7 +108,7 @@ function ctf_kill_list.apply_settings(player, update_hud)
 	local player_name = PlayerName(player)
 	local ps = {}
 	ps.history_size = tonumber(ctf_settings.get(player, "ctf_kill_list:history_size"))
-		or HUD_LINES
+		or HISTORY_SIZE_DEFAULT
 	ps.image_scale = tonumber(ctf_settings.get(player, "ctf_kill_list:tp_size")) or 2
 
 	player_settings[player_name] = ps

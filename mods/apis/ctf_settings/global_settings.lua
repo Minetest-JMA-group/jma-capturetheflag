@@ -12,7 +12,7 @@ ctf_settings.register("ctf_kill_list:tp_size", {
 ctf_settings.register("ctf_kill_list:history_size", {
 	type = "list",
 	description = "Kill list history size",
-	list = {"1", "2", "3", "4", "5", "6"},
+	list = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
 	default = "6",
 	on_change = function(player)
 		ctf_kill_list.apply_settings(player, true)
