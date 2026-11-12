@@ -19,9 +19,19 @@ core.override_chatcommand("clearinv", {
 	privs = { server = true },
 })
 
+local allowed_abms = {
+	["Lava cooling"] = true
+}
+
 core.register_on_mods_loaded(function()
-	-- Remove ALL ABMs
-	core.registered_abms = {}
+	-- Remove unnecessary ABMs
+	local abms = core.registered_abms
+	for i = #abms, 1, -1 do
+		local abm = abms[i]
+		if not allowed_abms[abm.label] then
+			table.remove(abms, i)
+		end
+	end
 
 	-- Unset falling group for all nodes
 	for name, def in pairs(core.registered_nodes) do
