@@ -108,7 +108,11 @@ local function award_return_score(pname, stack, pos, player)
 		end
 
 		cur_mode.recent_rankings.add(pname, { score = score }, true)
-		cmsg.push_message_player(player, "+ " .. score .. ": " .. item_desc)
+		hud_events.new(player, {
+			text = "+ " .. score .. ": " .. item_desc,
+			scroll = true,
+			color = "success"
+		})
 	end
 end
 

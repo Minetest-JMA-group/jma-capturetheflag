@@ -144,7 +144,11 @@ sfinv.register_page(page_name, {
 				cooldowns[name] = now
 				return true, true
 			else
-				cmsg.push_message_player(player, "Please wait " .. (cooldown - (now - last_refresh)) .. " seconds before refreshing.")
+				hud_events.new(player, {
+					text = "Please wait " .. (cooldown - (now - last_refresh)) .. " seconds before refreshing.",
+					scroll = true,
+					color = "warning"
+				})
 			end
 		elseif fields.show_info_page then
 			context.leagues_info_page = true

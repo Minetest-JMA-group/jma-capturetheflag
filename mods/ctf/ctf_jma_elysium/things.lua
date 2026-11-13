@@ -24,10 +24,11 @@ local function make_pvp_switch(pvp_on)
 			end
 
 			itemstack:set_name("ctf_jma_elysium:pvp_" .. (new_mode and "on" or "off"))
-			cmsg.push_message_player(
-				user,
-				S("PVP Mode @1", (new_mode and S("ON") or S("OFF")))
-			)
+			hud_events.new(user, {
+				text = S("PVP Mode @1", (new_mode and S("ON") or S("OFF"))),
+				color = new_mode and "danger" or "info",
+				quick = true
+			})
 			return itemstack
 		end,
 		on_drop = function() end,
