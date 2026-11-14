@@ -116,13 +116,19 @@ local function get_player_score(pname)
     end
     return 0
 end
-local function select_anchor_for_team(team)
+
+local function can_attach_to(observer, target)
+    local observers = target:get_effective_observers()
+    return observers == nil or observers[observer:get_player_name()] == true
+end
+
+local function select_anchor_for_team(team, observer)
     local alive = state.alive_players[team]
     if not alive then return nil end
     local best, best_score = nil, -math.huge
     for pname in pairs(alive) do
         local obj = core.get_player_by_name(pname)
-        if obj and obj:get_hp() > 0 then
+        if obj and obj:get_hp() > 0 and can_attach_to(observer, obj) then
             local sc = get_player_score(pname)
             if sc > best_score then best_score, best = sc, pname end
         end
@@ -197,7 +203,7 @@ function spectator.make_spectator(player)
     apply_vanish(player)
     spectator_set_inv(player)  -- Fixed typo
     -- attach to "best" teammate
-    local best = select_anchor_for_team(team)
+    local best = select_anchor_for_team(team, player)
     if best then
         local target = core.get_player_by_name(best)
         if target then
@@ -211,7 +217,7 @@ function spectator.make_spectator(player)
     else
         hud_events.new(pname, {
             quick = true,
-            text = "No teammate found!",
+            text = "No teammate you can spectate right now.",
             color = "warning",
         })
     end
@@ -312,44 +318,31 @@ function spectator.reassign_team_spectators(team)
 
     if #team_spectators == 0 then return end
 
-    -- Find a new anchor (alive player in the same team)
-    local new_anchor = select_anchor_for_team(team)
-
-    if not new_anchor then
-        -- No more teammates to spectate - spectators should be left alone
-        -- They'll stay in their current position or be cleaned up when match ends
-        for _, pname in ipairs(team_spectators) do
-            local player = core.get_player_by_name(pname)
-            if player then
-                player:set_detach()
-                hud_events.new(pname, {
-                    quick = true,
-                    text = "No more teammates to spectate.",
-                    color = "warning",
-                })
-            end
-        end
-        return
-    end
-
-    -- Reattach all spectators to the new anchor
-    local target = core.get_player_by_name(new_anchor)
-    if not target then return end
-
+    -- Choose an anchor each spectator is allowed to observe.
     for _, pname in ipairs(team_spectators) do
         local player = core.get_player_by_name(pname)
         if player then
+            local new_anchor = select_anchor_for_team(team, player)
+            local target = new_anchor and core.get_player_by_name(new_anchor)
             player:set_detach()
-            player:set_attach(target, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
-            player:set_pos(target:get_pos())
-            if player.set_camera then
-                player:set_camera({mode = "third"})
+            if target then
+                player:set_attach(target, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
+                player:set_pos(target:get_pos())
+                if player.set_camera then
+                    player:set_camera({mode = "third"})
+                end
+                hud_events.new(pname, {
+                    quick = true,
+                    text = "Reassigned to spectate " .. new_anchor,
+                    color = "info",
+                })
+            else
+                hud_events.new(pname, {
+                    quick = true,
+                    text = "No teammate you can spectate right now.",
+                    color = "warning",
+                })
             end
-            hud_events.new(pname, {
-                quick = true,
-                text = "Reassigned to spectate " .. new_anchor,
-                color = "info",
-            })
         end
     end
 end

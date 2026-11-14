@@ -28,6 +28,11 @@ local function get_player_score(pname)
 	return (all_players[pname] and all_players[pname].score) or 0
 end
 
+local function can_observe_target(observer, target)
+	local observers = target:get_effective_observers()
+	return observers == nil or observers[observer:get_player_name()] == true
+end
+
 local function get_spectator_old_team(player_obj)
 	local meta = player_obj:get_meta()
 	return meta:get_string("spectators_old_team") or ""
@@ -168,6 +173,16 @@ local function on_teleport_item_use(itemstack, user)
 		end
 	end
 
+	if not can_observe_target(user, target_player) then
+		hud_events.new(pname, {
+			quick = true,
+			text = S("You cannot spectate @1", target_name),
+			color = "warning",
+		})
+		data.index = data.index % #sorted_teammates + 1
+		return itemstack
+	end
+
 	--  Attach / teleport the user
 	user:set_detach()
 	user:set_attach(target_player, "", {x = 0, y = 0, z = 0},
@@ -232,6 +247,10 @@ core.register_chatcommand("spectate", {
 		end
 
 		local spectator = core.get_player_by_name(name)
+		if not can_observe_target(spectator, target) then
+			return false, S("You cannot spectate @1", target_name)
+		end
+
 		spectator:set_detach()
 		spectator:set_attach(target, "", {x=0, y=1.5, z=0}, {x=0, y=0, z=0})
 		spectator:set_pos(target:get_pos())
