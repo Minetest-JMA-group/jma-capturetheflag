@@ -178,7 +178,13 @@ function ctf_modebase.remove_respawn_immunity(player)
 	return true
 end
 
-ctf_teams.register_on_allocplayer(function(player)
+ctf_teams.register_on_allocplayer(function(
+	player,
+	new_team,
+	old_team,
+	force,
+	team_unchanged
+)
 	ctf_modebase.give_immunity(player, RESPAWN_IMMUNITY_SECONDS)
 end)
 

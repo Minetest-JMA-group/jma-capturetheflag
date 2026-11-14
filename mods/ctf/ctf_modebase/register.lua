@@ -87,12 +87,18 @@ core.register_on_dieplayer(function(...)
 	current_mode.on_dieplayer(...)
 end)
 
-ctf_teams.register_on_allocplayer(function(...)
+ctf_teams.register_on_allocplayer(function(
+	player,
+	new_team,
+	old_team,
+	force,
+	team_unchanged
+)
 	local current_mode = ctf_modebase:get_current_mode()
 	if not current_mode then
 		return
 	end
-	current_mode.on_allocplayer(...)
+	current_mode.on_allocplayer(player, new_team, old_team, force, team_unchanged)
 end)
 
 local function punch_sound(player)

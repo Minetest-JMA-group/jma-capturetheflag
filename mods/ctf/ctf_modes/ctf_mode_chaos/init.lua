@@ -121,8 +121,14 @@ ctf_modebase.register_mode("chaos", {
 		return features.on_match_end()
 	end,
 	team_allocator = features.team_allocator,
-	on_allocplayer = function(player, new_team)
-		local result = features.on_allocplayer(player, new_team)
+	on_allocplayer = function(player, new_team, old_team, force, team_unchanged)
+		local result = features.on_allocplayer(
+			player,
+			new_team,
+			old_team,
+			force,
+			team_unchanged
+		)
 		ctf_mode_chaos.update_hud(player)
 		player:set_properties({ hp_max = 30 })
 		player:set_hp(30)

@@ -1,4 +1,4 @@
---- @alias TeamsOnAllocCallback fun(player: PlayerRef, team: Team, force: boolean, old_team: Team?)
+--- @alias TeamsOnAllocCallback fun(player: PlayerRef, team: Team, old_team: Team?, force: boolean?, team_unchanged: boolean)
 --- @alias TeamsOnRemoveOnlinePlayerCallback fun(player: PlayerRef, team: Team?)
 
 --- @type TeamsOnAllocCallback[]

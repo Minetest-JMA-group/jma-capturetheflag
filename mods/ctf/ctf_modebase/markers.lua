@@ -164,7 +164,13 @@ function ctf_modebase.markers.add(pname, msg, pos, no_notify, specific_player)
 	end
 end
 
-ctf_teams.register_on_allocplayer(function(player, new_team, old_team)
+ctf_teams.register_on_allocplayer(function(
+	player,
+	new_team,
+	old_team,
+	force,
+	team_unchanged
+)
 	local pname = player:get_player_name()
 
 	if old_team and old_team ~= new_team then

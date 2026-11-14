@@ -115,7 +115,15 @@ local function on_player_join_game(player)
 end
 
 core.register_on_joinplayer(on_player_join_game)
-ctf_teams.register_on_allocplayer(on_player_join_game)
+ctf_teams.register_on_allocplayer(function(
+	player,
+	new_team,
+	old_team,
+	force,
+	team_unchanged
+)
+	on_player_join_game(player)
+end)
 
 --- @param pname PlayerName
 --- @return number

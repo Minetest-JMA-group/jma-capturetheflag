@@ -59,7 +59,9 @@ function ctf_teams.set_player_team(player, new_team, force)
 		ctf_teams.registered_on_allocplayer,
 		PlayerObj(player),
 		new_team,
-		old_team
+		old_team,
+		force,
+		old_team == new_team
 	)
 end
 
@@ -132,15 +134,21 @@ ctf_teams.team_allocator = ctf_teams.default_team_allocator
 function ctf_teams.allocate_player(player, force)
 	local player_ref = PlayerObj(player)
 	player = PlayerName(player)
+	local old_team = ctf_teams.get(player)
 	--- @type Team?
 	local team = ctf_teams.team_allocator(player)
 
 	ctf_teams.set(player, team, force)
 
-	if team then
-		for _, callback in ipairs(ctf_teams.registered_on_allocplayer) do
-			callback(player_ref, team, force or false, nil)
-		end
+	if team and old_team == team and not force then
+		RunCallbacks(
+			ctf_teams.registered_on_allocplayer,
+			player_ref,
+			team,
+			old_team,
+			false,
+			true
+		)
 	end
 
 	return team

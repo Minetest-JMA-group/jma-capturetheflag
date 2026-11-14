@@ -1756,7 +1756,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		end,
 		--- @param player ObjectRef
 		--- @param new_team Team
-		on_allocplayer = function(player, new_team)
+		--- @param old_team Team?
+		--- @param force boolean?
+		--- @param team_unchanged boolean
+		on_allocplayer = function(player, new_team, old_team, force, team_unchanged)
 			ctf_combat_mode.clear_lethal_hit(player)
 			player:set_hp(player:get_properties().hp_max)
 

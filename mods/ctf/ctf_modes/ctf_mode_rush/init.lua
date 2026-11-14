@@ -69,7 +69,6 @@ local function announce_team_defeat(team)
 	local message =
 		core.colorize(color, HumanReadable(team) .. " base has been defeated!")
 	core.chat_send_all(message)
-
 	update_flag_huds()
 end
 
@@ -500,24 +499,24 @@ ctf_modebase.register_mode("rush", {
 		end
 		return features.team_allocator(player)
 	end,
-	on_allocplayer = function(player, new_team, old_team)
+	on_allocplayer = function(player, new_team, old_team, force, team_unchanged)
 		local pname = player and player:get_player_name()
 		if not pname or is_elysium_player(pname) then
 			return
 		end
 		state.participants[pname] = true
-
 		-- If old_team is nil (e.g., player leaving elysium), find and remove from any team
 		if not old_team then
 			for team, players in pairs(state.alive_players) do
 				if players[pname] then
 					old_team = team
+					team_unchanged = old_team == new_team
 					break
 				end
 			end
 		end
 
-		if old_team and state.alive_players[old_team] then
+		if old_team and not team_unchanged and state.alive_players[old_team] then
 			state.alive_players[old_team][pname] = nil
 
 			if
@@ -561,7 +560,7 @@ ctf_modebase.register_mode("rush", {
 		spectator.reassign_team_spectators(new_team)
 		timer.update_round_huds()
 
-		features.on_allocplayer(player, new_team)
+		features.on_allocplayer(player, new_team, old_team, force, team_unchanged)
 	end,
 	on_leaveplayer = function(player)
 		local pname = player and player:get_player_name()

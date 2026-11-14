@@ -311,7 +311,13 @@ ctf_api.register_on_match_end(function()
 	ctf_modebase.player_on_flag_attempt_streak = {}
 end)
 
-ctf_teams.register_on_allocplayer(function(player, new_team, old_team)
+ctf_teams.register_on_allocplayer(function(
+	player,
+	new_team,
+	old_team,
+	force,
+	team_unchanged
+)
 	if ctf_modebase.taken_flags[player:get_player_name()] then
 		drop_flags(player, old_team)
 	else

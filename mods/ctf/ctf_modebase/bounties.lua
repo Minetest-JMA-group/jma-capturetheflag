@@ -97,7 +97,13 @@ end
 
 -- Whenever players change team, e.g. in many team maps or on rejoin
 -- this has to be called
-ctf_teams.register_on_allocplayer(function()
+ctf_teams.register_on_allocplayer(function(
+	player,
+	new_team,
+	old_team,
+	force,
+	team_unchanged
+)
 	local cur_mode = ctf_modebase:get_current_mode()
 	if not cur_mode then
 		return
@@ -426,9 +432,11 @@ end
 ctf_teams.register_on_allocplayer(
 	--- @param player table
 	--- @param new_team string
-	--- @param old_team string
+	--- @param old_team string?
+	--- @param force boolean?
+	--- @param team_unchanged boolean
 	--- @return nil
-	function(player, new_team, old_team)
+	function(player, new_team, old_team, force, team_unchanged)
 		local pname = player:get_player_name()
 
 		if

@@ -261,9 +261,9 @@ ctf_modebase.register_mode("classes", {
 	on_match_end = features.on_match_end,
 	team_allocator = features.team_allocator,
 	get_item_value = features.get_item_value,
-	on_allocplayer = function(player, new_team)
+	on_allocplayer = function(player, new_team, old_team, force, team_unchanged)
 		classes.update(player)
-		features.on_allocplayer(player, new_team)
+		features.on_allocplayer(player, new_team, old_team, force, team_unchanged)
 	end,
 	on_leaveplayer = features.on_leaveplayer,
 	on_dieplayer = features.on_dieplayer,
