@@ -218,7 +218,7 @@ function ctf_modebase.values.calculate_capture_coins(
 	ratios = ratios / thief_val
 
 	--- @type integer
-	local cap_coins = math.ceil(128 * math.log(ratios * loser_team_members, 32))
+	local cap_coins = math.ceil(128 * math.log(ratios, 32) * loser_team_members)
 
 	core.debug("CapCoin Calculate")
 	if cap_coins >= 1000000 then
