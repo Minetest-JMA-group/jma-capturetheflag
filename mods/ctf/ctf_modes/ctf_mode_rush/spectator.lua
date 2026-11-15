@@ -137,11 +137,75 @@ local function select_anchor_for_team(team, observer)
 end
 
 -- Vanish handling
+local function remove_attached(player, name)
+    playertag.no_entity_attach[name] = true
+    hpbar.no_entity_attach[name] = true
+    server_cosmetics.no_entity_attach[name] = true
+    wield3d.no_entity_attach[name] = true
+
+    playertag.remove_entity_tag(player)
+    hpbar.remove_entity(name)
+    server_cosmetics.remove_entity_cosmetics(player)
+    wield3d.remove_wielditem(player)
+end
+
+local function restore_attached(player, name)
+    playertag.no_entity_attach[name] = false
+    hpbar.no_entity_attach[name] = false
+    server_cosmetics.no_entity_attach[name] = false
+    wield3d.no_entity_attach[name] = false
+
+    playertag.set(player, playertag.TYPE_ENTITY)
+    hpbar.update_entity(player)
+    server_cosmetics.update_entity_cosmetics(player,
+        ctf_cosmetics.get_extra_clothing(player))
+    wield3d.add_wielditem(player)
+end
+
+local function vanish(player)
+    local player_name = player:get_player_name()
+
+    remove_attached(player, player_name)
+    player:set_hp(5000)
+    local armor_groups = player:get_armor_groups()
+    armor_groups.immortal = 1
+    player:set_armor_groups(armor_groups)
+    player:set_properties({
+        visual_size = { x = 0, y = 0 },
+        selectionbox = { 0, 0, 0, 0, 0, 0 },
+        is_visible = false,
+        pointable = false,
+        makes_footstep_sound = false,
+        show_on_minimap = false,
+    })
+
+    player:set_nametag_attributes({
+        text = " ",
+        color = { r = 0, g = 0, b = 0, a = 0 },
+    })
+end
+
+local function unvanish(player)
+    local player_name = player:get_player_name()
+
+    restore_attached(player, player_name)
+    player:set_properties({
+        -- visual_size = { x = 1, y = 1 },
+        -- selectionbox = { 0, 0, 0, 0, 0, 0 },
+        is_visible = true,
+        pointable = true,
+        makes_footstep_sound = true,
+        show_on_minimap = true,
+    })
+
+    player_api.set_model(player, "character.b3d", true)
+end
+
 function spectator.disable_vanish(player)
     ensure_state()
     local name = player:get_player_name()
     if state.vanish_active[name] then
-        vanish.off(player)
+        unvanish(player)
         player:set_detach()
     end
     state.vanish_active[name] = nil
@@ -149,7 +213,7 @@ end
 local function apply_vanish(player)
     local name = player:get_player_name()
     if state.vanish_active[name] then return end
-    vanish.on(player, { pointable = false, is_visible = false })
+    vanish(player)
     state.vanish_active[name] = true
 end
 
@@ -200,6 +264,7 @@ function spectator.make_spectator(player)
     privs.noclip = true
     core.set_player_privs(pname, privs)
     remove_player_from_team(pname)
+    player:set_detach()
     apply_vanish(player)
     spectator_set_inv(player)  -- Fixed typo
     -- attach to "best" teammate
@@ -207,7 +272,6 @@ function spectator.make_spectator(player)
     if best then
         local target = core.get_player_by_name(best)
         if target then
-            player:set_detach()
             player:set_attach(target, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
             player:set_pos(target:get_pos())
             if player.set_camera then

@@ -22,6 +22,10 @@ playertag = {
 local codepoint = utf8_simple.codepoint
 local function add_entity_tag(player, old_observers, readded)
 	local player_name = player:get_player_name()
+	if playertag.no_entity_attach[player_name] then
+		return
+	end
+
 	-- Hide fixed nametag
 	player:set_nametag_attributes({
 		color = { a = 0, r = 0, g = 0, b = 0 },
@@ -126,20 +130,18 @@ end
 
 function playertag.remove_entity_tag(player)
 	local tag = players[player:get_player_name()]
-	if tag and tag.entity then
-		tag.entity.object:remove()
+	if not tag then return end
 
-		if tag.nametag_entity then
-			tag.nametag_entity.object:remove()
+	for _, field in ipairs({"entity", "nametag_entity", "symbol_entity"}) do
+		if tag[field] then
+			tag[field].object:remove()
+			tag[field] = nil
 		end
+	end
 
-		if tag.symbol_entity then
-			tag.symbol_entity.object:remove()
-		end
-
-		if tag.timer then
-			tag.timer:cancel()
-		end
+	if tag.timer then
+		tag.timer:cancel()
+		tag.timer = nil
 	end
 end
 

@@ -62,9 +62,9 @@ function player_api.get_animation(player)
 end
 
 -- Called when a player's appearance needs to be updated
-function player_api.set_model(player, model_name)
+function player_api.set_model(player, model_name, force)
 	local player_data = get_player_data(player)
-	if player_data.model == model_name then
+	if player_data.model == model_name and not force then
 		return
 	end
 	-- Update data

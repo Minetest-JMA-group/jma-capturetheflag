@@ -269,6 +269,7 @@ function server_cosmetics.update_entity_cosmetics(player, current)
 	if not player then return end
 
 	local pname = player:get_player_name()
+	if server_cosmetics.no_entity_attach[pname] then return end
 
 	local hatname = false
 	for key in pairs(current) do
@@ -297,15 +298,22 @@ function server_cosmetics.update_entity_cosmetics(player, current)
 	end
 end
 
-local old_set_extra_clothing = ctf_cosmetics.set_extra_clothing
-function ctf_cosmetics.set_extra_clothing(player, ...)
-	local ret = old_set_extra_clothing(player, ...)
+function server_cosmetics.remove_entity_cosmetics(player)
+	player = PlayerObj(player)
+	if not player then return end
 
 	local pname = player:get_player_name()
 	if hatted[pname] then
 		hatted[pname]:remove()
 		hatted[pname] = nil
 	end
+end
+
+local old_set_extra_clothing = ctf_cosmetics.set_extra_clothing
+function ctf_cosmetics.set_extra_clothing(player, ...)
+	local ret = old_set_extra_clothing(player, ...)
+
+	server_cosmetics.remove_entity_cosmetics(player)
 
 	server_cosmetics.update_entity_cosmetics(player, ctf_cosmetics.get_extra_clothing(player))
 

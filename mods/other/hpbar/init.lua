@@ -103,19 +103,33 @@ local function update_entity(player, new_icon_texture)
 
 	if prop.textures[1] ~= health_t or new_icon_texture then
 		if players[pname].icon and players[pname].icon ~= "" then
-			players[pname].entity:set_properties({textures = {
-				"[combine:58x16:-2,0="..health_t..":0,3="..players[pname].icon
-			}})
+			players[pname].entity:set_properties({
+				textures = {
+					"[combine:58x16:-2,0=" .. health_t .. ":0,3=" .. players[pname].icon
+				}
+			})
 		else
-			players[pname].entity:set_properties({textures = {
-				"[combine:58x16:-8,0="..health_t
-			}})
+			players[pname].entity:set_properties({
+			textures = {
+					"[combine:58x16:-8,0=" .. health_t
+				}
+			})
 		end
 	end
 end
 
+hpbar.update_entity = update_entity
+
 function hpbar.set_icon(player, texture)
 	update_entity(PlayerObj(player), texture)
+end
+
+function hpbar.remove_entity(pname)
+	local entry = players[pname]
+	if entry and entry.entity then
+		entry.entity:remove()
+		entry.entity = nil
+	end
 end
 
 ---@diagnostic disable-next-line: undefined-field
