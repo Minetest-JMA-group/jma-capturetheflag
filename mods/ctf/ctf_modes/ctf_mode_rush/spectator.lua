@@ -166,7 +166,6 @@ local function vanish(player)
     local player_name = player:get_player_name()
 
     remove_attached(player, player_name)
-    player:set_hp(5000)
     local armor_groups = player:get_armor_groups()
     armor_groups.immortal = 1
     player:set_armor_groups(armor_groups)
@@ -189,6 +188,9 @@ local function unvanish(player)
     local player_name = player:get_player_name()
 
     restore_attached(player, player_name)
+    local armor_groups = player:get_armor_groups()
+    armor_groups.immortal = 0
+    player:set_armor_groups(armor_groups)
     player:set_properties({
         -- visual_size = { x = 1, y = 1 },
         -- selectionbox = { 0, 0, 0, 0, 0, 0 },
@@ -196,6 +198,10 @@ local function unvanish(player)
         pointable = true,
         makes_footstep_sound = true,
         show_on_minimap = true,
+    })
+
+    player:set_nametag_attributes({
+        text = player_name,
     })
 
     player_api.set_model(player, "character.b3d", true)
