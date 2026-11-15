@@ -117,18 +117,13 @@ local function get_player_score(pname)
     return 0
 end
 
-local function can_attach_to(observer, target)
-    local observers = target:get_effective_observers()
-    return observers == nil or observers[observer:get_player_name()] == true
-end
-
-local function select_anchor_for_team(team, observer)
+local function select_anchor_for_team(team)
     local alive = state.alive_players[team]
     if not alive then return nil end
     local best, best_score = nil, -math.huge
     for pname in pairs(alive) do
         local obj = core.get_player_by_name(pname)
-        if obj and obj:get_hp() > 0 and can_attach_to(observer, obj) then
+        if obj and obj:get_hp() > 0 then
             local sc = get_player_score(pname)
             if sc > best_score then best_score, best = sc, pname end
         end
@@ -274,7 +269,7 @@ function spectator.make_spectator(player)
     apply_vanish(player)
     spectator_set_inv(player)  -- Fixed typo
     -- attach to "best" teammate
-    local best = select_anchor_for_team(team, player)
+    local best = select_anchor_for_team(team)
     if best then
         local target = core.get_player_by_name(best)
         if target then
@@ -388,11 +383,11 @@ function spectator.reassign_team_spectators(team)
 
     if #team_spectators == 0 then return end
 
-    -- Choose an anchor each spectator is allowed to observe.
+    -- Choose an anchor for each spectator.
     for _, pname in ipairs(team_spectators) do
         local player = core.get_player_by_name(pname)
         if player then
-            local new_anchor = select_anchor_for_team(team, player)
+            local new_anchor = select_anchor_for_team(team)
             local target = new_anchor and core.get_player_by_name(new_anchor)
             player:set_detach()
             if target then
