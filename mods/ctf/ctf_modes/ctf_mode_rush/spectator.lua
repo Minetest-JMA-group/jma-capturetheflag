@@ -1,29 +1,36 @@
 local spectator = {}
 
 -- Constants & storage
-local RUSH_SPEC_KEY = "ctf_mode_rush:spectator_state"
-local storage = core.get_mod_storage()
+-- The spectator state lives in player metadata. The old modstorage key is only
+-- read on join, to restore privileges saved before the metadata migration.
+local LEGACY_SPEC_KEY = "ctf_mode_rush:spectator_state"
+local legacy_storage = core.get_mod_storage()
+local SPECTATOR_META_KEY = "ctf_mode_rush:is_spectator"
+local SPECTATOR_STATE_META_KEY = "ctf_mode_rush:spectator_state"
 local SPECTATOR_INFO_FORMNAME = "ctf_mode_rush:spectator_info"
 local SPECTATOR_INFO_META_KEY = "ctf_mode_rush:hide_spectator_info"
 local SPECTATOR_INFO_CHECKBOX = "ctf_mode_rush_spectator_hide"
-local function storage_key(name)
-	if type(name) ~= "string" or name == "" then return end
-	return RUSH_SPEC_KEY .. ":" .. name
-end
-local SPECTATOR_CHAT_COLOR = "#8f7bb9"
+
+-- Privileges are only ever touched through these helpers. Only the managed
+-- privileges are snapshotted, modified and restored; everything else is left
+-- alone.
+local SPECTATOR_PRIVS = {
+	fly = true,
+	noclip = true,
+}
+-- Privileges back to these values when no snapshot is available
+local DEFAULT_PRIVS = {
+	fly = false,
+	noclip = false,
+}
+-- Spectators only need the teleport item, so the hotbar is shrunk to one slot
+local SPECTATOR_HOTBAR_SIZE = 1
+local DEFAULT_HOTBAR_SIZE = 8
 -- Runtime variables (filled by spectator.setup)
 local state
 local timer
 local rankings
 local recent_rankings
-local function ensure_state()
-	if not state then error("spectator not initialised") end
-end
-local function safe_deserialize(data)
-	if data == "" then return end
-	local ok, val = pcall(core.deserialize, data)
-	if ok then return val end
-end
 
 -- Forms & UI helpers
 local function build_spectator_info_formspec(checked)
@@ -81,27 +88,64 @@ ctf_core.register_on_formspec_input("^" .. SPECTATOR_INFO_FORMNAME .. "$",
 	end)
 
 -- Spectator state
-function spectator.get_spectator_state(name)
-	local key = storage_key(name)
-	if not key then return end
-	local raw = storage:get_string(key)
+function spectator.get_spectator_state(player)
+	local raw = player:get_meta():get_string(SPECTATOR_STATE_META_KEY)
 	if raw == "" then return end
-	local parsed = safe_deserialize(raw)
-	if type(parsed) ~= "table" then return end
-	parsed.privs = type(parsed.privs) == "table" and parsed.privs or {}
-	parsed.team = type(parsed.team) == "string" and parsed.team ~= "" and parsed.team or nil
-	return parsed
+	return core.deserialize(raw)
 end
-function spectator.set_spectator_state(name, data)
-	local key = storage_key(name)
-	if not key then return end
-	if not data or (not data.match and (not data.privs or next(data.privs) == nil)) then
-		storage:set_string(key, "")
+function spectator.set_spectator_state(player, data)
+	local meta = player:get_meta()
+	if not data then
+		meta:set_string(SPECTATOR_STATE_META_KEY, "")
 		return
 	end
-	local payload = { match = data.match, privs = data.privs }
-	if type(data.team) == "string" and data.team ~= "" then payload.team = data.team end
-	storage:set_string(key, core.serialize(payload))
+	meta:set_string(SPECTATOR_STATE_META_KEY, core.serialize(data))
+end
+local function set_spectator_flag(player, enabled)
+	player:get_meta():set_int(SPECTATOR_META_KEY, enabled and 1 or 0)
+end
+local function has_spectator_flag(player)
+	return player:get_meta():get_int(SPECTATOR_META_KEY) == 1
+end
+
+-- Privilege management
+local function log_priv_state(name, context)
+	core.log("action", string.format(
+		"[ctf_mode_rush] %s: privs of %s: %s",
+		context,
+		name,
+		core.privs_to_string(core.get_player_privs(name), ", ")
+	))
+end
+-- Returns the managed privileges that differ from `target`, together with the
+-- original values. `snapshot[priv] = true` means "the player had the priv",
+-- `false` means "the player did not have it".
+local function collect_priv_changes(privs, target)
+	local changes, snapshot = {}, {}
+	for priv, value in pairs(target) do
+		local current = privs[priv] == true
+		if current ~= value then
+			changes[priv] = value
+			snapshot[priv] = current
+		end
+	end
+	return changes, snapshot
+end
+-- Applies `values` on top of the current privileges. Only keys present in
+-- `values` are touched, so unmanaged privileges are preserved.
+local function apply_priv_changes(name, values, context)
+	if next(values) == nil then return end
+
+	log_priv_state(name, context)
+	local privs = core.get_player_privs(name)
+	for priv, value in pairs(values) do
+		if value then
+			privs[priv] = true
+		else
+			privs[priv] = nil
+		end
+	end
+	core.set_player_privs(name, privs)
 end
 
 -- Helper utilities
@@ -203,8 +247,8 @@ local function unvanish(player)
 end
 
 function spectator.disable_vanish(player)
-	ensure_state()
 	local name = player:get_player_name()
+	player:hud_set_hotbar_itemcount(DEFAULT_HOTBAR_SIZE)
 	if state.vanish_active[name] then
 		unvanish(player)
 		player:set_detach()
@@ -223,27 +267,26 @@ local function remove_player_from_team(name)
 	ctf_teams.remove_online_player(name)
 	ctf_teams.player_team[name] = nil
 end
-function spectator.restore_privs(name)
-	ensure_state()
-	local privs = state.saved_privs[name]
-	if not privs then
-		local ss = spectator.get_spectator_state(name)
-		if ss then privs = ss.privs end
-	end
-	if not privs then privs = core.get_player_privs(name) end
-	core.set_player_privs(name, privs)
-	state.saved_privs[name] = nil
-	spectator.set_spectator_state(name, nil)
+function spectator.restore_privs(player)
+	local existing = spectator.get_spectator_state(player)
+	if not existing and not has_spectator_flag(player) then return end
+
+	local snapshot = existing and existing.privs or DEFAULT_PRIVS
+	apply_priv_changes(player:get_player_name(), snapshot, "spectator restore")
+
+	player:hud_set_hotbar_itemcount(DEFAULT_HOTBAR_SIZE)
+	set_spectator_flag(player, false)
+	spectator.set_spectator_state(player, nil)
 end
 local function spectator_set_inv(player)
 	local inv = player:get_inventory()
 	inv:set_list("main", {})
 	inv:add_item("main", { name = "spectator_teleport:item", count = 1 })
+	player:hud_set_hotbar_itemcount(SPECTATOR_HOTBAR_SIZE)
 end
 
 -- Core spectator creation
 function spectator.make_spectator(player)
-	ensure_state()
 	local pname = player:get_player_name()
 	local team = state.initial_team[pname]
 	-- remove from alive players list
@@ -252,18 +295,21 @@ function spectator.make_spectator(player)
 	end
 	timer.update_round_huds()
 	state.eliminated[pname] = true
-	-- store original privs once
-	if not state.saved_privs[pname] then
-		state.saved_privs[pname] = core.get_player_privs(pname)
+	-- snapshot only the managed privileges that actually change
+	local existing = spectator.get_spectator_state(player)
+	local privs = core.get_player_privs(pname)
+	local changes, snapshot = collect_priv_changes(privs, SPECTATOR_PRIVS)
+	-- keep the original snapshot when the spectator state already exists
+	if existing and existing.privs then
+		snapshot = existing.privs
 	end
-	-- give spectator privs
-
-	local privs = table.copy(state.saved_privs[pname])
-	privs.interact = true
-	privs.fast = nil
-	privs.fly = true
-	privs.noclip = true
-	core.set_player_privs(pname, privs)
+	spectator.set_spectator_state(player, {
+		match = state.match_id,
+		privs = snapshot,
+		team = state.initial_team[pname],
+	})
+	set_spectator_flag(player, true)
+	apply_priv_changes(pname, changes, "spectator enter")
 	remove_player_from_team(pname)
 	player:set_detach()
 	apply_vanish(player)
@@ -288,41 +334,40 @@ function spectator.make_spectator(player)
 	end
 	player:set_hp(20)
 	maybe_show_spectator_info(player)
-	-- persist state
-	spectator.set_spectator_state(pname, {
-		match = state.match_id,
-		privs = state.saved_privs[pname],
-		team = state.initial_team[pname],
-	})
 end
 function spectator.is_spectator(name)
-	ensure_state()
 	return state.eliminated[name] == true
 end
 function spectator.for_each_spectator(cb)
-	ensure_state()
 	for pname, elim in pairs(state.eliminated) do
 		if elim then cb(pname) end
 	end
 end
 
--- Re-join handling
-core.register_on_joinplayer(function(player)
-	local pname = player:get_player_name()
-	local ss = spectator.get_spectator_state(pname)
-	if ss and ss.match == state.match_id then
-		core.set_player_privs(pname, ss.privs or core.get_player_privs(pname))
-		if player.set_camera then
-			player:set_camera({mode = "any"})
-		end
-		spectator.make_spectator(player)
-		hud_events.new(pname, {
-			quick = true,
-			text = "Rejoined as spectator",
-			color = "info",
-		})
+-- Legacy modstorage compatibility: restores privileges saved by older
+-- versions, which kept the whole privilege table in modstorage.
+function spectator.restore_legacy_privs(player)
+	local meta = player:get_meta()
+	if meta:get_int(SPECTATOR_META_KEY) == 1 then return end
+	if meta:get_string(SPECTATOR_STATE_META_KEY) ~= "" then return end
+
+	local name = player:get_player_name()
+	local key = LEGACY_SPEC_KEY .. ":" .. name
+	local raw = legacy_storage:get_string(key)
+	if raw == "" then return end
+
+	legacy_storage:set_string(key, "")
+	local legacy = core.deserialize(raw)
+	if not legacy.privs then return end
+
+	-- The saved table is the original privilege set, so the value of each
+	-- managed privilege is taken from it and applied to the current set.
+	local values = {}
+	for priv in pairs(SPECTATOR_PRIVS) do
+		values[priv] = legacy.privs[priv] == true
 	end
-end)
+	apply_priv_changes(name, values, "spectator legacy restore")
+end
 
 -- Public API
 function spectator.setup(context)
@@ -334,7 +379,6 @@ end
 
 -- Detach spectators from anchor (when anchor leaves, e.g., joins elysium)
 local function find_spectators_attached_to(anchor_name)
-	ensure_state()
 	local spectators = {}
 	for pname, elim in pairs(state.eliminated) do
 		if elim then
@@ -356,7 +400,6 @@ end
 
 -- Detach all spectators from a specific anchor player
 function spectator.detach_spectators_from(anchor_name)
-	ensure_state()
 	local spectators = find_spectators_attached_to(anchor_name)
 	for _, pname in ipairs(spectators) do
 		local player = core.get_player_by_name(pname)
@@ -367,10 +410,7 @@ function spectator.detach_spectators_from(anchor_name)
 	return spectators
 end
 
-function spectator.on_globalstep(dtime) end
-
 function spectator.reassign_team_spectators(team)
-	ensure_state()
 	if not team or not state.alive_players[team] then return end
 
 	-- Find all spectators for this team

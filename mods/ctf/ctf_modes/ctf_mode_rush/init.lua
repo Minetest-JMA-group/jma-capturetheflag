@@ -20,7 +20,6 @@ local state = {
 	participants = {},
 	alive_players = {},
 	team_defeated = {},
-	saved_privs = {},
 	vanish_active = {},
 	winner_announced = false,
 	match_id = nil,
@@ -35,7 +34,6 @@ local function reset_state()
 	state.participants = {}
 	state.alive_players = {}
 	state.team_defeated = {}
-	state.saved_privs = {}
 	state.vanish_active = {}
 	state.winner_announced = false
 	state.match_id = nil
@@ -319,7 +317,7 @@ local function restore_all_players()
 	end
 	for _, player in ipairs(core.get_connected_players()) do
 		local name = player:get_player_name()
-		spectator.restore_privs(name)
+		spectator.restore_privs(player)
 		spectator.disable_vanish(player)
 		if state.initial_team[name] then
 			ctf_teams.non_team_players[name] = nil
@@ -327,7 +325,6 @@ local function restore_all_players()
 		state.eliminated[name] = nil
 		state.revives_left[name] = nil
 		timer.clear_round_hud(name)
-		spectator.set_spectator_state(name, nil)
 	end
 	state.match_id = nil
 
@@ -555,7 +552,7 @@ ctf_modebase.register_mode("rush", {
 		state.alive_players[new_team] = state.alive_players[new_team] or {}
 		state.alive_players[new_team][pname] = true
 
-		spectator.restore_privs(pname)
+		spectator.restore_privs(player)
 		spectator.disable_vanish(player)
 		spectator.reassign_team_spectators(new_team)
 		timer.update_round_huds()
@@ -760,14 +757,15 @@ end)
 
 core.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
+	spectator.restore_legacy_privs(player)
 	if is_elysium_player(name) then
-		spectator.restore_privs(name)
+		spectator.restore_privs(player)
 		spectator.disable_vanish(player)
 		state.eliminated[name] = nil
 		state.participants[name] = nil
 		return
 	end
-	local spec_state = spectator.get_spectator_state(name)
+	local spec_state = spectator.get_spectator_state(player)
 	if not spec_state or not spec_state.match then
 		return
 	end
@@ -776,16 +774,12 @@ core.register_on_joinplayer(function(player)
 		or not state.match_id
 		or spec_state.match ~= state.match_id
 	then
-		spectator.restore_privs(name)
+		spectator.restore_privs(player)
 		return
 	end
 
-	if type(spec_state.team) == "string" and spec_state.team ~= "" then
+	if spec_state.team then
 		state.initial_team[name] = spec_state.team
-	end
-
-	if spec_state.privs and not state.saved_privs[name] then
-		state.saved_privs[name] = spec_state.privs
 	end
 
 	state.participants[name] = true
