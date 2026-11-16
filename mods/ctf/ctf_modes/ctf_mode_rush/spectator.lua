@@ -139,16 +139,16 @@ local function remove_attached(player, name)
 	wield3d.no_entity_attach[name] = true
 
 	playertag.remove_entity_tag(player)
-	hpbar.remove_entity(name)
+	hpbar.remove_hpbar(name)
 	server_cosmetics.remove_entity_cosmetics(player)
 	wield3d.remove_wielditem(player)
 end
 
 local function restore_attached(player, name)
-	playertag.no_entity_attach[name] = false
-	hpbar.no_entity_attach[name] = false
-	server_cosmetics.no_entity_attach[name] = false
-	wield3d.no_entity_attach[name] = false
+	playertag.no_entity_attach[name] = nil
+	hpbar.no_entity_attach[name] = nil
+	server_cosmetics.no_entity_attach[name] = nil
+	wield3d.no_entity_attach[name] = nil
 
 	playertag.set(player, playertag.TYPE_ENTITY)
 	hpbar.update_entity(player)

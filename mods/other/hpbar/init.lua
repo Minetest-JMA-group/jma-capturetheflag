@@ -124,11 +124,15 @@ function hpbar.set_icon(player, texture)
 	update_entity(PlayerObj(player), texture)
 end
 
-function hpbar.remove_entity(pname)
+function hpbar.remove_hpbar(pname)
 	local entry = players[pname]
-	if entry and entry.entity then
-		entry.entity:remove()
-		entry.entity = nil
+	if entry then
+		if entry.entity then
+			entry.entity:remove()
+		end
+		players[pname] = nil
+
+		return true
 	end
 end
 
@@ -153,8 +157,5 @@ end)
 
 core.register_on_leaveplayer(function(player)
 	local pname = player:get_player_name()
-	if players[pname] ~= nil then
-		players[pname].entity:remove()
-		players[pname] = nil
-	end
+	hpbar.remove_hpbar(pname)
 end)
