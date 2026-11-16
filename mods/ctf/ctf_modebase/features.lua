@@ -530,7 +530,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		--- on how much they had presence in the match. The more presence
 		--- in the match the higher the influence.
 		--- -- Farooq fkz at riseup dot net
-		local player_val = ctf_modebase.values.get_player_value(pname, recent_ratio / 2)
+		local player_val_recent =
+			ctf_modebase.values.get_player_value(pname, recent_ratio)
+		local player_val_overall = ctf_modebase.values.get_player_value(pname, 0.0)
+		local player_val = player_val_recent + player_val_overall
 		local player_pvp_val = ctf_modebase.values.get_pvp_score(pname, 0.5)
 		player_pvp_val = math.max(player_pvp_val, 0.01) -- For new players
 		local killer_pvp_val = ctf_modebase.values.get_pvp_score(killer_name, 0.5)
@@ -685,7 +688,10 @@ ctf_modebase.features = function(rankings, recent_rankings)
 		{ "grenade", "grenades_frag.png" },
 
 		{ "damage_cobble", "ctf_map_damage_cobble.png" },
-		{ "damage_glass", "default_glass.png^[colorize:#B00000:180^default_glass_detail.png" },
+		{
+			"damage_glass",
+			"default_glass.png^[colorize:#B00000:180^default_glass_detail.png",
+		},
 		{ "landmine", "ctf_landmine_landmine.png" },
 		{ "spike", "ctf_map_spike.png" },
 	}
