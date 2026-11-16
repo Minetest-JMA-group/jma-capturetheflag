@@ -5,6 +5,7 @@ local old_bounty_reward_func = ctf_modebase.bounties.bounty_reward_func
 local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 
 local MAX_REVIVES = 1
+local LAST_SURVIVOR_MAX_HP = 40
 
 local modpath = core.get_modpath(core.get_current_modname())
 local timer = dofile(modpath .. "/timer.lua")
@@ -21,6 +22,8 @@ local state = {
 	alive_players = {},
 	team_defeated = {},
 	vanish_active = {},
+	last_survivor = {},
+	hp_modified = {},
 	winner_announced = false,
 	match_id = nil,
 	round_time_left = 0,
@@ -35,6 +38,8 @@ local function reset_state()
 	state.alive_players = {}
 	state.team_defeated = {}
 	state.vanish_active = {}
+	state.last_survivor = {}
+	state.hp_modified = {}
 	state.winner_announced = false
 	state.match_id = nil
 
@@ -104,6 +109,67 @@ local function get_alive_counts()
 		counts[team] = count
 	end
 	return counts
+end
+
+-- Returns the only living player of `team`, or nil when the count differs
+local function get_team_alive_survivor(team)
+	local alive = state.alive_players[team]
+	if not alive then return end
+
+	local survivor, count
+	for pname in pairs(alive) do
+		local p = core.get_player_by_name(pname)
+		if p and p:get_hp() > 0 and not is_elysium_player(pname) then
+			count = (count or 0) + 1
+			if count > 1 then return end
+			survivor = pname
+		end
+	end
+
+	return survivor
+end
+
+-- The last living player of a team gets a lower health pool and is notified
+local function announce_last_survivor(team)
+	if not team or state.team_defeated[team] then return end
+	if state.last_survivor[team] then return end
+
+	local pname = get_team_alive_survivor(team)
+	if not pname then return end
+
+	local player = core.get_player_by_name(pname)
+	if not player then return end
+
+	-- remember the original maximum so it can be restored after the match
+	if state.hp_modified[pname] == nil then
+		state.hp_modified[pname] = true
+	end
+	state.last_survivor[team] = pname
+
+	core.log("action", string.format(
+		"[ctf_mode_rush] match %s: %s is the last survivor of %s",
+		tostring(state.match_id), pname, team
+	))
+
+	player:set_properties({ hp_max = LAST_SURVIVOR_MAX_HP })
+	player:set_hp(LAST_SURVIVOR_MAX_HP)
+
+	hud_events.new(pname, {
+		text = string.format(
+			"You are the last %s survivor! Health set to %d.",
+			HumanReadable(team),
+			LAST_SURVIVOR_MAX_HP
+		),
+		color = "warning",
+	})
+
+	core.chat_send_all(core.colorize(
+		"orange",
+		string.format(
+			"%s is the last survivor of %s! Health set to %d.",
+			pname, HumanReadable(team), LAST_SURVIVOR_MAX_HP
+		)
+	))
 end
 
 timer.setup({
@@ -303,6 +369,15 @@ local function init_alive_players()
 	end
 end
 
+local function restore_player_max_hp(player)
+	local name = player:get_player_name()
+	local original = state.hp_modified[name]
+	if original == nil then return end
+
+	state.hp_modified[name] = nil
+	player:set_properties({ hp_max = 20 })
+end
+
 local function restore_all_players()
 	for name, _ in pairs(state.participants) do
 		if is_elysium_player(name) then
@@ -319,6 +394,7 @@ local function restore_all_players()
 		local name = player:get_player_name()
 		spectator.restore_privs(player)
 		spectator.disable_vanish(player)
+		restore_player_max_hp(player)
 		if state.initial_team[name] then
 			ctf_teams.non_team_players[name] = nil
 		end
@@ -515,6 +591,7 @@ ctf_modebase.register_mode("rush", {
 
 		if old_team and not team_unchanged and state.alive_players[old_team] then
 			state.alive_players[old_team][pname] = nil
+			announce_last_survivor(old_team)
 
 			if
 				not state.team_defeated[old_team]
@@ -588,6 +665,7 @@ ctf_modebase.register_mode("rush", {
 		timer.clear_round_hud(pname)
 
 		if team then
+			announce_last_survivor(team)
 			spectator.reassign_team_spectators(team)
 		end
 
@@ -631,6 +709,7 @@ ctf_modebase.register_mode("rush", {
 			state.eliminated[pname] = true
 			if team and state.alive_players[team] then
 				state.alive_players[team][pname] = nil
+				announce_last_survivor(team)
 				spectator.reassign_team_spectators(team)
 			end
 			hud_events.new(pname, {
