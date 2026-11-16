@@ -41,8 +41,8 @@ local function build_spectator_info_formspec(checked)
 		"<style name=body color=#ffffff size=14>",
 		"<tag name=title><center>Rush Spectator Mode</center>",
 		"<tag name=body>",
-		"- Observe teammates and their surroundings.\n",
-		"- Switch between teammates with the item.\n",
+		"- Observe any player of the match and their surroundings.\n",
+		"- Switch between players with the item.\n",
 		"- Warn teammates about enemies.\n",
 		"- Constant communication saves lives!",
 	}, "\n")
@@ -161,11 +161,10 @@ local function get_player_score(pname)
 	return 0
 end
 
-local function select_anchor_for_team(team)
-	local alive = state.alive_players[team]
-	if not alive then return nil end
+-- Picks the best living player out of a set of player names
+local function select_best_anchor(pool)
 	local best, best_score = nil, -math.huge
-	for pname in pairs(alive) do
+	for pname in pairs(pool) do
 		local obj = core.get_player_by_name(pname)
 		if obj and obj:get_hp() > 0 then
 			local sc = get_player_score(pname)
@@ -173,6 +172,20 @@ local function select_anchor_for_team(team)
 		end
 	end
 	return best
+end
+
+-- Every living player of the match, regardless of the team
+local function get_all_alive_players()
+	local alive = {}
+	for _, team_players in pairs(state.alive_players or {}) do
+		for pname in pairs(team_players) do
+			local obj = core.get_player_by_name(pname)
+			if obj and obj:get_hp() > 0 then
+				alive[pname] = true
+			end
+		end
+	end
+	return alive
 end
 
 -- Vanish handling
@@ -314,8 +327,8 @@ function spectator.make_spectator(player)
 	player:set_detach()
 	apply_vanish(player)
 	spectator_set_inv(player)  -- Fixed typo
-	-- attach to "best" teammate
-	local best = select_anchor_for_team(team)
+	-- attach to the best living player (spectators may watch any team)
+	local best = select_best_anchor(get_all_alive_players())
 	if best then
 		local target = core.get_player_by_name(best)
 		if target then
@@ -328,7 +341,7 @@ function spectator.make_spectator(player)
 	else
 		hud_events.new(pname, {
 			quick = true,
-			text = "No teammate you can spectate right now.",
+			text = "No player you can spectate right now.",
 			color = "warning",
 		})
 	end
@@ -411,9 +424,13 @@ function spectator.detach_spectators_from(anchor_name)
 end
 
 function spectator.reassign_team_spectators(team)
-	if not team or not state.alive_players[team] then return end
+	if not team then return end
 
-	-- Find all spectators for this team
+	-- Spectators may watch any living player, not only their own team
+	local pool = get_all_alive_players()
+	if not next(pool) then return end
+
+	-- Find all spectators that used to play for this team
 	local team_spectators = {}
 	for pname, elim in pairs(state.eliminated) do
 		if elim and state.initial_team[pname] == team then
@@ -427,7 +444,7 @@ function spectator.reassign_team_spectators(team)
 	for _, pname in ipairs(team_spectators) do
 		local player = core.get_player_by_name(pname)
 		if player then
-			local new_anchor = select_anchor_for_team(team)
+			local new_anchor = select_best_anchor(pool)
 			local target = new_anchor and core.get_player_by_name(new_anchor)
 			player:set_detach()
 			if target then
@@ -436,15 +453,18 @@ function spectator.reassign_team_spectators(team)
 				if player.set_camera then
 					player:set_camera({mode = "third"})
 				end
+				local anchor_team = ctf_teams.get(new_anchor)
 				hud_events.new(pname, {
 					quick = true,
-					text = "Reassigned to spectate " .. new_anchor,
+					text = anchor_team
+						and string.format("Reassigned to spectate %s (%s)", new_anchor, anchor_team)
+						or ("Reassigned to spectate " .. new_anchor),
 					color = "info",
 				})
 			else
 				hud_events.new(pname, {
 					quick = true,
-					text = "No teammate you can spectate right now.",
+					text = "No player you can spectate right now.",
 					color = "warning",
 				})
 			end

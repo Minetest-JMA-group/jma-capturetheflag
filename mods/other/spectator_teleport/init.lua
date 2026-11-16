@@ -15,6 +15,12 @@ local function get_player_team(pname)
 	return ctf_teams.get(pname)
 end
 
+-- Modes may allow spectating every living player instead of the old team only
+local function observe_all_players()
+	local mode = ctf_modebase:get_current_mode()
+	return mode ~= nil and mode.spectator_observe_all == true
+end
+
 local function get_player_score(pname)
 	local mode = ctf_modebase:get_current_mode()
 	if not mode then
@@ -39,12 +45,13 @@ local function get_spectator_old_team(player_obj)
 end
 
 local function build_sorted_teammates(my_name, my_team)
+	local observe_all = observe_all_players()
 	local teammates = {}
 	for _, p in ipairs(core.get_connected_players()) do
 		local pname = p:get_player_name()
 		if pname ~= my_name then
 			local team = get_player_team(pname)
-			if team == my_team and team ~= nil then
+			if observe_all or (team == my_team and team ~= nil) then
 				local player_obj = core.get_player_by_name(pname)
 				if player_obj then
 					table.insert(teammates, {name = pname, score = get_player_score(pname)})
@@ -122,17 +129,20 @@ local function on_teleport_item_use(itemstack, user)
 		end
 	end
 
-	--  Build the sorted teammate list
+	local observe_all = observe_all_players()
+
+	--  Build the sorted target list
 	local sorted_teammates = build_sorted_teammates(pname, my_team)
 
 	if #sorted_teammates == 0 then
 		hud_events.new(pname, {
 			quick = true,
-			text  = "No teammates to spectate!",
+			text  = observe_all and "No players to spectate!"
+				or "No teammates to spectate!",
 			color = "warning",
 		})
 		return itemstack
-	elseif #sorted_teammates == 1 then
+	elseif #sorted_teammates == 1 and not observe_all then
 		hud_events.new(pname, {
 			quick = true,
 			text  = "No other teammates to spectate.",
@@ -166,7 +176,8 @@ local function on_teleport_item_use(itemstack, user)
 		if not target_player then
 			hud_events.new(pname, {
 				quick = true,
-				text  = "Error: Could not find a valid teammate to spectate.",
+				text  = observe_all and "Error: Could not find a valid player to spectate."
+				or "Error: Could not find a valid teammate to spectate.",
 				color = "error",
 			})
 			return itemstack
@@ -196,10 +207,14 @@ local function on_teleport_item_use(itemstack, user)
 	--  HUD feedback
 	local target_score = get_player_score(target_name)
 	local rank = data.index
+	local target_team = get_player_team(target_name)
+	local target_label = target_team
+		and ("%s [%s]"):format(target_name, target_team)
+		or target_name
 	hud_events.new(pname, {
 		quick = true,
 		text = ("Spectating %s (Score: %d) | Rank: %d/%d"):
-		         format(target_name, target_score, rank, #sorted_teammates),
+		         format(target_label, target_score, rank, #sorted_teammates),
 		color = "success",
 	})
 
@@ -242,7 +257,7 @@ core.register_chatcommand("spectate", {
 			return false, S("Could not determine your old team.")
 		end
 
-		if get_player_team(target_name) ~= old_team then
+		if not observe_all_players() and get_player_team(target_name) ~= old_team then
 			return false, S("@1 is not on your old team (@2).", target_name, old_team)
 		end
 
@@ -260,9 +275,13 @@ core.register_chatcommand("spectate", {
 		end
 
 		local score = get_player_score(target_name)
+		local target_team = get_player_team(target_name)
+		local target_label = target_team
+			and ("%s [%s]"):format(target_name, target_team)
+			or target_name
 		hud_events.new(name, {
 			quick = true,
-			text  = S("Spectating @1 (Score: @2)", target_name, score),
+			text  = S("Spectating @1 (Score: @2)", target_label, score),
 			color = "success",
 		})
 

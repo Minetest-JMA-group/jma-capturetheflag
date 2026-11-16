@@ -418,6 +418,8 @@ ctf_modebase.register_mode("rush", {
 		noun = "base",
 		captured = "defeated",
 	},
+	-- Spectators may observe every living player, not only their own team
+	spectator_observe_all = true,
 	vote_title_suffix = " (Test Phase)",
 	on_prevote = function()
 		-- NOTE: Mode disabled --
