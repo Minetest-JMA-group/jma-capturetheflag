@@ -4,7 +4,10 @@ return function(prefix, top)
 
 	local function op_all(operation)
 		for k, v in pairs(modstorage:to_table()["fields"]) do
-			operation(k, v)
+			-- Rankings use player names; namespaced keys hold other mode data.
+			if core.is_valid_player_name(k) then
+				operation(k, v)
+			end
 		end
 	end
 
