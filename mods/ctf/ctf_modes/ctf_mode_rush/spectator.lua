@@ -223,16 +223,10 @@ local function vanish(player)
 	player:set_armor_groups(armor_groups)
 	player:set_properties({
 		visual_size = { x = 0, y = 0 },
-		selectionbox = { 0, 0, 0, 0, 0, 0 },
 		is_visible = false,
 		pointable = false,
 		makes_footstep_sound = false,
 		show_on_minimap = false,
-	})
-
-	player:set_nametag_attributes({
-		text = " ",
-		color = { r = 0, g = 0, b = 0, a = 0 },
 	})
 end
 
@@ -244,16 +238,10 @@ local function unvanish(player)
 	armor_groups.immortal = 0
 	player:set_armor_groups(armor_groups)
 	player:set_properties({
-		-- visual_size = { x = 1, y = 1 },
-		-- selectionbox = { 0, 0, 0, 0, 0, 0 },
 		is_visible = true,
 		pointable = true,
 		makes_footstep_sound = true,
 		show_on_minimap = true,
-	})
-
-	player:set_nametag_attributes({
-		text = player_name,
 	})
 
 	player_api.set_model(player, "character.b3d", true)
@@ -267,6 +255,7 @@ function spectator.disable_vanish(player)
 		player:set_detach()
 	end
 	state.vanish_active[name] = nil
+	player:set_camera({ mode = "first" })
 end
 local function apply_vanish(player)
 	local name = player:get_player_name()
@@ -334,9 +323,7 @@ function spectator.make_spectator(player)
 		if target then
 			player:set_attach(target, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
 			player:set_pos(target:get_pos())
-			if player.set_camera then
-				player:set_camera({mode = "third"})
-			end
+			player:set_camera({mode = "third"})
 		end
 	else
 		hud_events.new(pname, {
@@ -450,9 +437,8 @@ function spectator.reassign_team_spectators(team)
 			if target then
 				player:set_attach(target, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
 				player:set_pos(target:get_pos())
-				if player.set_camera then
-					player:set_camera({mode = "third"})
-				end
+				player:set_camera({mode = "third"})
+
 				local anchor_team = ctf_teams.get(new_anchor)
 				hud_events.new(pname, {
 					quick = true,
