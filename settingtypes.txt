@@ -13,8 +13,6 @@ ctf_low_ram_mode (Low RAM mode) bool false
 
 # Enables the CTF shop formspec.
 enable_ctf_shop (Enable CTF Shop) bool true
-ctf_feedback_path (Path to save CTF feedbacks) string
-ctf_feedback_min_playtime (Minimum playtime required to give feedback) number
 
 #The interval in which the server_status.json file is updated.
 #Default: 20 seconds. Lower values increase the server load.
