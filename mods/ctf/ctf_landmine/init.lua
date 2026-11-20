@@ -73,7 +73,7 @@ local function is_self_landmine(object_ref, pos)
 	if ctf_teams.get(object_ref:get_player_name()) == team then
 		return true -- it's self landmine
 	end
-	if object_ref.get_properties().pointable == false then
+	if object_ref:get_properties().pointable == false then
 		return true -- the object ref is not pointable
 	end
 
