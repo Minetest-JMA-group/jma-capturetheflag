@@ -1063,6 +1063,27 @@ ctf_modebase.features = function(rankings, recent_rankings)
 	local delete_queue = {}
 	local team_switch_after_capture = false
 	local streak_bonus_received = {}
+	local ignore_objects = {
+		"hpbar:entity",
+		"wield3d:entity",
+		"playertag:tag",
+		"server_cosmetics:hat",
+	}
+
+	local function remove_objects(p1, p2)
+		for _, obj in pairs(core.get_objects_in_area(p1, p2)) do
+			if not obj:is_player() then
+				local luaent = obj:get_luaentity()
+
+				if
+					luaent
+					and table.indexof(ignore_objects, luaent.name) == -1
+				then
+					obj:remove()
+				end
+			end
+		end
+	end
 
 	return {
 		--- @param pname PlayerName
@@ -1131,27 +1152,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 
 			if #delete_queue > 0 and delete_queue._map ~= ctf_map.current_map.dirname then
 				local p1, p2 = unpack(delete_queue)
-
-				local ignore_objects = {
-					"hpbar:entity",
-					"wield3d:entity",
-					"playertag:tag",
-					"server_cosmetics:hat",
-				}
-
-				for _, obj in pairs(core.get_objects_in_area(p1, p2)) do
-					if not obj:is_player() then
-						local luaent = obj:get_luaentity()
-
-						if
-							luaent
-							and table.indexof(ignore_objects, luaent.name) == -1
-						then
-							obj:remove()
-						end
-					end
-				end
-
+				remove_objects(p1, p2)
 				core.delete_area(p1, p2)
 
 				delete_queue = {}
@@ -1188,6 +1189,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				ctf_modebase:get_current_mode().team_chest_items or {},
 				ctf_modebase:get_current_mode().blacklisted_nodes or {}
 			)
+			remove_objects(ctf_map.current_map.pos1, ctf_map.current_map.pos2)
 
 			if loading_screen_time then
 				local total_time = (core.get_us_time() - loading_screen_time) / 1e6
