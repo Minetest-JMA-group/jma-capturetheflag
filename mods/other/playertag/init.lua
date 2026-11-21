@@ -1,10 +1,11 @@
 local TYPE_BUILTIN = 0
 local TYPE_ENTITY = 1
+local TYPE_NONE = 2
 
 local DEFAULT_NAMETAG_COLOR = "#EEFFFFDD"
 local DEFAULT_NAMETAG_BGCOLOR = "#0000002D"
 
---- @alias NametagType 0 | 1
+--- @alias NametagType 0 | 1 | 2
 --- @alias NametagSettings { prefix: string?, type: NametagType?, color: (string | table)?,
 --- symbol_entity_observers: table?, nametag_entity_observers: table?, entity: table?,
 --- symbol_entity: table?, nametag_entity: table?, timer: table? }
@@ -16,6 +17,7 @@ local ATTACH_POSITION = core.rgba and { x = 0, y = 20, z = 0 } or { x = 0, y = 1
 playertag = {
 	TYPE_BUILTIN = TYPE_BUILTIN,
 	TYPE_ENTITY = TYPE_ENTITY,
+	TYPE_NONE = TYPE_NONE,
 	no_entity_attach = {},
 }
 
@@ -188,6 +190,11 @@ local function update(player, settings)
 		end
 	elseif settings.type == TYPE_ENTITY then
 		add_entity_tag(player, old_observers)
+	elseif settings.type == TYPE_NONE then
+		player:set_nametag_attributes({
+			color = { a = 0, r = 0, g = 0, b = 0 },
+			bgcolor = { a = 0, r = 0, g = 0, b = 0 },
+		})
 	end
 end
 
@@ -197,10 +204,6 @@ end
 --- @param settings NametagSettings?
 --- @return NametagSettings?
 function playertag.set(player, type, color, settings)
-	if playertag.no_entity_attach[player:get_player_name()] then
-		return
-	end
-
 	local oldset = players[player:get_player_name()]
 	if not oldset then
 		return

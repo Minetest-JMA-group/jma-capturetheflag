@@ -195,7 +195,7 @@ local function remove_attached(player, name)
 	server_cosmetics.no_entity_attach[name] = true
 	wield3d.no_entity_attach[name] = true
 
-	playertag.remove_entity_tag(player)
+	playertag.set(player, playertag.TYPE_NONE)
 	hpbar.remove_hpbar(name)
 	server_cosmetics.remove_entity_cosmetics(player)
 	wield3d.remove_wielditem(player)
@@ -223,16 +223,11 @@ local function vanish(player)
 	player:set_armor_groups(armor_groups)
 	player:set_properties({
 		visual_size = { x = 0, y = 0 },
-		selectionbox = { 0, 0, 0, 0, 0, 0 },
+		collisionbox = { 0, 0, 0, 0, 0, 0 },
 		is_visible = false,
 		pointable = false,
 		makes_footstep_sound = false,
 		show_on_minimap = false,
-	})
-
-	player:set_nametag_attributes({
-		text = " ",
-		color = { r = 0, g = 0, b = 0, a = 0 },
 	})
 end
 
@@ -244,8 +239,6 @@ local function unvanish(player)
 	armor_groups.immortal = 0
 	player:set_armor_groups(armor_groups)
 	player:set_properties({
-		-- visual_size = { x = 1, y = 1 },
-		-- selectionbox = { 0, 0, 0, 0, 0, 0 },
 		is_visible = true,
 		pointable = true,
 		makes_footstep_sound = true,
@@ -265,6 +258,7 @@ function spectator.disable_vanish(player)
 	if state.vanish_active[name] then
 		unvanish(player)
 		player:set_detach()
+		player:set_camera({ mode = "first" })
 	end
 	state.vanish_active[name] = nil
 end
@@ -448,11 +442,10 @@ function spectator.reassign_team_spectators(team)
 			local target = new_anchor and core.get_player_by_name(new_anchor)
 			player:set_detach()
 			if target then
-				player:set_attach(target, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
-				player:set_pos(target:get_pos())
-				if player.set_camera then
-					player:set_camera({mode = "third"})
-				end
+				player:set_attach(target, "", { x = 0, y = 0, z = 0 },
+				{ x = 0, y = 0, z = 0 })
+				player:set_camera({mode = "third"})
+
 				local anchor_team = ctf_teams.get(new_anchor)
 				hud_events.new(pname, {
 					quick = true,
