@@ -103,12 +103,6 @@ core.register_on_shutdown(function()
 	teleport_data = {}
 end)
 
---Item drop logic
-local function on_teleport_item_drop(itemstack, dropper)
-	if dropper and dropper:is_player() then end
-	return itemstack
-end
-
 --  Item use logic
 local function on_teleport_item_use(itemstack, user)
 	if not user or not user:is_player() then return itemstack end
@@ -196,13 +190,9 @@ local function on_teleport_item_use(itemstack, user)
 
 	--  Attach / teleport the user
 	user:set_detach()
-	user:set_attach(target_player, "", {x = 0, y = 0, z = 0},
-	                               {x = 0, y = 0, z = 0})
-	user:set_pos(target_player:get_pos())
+	user:set_attach(target_player, "", vector.zero())
+	user:set_camera({mode = "third"})
 
-	if user.set_camera then
-		user:set_camera({mode = "third"})
-	end
 
 	--  HUD feedback
 	local target_score = get_player_score(target_name)
@@ -230,61 +220,5 @@ core.register_craftitem(TELEPORT_ITEM, {
 	inventory_image = "spectator_teleport_item.png",
 	stack_max = 1,
 	on_use = on_teleport_item_use,
-	on_drop = on_teleport_item_drop,
-})
-
-core.register_chatcommand("spectate", {
-	description = S("Spectate a specific teammate (spectators only)"),
-	params = "<playername>",
-	func = function(name, param)
-		if param == "" then
-			return false, S("Usage: /spectate <playername>")
-		end
-
-		local target_name = param:trim()
-		local target = core.get_player_by_name(target_name)
-		if not target then
-			return false, S("Player @1 not found or offline.", target_name)
-		end
-
-		local my_team = get_player_team(name)
-		if my_team ~= nil then
-			return false, S("Only spectators can use this command.")
-		end
-
-		local old_team = get_spectator_old_team(core.get_player_by_name(name))
-		if old_team == "" then
-			return false, S("Could not determine your old team.")
-		end
-
-		if not observe_all_players() and get_player_team(target_name) ~= old_team then
-			return false, S("@1 is not on your old team (@2).", target_name, old_team)
-		end
-
-		local spectator = core.get_player_by_name(name)
-		if not can_observe_target(spectator, target) then
-			return false, S("You cannot spectate @1", target_name)
-		end
-
-		spectator:set_detach()
-		spectator:set_attach(target, "", {x=0, y=1.5, z=0}, {x=0, y=0, z=0})
-		spectator:set_pos(target:get_pos())
-
-		if spectator.set_camera then
-			spectator:set_camera({mode = "third"})
-		end
-
-		local score = get_player_score(target_name)
-		local target_team = get_player_team(target_name)
-		local target_label = target_team
-			and ("%s [%s]"):format(target_name, target_team)
-			or target_name
-		hud_events.new(name, {
-			quick = true,
-			text  = S("Spectating @1 (Score: @2)", target_label, score),
-			color = "success",
-		})
-
-		return true
-	end,
+	drop = ""
 })

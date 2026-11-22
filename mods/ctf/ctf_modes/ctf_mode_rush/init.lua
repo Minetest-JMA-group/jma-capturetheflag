@@ -420,6 +420,11 @@ ctf_modebase.register_mode("rush", {
 	},
 	-- Spectators may observe every living player, not only their own team
 	spectator_observe_all = true,
+	get_respawn_immunity_duration = function(player)
+		if state.eliminated[player:get_player_name()] then
+			return false
+		end
+	end,
 	vote_title_suffix = " (Test Phase)",
 	on_prevote = function()
 		-- NOTE: Mode disabled --

@@ -326,11 +326,9 @@ function spectator.make_spectator(player)
 	if best then
 		local target = core.get_player_by_name(best)
 		if target then
-			player:set_attach(target, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
-			player:set_pos(target:get_pos())
-			if player.set_camera then
-				player:set_camera({mode = "third"})
-			end
+			player:set_attach(target, "", vector.zero())
+			player:set_camera({ mode = "third" })
+
 		end
 	else
 		hud_events.new(pname, {
@@ -442,8 +440,7 @@ function spectator.reassign_team_spectators(team)
 			local target = new_anchor and core.get_player_by_name(new_anchor)
 			player:set_detach()
 			if target then
-				player:set_attach(target, "", { x = 0, y = 0, z = 0 },
-				{ x = 0, y = 0, z = 0 })
+				player:set_attach(target, "", { x = 0, y = 1.5, z = 0 })
 				player:set_camera({mode = "third"})
 
 				local anchor_team = ctf_teams.get(new_anchor)
