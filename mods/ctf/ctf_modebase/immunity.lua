@@ -178,6 +178,29 @@ function ctf_modebase.remove_respawn_immunity(player)
 	return true
 end
 
+---@param player PlayerRef
+---@return number | false
+local function get_respawn_immunity_duration(player)
+	local current_mode = ctf_modebase:get_current_mode()
+	local duration
+	if current_mode and current_mode.get_respawn_immunity_duration then
+		duration = current_mode.get_respawn_immunity_duration(player)
+	end
+
+	if duration == nil then
+		return RESPAWN_IMMUNITY_SECONDS
+	end
+
+	return duration
+end
+
+local function give_respawn_immunity(player)
+	local duration = get_respawn_immunity_duration(player)
+	if duration ~= false then
+		ctf_modebase.give_immunity(player, duration)
+	end
+end
+
 ctf_teams.register_on_allocplayer(function(
 	player,
 	new_team,
@@ -185,13 +208,15 @@ ctf_teams.register_on_allocplayer(function(
 	force,
 	team_unchanged
 )
-	ctf_modebase.give_immunity(player, RESPAWN_IMMUNITY_SECONDS)
+	give_respawn_immunity(player)
 end)
 
 ctf_api.register_on_respawnplayer(function(player)
-	if not ctf_teams.non_team_players[player:get_player_name()] then
-		ctf_modebase.give_immunity(player, RESPAWN_IMMUNITY_SECONDS)
+	if ctf_teams.non_team_players[player:get_player_name()] then
+		return
 	end
+
+	give_respawn_immunity(player)
 end)
 
 core.register_on_dieplayer(function(player)
