@@ -440,7 +440,7 @@ function spectator.reassign_team_spectators(team)
 			local target = new_anchor and core.get_player_by_name(new_anchor)
 			player:set_detach()
 			if target then
-				player:set_attach(target, "", { x = 0, y = 1.5, z = 0 })
+				player:set_attach(target, "", vector.zero())
 				player:set_camera({mode = "third"})
 
 				local anchor_team = ctf_teams.get(new_anchor)

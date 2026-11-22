@@ -220,5 +220,7 @@ core.register_craftitem(TELEPORT_ITEM, {
 	inventory_image = "spectator_teleport_item.png",
 	stack_max = 1,
 	on_use = on_teleport_item_use,
-	drop = ""
+	on_drop = function(itemstack)
+		return itemstack
+	end,
 })
