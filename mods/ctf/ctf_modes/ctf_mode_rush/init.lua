@@ -5,7 +5,7 @@ local old_bounty_reward_func = ctf_modebase.bounties.bounty_reward_func
 local old_get_next_bounty = ctf_modebase.bounties.get_next_bounty
 
 local MAX_REVIVES = 1
-local LAST_SURVIVOR_MAX_HP = 40
+local LAST_SURVIVOR_MAX_HP = 60
 
 local modpath = core.get_modpath(core.get_current_modname())
 local timer = dofile(modpath .. "/timer.lua")
