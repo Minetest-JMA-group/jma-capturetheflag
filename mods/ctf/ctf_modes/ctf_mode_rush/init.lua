@@ -412,6 +412,7 @@ local function is_rush_active()
 end
 
 ctf_modebase.register_mode("rush", {
+	vote_label = core.colorize("orange", "One Revive, Last Team Standing"),
 	hp_regen = 0.3,
 	physics = { sneak_glitch = true, new_move = true },
 	flag_hud_labels = {
