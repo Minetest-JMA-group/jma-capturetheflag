@@ -1189,7 +1189,6 @@ ctf_modebase.features = function(rankings, recent_rankings)
 				ctf_modebase:get_current_mode().team_chest_items or {},
 				ctf_modebase:get_current_mode().blacklisted_nodes or {}
 			)
-			remove_objects(ctf_map.current_map.pos1, ctf_map.current_map.pos2)
 
 			if loading_screen_time then
 				local total_time = (core.get_us_time() - loading_screen_time) / 1e6
@@ -1204,6 +1203,7 @@ ctf_modebase.features = function(rankings, recent_rankings)
 							"ctf_modebase:summary"
 						)
 					end
+					remove_objects(ctf_map.current_map.pos1, ctf_map.current_map.pos2)
 				end)
 			end
 		end,
